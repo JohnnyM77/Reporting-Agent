@@ -26,7 +26,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests beautifulsoup4 pyyaml
+          pip install requests beautifulsoup4 pyyaml pypdf openai google-api-python-client google-auth google-auth-httplib2
 
       - name: Run agent
         env:

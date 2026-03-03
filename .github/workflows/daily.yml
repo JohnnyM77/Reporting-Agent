@@ -1,19 +1,19 @@
 name: Daily Announcement Digest
 
 on:
-  schedule:
-    # 09:00 Singapore time = 01:00 UTC (Singapore is UTC+8)
-    - cron: "0 1 * * *"
   workflow_dispatch:
+  schedule:
+    - cron: "0 1 * * *"
 
 jobs:
   run-agent:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
 
-              - name: Debug - show files
+      - name: Debug - show files
         run: |
           pwd
           ls -la

@@ -13,6 +13,12 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v4
 
+              - name: Debug - show files
+        run: |
+          pwd
+          ls -la
+          python --version
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:

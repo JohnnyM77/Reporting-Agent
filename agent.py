@@ -92,8 +92,32 @@ def llm_chat(system_prompt: str, user_content: str) -> str:
 # PDF handling
 # -----------------------------
 def download_file(url: str, out_path: Path):
-    r = requests.get(url, timeout=60)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; Reporting-Agent/1.0; +https://github.com/JohnnyM77/Reporting-Agent)"
+    }
+
+    r = requests.get(
+        url,
+        timeout=60,
+        headers=headers,
+        allow_redirects=True
+    )
+
     r.raise_for_status()
+
+    # Validate we actually received a PDF
+    content_type = (r.headers.get("Content-Type") or "").lower()
+    first_bytes = r.content[:10]
+
+    if ("pdf" not in content_type) and (not first_bytes.startswith(b"%PDF")):
+        # Save first part for debugging
+        debug_path = out_path.with_suffix(".html")
+        debug_path.write_bytes(r.content[:200_000])
+        raise ValueError(
+            f"Expected PDF but got Content-Type={content_type}. "
+            f"Saved response to {debug_path.name} for debugging."
+        )
+
     out_path.write_bytes(r.content)
 
 def extract_pdf_text(pdf_path: Path) -> str:

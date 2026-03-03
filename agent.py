@@ -1,3 +1,12 @@
+# agent.py
+#
+# Investor-grade ASX announcements agent:
+# - Ignores non-price-sensitive announcements completely (no mention in email)
+# - Uses Requests first for PDFs; if ASX consent gate blocks, falls back to Playwright
+# - Runs deep analysis only for HY/FY results, acquisitions, and capital/debt raises
+# - Produces clean email: HIGH IMPACT + MATERIAL (only price-sensitive)
+# - Never hallucinates off the ASX "Access to this site" legal page
+
 import os
 import re
 import json
@@ -15,26 +24,17 @@ import yaml
 from pypdf import PdfReader
 from openai import OpenAI
 
-from prompts import (
-    DEFAULT_2LINE_PROMPT,
-    ACQUISITION_PROMPT,
-    CAPITAL_OR_DEBT_RAISE_PROMPT,
-    RESULTS_HYFY_PROMPT,
-)
-from prompts import (
-    DEFAULT_2LINE_PROMPT,
-    ACQUISITION_PROMPT,
-    CAPITAL_OR_DEBT_RAISE_PROMPT,
-    RESULTS_HYFY_PROMPT,
-)
-
-# 👇 ADD THESE TWO LINES RIGHT HERE
-from playwright_fetch import fetch_pdf_with_playwright
+# Playwright fallback for ASX consent gate
 import asyncio
+from playwright_fetch import fetch_pdf_with_playwright  # must exist in repo root
 
-# ----------------------------
-# Settings / Guardrails
-# ----------------------------
+from prompts import (
+    DEFAULT_2LINE_PROMPT,
+    ACQUISITION_PROMPT,
+    CAPITAL_OR_DEBT_RAISE_PROMPT,
+    RESULTS_HYFY_PROMPT,
+)
+
 # ----------------------------
 # Settings / Guardrails
 # ----------------------------
@@ -50,23 +50,25 @@ MODEL_DEFAULT = "gpt-4o-mini"
 
 
 # ----------------------------
+# Minimal logging
+# ----------------------------
+def log(msg: str):
+    print(f"[agent] {msg}", flush=True)
+
+
+# ----------------------------
 # Time helpers (SGT = UTC+8)
 # ----------------------------
 def now_sgt() -> dt.datetime:
     return dt.datetime.utcnow() + dt.timedelta(hours=8)
 
+
 def today_sgt_date() -> dt.date:
     return now_sgt().date()
 
+
 def cutoff_date(days_back: int) -> dt.date:
     return today_sgt_date() - dt.timedelta(days=days_back)
-
-
-# ----------------------------
-# Logging (keep minimal)
-# ----------------------------
-def log(msg: str):
-    print(f"[agent] {msg}", flush=True)
 
 
 # ----------------------------
@@ -99,62 +101,108 @@ def read_tickers() -> Tuple[List[str], List[str]]:
 
 
 # ----------------------------
-# HTTP session (cookies + headers)
+# HTTP session
 # ----------------------------
 def http_session() -> requests.Session:
     s = requests.Session()
-    s.headers.update({
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/122.0.0.0 Safari/537.36"
-        ),
-        "Accept": "*/*",
-        "Referer": "https://www.asx.com.au/",
-    })
+    s.headers.update(
+        {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/122.0.0.0 Safari/537.36"
+            ),
+            "Accept": "*/*",
+            "Referer": "https://www.asx.com.au/",
+        }
+    )
     return s
 
 
 # ----------------------------
-# Price-sensitive headline filter
+# Headline filters
 # ----------------------------
 def is_price_sensitive_title(title: str) -> bool:
     t = title.lower()
     keywords = [
         # Results / trading / guidance
-        "appendix 4e", "appendix 4d", "results", "half year", "half-year",
-        "full year", "annual report", "trading update", "guidance",
-        "earnings", "profit", "revenue", "eps", "ebit", "ebitda",
-        "investor presentation", "presentation",
-
+        "appendix 4e",
+        "appendix 4d",
+        "results",
+        "half year",
+        "half-year",
+        "full year",
+        "annual report",
+        "trading update",
+        "guidance",
+        "earnings",
+        "profit",
+        "revenue",
+        "eps",
+        "ebit",
+        "ebitda",
+        "investor presentation",
+        "presentation",
         # Capital / debt
-        "placement", "rights issue", "entitlement", "spp", "capital raising",
-        "issue of shares", "convertible", "notes", "bond", "debt facility",
-        "refinance", "term loan", "facility",
-
+        "placement",
+        "rights issue",
+        "entitlement",
+        "spp",
+        "capital raising",
+        "issue of shares",
+        "convertible",
+        "notes",
+        "bond",
+        "debt facility",
+        "refinance",
+        "term loan",
+        "facility",
         # M&A
-        "acquisition", "acquire", "merger", "scheme", "takeover", "transaction",
-
-        # Material contracts / regulatory / other
-        "contract", "award", "termination", "litigation", "regulatory", "material",
-        "strategic", "halt", "suspension",
+        "acquisition",
+        "acquire",
+        "merger",
+        "scheme",
+        "takeover",
+        "transaction",
+        # Material contracts / other
+        "contract",
+        "award",
+        "termination",
+        "litigation",
+        "regulatory",
+        "material",
+        "strategic",
+        "halt",
+        "suspension",
     ]
     return any(k in t for k in keywords)
 
+
 def looks_like_results_title(title: str) -> bool:
     t = title.lower()
-    return any(k in t for k in [
-        "appendix 4e", "appendix 4d", "results", "half year", "half-year",
-        "full year", "annual report", "investor presentation", "presentation",
-        "results presentation"
-    ])
+    return any(
+        k in t
+        for k in [
+            "appendix 4e",
+            "appendix 4d",
+            "results",
+            "half year",
+            "half-year",
+            "full year",
+            "annual report",
+            "investor presentation",
+            "results presentation",
+            "presentation",
+        ]
+    )
 
 
 # ----------------------------
-# LLM with caps + graceful failure
+# LLM (with caps)
 # ----------------------------
 def llm_client() -> OpenAI:
     return OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
 
 def llm_chat(system_prompt: str, user_content: str, counters: Dict) -> str:
     if counters["llm_calls"] >= counters["MAX_LLM_CALLS_PER_RUN"]:
@@ -182,15 +230,16 @@ def llm_chat(system_prompt: str, user_content: str, counters: Dict) -> str:
 
 
 # ----------------------------
-# PDF + HTML helpers
+# PDF / HTML helpers
 # ----------------------------
-def download_pdf(session: requests.Session, url: str, out_path: Path) -> bool:
+def download_pdf_requests(session: requests.Session, url: str, out_path: Path) -> bool:
     r = session.get(url, timeout=60, allow_redirects=True)
     r.raise_for_status()
     if r.content[:4] != b"%PDF":
         return False
     out_path.write_bytes(r.content)
     return True
+
 
 def extract_pdf_text(pdf_path: Path) -> str:
     try:
@@ -201,8 +250,9 @@ def extract_pdf_text(pdf_path: Path) -> str:
             if t.strip():
                 parts.append(t)
         return "\n\n".join(parts).strip()
-    except Exception as e:
+    except Exception:
         return ""
+
 
 def fetch_html_text(session: requests.Session, url: str) -> str:
     r = session.get(url, timeout=60, allow_redirects=True)
@@ -216,26 +266,31 @@ def fetch_html_text(session: requests.Session, url: str) -> str:
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text[:80_000]
 
+
 def looks_like_asx_access_gate(text: str) -> bool:
     t = (text or "").lower()
-    return ("access to this site" in t and "agree and proceed" in t) or ("general conditions" in t and "agree and proceed" in t)
+    return ("access to this site" in t and "agree and proceed" in t) or (
+        "general conditions" in t and "agree and proceed" in t
+    )
 
 
 # ----------------------------
 # ASX announcement fetching
 # ----------------------------
 def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: int = 2) -> List[Dict]:
+    # ASX "announcements" page (HTML table)
     url = (
         "https://www.asx.com.au/asx/v2/statistics/announcements.do"
         f"?asxCode={ticker}&by=asxCode&period=M6&timeframe=D"
     )
     r = session.get(url, timeout=30)
     r.raise_for_status()
-    soup = BeautifulSoup(r.text, "html.parser")
 
+    soup = BeautifulSoup(r.text, "html.parser")
     rows = soup.select("table tr")
-    items = []
+
     cutoff = cutoff_date(days_back)
+    items = []
 
     for row in rows:
         cols = [c.get_text(strip=True) for c in row.select("td")]
@@ -263,15 +318,17 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: i
         if item_date and item_date < cutoff:
             continue
 
-        items.append({
-            "exchange": "ASX",
-            "ticker": ticker,
-            "date": date_text,
-            "title": title,
-            "url": href,
-        })
+        items.append(
+            {
+                "exchange": "ASX",
+                "ticker": ticker,
+                "date": date_text,
+                "title": title,
+                "url": href,
+            }
+        )
 
-    # de-dupe by URL
+    # de-dupe
     seen = set()
     out = []
     for it in items:
@@ -282,7 +339,9 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: i
 
     return out
 
+
 def asx_pdf_url_from_item_url(url: str) -> Optional[str]:
+    # Most ASX announcements already use displayAnnouncement.do?display=pdf&idsId=...
     if "displayAnnouncement.do" in url:
         return url
     return None
@@ -294,24 +353,43 @@ def asx_pdf_url_from_item_url(url: str) -> Optional[str]:
 def classify_announcement(title: str, text: str) -> str:
     t = (title + "\n" + (text or "")).lower()
 
-    if any(k in t for k in [
-        "appendix 4e", "appendix 4d", "half year", "half-year",
-        "full year", "annual report", "results",
-        "investor presentation", "results presentation",
-    ]):
+    if any(
+        k in t
+        for k in [
+            "appendix 4e",
+            "appendix 4d",
+            "half year",
+            "half-year",
+            "full year",
+            "annual report",
+            "results",
+            "investor presentation",
+            "results presentation",
+        ]
+    ):
         return "RESULTS_HY_FY"
 
-    if any(k in t for k in [
-        "acquisition", "acquire", "merger", "scheme", "takeover",
-        "transaction", "sale and purchase", "purchase of",
-    ]):
+    if any(k in t for k in ["acquisition", "acquire", "merger", "scheme", "takeover", "transaction"]):
         return "ACQUISITION"
 
-    if any(k in t for k in [
-        "placement", "spp", "entitlement", "rights issue", "capital raising",
-        "offer", "issuance", "convertible", "notes", "debt facility",
-        "refinance", "term loan", "bond",
-    ]):
+    if any(
+        k in t
+        for k in [
+            "placement",
+            "spp",
+            "entitlement",
+            "rights issue",
+            "capital raising",
+            "offer",
+            "issuance",
+            "convertible",
+            "notes",
+            "debt facility",
+            "refinance",
+            "term loan",
+            "bond",
+        ]
+    ):
         return "CAPITAL_OR_DEBT_RAISE"
 
     if any(k in t for k in ["contract", "award", "termination", "order", "customer", "renewal"]):
@@ -321,17 +399,15 @@ def classify_announcement(title: str, text: str) -> str:
 
 
 # ----------------------------
-# LLM outputs
+# LLM wrappers (clean outputs)
 # ----------------------------
 def summarise_two_lines_llm(ticker: str, title: str, text: str, counters: Dict) -> Optional[str]:
     user = f"Ticker: {ticker}\nTitle: {title}\n\nText:\n{text}"
     out = llm_chat(DEFAULT_2LINE_PROMPT, user, counters)
 
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        # If LLM isn't available, still show a minimal signal-only line (because it was price-sensitive)
         return f"{ticker}: {title[:140]}\nSo what: price-sensitive headline; open link for details."
 
-    # Enforce exactly 2 lines
     lines = [ln.strip() for ln in out.splitlines() if ln.strip()]
     if len(lines) >= 2:
         return lines[0] + "\n" + lines[1]
@@ -339,19 +415,22 @@ def summarise_two_lines_llm(ticker: str, title: str, text: str, counters: Dict) 
         return lines[0] + "\nSo what: open link for details."
     return None
 
+
 def deep_acquisition_memo(ticker: str, title: str, text: str, counters: Dict) -> str:
     user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
     out = llm_chat(ACQUISITION_PROMPT, user, counters)
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return f"{ticker} — Acquisition\nCould not run LLM (limit/billing). Open link for details."
+        return "Could not run LLM (limit/billing)."
     return out
+
 
 def deep_capital_memo(ticker: str, title: str, text: str, counters: Dict) -> str:
     user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
     out = llm_chat(CAPITAL_OR_DEBT_RAISE_PROMPT, user, counters)
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return f"{ticker} — Capital/Debt Raise\nCould not run LLM (limit/billing). Open link for details."
+        return "Could not run LLM (limit/billing)."
     return out
+
 
 def deep_results_analysis(ticker: str, report_text: str, deck_text: str, counters: Dict) -> str:
     user = (
@@ -361,7 +440,7 @@ def deep_results_analysis(ticker: str, report_text: str, deck_text: str, counter
     )
     out = llm_chat(RESULTS_HYFY_PROMPT, user, counters)
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return f"{ticker} — Results\nCould not run LLM (limit/billing). Open documents manually."
+        return "Could not run LLM (limit/billing)."
     return out
 
 
@@ -381,8 +460,10 @@ def drive_service():
     creds = Credentials.from_service_account_info(info, scopes=scopes)
     return build("drive", "v3", credentials=creds)
 
+
 def upload_to_drive(local_path: Path, folder_id: str, drive_filename: str) -> str:
     from googleapiclient.http import MediaFileUpload
+
     service = drive_service()
     file_metadata = {"name": drive_filename, "parents": [folder_id]}
     media = MediaFileUpload(str(local_path), resumable=False)
@@ -391,10 +472,11 @@ def upload_to_drive(local_path: Path, folder_id: str, drive_filename: str) -> st
 
 
 # ----------------------------
-# HY/FY helpers
+# Results helpers
 # ----------------------------
 def likely_results_bundle_items(items_for_ticker: List[Dict]) -> List[Dict]:
     return [it for it in items_for_ticker if looks_like_results_title(it["title"])]
+
 
 def pick_report_and_deck_text(downloaded_texts: List[Tuple[str, str]]) -> Tuple[str, str]:
     pres = [(t, x) for (t, x) in downloaded_texts if "presentation" in t.lower() or "deck" in t.lower()]
@@ -412,19 +494,68 @@ def pick_report_and_deck_text(downloaded_texts: List[Tuple[str, str]]) -> Tuple[
 
 
 # ----------------------------
+# Core fetch: get PDF text with requests -> playwright -> html fallback
+# ----------------------------
+def fetch_announcement_text(
+    session: requests.Session,
+    url: str,
+    pdf_url: Optional[str],
+    pdf_path: Path,
+    counters: Dict,
+) -> Tuple[str, bool]:
+    """
+    Returns: (text, got_pdf)
+    """
+    got_pdf = False
+    text = ""
+
+    if pdf_url and counters["pdfs_downloaded"] < counters["MAX_PDFS_PER_RUN"]:
+        # 1) try requests
+        try:
+            got_pdf = download_pdf_requests(session, pdf_url, pdf_path)
+        except Exception:
+            got_pdf = False
+
+        # 2) try playwright if blocked / not PDF
+        if not got_pdf:
+            try:
+                got_pdf = asyncio.run(fetch_pdf_with_playwright(pdf_url, pdf_path))
+            except Exception as e:
+                log(f"Playwright fetch failed: {e}")
+                got_pdf = False
+
+    if got_pdf:
+        counters["pdfs_downloaded"] += 1
+        text = extract_pdf_text(pdf_path) or ""
+        return text, True
+
+    # 3) HTML fallback
+    try:
+        html_text = fetch_html_text(session, url)
+        return html_text, False
+    except Exception:
+        return "", False
+
+
+# ----------------------------
 # MAIN
 # ----------------------------
 def main():
     subject = f"Daily Announcements Digest – {today_sgt_date().isoformat()} (SGT)"
 
-    counters = {"MAX_LLM_CALLS_PER_RUN": MAX_LLM_CALLS_PER_RUN, "llm_calls": 0}
     session = http_session()
     asx_tickers, _lse_tickers = read_tickers()
 
     drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
-    pdfs_downloaded = 0
 
-    # Fetch announcements
+    counters = {
+        "MAX_LLM_CALLS_PER_RUN": MAX_LLM_CALLS_PER_RUN,
+        "llm_calls": 0,
+        "MAX_PDFS_PER_RUN": MAX_PDFS_PER_RUN,
+        "pdfs_downloaded": 0,
+    }
+
+    # Fetch announcements by ticker
     by_ticker: Dict[str, List[Dict]] = {}
     for t in asx_tickers:
         try:
@@ -437,18 +568,19 @@ def main():
     high_impact_blocks: List[str] = []
     material_blocks: List[str] = []
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tmpdir = Path(tmpdir)
+    processed_results = set()
 
-        processed_results = set()
+    with tempfile.TemporaryDirectory() as tmpdir_str:
+        tmpdir = Path(tmpdir_str)
 
         for ticker, items in by_ticker.items():
             if not items:
                 continue
 
-            # ---- RESULTS (bundle) ----
-            has_results = any(looks_like_results_title(i["title"]) for i in items)
-            if has_results and ticker not in processed_results:
+            # ----------------------------
+            # RESULTS (bundle per ticker)
+            # ----------------------------
+            if any(looks_like_results_title(i["title"]) for i in items) and ticker not in processed_results:
                 processed_results.add(ticker)
 
                 bundle = likely_results_bundle_items(items)
@@ -464,109 +596,71 @@ def main():
                     safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
                     pdf_path = tmpdir / f"{safe_name}.pdf"
 
-                    got_pdf = False
-                    if pdf_url and pdfs_downloaded < MAX_PDFS_PER_RUN:
+                    text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
+                    downloaded_texts.append((title, text))
+
+                    # Upload only true PDFs (HY/FY) and only if Drive configured
+                    if got_pdf and drive_folder_id:
                         try:
-                            got_pdf = False
-
-                    if pdf_url and pdfs_downloaded < MAX_PDFS_PER_RUN:
-                    try:
-                        got_pdf = download_pdf(session, pdf_url, pdf_path)
-                    except Exception:
-                        got_pdf = False
-
-                     # If normal request failed (likely ASX gate), try Playwright
-                     if not got_pdf:
-                         try:
-                             got_pdf = asyncio.run(fetch_pdf_with_playwright(pdf_url, pdf_path))
-                         except Exception as e:
-                             log(f"Playwright fetch failed: {e}")
-                             got_pdf = False
-                        except Exception:
-                            got_pdf = False
-
-                    if got_pdf:
-                        pdfs_downloaded += 1
-                        text = extract_pdf_text(pdf_path)
-                        downloaded_texts.append((title, text))
-
-                        if drive_folder_id:
-                            try:
-                                drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
-                                upload_to_drive(pdf_path, drive_folder_id, drive_name)
-                                uploaded += 1
-                            except Exception as e:
-                                log(f"Drive upload failed for {ticker}: {e}")
-                    else:
-                        # HTML fallback
-                        try:
-                            html_text = fetch_html_text(session, url)
-                            downloaded_texts.append((title, html_text))
-                        except Exception:
-                            downloaded_texts.append((title, ""))
+                            drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
+                            upload_to_drive(pdf_path, drive_folder_id, drive_name)
+                            uploaded += 1
+                        except Exception as e:
+                            log(f"Drive upload failed for {ticker}: {e}")
 
                     if pdf_path.exists():
-                        pdf_path.unlink()
+                        try:
+                            pdf_path.unlink()
+                        except Exception:
+                            pass
 
                 report_text, deck_text = pick_report_and_deck_text(downloaded_texts)
                 report_text = (report_text or "")[:120_000]
                 deck_text = (deck_text or "")[:120_000]
 
-                # If we only captured the ASX access-gate / legal page, do NOT run deep analysis
-                if looks_like_asx_access_gate(report_text) or looks_like_asx_access_gate(deck_text) or (
-                    len(report_text) < MIN_RESULTS_TEXT_CHARS and len(deck_text) < MIN_RESULTS_TEXT_CHARS
+                # If we only captured ASX legal gate / junk text, do NOT deep analyse
+                if (
+                    looks_like_asx_access_gate(report_text)
+                    or looks_like_asx_access_gate(deck_text)
+                    or (len(report_text) < MIN_RESULTS_TEXT_CHARS and len(deck_text) < MIN_RESULTS_TEXT_CHARS)
                 ):
                     high_impact_blocks.append(
-                        f"{ticker} — Results detected, but document could not be fetched automatically.\n"
+                        f"{ticker} — Results detected, but PDF could not be fetched automatically.\n"
                         f"Open manually: {any_results_link}\n"
                     )
                     continue
 
                 analysis = deep_results_analysis(ticker, report_text, deck_text, counters)
-                # Keep the output clean (no “PDFs saved: 0” noise)
+                header = f"{ticker} — Results (HY/FY)"
                 if uploaded > 0:
-                    high_impact_blocks.append(f"{ticker} — Results (HY/FY) — PDFs saved to Drive: {uploaded}\n{analysis}\n")
-                else:
-                    high_impact_blocks.append(f"{ticker} — Results (HY/FY)\n{analysis}\n")
+                    header += f" — PDFs saved to Drive: {uploaded}"
+                high_impact_blocks.append(f"{header}\n{analysis}\nOpen: {any_results_link}\n")
+                continue
 
-                continue  # don’t also process the individual results announcements
-
-            # ---- Normal per-item processing ----
+            # ----------------------------
+            # Normal per-item processing
+            # ----------------------------
             for it in items:
                 title = it["title"]
                 url = it["url"]
 
-                # IMPORTANT: ignore non price-sensitive completely (no mention)
+                # Ignore non-price-sensitive completely
                 if not is_price_sensitive_title(title):
                     continue
 
-                # Fetch text only for price-sensitive
                 pdf_url = asx_pdf_url_from_item_url(url)
                 safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
                 pdf_path = tmpdir / f"{safe_name}.pdf"
 
-                text = ""
-                got_pdf = False
-
-                if pdf_url and pdfs_downloaded < MAX_PDFS_PER_RUN:
-                    try:
-                        got_pdf = download_pdf(session, pdf_url, pdf_path)
-                    except Exception:
-                        got_pdf = False
-
-                if got_pdf:
-                    pdfs_downloaded += 1
-                    text = extract_pdf_text(pdf_path)
-                else:
-                    try:
-                        text = fetch_html_text(session, url)
-                    except Exception:
-                        text = ""
+                text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
 
                 if pdf_path.exists():
-                    pdf_path.unlink()
+                    try:
+                        pdf_path.unlink()
+                    except Exception:
+                        pass
 
-                # If we only got the ASX access-gate page, don’t hallucinate
+                # If we got ASX gate page (HTML), do not hallucinate
                 if looks_like_asx_access_gate(text):
                     material_blocks.append(
                         f"{ticker}: {title[:140]}\nSo what: could not fetch PDF automatically. Open: {url}\n"
@@ -581,12 +675,19 @@ def main():
                 elif cls == "CAPITAL_OR_DEBT_RAISE":
                     memo = deep_capital_memo(ticker, title, text, counters)
                     high_impact_blocks.append(f"{ticker} — Capital/Debt Raise\n{memo}\nOpen: {url}\n")
+                elif cls == "RESULTS_HY_FY":
+                    # Results items are handled by bundle above; if one slips through, treat as material link
+                    material_blocks.append(
+                        f"{ticker}: {title[:140]}\nSo what: results item detected. Open: {url}\n"
+                    )
                 else:
                     summary = summarise_two_lines_llm(ticker, title, text, counters)
                     if summary:
                         material_blocks.append(f"{summary}\nOpen: {url}\n")
 
-    # Build email (clean and short)
+    # ----------------------------
+    # Build clean email
+    # ----------------------------
     lines: List[str] = []
     lines.append(f"Daily Announcements Digest – last {DAYS_BACK} days – {today_sgt_date().isoformat()} (SGT)")
     lines.append("")

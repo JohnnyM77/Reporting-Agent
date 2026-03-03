@@ -21,7 +21,20 @@ from prompts import (
     CAPITAL_OR_DEBT_RAISE_PROMPT,
     RESULTS_HYFY_PROMPT,
 )
+from prompts import (
+    DEFAULT_2LINE_PROMPT,
+    ACQUISITION_PROMPT,
+    CAPITAL_OR_DEBT_RAISE_PROMPT,
+    RESULTS_HYFY_PROMPT,
+)
 
+# 👇 ADD THESE TWO LINES RIGHT HERE
+from playwright_fetch import fetch_pdf_with_playwright
+import asyncio
+
+# ----------------------------
+# Settings / Guardrails
+# ----------------------------
 # ----------------------------
 # Settings / Guardrails
 # ----------------------------

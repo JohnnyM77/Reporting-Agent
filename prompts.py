@@ -1,7 +1,7 @@
 # prompts.py
 
 DEFAULT_2LINE_PROMPT = """You are a sharp equity analyst assistant.
-Given an ASX/LSE market announcement (title + extracted text), output EXACTLY TWO LINES:
+Given a market announcement (title + extracted text), output EXACTLY TWO LINES:
 
 Line 1: What it is (plain English) + the single most important number (if any).
 Line 2: So what for shareholders (impact, risk, or "no economic impact").
@@ -42,7 +42,6 @@ Write a tough, investor-focused memo with headings exactly as below:
 Be specific and sceptical. If key data is missing, list it.
 """
 
-# This is based on your "Results Analysis Inc Mgt Honesty" template.
 RESULTS_HYFY_PROMPT = """Situation:
 You are analysing publicly traded companies' financial performance and management communications.
 You will be given:
@@ -58,14 +57,6 @@ Do ALL of the following:
 3) Compare how management presents results in the deck versus the report.
 4) Identify discrepancies, omissions, selective emphasis, or misleading framing.
 5) Provide an assessment of management transparency/honesty.
-
-Focus on:
-- Key metrics + YoY / sequential comparisons
-- Narrative choices (adjusted vs statutory, what is highlighted vs buried)
-- Omissions (what the report says that the deck doesn’t)
-- Language/framing (vague words, cherry-picked periods, one-offs)
-- Guidance realism
-- Red flags (margins, receivables vs revenue, cash conversion, debt, accounting changes)
 
 Output format (use these headings exactly):
 A) Executive Summary (5 bullets max)

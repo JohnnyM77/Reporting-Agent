@@ -454,7 +454,21 @@ def main():
                     got_pdf = False
                     if pdf_url and pdfs_downloaded < MAX_PDFS_PER_RUN:
                         try:
-                            got_pdf = download_pdf(session, pdf_url, pdf_path)
+                            got_pdf = False
+
+                    if pdf_url and pdfs_downloaded < MAX_PDFS_PER_RUN:
+                    try:
+                        got_pdf = download_pdf(session, pdf_url, pdf_path)
+                    except Exception:
+                        got_pdf = False
+
+                     # If normal request failed (likely ASX gate), try Playwright
+                     if not got_pdf:
+                         try:
+                             got_pdf = asyncio.run(fetch_pdf_with_playwright(pdf_url, pdf_path))
+                         except Exception as e:
+                             log(f"Playwright fetch failed: {e}")
+                             got_pdf = False
                         except Exception:
                             got_pdf = False
 

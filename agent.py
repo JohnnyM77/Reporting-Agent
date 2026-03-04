@@ -1,10 +1,12 @@
 # agent.py
 #
-# Investor-grade ASX announcements agent:
+# Investor-grade ASX announcements agent ("Bob the Bot"):
 # - Ignores non-price-sensitive announcements completely (no mention in email)
 # - Uses Requests first for PDFs; if ASX consent gate blocks, falls back to Playwright
 # - Runs deep analysis only for HY/FY results, acquisitions, and capital/debt raises
-# - Produces clean email: HIGH IMPACT + MATERIAL (only price-sensitive)
+# - Produces clean email: HIGH IMPACT + MATERIAL (only price-sensitive) or SILENCE
+# - Uploads PDFs to Google Drive for big announcements and includes Drive view links
+# - Generates a separate Strawman-ready post (<= ~500 words) for big announcements
 # - Never hallucinates off the ASX "Access to this site" legal page
 
 import os
@@ -14,6 +16,7 @@ import ssl
 import smtplib
 import tempfile
 import datetime as dt
+import html
 from pathlib import Path
 from email.message import EmailMessage
 from typing import Dict, List, Tuple, Optional
@@ -33,9 +36,11 @@ from prompts import (
     ACQUISITION_PROMPT,
     CAPITAL_OR_DEBT_RAISE_PROMPT,
     RESULTS_HYFY_PROMPT,
+    STRAWMAN_500W_PROMPT,  # ensure this exists in prompts.py
 )
 
 BOB_NAME = "Bob the Bot"
+
 # ----------------------------
 # Settings / Guardrails
 # ----------------------------
@@ -46,8 +51,15 @@ MAX_PDFS_PER_RUN = 10
 MAX_LLM_CALLS_PER_RUN = 15
 
 MIN_RESULTS_TEXT_CHARS = 2500
-
 MODEL_DEFAULT = "gpt-4o-mini"
+
+# Email styling colours (match your diagram intent)
+COLOR_HIGH_IMPACT = "#F59E0B"  # amber/gold
+COLOR_MATERIAL = "#3B82F6"     # blue
+COLOR_SILENCE = "#6B7280"      # grey
+COLOR_BG = "#0B1220"           # dark navy
+COLOR_PANEL = "#111B2E"        # panel
+COLOR_TEXT = "#E5E7EB"         # light text
 
 
 # ----------------------------
@@ -75,7 +87,7 @@ def cutoff_date(days_back: int) -> dt.date:
 # ----------------------------
 # Email
 # ----------------------------
-def send_email(subject: str, body: str):
+def send_email(subject: str, body_text: str, body_html: str):
     email_from = os.environ["EMAIL_FROM"]
     email_to = os.environ["EMAIL_TO"]
     app_password = os.environ["EMAIL_APP_PASSWORD"]
@@ -84,7 +96,12 @@ def send_email(subject: str, body: str):
     msg["From"] = email_from
     msg["To"] = email_to
     msg["Subject"] = subject
-    msg.set_content(body)
+
+    # Plain text fallback
+    msg.set_content(body_text)
+
+    # HTML version
+    msg.add_alternative(body_html, subtype="html")
 
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
@@ -279,7 +296,6 @@ def looks_like_asx_access_gate(text: str) -> bool:
 # ASX announcement fetching
 # ----------------------------
 def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: int = 2) -> List[Dict]:
-    # ASX "announcements" page (HTML table)
     url = (
         "https://www.asx.com.au/asx/v2/statistics/announcements.do"
         f"?asxCode={ticker}&by=asxCode&period=M6&timeframe=D"
@@ -291,7 +307,7 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: i
     rows = soup.select("table tr")
 
     cutoff = cutoff_date(days_back)
-    items = []
+    items: List[Dict] = []
 
     for row in rows:
         cols = [c.get_text(strip=True) for c in row.select("td")]
@@ -329,7 +345,7 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: i
             }
         )
 
-    # de-dupe
+    # de-dupe by URL
     seen = set()
     out = []
     for it in items:
@@ -342,7 +358,7 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: i
 
 
 def asx_pdf_url_from_item_url(url: str) -> Optional[str]:
-    # Most ASX announcements already use displayAnnouncement.do?display=pdf&idsId=...
+    # Many ASX announcements already use displayAnnouncement.do?display=pdf&idsId=...
     if "displayAnnouncement.do" in url:
         return url
     return None
@@ -407,6 +423,7 @@ def summarise_two_lines_llm(ticker: str, title: str, text: str, counters: Dict) 
     out = llm_chat(DEFAULT_2LINE_PROMPT, user, counters)
 
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
+        # fallback but still 2 lines
         return f"{ticker}: {title[:140]}\nSo what: price-sensitive headline; open link for details."
 
     lines = [ln.strip() for ln in out.splitlines() if ln.strip()]
@@ -421,7 +438,7 @@ def deep_acquisition_memo(ticker: str, title: str, text: str, counters: Dict) ->
     user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
     out = llm_chat(ACQUISITION_PROMPT, user, counters)
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return "Could not run LLM (limit/billing)."
+        return "LLM could not run (limit/billing)."
     return out
 
 
@@ -429,7 +446,7 @@ def deep_capital_memo(ticker: str, title: str, text: str, counters: Dict) -> str
     user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
     out = llm_chat(CAPITAL_OR_DEBT_RAISE_PROMPT, user, counters)
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return "Could not run LLM (limit/billing)."
+        return "LLM could not run (limit/billing)."
     return out
 
 
@@ -441,12 +458,24 @@ def deep_results_analysis(ticker: str, report_text: str, deck_text: str, counter
     )
     out = llm_chat(RESULTS_HYFY_PROMPT, user, counters)
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return "Could not run LLM (limit/billing)."
+        return "LLM could not run (limit/billing)."
+    return out
+
+
+def strawman_post(ticker: str, kind: str, analysis_text: str, counters: Dict) -> str:
+    user = (
+        f"Ticker: {ticker}\n"
+        f"Announcement type: {kind}\n\n"
+        f"Notes / analysis:\n{analysis_text}\n"
+    )
+    out = llm_chat(STRAWMAN_500W_PROMPT, user, counters)
+    if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
+        return "Could not generate Strawman draft (LLM limit/billing)."
     return out
 
 
 # ----------------------------
-# Google Drive upload (HY/FY only)
+# Google Drive upload
 # ----------------------------
 def drive_service():
     from google.oauth2.service_account import Credentials
@@ -463,19 +492,27 @@ def drive_service():
 
 
 def upload_to_drive(local_path: Path, folder_id: str, drive_filename: str) -> str:
+    """
+    Returns a VIEW LINK (not just file id).
+    Note: Drive permissions depend on your Drive folder settings.
+    """
     from googleapiclient.http import MediaFileUpload
 
     service = drive_service()
     file_metadata = {"name": drive_filename, "parents": [folder_id]}
     media = MediaFileUpload(str(local_path), resumable=False)
     created = service.files().create(body=file_metadata, media_body=media, fields="id").execute()
-    return created.get("id")
+    file_id = created.get("id") or ""
+    if not file_id:
+        return ""
+    return f"https://drive.google.com/file/d/{file_id}/view"
 
 
 # ----------------------------
 # Results helpers
 # ----------------------------
 def likely_results_bundle_items(items_for_ticker: List[Dict]) -> List[Dict]:
+    # only bundle items that look like results-related
     return [it for it in items_for_ticker if looks_like_results_title(it["title"])]
 
 
@@ -539,6 +576,87 @@ def fetch_announcement_text(
 
 
 # ----------------------------
+# Email formatting helpers
+# ----------------------------
+def _html_section(title: str, color: str, blocks: List[str]) -> str:
+    safe_title = html.escape(title)
+    if not blocks:
+        return ""
+    items_html = ""
+    for b in blocks:
+        # Convert plaintext blocks to HTML safely, preserving line breaks
+        items_html += f"<div style='margin:12px 0; padding:12px; background:{COLOR_PANEL}; border-radius:10px; white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:13px; color:{COLOR_TEXT};'>{html.escape(b)}</div>"
+    return f"""
+    <div style="margin:18px 0;">
+      <div style="padding:10px 12px; background:{color}; color:#0B1220; font-weight:800; border-radius:10px; letter-spacing:0.6px;">
+        {safe_title}
+      </div>
+      {items_html}
+    </div>
+    """
+
+
+def build_email(subject: str, high_impact: List[str], material: List[str], silence_line: str, counters: Dict) -> Tuple[str, str]:
+    # Plain text
+    lines: List[str] = []
+    lines.append(f"{BOB_NAME}")
+    lines.append("=" * len(BOB_NAME))
+    lines.append(f"Daily Announcements Digest — last {DAYS_BACK} days — {today_sgt_date().isoformat()} (SGT)")
+    lines.append(f"Run caps: MAX_PDFS={MAX_PDFS_PER_RUN}, MAX_LLM_CALLS={MAX_LLM_CALLS_PER_RUN}, MAX_PER_TICKER={MAX_ANNOUNCEMENTS_PER_TICKER}")
+    lines.append("")
+
+    if high_impact:
+        lines.append("HIGH IMPACT")
+        lines.append("-" * 60)
+        lines.extend(high_impact)
+        lines.append("")
+
+    if material:
+        lines.append("MATERIAL")
+        lines.append("-" * 60)
+        lines.extend(material)
+        lines.append("")
+
+    if not high_impact and not material:
+        lines.append(silence_line)
+
+    body_text = "\n".join(lines)
+
+    # HTML
+    header_html = f"""
+    <div style="padding:18px; background:{COLOR_BG}; color:{COLOR_TEXT}; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif;">
+      <div style="font-size:22px; font-weight:900; margin-bottom:6px;">{html.escape(BOB_NAME)}</div>
+      <div style="opacity:0.9; font-size:14px; margin-bottom:10px;">
+        Daily Announcements Digest — last {DAYS_BACK} days — {today_sgt_date().isoformat()} (SGT)
+      </div>
+      <div style="opacity:0.75; font-size:12px; margin-bottom:18px;">
+        Run caps: MAX_PDFS={MAX_PDFS_PER_RUN}, MAX_LLM_CALLS={MAX_LLM_CALLS_PER_RUN}, MAX_PER_TICKER={MAX_ANNOUNCEMENTS_PER_TICKER}
+      </div>
+    """
+
+    sections_html = ""
+    sections_html += _html_section("HIGH IMPACT", COLOR_HIGH_IMPACT, high_impact)
+    sections_html += _html_section("MATERIAL", COLOR_MATERIAL, material)
+
+    if not high_impact and not material:
+        sections_html += f"""
+        <div style="margin:18px 0;">
+          <div style="padding:10px 12px; background:{COLOR_SILENCE}; color:#0B1220; font-weight:800; border-radius:10px; letter-spacing:0.6px;">
+            SILENCE
+          </div>
+          <div style="margin-top:10px; padding:12px; background:{COLOR_PANEL}; border-radius:10px; color:{COLOR_TEXT};">
+            {html.escape(silence_line)}
+          </div>
+        </div>
+        """
+
+    footer_html = "</div>"
+
+    body_html = header_html + sections_html + footer_html
+    return body_text, body_html
+
+
+# ----------------------------
 # MAIN
 # ----------------------------
 def main():
@@ -586,7 +704,7 @@ def main():
 
                 bundle = likely_results_bundle_items(items)
                 downloaded_texts: List[Tuple[str, str]] = []
-                uploaded = 0
+                drive_links: List[str] = []
                 any_results_link = bundle[0]["url"] if bundle else items[0]["url"]
 
                 for b in bundle:
@@ -600,15 +718,17 @@ def main():
                     text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
                     downloaded_texts.append((title, text))
 
-                    # Upload only true PDFs (HY/FY) and only if Drive configured
+                    # Upload PDFs for HY/FY bundle items (Drive configured)
                     if got_pdf and drive_folder_id:
                         try:
                             drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
-                            upload_to_drive(pdf_path, drive_folder_id, drive_name)
-                            uploaded += 1
+                            link = upload_to_drive(pdf_path, drive_folder_id, drive_name)
+                            if link:
+                                drive_links.append(link)
                         except Exception as e:
                             log(f"Drive upload failed for {ticker}: {e}")
 
+                    # delete local pdf after processing
                     if pdf_path.exists():
                         try:
                             pdf_path.unlink()
@@ -625,17 +745,28 @@ def main():
                     or looks_like_asx_access_gate(deck_text)
                     or (len(report_text) < MIN_RESULTS_TEXT_CHARS and len(deck_text) < MIN_RESULTS_TEXT_CHARS)
                 ):
-                    high_impact_blocks.append(
+                    block = (
                         f"{ticker} — Results detected, but PDF could not be fetched automatically.\n"
                         f"Open manually: {any_results_link}\n"
                     )
+                    high_impact_blocks.append(block)
                     continue
 
                 analysis = deep_results_analysis(ticker, report_text, deck_text, counters)
+
+                # Strawman draft (<= ~500 words)
+                straw = strawman_post(ticker, "HY/FY Results", analysis, counters)
+
                 header = f"{ticker} — Results (HY/FY)"
-                if uploaded > 0:
-                    header += f" — PDFs saved to Drive: {uploaded}"
-                high_impact_blocks.append(f"{header}\n{analysis}\nOpen: {any_results_link}\n")
+                if drive_links:
+                    header += f" — Drive PDFs: {len(drive_links)}"
+
+                block = f"{header}\n\n{analysis}\n\nOpen: {any_results_link}\n"
+                if drive_links:
+                    block += "Drive links:\n" + "\n".join(drive_links) + "\n"
+
+                block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
+                high_impact_blocks.append(block)
                 continue
 
             # ----------------------------
@@ -655,62 +786,76 @@ def main():
 
                 text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
 
+                # If ASX gate page, do not hallucinate
+                if looks_like_asx_access_gate(text):
+                    # Still price sensitive title; but we don't want spam — keep it minimal
+                    material_blocks.append(
+                        f"{ticker}: {title[:140]}\nSo what: could not fetch PDF automatically. Open: {url}\n"
+                    )
+                    # delete local pdf if any
+                    if pdf_path.exists():
+                        try:
+                            pdf_path.unlink()
+                        except Exception:
+                            pass
+                    continue
+
+                cls = classify_announcement(title, text)
+
+                # Big announcements: upload PDF to Drive (if we got it) and include link
+                drive_links: List[str] = []
+                if got_pdf and drive_folder_id and cls in ("ACQUISITION", "CAPITAL_OR_DEBT_RAISE"):
+                    try:
+                        drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
+                        link = upload_to_drive(pdf_path, drive_folder_id, drive_name)
+                        if link:
+                            drive_links.append(link)
+                    except Exception as e:
+                        log(f"Drive upload failed for {ticker}: {e}")
+
+                # delete local pdf after processing
                 if pdf_path.exists():
                     try:
                         pdf_path.unlink()
                     except Exception:
                         pass
 
-                # If we got ASX gate page (HTML), do not hallucinate
-                if looks_like_asx_access_gate(text):
-                    material_blocks.append(
-                        f"{ticker}: {title[:140]}\nSo what: could not fetch PDF automatically. Open: {url}\n"
-                    )
-                    continue
-
-                cls = classify_announcement(title, text)
-
                 if cls == "ACQUISITION":
                     memo = deep_acquisition_memo(ticker, title, text, counters)
-                    high_impact_blocks.append(f"{ticker} — Acquisition\n{memo}\nOpen: {url}\n")
+                    straw = strawman_post(ticker, "Acquisition", memo, counters)
+                    block = f"{ticker} — Acquisition\n{memo}\nOpen: {url}\n"
+                    if drive_links:
+                        block += "Drive link:\n" + "\n".join(drive_links) + "\n"
+                    block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
+                    high_impact_blocks.append(block)
+
                 elif cls == "CAPITAL_OR_DEBT_RAISE":
                     memo = deep_capital_memo(ticker, title, text, counters)
-                    high_impact_blocks.append(f"{ticker} — Capital/Debt Raise\n{memo}\nOpen: {url}\n")
+                    straw = strawman_post(ticker, "Capital/Debt Raise", memo, counters)
+                    block = f"{ticker} — Capital/Debt Raise\n{memo}\nOpen: {url}\n"
+                    if drive_links:
+                        block += "Drive link:\n" + "\n".join(drive_links) + "\n"
+                    block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
+                    high_impact_blocks.append(block)
+
                 elif cls == "RESULTS_HY_FY":
-                    # Results items are handled by bundle above; if one slips through, treat as material link
+                    # Results handled by bundle above; if one slips through, keep it clean
                     material_blocks.append(
                         f"{ticker}: {title[:140]}\nSo what: results item detected. Open: {url}\n"
                     )
+
                 else:
                     summary = summarise_two_lines_llm(ticker, title, text, counters)
                     if summary:
                         material_blocks.append(f"{summary}\nOpen: {url}\n")
 
     # ----------------------------
-    # Build clean email
+    # Build email (clean + colour-coded HTML)
     # ----------------------------
-    lines: List[str] = []
-    lines.append(f"Daily Announcements Digest – last {DAYS_BACK} days – {today_sgt_date().isoformat()} (SGT)")
-    lines.append(f"{BOB_NAME}")
-    lines.append("=" * len(BOB_NAME))
-    lines.append("")
+    silence_line = "No price-sensitive announcements in the last 2 days."
+    body_text, body_html = build_email(subject, high_impact_blocks, material_blocks, silence_line, counters)
 
-    if high_impact_blocks:
-        lines.append("HIGH IMPACT")
-        lines.append("-" * 60)
-        lines.extend(high_impact_blocks)
-        lines.append("")
-
-    if material_blocks:
-        lines.append("MATERIAL")
-        lines.append("-" * 60)
-        lines.extend(material_blocks)
-        lines.append("")
-
-    if not high_impact_blocks and not material_blocks:
-        lines.append("No price-sensitive announcements in the last 2 days.")
-
-    send_email(subject, "\n".join(lines))
+    send_email(subject, body_text, body_html)
     log("Email sent.")
 
 

@@ -196,23 +196,33 @@ def is_price_sensitive_title(title: str) -> bool:
     return any(k in t for k in keywords)
 
 
-def looks_like_results_title(title: str) -> bool:
-    t = title.lower()
-    return any(
-        k in t
-        for k in [
+    def looks_like_results_title(title: str) -> bool:
+        t = title.lower()
+    
+        hard_yes = [
             "appendix 4e",
             "appendix 4d",
-            "results",
-            "half year",
-            "half-year",
-            "full year",
+            "half year results",
+            "half-year results",
+            "interim financial report",
             "annual report",
-            "investor presentation",
+            "full year results",
+            "full-year results",
+            "financial report",
+            "results announcement",
             "results presentation",
-            "presentation",
         ]
-    )
+    
+        hard_no = [
+            "investor call transcript",
+            "transcript",
+            "webcast",
+            "conference call",
+        ]
+    
+        if any(x in t for x in hard_no):
+            return False
+        return any(x in t for x in hard_yes)
 
 
 # ----------------------------
@@ -251,7 +261,7 @@ def llm_chat(system_prompt: str, user_content: str, counters: Dict) -> str:
 # PDF / HTML helpers
 # ----------------------------
 def download_pdf_requests(session: requests.Session, url: str, out_path: Path) -> bool:
-    r = session.get(url, timeout=60, allow_redirects=True)
+    r = session.get(url, timeout=20, allow_redirects=True)
     r.raise_for_status()
     if r.content[:4] != b"%PDF":
         return False
@@ -323,16 +333,32 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: i
         if href.startswith("/"):
             href = "https://www.asx.com.au" + href
 
-        date_text = cols[0]
-        item_date = None
-        for fmt in ("%d/%m/%Y", "%d %b %Y"):
+        date_text = cols[0]  # usually date
+        time_text = cols[1] if len(cols) > 1 else ""  # often time is in next col/line
+        
+        # Build a datetime string like "26/02/2026 6:09 pm" if we have a time
+        dt_str = (date_text + " " + time_text).strip()
+        
+        item_dt = None
+        
+        # Most common formats observed on ASX
+        for fmt in ("%d/%m/%Y %I:%M %p", "%d/%m/%Y %I:%M %p", "%d/%m/%Y", "%d %b %Y"):
             try:
-                item_date = dt.datetime.strptime(date_text, fmt).date()
+                parsed = dt.datetime.strptime(dt_str, fmt)
+                # If no time in format, assume end-of-day so we don't accidentally include old items
+                if fmt in ("%d/%m/%Y", "%d %b %Y"):
+                    parsed = dt.datetime.combine(parsed.date(), dt.time(23, 59))
+                item_dt = parsed
                 break
             except Exception:
-                pass
-
-        if item_date and item_date < cutoff:
+                continue
+        
+        # Fail CLOSED: if we can't parse a date, skip it.
+        if not item_dt:
+            continue
+        
+        cutoff_dt = now_sgt() - dt.timedelta(days=days_back)
+        if item_dt < cutoff_dt:
             continue
 
         items.append(

@@ -35,6 +35,7 @@ from prompts import (
     RESULTS_HYFY_PROMPT,
 )
 
+BOB_NAME = "Bob the Bot"
 # ----------------------------
 # Settings / Guardrails
 # ----------------------------
@@ -541,7 +542,7 @@ def fetch_announcement_text(
 # MAIN
 # ----------------------------
 def main():
-    subject = f"Daily Announcements Digest – {today_sgt_date().isoformat()} (SGT)"
+    subject = f"{BOB_NAME} — Daily Announcements Digest — {today_sgt_date().isoformat()} (SGT)"
 
     session = http_session()
     asx_tickers, _lse_tickers = read_tickers()
@@ -690,6 +691,8 @@ def main():
     # ----------------------------
     lines: List[str] = []
     lines.append(f"Daily Announcements Digest – last {DAYS_BACK} days – {today_sgt_date().isoformat()} (SGT)")
+    lines.append(f"{BOB_NAME}")
+    lines.append("=" * len(BOB_NAME))
     lines.append("")
 
     if high_impact_blocks:

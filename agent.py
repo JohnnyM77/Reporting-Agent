@@ -734,6 +734,7 @@ def main():
         high_impact_blocks: List[str] = []
         material_blocks: List[str] = []
         fyi_blocks: List[str] = []
+        brother_blocks: List[str] = []
 
     processed_results = set()
 
@@ -953,6 +954,19 @@ def main():
     body_text, body_html = build_email(subject, high_impact_blocks, material_blocks, silence_line, counters)
 
     send_email(subject, body_text, body_html)
+    brother_email = os.environ.get("BROTHER_EMAIL", "").strip()
+    if brother_email and brother_blocks:
+        bro_lines: List[str] = []
+        bro_lines.append(f"{BOB_NAME} — AR9 Digest — {today_sgt_date().isoformat()} (SGT)")
+        bro_lines.append(f"Last {DAYS_BACK} days")
+        bro_lines.append("")
+        bro_lines.extend(brother_blocks)
+    
+        send_email(
+            subject=f"{BOB_NAME} — AR9 Digest — {today_sgt_date().isoformat()} (SGT)",
+            body="\n".join(bro_lines),
+            to_addr=brother_email,
+        )
     log("Email sent.")
 
 

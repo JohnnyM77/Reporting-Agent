@@ -1,4 +1,5 @@
 Bob the Bot
+
 Portfolio Announcements Intelligence Agent
 
 Bob the Bot is an automated AI agent that monitors ASX announcements for companies in my investment Portfolio, analyses important updates, and delivers a daily intelligence briefing.

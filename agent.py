@@ -300,7 +300,21 @@ def looks_like_asx_access_gate(text: str) -> bool:
     return ("access to this site" in t and "agree and proceed" in t) or (
         "general conditions" in t and "agree and proceed" in t
     )
-
+def is_meaningful_text(text: str, min_chars: int = 1200) -> bool:
+    """
+    Minimum viable text gate.
+    Prevents LLM calls on:
+    - empty / tiny extracts
+    - ASX 'Access to this site' gate page
+    """
+    if not text:
+        return False
+    t = text.strip()
+    if len(t) < min_chars:
+        return False
+    if looks_like_asx_access_gate(t):
+        return False
+    return True
 
 # ----------------------------
 # ASX announcement fetching
@@ -446,6 +460,9 @@ def classify_announcement(title: str, text: str) -> str:
 # ----------------------------
 def summarise_two_lines_llm(ticker: str, title: str, text: str, counters: Dict) -> Optional[str]:
     user = f"Ticker: {ticker}\nTitle: {title}\n\nText:\n{text}"
+    # If there's not enough real content, don't waste tokens or hallucinate
+    if not is_meaningful_text(text, min_chars=600):
+        return None
     out = llm_chat(DEFAULT_2LINE_PROMPT, user, counters)
 
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
@@ -461,6 +478,8 @@ def summarise_two_lines_llm(ticker: str, title: str, text: str, counters: Dict) 
 
 
 def deep_acquisition_memo(ticker: str, title: str, text: str, counters: Dict) -> str:
+    if not is_meaningful_text(text, min_chars=900):
+        return "Could not extract meaningful announcement text automatically. Open the link and review manually."
     user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
     out = llm_chat(ACQUISITION_PROMPT, user, counters)
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
@@ -778,6 +797,12 @@ def main():
                     high_impact_blocks.append(block)
                     continue
 
+                if not (is_meaningful_text(report_text, min_chars=2500) or is_meaningful_text(deck_text, min_chars=2500)):
+                    high_impact_blocks.append(
+                        f"{ticker} — Results detected, but Bob couldn't extract meaningful report/deck text automatically.\n"
+                        f"Open manually: {any_results_link}\n"
+                    )
+                    continue
                 analysis = deep_results_analysis(ticker, report_text, deck_text, counters)
 
                 # Strawman draft (<= ~500 words)

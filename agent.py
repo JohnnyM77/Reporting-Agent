@@ -87,21 +87,16 @@ def cutoff_date(days_back: int) -> dt.date:
 # ----------------------------
 # Email
 # ----------------------------
-def send_email(subject: str, body_text: str, body_html: str):
+def send_email(subject: str, body: str, to_addr: Optional[str] = None):
     email_from = os.environ["EMAIL_FROM"]
-    email_to = os.environ["EMAIL_TO"]
+    email_to = to_addr or os.environ["EMAIL_TO"]
     app_password = os.environ["EMAIL_APP_PASSWORD"]
 
     msg = EmailMessage()
     msg["From"] = email_from
     msg["To"] = email_to
     msg["Subject"] = subject
-
-    # Plain text fallback
-    msg.set_content(body_text)
-
-    # HTML version
-    msg.add_alternative(body_html, subtype="html")
+    msg.set_content(body)
 
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:

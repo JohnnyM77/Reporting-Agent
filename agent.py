@@ -736,8 +736,9 @@ def main():
             log(f"Fetch failed for {t}: {e}")
             by_ticker[t] = []
 
-    high_impact_blocks: List[str] = []
-    material_blocks: List[str] = []
+        high_impact_blocks: List[str] = []
+        material_blocks: List[str] = []
+        fyi_blocks: List[str] = []
 
     processed_results = set()
 

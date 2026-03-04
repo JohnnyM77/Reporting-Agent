@@ -1,13 +1,14 @@
 # agent.py
 #
 # Investor-grade ASX announcements agent ("Bob the Bot"):
-# - Ignores non-price-sensitive announcements completely (no mention in email)
+# - Includes ALL announcements in an FYI section (headline-only, 2 lines + link)
 # - Uses Requests first for PDFs; if ASX consent gate blocks, falls back to Playwright
 # - Runs deep analysis only for HY/FY results, acquisitions, and capital/debt raises
-# - Produces clean email: HIGH IMPACT + MATERIAL (only price-sensitive) or SILENCE
+# - Produces clean email: HIGH IMPACT + MATERIAL + FYI or SILENCE
 # - Uploads PDFs to Google Drive for big announcements and includes Drive view links
 # - Generates a separate Strawman-ready post (<= ~500 words) for big announcements
 # - Never hallucinates off the ASX "Access to this site" legal page
+# - Optionally emails AR9 items to your brother (BROTHER_EMAIL secret)
 
 import os
 import re
@@ -16,7 +17,7 @@ import ssl
 import smtplib
 import tempfile
 import datetime as dt
-import html
+import html as htmlmod
 from pathlib import Path
 from email.message import EmailMessage
 from typing import Dict, List, Tuple, Optional
@@ -27,7 +28,6 @@ import yaml
 from pypdf import PdfReader
 from openai import OpenAI
 
-# Playwright fallback for ASX consent gate
 import asyncio
 from playwright_fetch import fetch_pdf_with_playwright  # must exist in repo root
 
@@ -36,7 +36,7 @@ from prompts import (
     ACQUISITION_PROMPT,
     CAPITAL_OR_DEBT_RAISE_PROMPT,
     RESULTS_HYFY_PROMPT,
-    STRAWMAN_500W_PROMPT,  # ensure this exists in prompts.py
+    STRAWMAN_500W_PROMPT,
 )
 
 BOB_NAME = "Bob the Bot"
@@ -53,9 +53,14 @@ MAX_LLM_CALLS_PER_RUN = 15
 MIN_RESULTS_TEXT_CHARS = 2500
 MODEL_DEFAULT = "gpt-4o-mini"
 
+# Hard time caps (keep runs reasonable)
+REQUESTS_PDF_TIMEOUT_SECS = 20
+HTML_TIMEOUT_SECS = 30
+
 # Email styling colours (match your diagram intent)
 COLOR_HIGH_IMPACT = "#F59E0B"  # amber/gold
 COLOR_MATERIAL = "#3B82F6"     # blue
+COLOR_FYI = "#10B981"          # green
 COLOR_SILENCE = "#6B7280"      # grey
 COLOR_BG = "#0B1220"           # dark navy
 COLOR_PANEL = "#111B2E"        # panel
@@ -80,14 +85,14 @@ def today_sgt_date() -> dt.date:
     return now_sgt().date()
 
 
-def cutoff_date(days_back: int) -> dt.date:
-    return today_sgt_date() - dt.timedelta(days=days_back)
+def cutoff_dt_sgt(days_back: int) -> dt.datetime:
+    return now_sgt() - dt.timedelta(days=days_back)
 
 
 # ----------------------------
 # Email
 # ----------------------------
-def send_email(subject: str, body: str, to_addr: Optional[str] = None):
+def send_email(subject: str, body_text: str, body_html: Optional[str] = None, to_addr: Optional[str] = None):
     email_from = os.environ["EMAIL_FROM"]
     email_to = to_addr or os.environ["EMAIL_TO"]
     app_password = os.environ["EMAIL_APP_PASSWORD"]
@@ -96,7 +101,10 @@ def send_email(subject: str, body: str, to_addr: Optional[str] = None):
     msg["From"] = email_from
     msg["To"] = email_to
     msg["Subject"] = subject
-    msg.set_content(body)
+    msg.set_content(body_text)
+
+    if body_html:
+        msg.add_alternative(body_html, subtype="html")
 
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
@@ -133,7 +141,7 @@ def http_session() -> requests.Session:
 
 
 # ----------------------------
-# Headline filters
+# Headline / classification helpers
 # ----------------------------
 def is_price_sensitive_title(title: str) -> bool:
     t = title.lower()
@@ -146,6 +154,8 @@ def is_price_sensitive_title(title: str) -> bool:
         "half-year",
         "full year",
         "annual report",
+        "interim financial report",
+        "financial report",
         "trading update",
         "guidance",
         "earnings",
@@ -187,37 +197,74 @@ def is_price_sensitive_title(title: str) -> bool:
         "strategic",
         "halt",
         "suspension",
+        "ceo",
+        "cfo",
+        "resignation",
+        "retirement",
     ]
     return any(k in t for k in keywords)
 
 
-    def looks_like_results_title(title: str) -> bool:
-        t = title.lower()
-    
-        hard_yes = [
-            "appendix 4e",
-            "appendix 4d",
-            "half year results",
-            "half-year results",
-            "interim financial report",
-            "annual report",
-            "full year results",
-            "full-year results",
-            "financial report",
-            "results announcement",
-            "results presentation",
+def looks_like_results_title(title: str) -> bool:
+    t = title.lower()
+
+    hard_yes = [
+        "appendix 4e",
+        "appendix 4d",
+        "half year results",
+        "half-year results",
+        "interim financial report",
+        "annual report",
+        "full year results",
+        "full-year results",
+        "financial report",
+        "results announcement",
+        "results presentation",
+    ]
+
+    hard_no = [
+        "investor call transcript",
+        "transcript",
+        "webcast",
+        "conference call",
+    ]
+
+    if any(x in t for x in hard_no):
+        return False
+    return any(x in t for x in hard_yes)
+
+
+def classify_from_title_only(title: str) -> str:
+    t = title.lower()
+
+    if looks_like_results_title(title):
+        return "RESULTS_HY_FY"
+
+    if any(k in t for k in ["acquisition", "acquire", "merger", "scheme", "takeover", "transaction"]):
+        return "ACQUISITION"
+
+    if any(
+        k in t
+        for k in [
+            "placement",
+            "spp",
+            "entitlement",
+            "rights issue",
+            "capital raising",
+            "convertible",
+            "notes",
+            "debt facility",
+            "refinance",
+            "term loan",
+            "bond",
         ]
-    
-        hard_no = [
-            "investor call transcript",
-            "transcript",
-            "webcast",
-            "conference call",
-        ]
-    
-        if any(x in t for x in hard_no):
-            return False
-        return any(x in t for x in hard_yes)
+    ):
+        return "CAPITAL_OR_DEBT_RAISE"
+
+    if any(k in t for k in ["contract", "award", "termination", "trading update", "guidance"]):
+        return "CONTRACT_MATERIAL"
+
+    return "OTHER"
 
 
 # ----------------------------
@@ -256,7 +303,7 @@ def llm_chat(system_prompt: str, user_content: str, counters: Dict) -> str:
 # PDF / HTML helpers
 # ----------------------------
 def download_pdf_requests(session: requests.Session, url: str, out_path: Path) -> bool:
-    r = session.get(url, timeout=20, allow_redirects=True)
+    r = session.get(url, timeout=REQUESTS_PDF_TIMEOUT_SECS, allow_redirects=True)
     r.raise_for_status()
     if r.content[:4] != b"%PDF":
         return False
@@ -278,7 +325,7 @@ def extract_pdf_text(pdf_path: Path) -> str:
 
 
 def fetch_html_text(session: requests.Session, url: str) -> str:
-    r = session.get(url, timeout=60, allow_redirects=True)
+    r = session.get(url, timeout=HTML_TIMEOUT_SECS, allow_redirects=True)
     r.raise_for_status()
 
     soup = BeautifulSoup(r.text, "html.parser")
@@ -295,13 +342,9 @@ def looks_like_asx_access_gate(text: str) -> bool:
     return ("access to this site" in t and "agree and proceed" in t) or (
         "general conditions" in t and "agree and proceed" in t
     )
+
+
 def is_meaningful_text(text: str, min_chars: int = 1200) -> bool:
-    """
-    Minimum viable text gate.
-    Prevents LLM calls on:
-    - empty / tiny extracts
-    - ASX 'Access to this site' gate page
-    """
     if not text:
         return False
     t = text.strip()
@@ -310,6 +353,7 @@ def is_meaningful_text(text: str, min_chars: int = 1200) -> bool:
     if looks_like_asx_access_gate(t):
         return False
     return True
+
 
 # ----------------------------
 # ASX announcement fetching
@@ -325,11 +369,11 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: i
     soup = BeautifulSoup(r.text, "html.parser")
     rows = soup.select("table tr")
 
-    cutoff = cutoff_date(days_back)
+    cutoff_dt = cutoff_dt_sgt(days_back)
     items: List[Dict] = []
 
     for row in rows:
-        cols = [c.get_text(strip=True) for c in row.select("td")]
+        cols = [c.get_text(" ", strip=True) for c in row.select("td")]
         if len(cols) < 2:
             continue
 
@@ -337,36 +381,38 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: i
         if not link or not link.get("href"):
             continue
 
-        title = link.get_text(strip=True)
+        title = link.get_text(" ", strip=True)
         href = link["href"]
         if href.startswith("/"):
             href = "https://www.asx.com.au" + href
 
-        date_text = cols[0]  # usually date
-        time_text = cols[1] if len(cols) > 1 else ""  # often time is in next col/line
-        
-        # Build a datetime string like "26/02/2026 6:09 pm" if we have a time
-        dt_str = (date_text + " " + time_text).strip()
-        
-        item_dt = None
-        
-        # Most common formats observed on ASX
-        for fmt in ("%d/%m/%Y %I:%M %p", "%d/%m/%Y %I:%M %p", "%d/%m/%Y", "%d %b %Y"):
+        # Typical ASX: col0 = date, col1 = time (sometimes blank / not parseable)
+        date_text = cols[0]
+        time_text = cols[1] if len(cols) > 1 else ""
+
+        # Parse datetime in SGT-ish format shown on ASX pages (we treat as local SGT for cutoff)
+        dt_str = f"{date_text} {time_text}".strip()
+        item_dt: Optional[dt.datetime] = None
+
+        # Common patterns like: "26/02/2026 6:09 pm"
+        for fmt in ("%d/%m/%Y %I:%M %p", "%d/%m/%Y %I:%M%p", "%d/%m/%Y"):
             try:
                 parsed = dt.datetime.strptime(dt_str, fmt)
-                # If no time in format, assume end-of-day so we don't accidentally include old items
-                if fmt in ("%d/%m/%Y", "%d %b %Y"):
+                if fmt == "%d/%m/%Y":
                     parsed = dt.datetime.combine(parsed.date(), dt.time(23, 59))
                 item_dt = parsed
                 break
             except Exception:
                 continue
-        
-        # Fail CLOSED: if we can't parse a date, skip it.
+
+        # If time parsing fails, try date-only
         if not item_dt:
-            continue
-        
-        cutoff_dt = now_sgt() - dt.timedelta(days=days_back)
+            try:
+                parsed_date = dt.datetime.strptime(date_text, "%d/%m/%Y").date()
+                item_dt = dt.datetime.combine(parsed_date, dt.time(23, 59))
+            except Exception:
+                continue
+
         if item_dt < cutoff_dt:
             continue
 
@@ -375,6 +421,7 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: i
                 "exchange": "ASX",
                 "ticker": ticker,
                 "date": date_text,
+                "time": time_text,
                 "title": title,
                 "url": href,
             }
@@ -382,94 +429,59 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: i
 
     # de-dupe by URL
     seen = set()
-    out = []
+    out: List[Dict] = []
     for it in items:
         if it["url"] in seen:
             continue
         seen.add(it["url"])
         out.append(it)
 
-    return out
+    return out[:MAX_ANNOUNCEMENTS_PER_TICKER]
 
 
 def asx_pdf_url_from_item_url(url: str) -> Optional[str]:
-    # Many ASX announcements already use displayAnnouncement.do?display=pdf&idsId=...
     if "displayAnnouncement.do" in url:
         return url
     return None
 
 
 # ----------------------------
-# Classification
+# Classification (title + text)
 # ----------------------------
 def classify_announcement(title: str, text: str) -> str:
+    # Prefer title signals; text is unreliable if we got HTML or partial
+    cls = classify_from_title_only(title)
+    if cls != "OTHER":
+        return cls
+
     t = (title + "\n" + (text or "")).lower()
-
-    if any(
-        k in t
-        for k in [
-            "appendix 4e",
-            "appendix 4d",
-            "half year",
-            "half-year",
-            "full year",
-            "annual report",
-            "results",
-            "investor presentation",
-            "results presentation",
-        ]
-    ):
-        return "RESULTS_HY_FY"
-
     if any(k in t for k in ["acquisition", "acquire", "merger", "scheme", "takeover", "transaction"]):
         return "ACQUISITION"
-
-    if any(
-        k in t
-        for k in [
-            "placement",
-            "spp",
-            "entitlement",
-            "rights issue",
-            "capital raising",
-            "offer",
-            "issuance",
-            "convertible",
-            "notes",
-            "debt facility",
-            "refinance",
-            "term loan",
-            "bond",
-        ]
-    ):
+    if any(k in t for k in ["placement", "capital raising", "debt facility", "refinance", "bond", "notes"]):
         return "CAPITAL_OR_DEBT_RAISE"
-
-    if any(k in t for k in ["contract", "award", "termination", "order", "customer", "renewal"]):
+    if any(k in t for k in ["contract", "award", "termination", "guidance", "trading update"]):
         return "CONTRACT_MATERIAL"
-
     return "OTHER"
 
 
 # ----------------------------
-# LLM wrappers (clean outputs)
+# Summaries / Deep analysis wrappers
 # ----------------------------
 def summarise_headline_two_lines(ticker: str, title: str) -> str:
-    """
-    No LLM, no PDF. Fast default for non-material announcements.
-    """
-    line1 = f"{ticker}: {title[:140]}"
-    line2 = "So what: FYI only — open link if you want details."
+    line1 = f"{ticker}: {title[:160]}"
+    line2 = "So what: FYI — open link if you want the details."
     return line1 + "\n" + line2
+
+
 def summarise_two_lines_llm(ticker: str, title: str, text: str, counters: Dict) -> Optional[str]:
-    user = f"Ticker: {ticker}\nTitle: {title}\n\nText:\n{text}"
-    # If there's not enough real content, don't waste tokens or hallucinate
     if not is_meaningful_text(text, min_chars=600):
         return None
+
+    user = f"Ticker: {ticker}\nTitle: {title}\n\nText:\n{text}"
     out = llm_chat(DEFAULT_2LINE_PROMPT, user, counters)
 
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        # fallback but still 2 lines
-        return f"{ticker}: {title[:140]}\nSo what: price-sensitive headline; open link for details."
+        return f"{ticker}: {title[:160]}\nSo what: price-sensitive headline; open link for details."
 
     lines = [ln.strip() for ln in out.splitlines() if ln.strip()]
     if len(lines) >= 2:
@@ -490,6 +502,8 @@ def deep_acquisition_memo(ticker: str, title: str, text: str, counters: Dict) ->
 
 
 def deep_capital_memo(ticker: str, title: str, text: str, counters: Dict) -> str:
+    if not is_meaningful_text(text, min_chars=900):
+        return "Could not extract meaningful announcement text automatically. Open the link and review manually."
     user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
     out = llm_chat(CAPITAL_OR_DEBT_RAISE_PROMPT, user, counters)
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
@@ -539,10 +553,6 @@ def drive_service():
 
 
 def upload_to_drive(local_path: Path, folder_id: str, drive_filename: str) -> str:
-    """
-    Returns a VIEW LINK (not just file id).
-    Note: Drive permissions depend on your Drive folder settings.
-    """
     from googleapiclient.http import MediaFileUpload
 
     service = drive_service()
@@ -559,7 +569,6 @@ def upload_to_drive(local_path: Path, folder_id: str, drive_filename: str) -> st
 # Results helpers
 # ----------------------------
 def likely_results_bundle_items(items_for_ticker: List[Dict]) -> List[Dict]:
-    # only bundle items that look like results-related
     return [it for it in items_for_ticker if looks_like_results_title(it["title"])]
 
 
@@ -579,7 +588,7 @@ def pick_report_and_deck_text(downloaded_texts: List[Tuple[str, str]]) -> Tuple[
 
 
 # ----------------------------
-# Core fetch: get PDF text with requests -> playwright -> html fallback
+# Core fetch: requests -> playwright -> html fallback
 # ----------------------------
 def fetch_announcement_text(
     session: requests.Session,
@@ -588,20 +597,17 @@ def fetch_announcement_text(
     pdf_path: Path,
     counters: Dict,
 ) -> Tuple[str, bool]:
-    """
-    Returns: (text, got_pdf)
-    """
     got_pdf = False
     text = ""
 
     if pdf_url and counters["pdfs_downloaded"] < counters["MAX_PDFS_PER_RUN"]:
-        # 1) try requests
+        # 1) requests
         try:
             got_pdf = download_pdf_requests(session, pdf_url, pdf_path)
         except Exception:
             got_pdf = False
 
-        # 2) try playwright if blocked / not PDF
+        # 2) playwright fallback
         if not got_pdf:
             try:
                 got_pdf = asyncio.run(fetch_pdf_with_playwright(pdf_url, pdf_path))
@@ -614,7 +620,7 @@ def fetch_announcement_text(
         text = extract_pdf_text(pdf_path) or ""
         return text, True
 
-    # 3) HTML fallback
+    # 3) HTML fallback (safe, but often useless)
     try:
         html_text = fetch_html_text(session, url)
         return html_text, False
@@ -625,25 +631,38 @@ def fetch_announcement_text(
 # ----------------------------
 # Email formatting helpers
 # ----------------------------
+def _html_block(b: str) -> str:
+    return (
+        "<div style='margin:12px 0; padding:12px; background:"
+        + COLOR_PANEL
+        + "; border-radius:10px; white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:13px; color:"
+        + COLOR_TEXT
+        + ";'>"
+        + htmlmod.escape(b)
+        + "</div>"
+    )
+
+
 def _html_section(title: str, color: str, blocks: List[str]) -> str:
-    safe_title = html.escape(title)
     if not blocks:
         return ""
-    items_html = ""
-    for b in blocks:
-        # Convert plaintext blocks to HTML safely, preserving line breaks
-        items_html += f"<div style='margin:12px 0; padding:12px; background:{COLOR_PANEL}; border-radius:10px; white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:13px; color:{COLOR_TEXT};'>{html.escape(b)}</div>"
+    items_html = "".join(_html_block(b) for b in blocks)
     return f"""
     <div style="margin:18px 0;">
       <div style="padding:10px 12px; background:{color}; color:#0B1220; font-weight:800; border-radius:10px; letter-spacing:0.6px;">
-        {safe_title}
+        {htmlmod.escape(title)}
       </div>
       {items_html}
     </div>
     """
 
 
-def build_email(subject: str, high_impact: List[str], material: List[str], silence_line: str, counters: Dict) -> Tuple[str, str]:
+def build_email(
+    high_impact: List[str],
+    material: List[str],
+    fyi: List[str],
+    silence_line: str,
+) -> Tuple[str, str]:
     # Plain text
     lines: List[str] = []
     lines.append(f"{BOB_NAME}")
@@ -664,7 +683,13 @@ def build_email(subject: str, high_impact: List[str], material: List[str], silen
         lines.extend(material)
         lines.append("")
 
-    if not high_impact and not material:
+    if fyi:
+        lines.append("FYI (ALL ANNOUNCEMENTS)")
+        lines.append("-" * 60)
+        lines.extend(fyi)
+        lines.append("")
+
+    if not high_impact and not material and not fyi:
         lines.append(silence_line)
 
     body_text = "\n".join(lines)
@@ -672,7 +697,7 @@ def build_email(subject: str, high_impact: List[str], material: List[str], silen
     # HTML
     header_html = f"""
     <div style="padding:18px; background:{COLOR_BG}; color:{COLOR_TEXT}; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif;">
-      <div style="font-size:22px; font-weight:900; margin-bottom:6px;">{html.escape(BOB_NAME)}</div>
+      <div style="font-size:22px; font-weight:900; margin-bottom:6px;">{htmlmod.escape(BOB_NAME)}</div>
       <div style="opacity:0.9; font-size:14px; margin-bottom:10px;">
         Daily Announcements Digest — last {DAYS_BACK} days — {today_sgt_date().isoformat()} (SGT)
       </div>
@@ -684,21 +709,21 @@ def build_email(subject: str, high_impact: List[str], material: List[str], silen
     sections_html = ""
     sections_html += _html_section("HIGH IMPACT", COLOR_HIGH_IMPACT, high_impact)
     sections_html += _html_section("MATERIAL", COLOR_MATERIAL, material)
+    sections_html += _html_section("FYI (ALL ANNOUNCEMENTS)", COLOR_FYI, fyi)
 
-    if not high_impact and not material:
+    if not high_impact and not material and not fyi:
         sections_html += f"""
         <div style="margin:18px 0;">
           <div style="padding:10px 12px; background:{COLOR_SILENCE}; color:#0B1220; font-weight:800; border-radius:10px; letter-spacing:0.6px;">
             SILENCE
           </div>
           <div style="margin-top:10px; padding:12px; background:{COLOR_PANEL}; border-radius:10px; color:{COLOR_TEXT};">
-            {html.escape(silence_line)}
+            {htmlmod.escape(silence_line)}
           </div>
         </div>
         """
 
     footer_html = "</div>"
-
     body_html = header_html + sections_html + footer_html
     return body_text, body_html
 
@@ -721,20 +746,20 @@ def main():
         "pdfs_downloaded": 0,
     }
 
+    # Bucket outputs
+    high_impact_blocks: List[str] = []
+    material_blocks: List[str] = []
+    fyi_blocks: List[str] = []
+    brother_blocks: List[str] = []
+
     # Fetch announcements by ticker
     by_ticker: Dict[str, List[Dict]] = {}
     for t in asx_tickers:
         try:
-            items = fetch_asx_announcements(session, t, days_back=DAYS_BACK)
-            by_ticker[t] = items[:MAX_ANNOUNCEMENTS_PER_TICKER]
+            by_ticker[t] = fetch_asx_announcements(session, t, days_back=DAYS_BACK)
         except Exception as e:
             log(f"Fetch failed for {t}: {e}")
             by_ticker[t] = []
-
-        high_impact_blocks: List[str] = []
-        material_blocks: List[str] = []
-        fyi_blocks: List[str] = []
-        brother_blocks: List[str] = []
 
     processed_results = set()
 
@@ -745,8 +770,17 @@ def main():
             if not items:
                 continue
 
+            # Always add FYI entries (all announcements) – quick, headline-only + link
+            for it in items:
+                title = it["title"]
+                url = it["url"]
+                fyi_entry = f"{summarise_headline_two_lines(ticker, title)}\nOpen: {url}\n"
+                fyi_blocks.append(fyi_entry)
+                if ticker == "AR9":
+                    brother_blocks.append(fyi_entry)
+
             # ----------------------------
-            # RESULTS (bundle per ticker)
+            # RESULTS bundle (per ticker)
             # ----------------------------
             if any(looks_like_results_title(i["title"]) for i in items) and ticker not in processed_results:
                 processed_results.add(ticker)
@@ -767,7 +801,7 @@ def main():
                     text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
                     downloaded_texts.append((title, text))
 
-                    # Upload PDFs for HY/FY bundle items (Drive configured)
+                    # Upload PDFs for results items (Drive configured)
                     if got_pdf and drive_folder_id:
                         try:
                             drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
@@ -788,28 +822,20 @@ def main():
                 report_text = (report_text or "")[:120_000]
                 deck_text = (deck_text or "")[:120_000]
 
-                # If we only captured ASX legal gate / junk text, do NOT deep analyse
-                if (
-                    looks_like_asx_access_gate(report_text)
-                    or looks_like_asx_access_gate(deck_text)
-                    or (len(report_text) < MIN_RESULTS_TEXT_CHARS and len(deck_text) < MIN_RESULTS_TEXT_CHARS)
-                ):
+                # Strict gate: only deep analyse if we have real content
+                if not (is_meaningful_text(report_text, min_chars=MIN_RESULTS_TEXT_CHARS) or is_meaningful_text(deck_text, min_chars=MIN_RESULTS_TEXT_CHARS)):
                     block = (
-                        f"{ticker} — Results detected, but PDF could not be fetched automatically.\n"
-                        f"Open manually: {any_results_link}\n"
-                    )
-                    high_impact_blocks.append(block)
-                    continue
-
-                if not (is_meaningful_text(report_text, min_chars=2500) or is_meaningful_text(deck_text, min_chars=2500)):
-                    high_impact_blocks.append(
                         f"{ticker} — Results detected, but Bob couldn't extract meaningful report/deck text automatically.\n"
                         f"Open manually: {any_results_link}\n"
                     )
+                    if drive_links:
+                        block += "Drive links:\n" + "\n".join(drive_links) + "\n"
+                    high_impact_blocks.append(block)
+                    if ticker == "AR9":
+                        brother_blocks.append(block)
                     continue
-                analysis = deep_results_analysis(ticker, report_text, deck_text, counters)
 
-                # Strawman draft (<= ~500 words)
+                analysis = deep_results_analysis(ticker, report_text, deck_text, counters)
                 straw = strawman_post(ticker, "HY/FY Results", analysis, counters)
 
                 header = f"{ticker} — Results (HY/FY)"
@@ -819,154 +845,130 @@ def main():
                 block = f"{header}\n\n{analysis}\n\nOpen: {any_results_link}\n"
                 if drive_links:
                     block += "Drive links:\n" + "\n".join(drive_links) + "\n"
-
                 block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
+
                 high_impact_blocks.append(block)
+                if ticker == "AR9":
+                    brother_blocks.append(block)
+
+                # Continue; results bundle handled as high impact
                 continue
 
             # ----------------------------
-            # Normal per-item processing
+            # Per-item MATERIAL / HIGH IMPACT
             # ----------------------------
             for it in items:
                 title = it["title"]
                 url = it["url"]
+
+                is_price = is_price_sensitive_title(title)
                 cls_title = classify_from_title_only(title)
 
-                # Include ALL announcements, but only "deep process" the ones likely to matter.
-                is_price = is_price_sensitive_title(title)
-                
-                # If not price-sensitive, do NOT fetch PDF or call LLM.
+                # Non-price-sensitive: FYI already captured; do nothing else
                 if not is_price:
-                    material_blocks.append(
-                        f"{summarise_headline_two_lines(ticker, title)}\nOpen: {url}\n"
-                    )
                     continue
 
-                # Default: no PDF and no LLM for low-impact announcements
-                pdf_url = None
-                text = ""
-                
-                # Only fetch PDFs for announcements likely worth it
-                if cls_title in ("ACQUISITION", "CAPITAL_OR_DEBT_RAISE", "RESULTS_HY_FY", "CONTRACT_MATERIAL"):
+                # High impact types (even if title-based)
+                if cls_title in ("ACQUISITION", "CAPITAL_OR_DEBT_RAISE"):
                     pdf_url = asx_pdf_url_from_item_url(url)
-                
                     safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
                     pdf_path = tmpdir / f"{safe_name}.pdf"
-                
+
                     text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
-                
+
+                    # Gate: if we got ASX consent HTML, don’t hallucinate
+                    if looks_like_asx_access_gate(text):
+                        block = f"{ticker}: {title[:160]}\nSo what: could not fetch PDF automatically. Open: {url}\n"
+                        material_blocks.append(block)
+                        if ticker == "AR9":
+                            brother_blocks.append(block)
+                        if pdf_path.exists():
+                            try:
+                                pdf_path.unlink()
+                            except Exception:
+                                pass
+                        continue
+
+                    drive_links: List[str] = []
+                    if got_pdf and drive_folder_id:
+                        try:
+                            drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
+                            link = upload_to_drive(pdf_path, drive_folder_id, drive_name)
+                            if link:
+                                drive_links.append(link)
+                        except Exception as e:
+                            log(f"Drive upload failed for {ticker}: {e}")
+
                     if pdf_path.exists():
                         try:
                             pdf_path.unlink()
                         except Exception:
                             pass
-                else:
-                    # Cheap path: headline-only summary + link
-                    material_blocks.append(
-                        f"{summarise_headline_two_lines(ticker, title)}\nOpen: {url}\n"
-                    )
+
+                    if cls_title == "ACQUISITION":
+                        memo = deep_acquisition_memo(ticker, title, text, counters)
+                        straw = strawman_post(ticker, "Acquisition", memo, counters)
+                        block = f"{ticker} — Acquisition\n{memo}\nOpen: {url}\n"
+                    else:
+                        memo = deep_capital_memo(ticker, title, text, counters)
+                        straw = strawman_post(ticker, "Capital/Debt Raise", memo, counters)
+                        block = f"{ticker} — Capital/Debt Raise\n{memo}\nOpen: {url}\n"
+
+                    if drive_links:
+                        block += "Drive link(s):\n" + "\n".join(drive_links) + "\n"
+                    block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
+
+                    high_impact_blocks.append(block)
+                    if ticker == "AR9":
+                        brother_blocks.append(block)
                     continue
 
-                # If ASX gate page, do not hallucinate
-                if looks_like_asx_access_gate(text):
-                    # Still price sensitive title; but we don't want spam — keep it minimal
-                    material_blocks.append(
-                        f"{ticker}: {title[:140]}\nSo what: could not fetch PDF automatically. Open: {url}\n"
-                    )
-                    # delete local pdf if any
+                # Otherwise: MATERIAL (price-sensitive but not deep)
+                # Only try PDF+LLM when it’s worth it (contracts/guidance/trading updates)
+                text = ""
+                if cls_title == "CONTRACT_MATERIAL":
+                    pdf_url = asx_pdf_url_from_item_url(url)
+                    safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
+                    pdf_path = tmpdir / f"{safe_name}.pdf"
+                    text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
                     if pdf_path.exists():
                         try:
                             pdf_path.unlink()
                         except Exception:
                             pass
-                    continue
 
-                def classify_from_title_only(title: str) -> str:
-                    t = title.lower()
-                
-                    if looks_like_results_title(title):
-                        return "RESULTS_HY_FY"
-                
-                    if any(k in t for k in ["acquisition", "acquire", "merger", "scheme", "takeover", "transaction"]):
-                        return "ACQUISITION"
-                
-                    if any(k in t for k in ["placement", "spp", "entitlement", "rights issue", "capital raising",
-                                            "convertible", "notes", "debt facility", "refinance", "term loan", "bond"]):
-                        return "CAPITAL_OR_DEBT_RAISE"
-                
-                    if any(k in t for k in ["contract", "award", "termination", "trading update", "guidance"]):
-                        return "CONTRACT_MATERIAL"
-                
-                    return "OTHER"
-                cls = classify_announcement(title, text)
-
-                # Big announcements: upload PDF to Drive (if we got it) and include link
-                drive_links: List[str] = []
-                if got_pdf and drive_folder_id and cls in ("ACQUISITION", "CAPITAL_OR_DEBT_RAISE"):
-                    try:
-                        drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
-                        link = upload_to_drive(pdf_path, drive_folder_id, drive_name)
-                        if link:
-                            drive_links.append(link)
-                    except Exception as e:
-                        log(f"Drive upload failed for {ticker}: {e}")
-
-                # delete local pdf after processing
-                if pdf_path.exists():
-                    try:
-                        pdf_path.unlink()
-                    except Exception:
-                        pass
-
-                if cls == "ACQUISITION":
-                    memo = deep_acquisition_memo(ticker, title, text, counters)
-                    straw = strawman_post(ticker, "Acquisition", memo, counters)
-                    block = f"{ticker} — Acquisition\n{memo}\nOpen: {url}\n"
-                    if drive_links:
-                        block += "Drive link:\n" + "\n".join(drive_links) + "\n"
-                    block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
-                    high_impact_blocks.append(block)
-
-                elif cls == "CAPITAL_OR_DEBT_RAISE":
-                    memo = deep_capital_memo(ticker, title, text, counters)
-                    straw = strawman_post(ticker, "Capital/Debt Raise", memo, counters)
-                    block = f"{ticker} — Capital/Debt Raise\n{memo}\nOpen: {url}\n"
-                    if drive_links:
-                        block += "Drive link:\n" + "\n".join(drive_links) + "\n"
-                    block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
-                    high_impact_blocks.append(block)
-
-                elif cls == "RESULTS_HY_FY":
-                    # Results handled by bundle above; if one slips through, keep it clean
-                    material_blocks.append(
-                        f"{ticker}: {title[:140]}\nSo what: results item detected. Open: {url}\n"
-                    )
-
-                else:
+                # If we have meaningful text, do 2-line LLM. Else fallback headline 2-line.
+                summary = None
+                if text and is_meaningful_text(text, min_chars=600):
                     summary = summarise_two_lines_llm(ticker, title, text, counters)
-                    if summary:
-                        material_blocks.append(f"{summary}\nOpen: {url}\n")
+
+                if not summary:
+                    summary = f"{ticker}: {title[:160]}\nSo what: price-sensitive headline — open link for details."
+
+                block = f"{summary}\nOpen: {url}\n"
+                material_blocks.append(block)
+                if ticker == "AR9":
+                    brother_blocks.append(block)
 
     # ----------------------------
     # Build email (clean + colour-coded HTML)
     # ----------------------------
-    silence_line = "No price-sensitive announcements in the last 2 days."
-    body_text, body_html = build_email(subject, high_impact_blocks, material_blocks, silence_line, counters)
+    silence_line = f"No announcements found in the last {DAYS_BACK} days."
+    body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks, silence_line)
 
     send_email(subject, body_text, body_html)
+
+    # Brother email (AR9 only)
     brother_email = os.environ.get("BROTHER_EMAIL", "").strip()
     if brother_email and brother_blocks:
-        bro_lines: List[str] = []
-        bro_lines.append(f"{BOB_NAME} — AR9 Digest — {today_sgt_date().isoformat()} (SGT)")
-        bro_lines.append(f"Last {DAYS_BACK} days")
-        bro_lines.append("")
-        bro_lines.extend(brother_blocks)
-    
-        send_email(
-            subject=f"{BOB_NAME} — AR9 Digest — {today_sgt_date().isoformat()} (SGT)",
-            body="\n".join(bro_lines),
-            to_addr=brother_email,
-        )
+        bro_subject = f"{BOB_NAME} — AR9 Digest — {today_sgt_date().isoformat()} (SGT)"
+        bro_text = "\n".join([bro_subject, "", *brother_blocks])
+        bro_html = "<div style='padding:18px; background:%s; color:%s; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif;'>" % (COLOR_BG, COLOR_TEXT)
+        bro_html += f"<div style='font-size:20px; font-weight:900; margin-bottom:8px;'>{htmlmod.escape(bro_subject)}</div>"
+        bro_html += _html_section("AR9 ONLY", COLOR_MATERIAL, brother_blocks)
+        bro_html += "</div>"
+        send_email(bro_subject, bro_text, bro_html, to_addr=brother_email)
+
     log("Email sent.")
 
 

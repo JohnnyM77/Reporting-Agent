@@ -458,6 +458,13 @@ def classify_announcement(title: str, text: str) -> str:
 # ----------------------------
 # LLM wrappers (clean outputs)
 # ----------------------------
+def summarise_headline_two_lines(ticker: str, title: str) -> str:
+    """
+    No LLM, no PDF. Fast default for non-material announcements.
+    """
+    line1 = f"{ticker}: {title[:140]}"
+    line2 = "So what: FYI only — open link if you want details."
+    return line1 + "\n" + line2
 def summarise_two_lines_llm(ticker: str, title: str, text: str, counters: Dict) -> Optional[str]:
     user = f"Ticker: {ticker}\nTitle: {title}\n\nText:\n{text}"
     # If there's not enough real content, don't waste tokens or hallucinate
@@ -826,16 +833,42 @@ def main():
             for it in items:
                 title = it["title"]
                 url = it["url"]
+                cls_title = classify_from_title_only(title)
 
-                # Ignore non-price-sensitive completely
-                if not is_price_sensitive_title(title):
+                # Include ALL announcements, but only "deep process" the ones likely to matter.
+                is_price = is_price_sensitive_title(title)
+                
+                # If not price-sensitive, do NOT fetch PDF or call LLM.
+                if not is_price:
+                    material_blocks.append(
+                        f"{summarise_headline_two_lines(ticker, title)}\nOpen: {url}\n"
+                    )
                     continue
 
-                pdf_url = asx_pdf_url_from_item_url(url)
-                safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
-                pdf_path = tmpdir / f"{safe_name}.pdf"
-
-                text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
+                # Default: no PDF and no LLM for low-impact announcements
+                pdf_url = None
+                text = ""
+                
+                # Only fetch PDFs for announcements likely worth it
+                if cls_title in ("ACQUISITION", "CAPITAL_OR_DEBT_RAISE", "RESULTS_HY_FY", "CONTRACT_MATERIAL"):
+                    pdf_url = asx_pdf_url_from_item_url(url)
+                
+                    safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
+                    pdf_path = tmpdir / f"{safe_name}.pdf"
+                
+                    text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
+                
+                    if pdf_path.exists():
+                        try:
+                            pdf_path.unlink()
+                        except Exception:
+                            pass
+                else:
+                    # Cheap path: headline-only summary + link
+                    material_blocks.append(
+                        f"{summarise_headline_two_lines(ticker, title)}\nOpen: {url}\n"
+                    )
+                    continue
 
                 # If ASX gate page, do not hallucinate
                 if looks_like_asx_access_gate(text):
@@ -851,6 +884,23 @@ def main():
                             pass
                     continue
 
+                def classify_from_title_only(title: str) -> str:
+                    t = title.lower()
+                
+                    if looks_like_results_title(title):
+                        return "RESULTS_HY_FY"
+                
+                    if any(k in t for k in ["acquisition", "acquire", "merger", "scheme", "takeover", "transaction"]):
+                        return "ACQUISITION"
+                
+                    if any(k in t for k in ["placement", "spp", "entitlement", "rights issue", "capital raising",
+                                            "convertible", "notes", "debt facility", "refinance", "term loan", "bond"]):
+                        return "CAPITAL_OR_DEBT_RAISE"
+                
+                    if any(k in t for k in ["contract", "award", "termination", "trading update", "guidance"]):
+                        return "CONTRACT_MATERIAL"
+                
+                    return "OTHER"
                 cls = classify_announcement(title, text)
 
                 # Big announcements: upload PDF to Drive (if we got it) and include link

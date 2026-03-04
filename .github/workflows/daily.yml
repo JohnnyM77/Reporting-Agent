@@ -3,7 +3,7 @@ name: Daily Announcement Digest
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 1 * * *"
+    - cron: "5 1 * * *"
 
 jobs:
   run-agent:
@@ -39,3 +39,5 @@ jobs:
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
         run: |
           python agent.py
+
+ 

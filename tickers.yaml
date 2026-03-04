@@ -26,3 +26,10 @@ asx:
 
 lse:
   - RR.
+routing:
+  default_recipients:
+    - "mr_cough@hotmail.com"
+  rules:
+    - match_tickers: ["AR9"]
+      recipients:
+        - "thomas@myerscoughs.coms"

@@ -3,7 +3,7 @@ name: Daily Announcement Digest
 on:
   workflow_dispatch:
   schedule:
-    - cron: "33 23 * * *"
+    - cron: "13 23 * * *"
 
 jobs:
   run-agent:

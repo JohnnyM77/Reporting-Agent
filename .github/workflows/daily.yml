@@ -24,6 +24,14 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Restore seen announcements state
+        uses: actions/cache/restore@v4
+        with:
+          path: state_seen.json
+          key: seen-state-${{ github.ref_name }}
+          restore-keys: |
+            seen-state-${{ github.ref_name }}-
+
       - name: Install dependencies
         run: |
           pip install requests beautifulsoup4 pyyaml pypdf openai google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib playwright
@@ -38,7 +46,15 @@ jobs:
           GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
           BROTHER_EMAIL: ${{ secrets.BROTHER_EMAIL }}
+          SEEN_STATE_PATH: state_seen.json
         run: |
           python agent.py
+
+      - name: Save seen announcements state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state_seen.json
+          key: seen-state-${{ github.ref_name }}-${{ github.run_id }}
 
  

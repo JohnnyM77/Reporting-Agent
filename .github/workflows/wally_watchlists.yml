@@ -1,0 +1,41 @@
+name: Wally Watchlist Screening
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Tue/Fri (UTC) for standard watchlists; TII75 handled on Friday inside job
+    - cron: "30 22 * * 2,5"
+
+jobs:
+  wally:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-wally.txt
+
+      - name: Run standard watchlists (TII/JM/Aussie Tech)
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+        run: |
+          python -m wally.main --all-standard-watchlists
+
+      - name: Run TII75 (Fridays only; fortnightly gate inside Python)
+        if: github.event_name == 'workflow_dispatch' || startsWith(github.event.schedule, '30 22 * *')
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+        run: |
+          if [ "$(date -u +%u)" = "5" ]; then
+            python -m wally.main --tii75
+          else
+            echo "Not Friday UTC; skipping TII75"
+          fi

@@ -14,6 +14,7 @@ import os
 import re
 import json
 import ssl
+import hashlib
 import smtplib
 import tempfile
 import datetime as dt
@@ -40,11 +41,14 @@ from prompts import (
 )
 
 BOB_NAME = "Bob the Bot"
+VERSION_LABEL = "V2"
 
 # ----------------------------
 # Settings / Guardrails
 # ----------------------------
-DAYS_BACK = 2
+HOURS_BACK = 24
+SEEN_STATE_PATH = Path(os.environ.get("SEEN_STATE_PATH", "state_seen.json"))
+SEEN_STATE_RETENTION_HOURS = 72
 
 MAX_ANNOUNCEMENTS_PER_TICKER = 12
 MAX_PDFS_PER_RUN = 10
@@ -85,8 +89,55 @@ def today_sgt_date() -> dt.date:
     return now_sgt().date()
 
 
-def cutoff_dt_sgt(days_back: int) -> dt.datetime:
-    return now_sgt() - dt.timedelta(days=days_back)
+def cutoff_dt_sgt(hours_back: int) -> dt.datetime:
+    return now_sgt() - dt.timedelta(hours=hours_back)
+
+
+def announcement_key(ticker: str, url: str) -> str:
+    raw = f"{ticker}|{url}".encode("utf-8")
+    return hashlib.sha1(raw).hexdigest()
+
+
+def load_seen_state(path: Path) -> Dict[str, str]:
+    if not path.exists():
+        return {}
+
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as e:
+        log(f"Could not read seen state file: {e}")
+        return {}
+
+    if isinstance(data, list):
+        # backward-compatible shape (list of keys)
+        now_iso = now_sgt().isoformat(timespec="seconds")
+        return {k: now_iso for k in data if isinstance(k, str)}
+
+    if not isinstance(data, dict):
+        return {}
+
+    state: Dict[str, str] = {}
+    for key, seen_iso in data.items():
+        if isinstance(key, str) and isinstance(seen_iso, str):
+            state[key] = seen_iso
+    return state
+
+
+def prune_seen_state(state: Dict[str, str], retention_hours: int) -> Dict[str, str]:
+    cutoff = now_sgt() - dt.timedelta(hours=retention_hours)
+    out: Dict[str, str] = {}
+    for key, seen_iso in state.items():
+        try:
+            seen_dt = dt.datetime.fromisoformat(seen_iso)
+        except Exception:
+            continue
+        if seen_dt >= cutoff:
+            out[key] = seen_iso
+    return out
+
+
+def save_seen_state(path: Path, state: Dict[str, str]) -> None:
+    path.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
 
 
 # ----------------------------
@@ -358,7 +409,7 @@ def is_meaningful_text(text: str, min_chars: int = 1200) -> bool:
 # ----------------------------
 # ASX announcement fetching
 # ----------------------------
-def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: int = 2) -> List[Dict]:
+def fetch_asx_announcements(session: requests.Session, ticker: str, hours_back: int = 24) -> List[Dict]:
     url = (
         "https://www.asx.com.au/asx/v2/statistics/announcements.do"
         f"?asxCode={ticker}&by=asxCode&period=M6&timeframe=D"
@@ -369,7 +420,7 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, days_back: i
     soup = BeautifulSoup(r.text, "html.parser")
     rows = soup.select("table tr")
 
-    cutoff_dt = cutoff_dt_sgt(days_back)
+    cutoff_dt = cutoff_dt_sgt(hours_back)
     items: List[Dict] = []
 
     for row in rows:
@@ -665,9 +716,9 @@ def build_email(
 ) -> Tuple[str, str]:
     # Plain text
     lines: List[str] = []
-    lines.append(f"{BOB_NAME}")
+    lines.append(f"{BOB_NAME} {VERSION_LABEL}")
     lines.append("=" * len(BOB_NAME))
-    lines.append(f"Daily Announcements Digest — last {DAYS_BACK} days — {today_sgt_date().isoformat()} (SGT)")
+    lines.append(f"Daily Announcements Digest — last {HOURS_BACK} hours — {today_sgt_date().isoformat()} (SGT)")
     lines.append(f"Run caps: MAX_PDFS={MAX_PDFS_PER_RUN}, MAX_LLM_CALLS={MAX_LLM_CALLS_PER_RUN}, MAX_PER_TICKER={MAX_ANNOUNCEMENTS_PER_TICKER}")
     lines.append("")
 
@@ -697,9 +748,9 @@ def build_email(
     # HTML
     header_html = f"""
     <div style="padding:18px; background:{COLOR_BG}; color:{COLOR_TEXT}; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif;">
-      <div style="font-size:22px; font-weight:900; margin-bottom:6px;">{htmlmod.escape(BOB_NAME)}</div>
+      <div style="font-size:22px; font-weight:900; margin-bottom:6px;">{htmlmod.escape(f"{BOB_NAME} {VERSION_LABEL}")}</div>
       <div style="opacity:0.9; font-size:14px; margin-bottom:10px;">
-        Daily Announcements Digest — last {DAYS_BACK} days — {today_sgt_date().isoformat()} (SGT)
+        Daily Announcements Digest — last {HOURS_BACK} hours — {today_sgt_date().isoformat()} (SGT)
       </div>
       <div style="opacity:0.75; font-size:12px; margin-bottom:18px;">
         Run caps: MAX_PDFS={MAX_PDFS_PER_RUN}, MAX_LLM_CALLS={MAX_LLM_CALLS_PER_RUN}, MAX_PER_TICKER={MAX_ANNOUNCEMENTS_PER_TICKER}
@@ -732,7 +783,7 @@ def build_email(
 # MAIN
 # ----------------------------
 def main():
-    subject = f"{BOB_NAME} — Daily Announcements Digest — {today_sgt_date().isoformat()} (SGT)"
+    subject = f"{BOB_NAME} {VERSION_LABEL} — Daily Announcements Digest — {today_sgt_date().isoformat()} (SGT)"
 
     session = http_session()
     asx_tickers, _lse_tickers = read_tickers()
@@ -746,6 +797,10 @@ def main():
         "pdfs_downloaded": 0,
     }
 
+    seen_state = prune_seen_state(load_seen_state(SEEN_STATE_PATH), SEEN_STATE_RETENTION_HOURS)
+    seen_state_updated = dict(seen_state)
+    run_seen_count = 0
+
     # Bucket outputs
     high_impact_blocks: List[str] = []
     material_blocks: List[str] = []
@@ -756,7 +811,7 @@ def main():
     by_ticker: Dict[str, List[Dict]] = {}
     for t in asx_tickers:
         try:
-            by_ticker[t] = fetch_asx_announcements(session, t, days_back=DAYS_BACK)
+            by_ticker[t] = fetch_asx_announcements(session, t, hours_back=HOURS_BACK)
         except Exception as e:
             log(f"Fetch failed for {t}: {e}")
             by_ticker[t] = []
@@ -770,6 +825,18 @@ def main():
             if not items:
                 continue
 
+            fresh_items: List[Dict] = []
+            for it in items:
+                key = announcement_key(ticker, it["url"])
+                if key in seen_state:
+                    continue
+                it["seen_key"] = key
+                fresh_items.append(it)
+
+            items = fresh_items
+            if not items:
+                continue
+
             # Always add FYI entries (all announcements) – quick, headline-only + link
             for it in items:
                 title = it["title"]
@@ -778,6 +845,11 @@ def main():
                 fyi_blocks.append(fyi_entry)
                 if ticker == "AR9":
                     brother_blocks.append(fyi_entry)
+
+                key = it.get("seen_key")
+                if key:
+                    seen_state_updated[key] = now_sgt().isoformat(timespec="seconds")
+                    run_seen_count += 1
 
             # ----------------------------
             # RESULTS bundle (per ticker)
@@ -953,7 +1025,7 @@ def main():
     # ----------------------------
     # Build email (clean + colour-coded HTML)
     # ----------------------------
-    silence_line = f"No announcements found in the last {DAYS_BACK} days."
+    silence_line = f"No announcements found in the last {HOURS_BACK} hours."
     body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks, silence_line)
 
     send_email(subject, body_text, body_html)
@@ -961,7 +1033,7 @@ def main():
     # Brother email (AR9 only)
     brother_email = os.environ.get("BROTHER_EMAIL", "").strip()
     if brother_email and brother_blocks:
-        bro_subject = f"{BOB_NAME} — AR9 Digest — {today_sgt_date().isoformat()} (SGT)"
+        bro_subject = f"{BOB_NAME} {VERSION_LABEL} — AR9 Digest — {today_sgt_date().isoformat()} (SGT)"
         bro_text = "\n".join([bro_subject, "", *brother_blocks])
         bro_html = "<div style='padding:18px; background:%s; color:%s; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif;'>" % (COLOR_BG, COLOR_TEXT)
         bro_html += f"<div style='font-size:20px; font-weight:900; margin-bottom:8px;'>{htmlmod.escape(bro_subject)}</div>"
@@ -969,6 +1041,8 @@ def main():
         bro_html += "</div>"
         send_email(bro_subject, bro_text, bro_html, to_addr=brother_email)
 
+    save_seen_state(SEEN_STATE_PATH, prune_seen_state(seen_state_updated, SEEN_STATE_RETENTION_HOURS))
+    log(f"Seen-state updated with {run_seen_count} new announcement(s).")
     log("Email sent.")
 
 

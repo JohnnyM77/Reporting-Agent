@@ -57,7 +57,9 @@ Every day Bob automatically:
 
 Monitors ASX announcements for companies in my Portfolio
 
-Identifies announcements released within the last 48 hours
+Identifies announcements released within the last 24 hours
+
+Avoids reporting the same announcement on consecutive days by tracking seen announcement IDs between runs
 
 Filters out routine filings and low-impact updates
 
@@ -80,7 +82,7 @@ Example Output
 Bob sends a daily briefing structured like this:
 
 Bob the Bot
-Daily Announcements Digest — last 2 days
+Daily Announcements Digest — last 24 hours
 
 HIGH IMPACT
 
@@ -148,7 +150,7 @@ announcement URL
 
 PDF document link
 
-Only announcements from the last 2 days are processed.
+Only announcements from the last 24 hours are processed.
 
 Announcement Classification
 
@@ -273,7 +275,7 @@ SILENCE
 
 If no announcements occurred:
 
-No announcements in the last 2 days.
+No announcements in the last 24 hours.
 Special Routing
 
 Some tickers trigger additional alerts.

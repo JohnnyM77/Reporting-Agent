@@ -388,3 +388,76 @@ The ASX produces hundreds of announcements every week.
 Most are irrelevant.
 
 Bob's job is to read everything so I don't have to, highlight the important information, and deliver a clean intelligence briefing for my Portfolio.
+
+---
+
+## Wally (Watchlist 52-week low agent)
+
+Wally is a second, separate agent that screens multiple watchlists for stocks trading near their 52-week lows.
+
+### What Wally does (V1)
+
+- Loads watchlists from `watchlists/*.yaml`
+- Fetches latest price + 52-week low/high per ticker
+- Flags stocks within 5% of 52-week low:
+  - `distance_to_low_pct = ((current - low_52w) / low_52w) * 100`
+  - flagged when `distance_to_low_pct <= 5`
+- Creates:
+  - compact 52-week range PNG chart for each flagged ticker
+  - 10-year price-vs-value chart when valuation config exists
+- Sends an HTML email report (with chart attachments)
+- Writes machine-readable JSON output under `outputs/YYYY-MM-DD/`
+
+### Watchlist files
+
+Supported format:
+
+```yaml
+name: JM Watch List
+tickers:
+  - ARB.AX
+  - QOR.AX
+```
+
+Files used:
+
+- `watchlists/tii_watchlist.yaml`
+- `watchlists/jm_watchlist.yaml`
+- `watchlists/aussie_tech_watchlist.yaml`
+- `watchlists/tii75_watchlist.yaml`
+
+### Valuation config
+
+Place per-ticker config at:
+
+- `valuations/<ticker_lower_with_underscores>.yaml`
+  - e.g. `valuations/bhp_ax.yaml` for `BHP.AX`
+
+Wally uses configured EPS/dividend series to plot value lines. If missing, the report states: `No valuation config found yet for this ticker`.
+
+### Scheduling
+
+Workflow: `.github/workflows/wally_watchlists.yml`
+
+- Tue + Fri: standard watchlists (`tii`, `jm`, `aussie_tech`)
+- Fri only: `tii75` is attempted, then Python applies fortnightly gate
+  - gate logic in `wally.config.should_run_tii75`
+  - adjustable via env `TII75_ANCHOR_ISO_WEEK`
+
+### Required secrets / env
+
+Wally reuses Bob email settings where possible:
+
+- `EMAIL_FROM` (or `EMAIL_USER`)
+- `EMAIL_TO`
+- `EMAIL_APP_PASSWORD` (or `SMTP_PASS`)
+- optional SMTP overrides: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`
+
+### Local run commands
+
+```bash
+python -m wally.main --watchlist watchlists/jm_watchlist.yaml
+python -m wally.main --all-standard-watchlists
+python -m wally.main --watchlist watchlists/tii75_watchlist.yaml --force
+python -m wally.main --tii75 --force
+```

@@ -682,6 +682,15 @@ def fetch_announcement_text(
 # ----------------------------
 # Email formatting helpers
 # ----------------------------
+def _linkify_urls(text: str) -> str:
+    escaped = htmlmod.escape(text)
+    return re.sub(
+        r"(https?://[^\s<]+)",
+        r"<a href='\1' style='color:#93C5FD; text-decoration:underline;'>\1</a>",
+        escaped,
+    )
+
+
 def _html_block(b: str) -> str:
     return (
         "<div style='margin:12px 0; padding:12px; background:"
@@ -689,7 +698,7 @@ def _html_block(b: str) -> str:
         + "; border-radius:10px; white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:13px; color:"
         + COLOR_TEXT
         + ";'>"
-        + htmlmod.escape(b)
+        + _linkify_urls(b)
         + "</div>"
     )
 

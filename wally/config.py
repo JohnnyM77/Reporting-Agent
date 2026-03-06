@@ -5,29 +5,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-
-def _env_nonempty(name: str, default: str = "") -> str:
-    raw = os.environ.get(name)
-    if raw is None:
-        return default
-    value = raw.strip()
-    return value if value else default
-
-
-def _env_int(name: str, default: int) -> int:
-    raw = os.environ.get(name)
-    if raw is None:
-        return default
-    value = raw.strip()
-    if not value:
-        return default
-    try:
-        return int(value)
-    except ValueError:
-        return default
-
-
-LOW_THRESHOLD_PCT = float(_env_nonempty("WALLY_LOW_THRESHOLD_PCT", "5.0"))
+LOW_THRESHOLD_PCT = float(os.environ.get("WALLY_LOW_THRESHOLD_PCT", "5.0"))
 
 STANDARD_WATCHLISTS = [
     "watchlists/tii_watchlist.yaml",
@@ -36,7 +14,7 @@ STANDARD_WATCHLISTS = [
 ]
 TII75_WATCHLIST = "watchlists/tii75_watchlist.yaml"
 
-TII75_ANCHOR_ISO_WEEK = _env_int("TII75_ANCHOR_ISO_WEEK", 1)
+TII75_ANCHOR_ISO_WEEK = int(os.environ.get("TII75_ANCHOR_ISO_WEEK", "1"))
 
 
 @dataclass(frozen=True)
@@ -65,12 +43,12 @@ def build_run_context() -> RunContext:
 
 def load_email_settings() -> EmailSettings:
     # Reuse Bob's names where possible, with fallbacks.
-    email_from = _env_nonempty("EMAIL_FROM") or _env_nonempty("EMAIL_USER")
-    email_to = _env_nonempty("EMAIL_TO")
-    smtp_user = _env_nonempty("SMTP_USER") or email_from or ""
-    smtp_password = _env_nonempty("SMTP_PASS") or _env_nonempty("EMAIL_APP_PASSWORD") or ""
-    smtp_host = _env_nonempty("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = _env_int("SMTP_PORT", 465)
+    email_from = os.environ.get("EMAIL_FROM") or os.environ.get("EMAIL_USER")
+    email_to = os.environ.get("EMAIL_TO")
+    smtp_user = os.environ.get("SMTP_USER") or email_from or ""
+    smtp_password = os.environ.get("SMTP_PASS") or os.environ.get("EMAIL_APP_PASSWORD") or ""
+    smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.environ.get("SMTP_PORT", "465"))
 
     missing = [
         name

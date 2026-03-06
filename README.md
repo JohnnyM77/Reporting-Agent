@@ -461,27 +461,3 @@ python -m wally.main --all-standard-watchlists
 python -m wally.main --watchlist watchlists/tii75_watchlist.yaml --force
 python -m wally.main --tii75 --force
 ```
-
-### Wally spreadsheet + Drive output
-
-When a ticker is flagged near its 52-week low and valuation config exists, Wally now also:
-
-- generates a formatted Excel workbook with sheets:
-  - `Settings`
-  - `EarningsData`
-  - `PriceData`
-  - `ValueChart`
-  - `FuturePrompt`
-- uploads/replaces the workbook in Google Drive using the ticker code as the Drive display filename
-- includes a Google Drive link in the HTML email report
-- embeds the generated value chart image inline in the email (where mail client supports CID inline images)
-
-Redundancy for limited data:
-
-- Wally attempts daily history windows in order: `10y -> 8y -> 5y -> 3y -> 2y -> 1y`
-- if 10-year data is unavailable, it still generates using the best available history window
-
-Additional secrets used by Wally for spreadsheet upload:
-
-- `GDRIVE_SERVICE_ACCOUNT_JSON`
-- `GDRIVE_FOLDER_ID` (optional but recommended)

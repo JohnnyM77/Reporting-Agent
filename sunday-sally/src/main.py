@@ -43,8 +43,18 @@ def main() -> None:
     run_folder = _run_folder(settings.get("outputs", {}).get("root", "sunday-sally/data/outputs"), tz)
     run_folder.mkdir(parents=True, exist_ok=True)
 
-    portfolio = load_portfolio(source_file="tickers.yaml", source_key="asx", exchange_suffix=".AX")
+    from pathlib import Path
 
+    # locate the repo root (two levels up from src/)
+    REPO_ROOT = Path(__file__).resolve().parents[2]
+    
+    TICKERS_FILE = REPO_ROOT / "tickers.yaml"
+    
+    portfolio = load_portfolio(
+        source_file=str(TICKERS_FILE),
+        source_key="asx",
+        exchange_suffix=".AX"
+    )
     flagged_rows = []
     for company in portfolio:
         price = fetch_price_data(company.exchange_ticker, company.ticker)

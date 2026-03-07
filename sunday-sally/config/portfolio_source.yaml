@@ -1,0 +1,3 @@
+# Sunday Sally intentionally reuses Bob's portfolio source file in repo root (tickers.yaml).
+source_key: asx
+exchange_suffix: .AX

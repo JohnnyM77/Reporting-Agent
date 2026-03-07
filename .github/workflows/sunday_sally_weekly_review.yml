@@ -22,15 +22,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r sunday-sally/requirements.txt
 
-
-      - name: Verify Sally is in email-attachments mode (no Drive upload code path)
-        run: |
-          echo "Commit: $(git rev-parse HEAD)"
-          if rg -n "upload_run_folder\(|google_drive_uploader|GDRIVE_FOLDER_ID|GDRIVE_SERVICE_ACCOUNT_JSON" sunday-sally/src -S; then
-            echo "ERROR: Sunday Sally still contains Drive upload references."
-            exit 1
-          fi
-
       - name: Run Sunday Sally
         working-directory: sunday-sally
         env:
@@ -41,6 +32,8 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          SALLY_DRIVE_ROOT_FOLDER_ID: ${{ secrets.SALLY_DRIVE_ROOT_FOLDER_ID }}
           SALLY_CONFIG_PATH: config/settings.yaml
         run: |
           python -m src.main

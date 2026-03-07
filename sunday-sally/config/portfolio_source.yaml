@@ -1,4 +1,4 @@
-# Sunday Sally intentionally reuses Bob's portfolio source file in repo root.
-source_file: ../tickers.yaml
+# Sunday Sally intentionally reuses Bob's portfolio source file.
+source_file: tickers.yaml
 source_key: asx
 exchange_suffix: .AX

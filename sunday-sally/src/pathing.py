@@ -33,8 +33,3 @@ def resolve_output_root(base_output_root: str) -> Path:
     if p.is_absolute():
         return p
     return (sally_root() / p).resolve()
-
-
-def bob_tickers_path() -> Path:
-    """Canonical portfolio file used by Bob at repository root."""
-    return (repo_root() / "tickers.yaml").resolve()

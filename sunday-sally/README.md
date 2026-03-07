@@ -45,13 +45,3 @@ GitHub Actions workflow:
 ## Environment
 
 Use `.env.example` for required variables.
-
-
-### Portfolio source resolution
-
-Sunday Sally defaults to Bob's `tickers.yaml` at the repository root and resolves paths robustly whether run from repo root or from `sunday-sally/`.
-You can override with:
-
-- `SALLY_PORTFOLIO_SOURCE` (e.g. `../tickers.yaml` in CI)
-- `SALLY_PORTFOLIO_CONFIG_PATH`
-

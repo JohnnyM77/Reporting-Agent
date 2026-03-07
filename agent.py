@@ -60,6 +60,7 @@ MODEL_DEFAULT = "gpt-4o-mini"
 # Hard time caps (keep runs reasonable)
 REQUESTS_PDF_TIMEOUT_SECS = 20
 HTML_TIMEOUT_SECS = 30
+FUN_CONTENT_TIMEOUT_SECS = 10
 
 # Email styling colours (match your diagram intent)
 COLOR_HIGH_IMPACT = "#F59E0B"  # amber/gold
@@ -69,6 +70,15 @@ COLOR_SILENCE = "#6B7280"      # grey
 COLOR_BG = "#0B1220"           # dark navy
 COLOR_PANEL = "#111B2E"        # panel
 COLOR_TEXT = "#E5E7EB"         # light text
+
+JOKE_API_URL = os.environ.get(
+    "JOKE_API_URL",
+    "https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,racist,sexist,explicit&type=single",
+).strip()
+CARTOON_PAGE_URL = os.environ.get(
+    "CARTOON_PAGE_URL",
+    "https://www.cagle.com/category/political-cartoon/",
+).strip()
 
 
 # ----------------------------
@@ -138,6 +148,67 @@ def prune_seen_state(state: Dict[str, str], retention_hours: int) -> Dict[str, s
 
 def save_seen_state(path: Path, state: Dict[str, str]) -> None:
     path.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def fetch_joke_of_the_day(session: requests.Session) -> str:
+    try:
+        resp = session.get(
+            JOKE_API_URL,
+            timeout=FUN_CONTENT_TIMEOUT_SECS,
+            headers={"Accept": "application/json"},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        if isinstance(data, dict):
+            if data.get("type") == "single" and isinstance(data.get("joke"), str):
+                joke = data["joke"].strip()
+                if joke:
+                    return joke
+            if data.get("type") == "twopart":
+                setup = str(data.get("setup", "")).strip()
+                delivery = str(data.get("delivery", "")).strip()
+                joined = " — ".join([p for p in [setup, delivery] if p])
+                if joined:
+                    return joined
+    except Exception as e:
+        log(f"Joke fetch failed: {e}")
+
+    return "Why did the investor bring a ladder? To reach higher returns."
+
+
+def fetch_cartoon_of_the_day(session: requests.Session) -> Tuple[str, str]:
+    fallback_title = "Political cartoon pick"
+    fallback_url = CARTOON_PAGE_URL
+
+    try:
+        resp = session.get(CARTOON_PAGE_URL, timeout=FUN_CONTENT_TIMEOUT_SECS)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        for a in soup.select("a[href]"):
+            href = (a.get("href") or "").strip()
+            if not href:
+                continue
+            lowered = href.lower()
+            if "cagle.com" in lowered and "/cartoon/" in lowered:
+                title = " ".join(a.get_text(" ", strip=True).split()) or fallback_title
+                return title, href
+
+    except Exception as e:
+        log(f"Cartoon fetch failed: {e}")
+
+    return fallback_title, fallback_url
+
+
+def build_silence_line(session: requests.Session) -> str:
+    base = f"No announcements found in the last {HOURS_BACK} hours."
+    joke = fetch_joke_of_the_day(session)
+    cartoon_title, cartoon_url = fetch_cartoon_of_the_day(session)
+    return (
+        f"{base}\n"
+        f"Joke of the day: {joke}\n"
+        f"Cartoon of the day: {cartoon_title} — {cartoon_url}"
+    )
 
 
 # ----------------------------
@@ -1034,7 +1105,7 @@ def main():
     # ----------------------------
     # Build email (clean + colour-coded HTML)
     # ----------------------------
-    silence_line = f"No announcements found in the last {HOURS_BACK} hours."
+    silence_line = build_silence_line(session)
     body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks, silence_line)
 
     send_email(subject, body_text, body_html)

@@ -276,6 +276,11 @@ SILENCE
 If no announcements occurred:
 
 No announcements in the last 24 hours.
+
+When this happens, Bob now also includes:
+
+- A Joke of the Day
+- A Political Cartoon of the Day link
 Special Routing
 
 Some tickers trigger additional alerts.

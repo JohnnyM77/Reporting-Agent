@@ -45,20 +45,3 @@ GitHub Actions workflow:
 ## Environment
 
 Use `.env.example` for required variables.
-
-
-### Portfolio source resolution
-
-Sunday Sally hard-pins portfolio file selection to Bob's repo-root `tickers.yaml`, and path handling works whether run from repo root or from `sunday-sally/`.
-
-Optional overrides still available for ticker key/suffix and config location:
-
-- `SALLY_PORTFOLIO_SOURCE_KEY`
-- `SALLY_PORTFOLIO_EXCHANGE_SUFFIX`
-- `SALLY_PORTFOLIO_CONFIG_PATH`
-
-
-
-## Delivery mode
-
-Google Drive uploads are disabled for Sunday Sally. All generated outputs for each run are attached directly to the email summary.

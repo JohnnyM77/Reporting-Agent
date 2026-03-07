@@ -1,0 +1,42 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+
+def build_memo_text(company: dict, summary: dict, reasons: list[str], doubts: list[str], decision_framing: str) -> str:
+    reasons_block = "\n- ".join(reasons) if reasons else "No strong rerating evidence captured this week."
+    doubts_block = "\n- ".join(doubts) if doubts else "Data gaps: use statutory filings/cashflow checks before conclusions."
+
+    return f"""# Sunday Sally Review: {company['company_name']} ({company['ticker']})
+
+## 1. Why Sunday Sally flagged the stock
+- Proximity to 52-week high: {summary.get('distance_to_high_pct', 'n/a')}%
+- Alert tier: {summary.get('alert_tier')}
+- Trigger reasons: {"; ".join(reasons) if reasons else "Near high only"}
+
+## 2. Current valuation versus history
+- Trailing PE: {summary.get('trailing_pe')}
+- 3y / 5y / 10y PE avg: {summary.get('pe_3y_avg')} / {summary.get('pe_5y_avg')} / {summary.get('pe_10y_avg')}
+- Valuation percentile vs own history: {summary.get('valuation_percentile')}
+
+## 3. Reasons the market may be valuing it richly
+- {reasons_block}
+
+## 4. Reasons to doubt the rich multiple
+- {doubts_block}
+
+## 5. What must be true to justify today's price
+- Revenue growth must remain above historical trend.
+- Margins must sustain without one-off support.
+- Cash conversion should support reported earnings.
+
+## 6. Decision framing
+- {decision_framing}
+
+> Mr Market is feeling cheerful. Fine. Show me the maths.
+"""
+
+
+def save_memo(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8")

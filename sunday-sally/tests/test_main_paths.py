@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.pathing import bob_tickers_path, repo_root, resolve_existing_path, resolve_output_root, sally_root
+from src.pathing import repo_root, resolve_existing_path, resolve_output_root, sally_root
 
 
 def test_resolve_existing_path_finds_repo_tickers_from_sunday_dir():
@@ -19,7 +19,3 @@ def test_resolve_existing_path_prefers_absolute_when_exists(tmp_path: Path):
     f.write_text("a: 1", encoding="utf-8")
     resolved = resolve_existing_path(str(f), base_dirs=[Path.cwd()])
     assert resolved == f
-
-
-def test_default_portfolio_source_points_to_repo_root_tickers():
-    assert bob_tickers_path() == (repo_root() / "tickers.yaml").resolve()

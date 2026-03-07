@@ -466,3 +466,9 @@ python -m wally.main --all-standard-watchlists
 python -m wally.main --watchlist watchlists/tii75_watchlist.yaml --force
 python -m wally.main --tii75 --force
 ```
+
+
+## Sunday Sally (Weekly Valuation Review)
+
+A new weekly agent is available under `sunday-sally/` to review names near 52-week highs and assess valuation stretch vs history.
+See `sunday-sally/README.md` and `.github/workflows/sunday_sally_weekly_review.yml`.

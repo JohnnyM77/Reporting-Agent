@@ -1,0 +1,21 @@
+job_name: sunday_sally_weekly_review
+timezone: Asia/Singapore
+schedule:
+  day_of_week: sunday
+  time: "08:00"
+
+thresholds:
+  near_high_distance_max: 0.05
+  review_ratio: 1.15
+  deep_review_ratio: 1.35
+  min_persistent_weeks_for_trim_language: 2
+
+analysis:
+  quality_weight: 0.25
+  valuation_weight: 0.4
+  momentum_weight: 0.15
+  fundamentals_weight: 0.2
+
+outputs:
+  root: sunday-sally/data/outputs
+  drive_folder_path: Investing/Sunday Sally

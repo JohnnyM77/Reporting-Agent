@@ -1,0 +1,12 @@
+{
+  "company": {"ticker": "", "company_name": ""},
+  "run_date": "",
+  "valuation_summary": {},
+  "historical_valuation_summary": {},
+  "recent_announcements": [],
+  "news_context": [],
+  "instructions": {
+    "tone": "skeptical, evidence-based",
+    "deliverables": ["valuation_review.xlsx", "memo.md", "email_summary_snippet.md"]
+  }
+}

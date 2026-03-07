@@ -9,42 +9,48 @@ def _drive_service():
     from google.oauth2.service_account import Credentials
     from googleapiclient.discovery import build
 
-    sa_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
-    if not sa_json:
+    raw = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
+    if not raw:
         return None
-
-    info = json.loads(sa_json)
-    # Reuse Bob's exact auth scope pattern.
-    scopes = ["https://www.googleapis.com/auth/drive.file"]
-    creds = Credentials.from_service_account_info(info, scopes=scopes)
+    creds = Credentials.from_service_account_info(json.loads(raw), scopes=["https://www.googleapis.com/auth/drive"])
     return build("drive", "v3", credentials=creds)
 
 
-def _drive_safe_name(name: str) -> str:
-    return name.replace("/", "_").replace("\\", "_")
+def _ensure_folder(service, name: str, parent_id: str | None) -> str:
+    clauses = [f"name='{name}'", "mimeType='application/vnd.google-apps.folder'", "trashed=false"]
+    if parent_id:
+        clauses.append(f"'{parent_id}' in parents")
+    found = service.files().list(q=" and ".join(clauses), fields="files(id,name)", pageSize=5).execute().get("files", [])
+    if found:
+        return found[0]["id"]
+
+    body = {"name": name, "mimeType": "application/vnd.google-apps.folder"}
+    if parent_id:
+        body["parents"] = [parent_id]
+    created = service.files().create(body=body, fields="id").execute()
+    return created["id"]
 
 
-def _build_drive_filename(local_run_folder: Path, path: Path, run_label: str) -> str:
-    rel = path.relative_to(local_run_folder)
-    rel_flat = "__".join(rel.parts)
-    return _drive_safe_name(f"{run_label}__{rel_flat}")
-
-
-def upload_run_folder(local_run_folder: Path, folder_id: str, run_label: str) -> str | None:
-    """Upload run files into one existing Drive folder using Bob's parent-folder pattern."""
+def upload_run_folder(local_run_folder: Path, drive_folder_components: list[str], root_folder_id: str | None = None) -> str | None:
     from googleapiclient.http import MediaFileUpload
 
     service = _drive_service()
-    if service is None or not folder_id:
+    if service is None:
         return None
+
+    parent_id = root_folder_id
+    for component in drive_folder_components:
+        parent_id = _ensure_folder(service, component, parent_id)
 
     for path in local_run_folder.rglob("*"):
         if path.is_dir():
             continue
+        rel = path.relative_to(local_run_folder)
+        folder_parent = parent_id
+        for part in rel.parts[:-1]:
+            folder_parent = _ensure_folder(service, part, folder_parent)
 
-        drive_name = _build_drive_filename(local_run_folder, path, run_label)
         media = MediaFileUpload(str(path), resumable=False)
-        metadata = {"name": drive_name, "parents": [folder_id]}
-        service.files().create(body=metadata, media_body=media, fields="id").execute()
+        service.files().create(body={"name": rel.name, "parents": [folder_parent]}, media_body=media).execute()
 
-    return f"https://drive.google.com/drive/folders/{folder_id}"
+    return f"https://drive.google.com/drive/folders/{parent_id}"

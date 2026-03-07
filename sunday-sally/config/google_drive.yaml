@@ -1,3 +1,2 @@
 service_account_env: GDRIVE_SERVICE_ACCOUNT_JSON
-folder_id_env: GDRIVE_FOLDER_ID
-legacy_folder_id_env: SALLY_DRIVE_ROOT_FOLDER_ID
+root_folder_id_env: SALLY_DRIVE_ROOT_FOLDER_ID

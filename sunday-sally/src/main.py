@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+import yaml
 
 from .alert_engine import classify_alert
 from .chatgpt_handoff_builder import build_handoff_payload, save_handoff_payload
@@ -15,7 +16,6 @@ from .google_drive_uploader import upload_run_folder
 from .historical_multiple_analyzer import percentile_bucket, summarize_history, valuation_ratio
 from .memo_generator import build_memo_text, save_memo
 from .news_context_fetcher import fetch_news_context
-from .pathing import repo_root, resolve_existing_path, resolve_output_root, sally_root
 from .portfolio_loader import load_portfolio
 from .price_monitor import fetch_price_data
 from .run_logger import write_run_log
@@ -24,54 +24,26 @@ from .valuation_engine import fetch_valuation_snapshot
 from .weekly_scheduler import run_window_info
 
 
-def _load_yaml(path: Path) -> dict:
-    import yaml
-
-    return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-
-
 def _load_settings() -> dict:
-    cfg_env = os.environ.get("SALLY_CONFIG_PATH")
-    cfg_path = resolve_existing_path(
-        cfg_env or "config/settings.yaml",
-        base_dirs=[sally_root(), repo_root()],
-    )
-    return _load_yaml(cfg_path)
-
-
-def _load_portfolio_settings() -> dict:
-    source_cfg_env = os.environ.get("SALLY_PORTFOLIO_CONFIG_PATH")
-    source_cfg = resolve_existing_path(
-        source_cfg_env or "config/portfolio_source.yaml",
-        base_dirs=[sally_root(), repo_root()],
-    )
-    return _load_yaml(source_cfg)
-
+    cfg_path = os.environ.get("SALLY_CONFIG_PATH", "sunday-sally/config/settings.yaml")
+    return yaml.safe_load(Path(cfg_path).read_text(encoding="utf-8")) or {}
 
 
 def _run_folder(base_output_root: str, timezone: str) -> Path:
     now_local = dt.datetime.now(ZoneInfo(timezone))
-    output_root = resolve_output_root(base_output_root)
-    return output_root / str(now_local.year) / f"{now_local.date().isoformat()} Weekly Review"
+    return Path(base_output_root) / str(now_local.year) / f"{now_local.date().isoformat()} Weekly Review"
 
 
 def main() -> None:
     settings = _load_settings()
-    portfolio_settings = _load_portfolio_settings()
-
     tz = settings.get("timezone", "Asia/Singapore")
     thresholds = settings.get("thresholds", {})
     near_high_max = float(thresholds.get("near_high_distance_max", 0.05))
 
-    run_folder = _run_folder(settings.get("outputs", {}).get("root", "data/outputs"), tz)
+    run_folder = _run_folder(settings.get("outputs", {}).get("root", "sunday-sally/data/outputs"), tz)
     run_folder.mkdir(parents=True, exist_ok=True)
 
-    source_file = os.environ.get("SALLY_PORTFOLIO_SOURCE") or portfolio_settings.get("source_file", "tickers.yaml")
-    source_key = os.environ.get("SALLY_PORTFOLIO_SOURCE_KEY") or portfolio_settings.get("source_key", "asx")
-    exchange_suffix = os.environ.get("SALLY_PORTFOLIO_EXCHANGE_SUFFIX") or portfolio_settings.get("exchange_suffix", ".AX")
-
-    source_path = resolve_existing_path(str(source_file), base_dirs=[repo_root(), sally_root()])
-    portfolio = load_portfolio(source_file=str(source_path), source_key=str(source_key), exchange_suffix=str(exchange_suffix))
+    portfolio = load_portfolio(source_file="tickers.yaml", source_key="asx", exchange_suffix=".AX")
 
     flagged_rows = []
     for company in portfolio:
@@ -197,7 +169,6 @@ def main() -> None:
         "outputs_root": str(run_folder),
         "email_sent": email_ok,
         "google_drive_link": drive_link,
-        "portfolio_source": str(source_path),
     }
     write_run_log(run_folder / "run_log.json", run_log)
 

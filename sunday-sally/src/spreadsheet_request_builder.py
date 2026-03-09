@@ -5,7 +5,13 @@ from pathlib import Path
 import pandas as pd
 
 
-def build_valuation_workbook(output_path: Path, summary: dict, history_rows: list[dict], decision_rows: list[dict]) -> None:
+def build_valuation_workbook(
+    output_path: Path,
+    summary: dict,
+    history_rows: list[dict],
+    decision_rows: list[dict],
+    claude_analysis: dict | None = None,
+) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     summary_df = pd.DataFrame([summary])
@@ -43,3 +49,12 @@ def build_valuation_workbook(output_path: Path, summary: dict, history_rows: lis
         implied_df.to_excel(writer, sheet_name="Implied Expectations", index=False)
         critical_df.to_excel(writer, sheet_name="Critical Review Notes", index=False)
         decision_df.to_excel(writer, sheet_name="Decision Framework", index=False)
+        if claude_analysis:
+            ai_df = pd.DataFrame([
+                {"section": "Verdict", "analysis": claude_analysis.get("verdict", "")},
+                {"section": "Bull Case", "analysis": claude_analysis.get("bull_case", "")},
+                {"section": "Bear Case", "analysis": claude_analysis.get("bear_case", "")},
+                {"section": "What Must Be True", "analysis": claude_analysis.get("what_must_be_true", "")},
+                {"section": "Recommendation", "analysis": claude_analysis.get("recommendation", "")},
+            ])
+            ai_df.to_excel(writer, sheet_name="Claude AI Analysis", index=False)

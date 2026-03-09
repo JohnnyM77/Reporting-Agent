@@ -12,7 +12,6 @@ from .alert_engine import classify_alert
 from .chatgpt_handoff_builder import build_handoff_payload, save_handoff_payload
 from .document_fetcher import fetch_asx_announcements, save_source_documents
 from .email_sender import send_summary_email
-from .google_drive_uploader import upload_run_folder
 from .historical_multiple_analyzer import percentile_bucket, summarize_history, valuation_ratio
 from .memo_generator import build_memo_text, save_memo
 from .news_context_fetcher import fetch_news_context
@@ -26,25 +25,25 @@ from .weekly_scheduler import run_window_info
 
 
 def _load_settings() -> dict:
-    # "config/settings.yaml" is relative to sunday-sally/ which is the
-    # working-directory set in the GitHub Actions workflow.
     cfg_path = os.environ.get("SALLY_CONFIG_PATH", "config/settings.yaml")
     return yaml.safe_load(Path(cfg_path).read_text(encoding="utf-8")) or {}
 
 
 def _run_folder(base_output_root: str, timezone: str) -> Path:
     now_local = dt.datetime.now(ZoneInfo(timezone))
-    # resolve_output_root anchors the path to the sunday-sally/ directory
-    # regardless of the current working directory, so the output always lands
-    # in sunday-sally/data/outputs/... whether run locally or in CI.
-    return resolve_output_root(base_output_root) / str(now_local.year) / f"{now_local.date().isoformat()} Weekly Review"
+    # resolve_output_root anchors to sunday-sally/ regardless of CWD
+    return (
+        resolve_output_root(base_output_root)
+        / str(now_local.year)
+        / f"{now_local.date().isoformat()} Weekly Review"
+    )
 
 
 def _process_company(company, settings, run_folder, tz, near_high_max, thresholds) -> dict | None:
     """
-    Run the full valuation pipeline for a single company.
-    Returns a summary dict if the company is flagged, otherwise None.
-    Wrapped in its own function so one bad ticker never kills the whole run.
+    Run the full valuation pipeline for one company.
+    Returns a summary dict if flagged, else None.
+    One bad ticker never kills the whole run — wrap calls in try/except in main().
     """
     price = fetch_price_data(company.exchange_ticker, company.ticker)
     if not price:
@@ -98,9 +97,11 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         "valuation_percentile_bucket": percentile_bucket(hist.valuation_percentile),
         "alert_tier": alert.tier,
         "sally_verdict": (
-            "Needs deeper manual review"
+            "Trim candidate"
             if alert.tier == "Tier 3: Deep Review"
-            else "Full valuation"
+            else "Hold but stop adding"
+            if alert.tier == "Tier 2: Review"
+            else "Watch only"
         ),
     }
 
@@ -150,11 +151,7 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         summary=summary,
         reasons=alert.reasons,
         doubts=hist.notes,
-        decision_framing=(
-            "Hold but stop adding"
-            if alert.tier != "Tier 3: Deep Review"
-            else "Trim candidate"
-        ),
+        decision_framing=summary["sally_verdict"],
     )
     save_memo(ticker_folder / "memo.md", memo)
 
@@ -193,41 +190,72 @@ def main() -> None:
             print(f"[main] ERROR processing {company.ticker}: {exc}")
             skipped_tickers.append(company.ticker)
 
+    now_local = dt.datetime.now(ZoneInfo(tz))
+
+    # -------------------------------------------------------------------------
     # Build email body
+    # -------------------------------------------------------------------------
     if flagged_rows:
-        lines = ["Sunday Sally weekly review completed.", "", "Flagged companies:"]
+        lines = [
+            f"Sunday Sally Weekly Review — {now_local.date().isoformat()}",
+            f"{len(flagged_rows)} company/companies flagged this week.",
+            "",
+            "Flagged companies:",
+        ]
         for row in flagged_rows:
             lines.append(
-                f"- {row['ticker']} ({row['alert_tier']}): "
-                f"{row['distance_to_high_pct']}% below 52w high"
+                f"  {row['ticker']} ({row['alert_tier']}) — "
+                f"{row['distance_to_high_pct']}% below 52w high — "
+                f"{row['sally_verdict']}"
             )
+        lines += [
+            "",
+            "Valuation workbooks and review memos are attached.",
+            "Each .xlsx has six sheets: Summary, Historical, Comparison,",
+            "Implied Expectations, Critical Review, Decision Framework.",
+        ]
     else:
-        lines = ["Sunday Sally ran successfully. No major valuation stretch alerts this week."]
+        lines = [
+            f"Sunday Sally Weekly Review — {now_local.date().isoformat()}",
+            "No valuation stretch alerts this week. Nothing near 52-week highs.",
+        ]
 
     if skipped_tickers:
-        lines.extend(["", f"Skipped (errors): {', '.join(skipped_tickers)}"])
+        lines += ["", f"Tickers skipped due to data errors: {', '.join(skipped_tickers)}"]
+
+    # -------------------------------------------------------------------------
+    # Build attachments: summary text + per-ticker xlsx + memo
+    # Each file is given a clear display name that includes the ticker so
+    # they don't all show up as "memo.md" in the email client.
+    # -------------------------------------------------------------------------
+    attachments: list[tuple[Path, str]] = []
 
     summary_email_path = run_folder / "summary_email.md"
     summary_email_path.write_text("\n".join(lines), encoding="utf-8")
+    attachments.append((summary_email_path, "summary.md"))
 
-    # --- Google Drive upload ---
-    # Uses GDRIVE_FOLDER_ID — the same secret Bob uses. No separate Sally secret needed.
-    drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
-    now_local = dt.datetime.now(ZoneInfo(tz))
-    drive_link, drive_status = upload_run_folder(
-        run_folder,
-        ["Investing", "Sunday Sally", str(now_local.year), f"{now_local.date().isoformat()} Weekly Review"],
-        root_folder_id=drive_folder_id or None,
+    for row in flagged_rows:
+        ticker = row["ticker"]
+        ticker_folder = run_folder / ticker
+
+        xlsx = ticker_folder / "valuation_review.xlsx"
+        if xlsx.exists():
+            attachments.append((xlsx, f"{ticker}_valuation_review.xlsx"))
+
+        memo = ticker_folder / "memo.md"
+        if memo.exists():
+            attachments.append((memo, f"{ticker}_memo.md"))
+
+    flag_count = len(flagged_rows)
+    subject = (
+        f"Sunday Sally — {now_local.date().isoformat()} — "
+        + (f"{flag_count} flagged" if flag_count else "All clear")
     )
 
-    lines.append(f"\nDrive status: {drive_status}")
-    if drive_link:
-        lines.append(f"Drive link: {drive_link}")
-
     email_ok = send_summary_email(
-        subject=f"Sunday Sally Weekly Review — {now_local.date().isoformat()}",
+        subject=subject,
         body_text="\n".join(lines),
-        attachments=[summary_email_path],
+        attachments=attachments,
     )
 
     run_log = {
@@ -235,12 +263,12 @@ def main() -> None:
         "schedule": settings.get("schedule", {}),
         "run_window": run_window_info(tz),
         "portfolio_size": len(portfolio),
-        "flagged_count": len(flagged_rows),
+        "flagged_count": flag_count,
         "flagged_tickers": [r["ticker"] for r in flagged_rows],
         "skipped_tickers": skipped_tickers,
+        "attachments_sent": [name for _, name in attachments],
         "outputs_root": str(run_folder),
         "email_sent": email_ok,
-        "google_drive_link": drive_link,
     }
     write_run_log(run_folder / "run_log.json", run_log)
 

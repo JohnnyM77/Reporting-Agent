@@ -17,5 +17,5 @@ analysis:
   fundamentals_weight: 0.2
 
 outputs:
-  root: sunday-sally/data/outputs
+  root: data/outputs
   drive_folder_path: Investing/Sunday Sally

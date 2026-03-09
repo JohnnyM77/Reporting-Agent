@@ -30,7 +30,11 @@ def send_summary_email(subject: str, body_text: str, attachments: list[Path] | N
         maintype, subtype = (mime.split("/", 1) if mime else ("application", "octet-stream"))
         msg.add_attachment(p.read_bytes(), maintype=maintype, subtype=subtype, filename=p.name)
 
-    with smtplib.SMTP_SSL(smtp_host, smtp_port, context=ssl.create_default_context()) as server:
-        server.login(smtp_user, smtp_pass)
-        server.send_message(msg)
+    try:
+        with smtplib.SMTP_SSL(smtp_host, smtp_port, context=ssl.create_default_context()) as server:
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+    except Exception as exc:
+        print(f"[email_sender] SMTP send failed: {exc}")
+        return False
     return True

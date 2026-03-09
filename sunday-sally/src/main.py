@@ -214,14 +214,15 @@ def main() -> None:
     # Uses GDRIVE_FOLDER_ID — the same secret Bob uses. No separate Sally secret needed.
     drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
     now_local = dt.datetime.now(ZoneInfo(tz))
-    drive_link = upload_run_folder(
+    drive_link, drive_status = upload_run_folder(
         run_folder,
         ["Investing", "Sunday Sally", str(now_local.year), f"{now_local.date().isoformat()} Weekly Review"],
         root_folder_id=drive_folder_id or None,
     )
 
+    lines.append(f"\nDrive status: {drive_status}")
     if drive_link:
-        lines.extend(["", f"Google Drive: {drive_link}"])
+        lines.append(f"Drive link: {drive_link}")
 
     email_ok = send_summary_email(
         subject=f"Sunday Sally Weekly Review — {now_local.date().isoformat()}",

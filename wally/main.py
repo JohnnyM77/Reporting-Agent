@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import os
 from pathlib import Path
 
 from .charts import render_range_chart, render_value_vs_price_chart
 from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, build_run_context, load_email_settings, should_run_tii75
 from .data_fetch import fetch_price_snapshot
+from .drive_upload import upload_or_replace_xlsx
 from .email_report import build_html, send_email
 from .screening import TickerScreenResult, screen_snapshot
 from .utils import safe_slug, write_json
@@ -75,7 +77,17 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
         "flagged_tickers": [r.ticker for r in flagged],
         "results": [r.to_dict() for r in results],
     }
-    write_json(ctx.output_root / f"{safe_slug(wl.name)}.json", payload)
+    json_path = ctx.output_root / f"{safe_slug(wl.name)}.json"
+    write_json(json_path, payload)
+
+    drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
+    if drive_folder_id:
+        drive_name = f"Wally_{ctx.run_dt.date().isoformat()}_{safe_slug(wl.name)}.json"
+        try:
+            url = upload_or_replace_xlsx(json_path, drive_name, folder_id=drive_folder_id)
+            print(f"[wally] Drive upload: {url}", flush=True)
+        except Exception as exc:
+            print(f"[wally] Drive upload failed (non-fatal): {exc}", flush=True)
 
     settings = load_email_settings()
     subject = f"Wally — {wl.name} — {ctx.run_dt.date().isoformat()}"

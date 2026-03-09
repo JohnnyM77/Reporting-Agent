@@ -16,7 +16,7 @@ from .google_drive_uploader import upload_run_folder
 from .historical_multiple_analyzer import percentile_bucket, summarize_history, valuation_ratio
 from .memo_generator import build_memo_text, save_memo
 from .news_context_fetcher import fetch_news_context
-from .pathing import repo_root
+from .pathing import repo_root, resolve_output_root
 from .portfolio_loader import load_portfolio
 from .price_monitor import fetch_price_data
 from .run_logger import write_run_log
@@ -34,7 +34,10 @@ def _load_settings() -> dict:
 
 def _run_folder(base_output_root: str, timezone: str) -> Path:
     now_local = dt.datetime.now(ZoneInfo(timezone))
-    return Path(base_output_root) / str(now_local.year) / f"{now_local.date().isoformat()} Weekly Review"
+    # resolve_output_root anchors the path to the sunday-sally/ directory
+    # regardless of the current working directory, so the output always lands
+    # in sunday-sally/data/outputs/... whether run locally or in CI.
+    return resolve_output_root(base_output_root) / str(now_local.year) / f"{now_local.date().isoformat()} Weekly Review"
 
 
 def _process_company(company, settings, run_folder, tz, near_high_max, thresholds) -> dict | None:

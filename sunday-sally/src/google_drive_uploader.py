@@ -13,8 +13,8 @@ from pathlib import Path
 def _drive_service():
     """
     Build a Drive API service using the same service account secret Bob uses.
-    Scope is drive.file — same as Bob — which allows writing into folders
-    that a real Google user owns and has shared with the service account.
+    Uses the full drive scope so uploads work for user-owned folders shared
+    with the service account (drive.file is too restrictive for those).
     """
     from google.oauth2.service_account import Credentials
     from googleapiclient.discovery import build

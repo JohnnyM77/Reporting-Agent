@@ -26,8 +26,8 @@ from .weekly_scheduler import run_window_info
 
 
 def _load_settings() -> dict:
-    # Default to "config/settings.yaml" — relative to the sunday-sally/ working directory,
-    # which is where the GitHub Actions workflow (and local `python -m src.main`) runs from.
+    # "config/settings.yaml" is relative to sunday-sally/ which is the
+    # working-directory set in the GitHub Actions workflow.
     cfg_path = os.environ.get("SALLY_CONFIG_PATH", "config/settings.yaml")
     return yaml.safe_load(Path(cfg_path).read_text(encoding="utf-8")) or {}
 
@@ -41,7 +41,7 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
     """
     Run the full valuation pipeline for a single company.
     Returns a summary dict if the company is flagged, otherwise None.
-    Isolated so that one bad ticker never kills the entire run.
+    Wrapped in its own function so one bad ticker never kills the whole run.
     """
     price = fetch_price_data(company.exchange_ticker, company.ticker)
     if not price:
@@ -94,7 +94,11 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         "valuation_percentile": hist.valuation_percentile,
         "valuation_percentile_bucket": percentile_bucket(hist.valuation_percentile),
         "alert_tier": alert.tier,
-        "sally_verdict": "Needs deeper manual review" if alert.tier == "Tier 3: Deep Review" else "Full valuation",
+        "sally_verdict": (
+            "Needs deeper manual review"
+            if alert.tier == "Tier 3: Deep Review"
+            else "Full valuation"
+        ),
     }
 
     handoff = build_handoff_payload(
@@ -126,17 +130,28 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         },
     ]
     history_rows = [
-        {"reporting_period": "current", "pe": val.trailing_pe, "ev_ebitda": val.ev_to_ebitda, "notes": "; ".join(hist.notes)}
+        {
+            "reporting_period": "current",
+            "pe": val.trailing_pe,
+            "ev_ebitda": val.ev_to_ebitda,
+            "notes": "; ".join(hist.notes),
+        }
     ]
 
-    build_valuation_workbook(ticker_folder / "valuation_review.xlsx", summary, history_rows, critical_rows)
+    build_valuation_workbook(
+        ticker_folder / "valuation_review.xlsx", summary, history_rows, critical_rows
+    )
 
     memo = build_memo_text(
         company={"ticker": company.ticker, "company_name": price.company_name},
         summary=summary,
         reasons=alert.reasons,
         doubts=hist.notes,
-        decision_framing="Hold but stop adding" if alert.tier != "Tier 3: Deep Review" else "Trim candidate",
+        decision_framing=(
+            "Hold but stop adding"
+            if alert.tier != "Tier 3: Deep Review"
+            else "Trim candidate"
+        ),
     )
     save_memo(ticker_folder / "memo.md", memo)
 
@@ -149,7 +164,9 @@ def main() -> None:
     thresholds = settings.get("thresholds", {})
     near_high_max = float(thresholds.get("near_high_distance_max", 0.05))
 
-    run_folder = _run_folder(settings.get("outputs", {}).get("root", "data/outputs"), tz)
+    run_folder = _run_folder(
+        settings.get("outputs", {}).get("root", "data/outputs"), tz
+    )
     run_folder.mkdir(parents=True, exist_ok=True)
 
     tickers_file = repo_root() / "tickers.yaml"
@@ -164,17 +181,23 @@ def main() -> None:
 
     for company in portfolio:
         try:
-            result = _process_company(company, settings, run_folder, tz, near_high_max, thresholds)
+            result = _process_company(
+                company, settings, run_folder, tz, near_high_max, thresholds
+            )
             if result:
                 flagged_rows.append(result)
         except Exception as exc:
             print(f"[main] ERROR processing {company.ticker}: {exc}")
             skipped_tickers.append(company.ticker)
 
+    # Build email body
     if flagged_rows:
         lines = ["Sunday Sally weekly review completed.", "", "Flagged companies:"]
         for row in flagged_rows:
-            lines.append(f"- {row['ticker']} ({row['alert_tier']}): {row['distance_to_high_pct']}% below 52w high")
+            lines.append(
+                f"- {row['ticker']} ({row['alert_tier']}): "
+                f"{row['distance_to_high_pct']}% below 52w high"
+            )
     else:
         lines = ["Sunday Sally ran successfully. No major valuation stretch alerts this week."]
 
@@ -184,12 +207,14 @@ def main() -> None:
     summary_email_path = run_folder / "summary_email.md"
     summary_email_path.write_text("\n".join(lines), encoding="utf-8")
 
-    drive_root = os.environ.get("SALLY_DRIVE_ROOT_FOLDER_ID")
+    # --- Google Drive upload ---
+    # Uses GDRIVE_FOLDER_ID — the same secret Bob uses. No separate Sally secret needed.
+    drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
     now_local = dt.datetime.now(ZoneInfo(tz))
     drive_link = upload_run_folder(
         run_folder,
         ["Investing", "Sunday Sally", str(now_local.year), f"{now_local.date().isoformat()} Weekly Review"],
-        root_folder_id=drive_root,
+        root_folder_id=drive_folder_id or None,
     )
 
     if drive_link:

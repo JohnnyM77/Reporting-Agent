@@ -23,7 +23,7 @@ def _drive_service():
     if not sa_json:
         return None
     info = json.loads(sa_json)
-    scopes = ["https://www.googleapis.com/auth/drive.file"]
+    scopes = ["https://www.googleapis.com/auth/drive"]
     creds = Credentials.from_service_account_info(info, scopes=scopes)
     return build("drive", "v3", credentials=creds)
 
@@ -92,7 +92,12 @@ def upload_run_folder(
         )
         return None
 
-    service = _drive_service()
+    try:
+        service = _drive_service()
+    except Exception as exc:
+        print(f"[google_drive_uploader] Could not build Drive service — skipping upload: {exc}")
+        return None
+
     if service is None:
         print("[google_drive_uploader] GDRIVE_SERVICE_ACCOUNT_JSON not set — skipping upload.")
         return None
@@ -132,6 +137,10 @@ def upload_run_folder(
         f"[google_drive_uploader] Upload complete: {uploaded} file(s) uploaded"
         + (f", {errors} error(s)" if errors else ".")
     )
+
+    if uploaded == 0:
+        print("[google_drive_uploader] No files were uploaded successfully — not returning Drive link.")
+        return None
 
     # Return a link to the folder itself (same pattern Bob uses for folder links)
     return f"https://drive.google.com/drive/folders/{root_folder_id}"

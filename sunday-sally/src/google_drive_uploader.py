@@ -2,55 +2,136 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 
 
+# ---------------------------------------------------------------------------
+# Internal helpers — identical pattern to Bob's drive_service()
+# ---------------------------------------------------------------------------
+
 def _drive_service():
+    """
+    Build a Drive API service using the same service account secret Bob uses.
+    Scope is drive.file — same as Bob — which allows writing into folders
+    that a real Google user owns and has shared with the service account.
+    """
     from google.oauth2.service_account import Credentials
     from googleapiclient.discovery import build
 
-    raw = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
-    if not raw:
+    sa_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
+    if not sa_json:
         return None
-    creds = Credentials.from_service_account_info(json.loads(raw), scopes=["https://www.googleapis.com/auth/drive"])
+    info = json.loads(sa_json)
+    scopes = ["https://www.googleapis.com/auth/drive.file"]
+    creds = Credentials.from_service_account_info(info, scopes=scopes)
     return build("drive", "v3", credentials=creds)
 
 
-def _ensure_folder(service, name: str, parent_id: str | None) -> str:
-    clauses = [f"name='{name}'", "mimeType='application/vnd.google-apps.folder'", "trashed=false"]
-    if parent_id:
-        clauses.append(f"'{parent_id}' in parents")
-    found = service.files().list(q=" and ".join(clauses), fields="files(id,name)", pageSize=5).execute().get("files", [])
-    if found:
-        return found[0]["id"]
+def _build_drive_filename(run_folder_root: Path, file_path: Path, run_label: str) -> str:
+    """
+    Flatten a nested file path into a single Drive filename using __ separators.
 
-    body = {"name": name, "mimeType": "application/vnd.google-apps.folder"}
-    if parent_id:
-        body["parents"] = [parent_id]
-    created = service.files().create(body=body, fields="id").execute()
-    return created["id"]
+    Example:
+        root  = /tmp/run
+        path  = /tmp/run/BHP/memo.md
+        label = SundaySally_2026-03-08
+        →  SundaySally_2026-03-08__BHP__memo.md
+    """
+    rel = file_path.relative_to(run_folder_root)
+    # Replace any characters that are awkward in Drive filenames
+    safe_parts = [re.sub(r"[^\w.\-]", "_", part) for part in rel.parts]
+    return run_label + "__" + "__".join(safe_parts)
 
 
-def upload_run_folder(local_run_folder: Path, drive_folder_components: list[str], root_folder_id: str | None = None) -> str | None:
+def _upload_file(service, local_path: Path, drive_filename: str, folder_id: str) -> str:
+    """
+    Upload one file into folder_id — same approach as Bob's upload_to_drive().
+    Returns the Drive file URL, or empty string on failure.
+    """
     from googleapiclient.http import MediaFileUpload
+
+    file_metadata = {"name": drive_filename, "parents": [folder_id]}
+    media = MediaFileUpload(str(local_path), resumable=False)
+    created = (
+        service.files()
+        .create(body=file_metadata, media_body=media, fields="id")
+        .execute()
+    )
+    file_id = created.get("id") or ""
+    if not file_id:
+        return ""
+    return f"https://drive.google.com/file/d/{file_id}/view"
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+def upload_run_folder(
+    local_run_folder: Path,
+    drive_folder_components: list[str],
+    root_folder_id: str | None = None,
+) -> str | None:
+    """
+    Upload every file in local_run_folder into the Google Drive folder
+    identified by root_folder_id (the GDRIVE_FOLDER_ID secret — same one
+    Bob uses).
+
+    Files are uploaded flat with descriptive names so Drive doesn't need
+    subfolder creation. The run date is included in every filename so
+    multiple weeks never overwrite each other.
+
+    Returns the Drive folder URL on success, None if Drive is not configured
+    or the upload fails. Never raises — Drive upload is non-fatal.
+    """
+    if not root_folder_id:
+        print(
+            "[google_drive_uploader] GDRIVE_FOLDER_ID is not set — "
+            "skipping Drive upload. Sally will still send email."
+        )
+        return None
 
     service = _drive_service()
     if service is None:
+        print("[google_drive_uploader] GDRIVE_SERVICE_ACCOUNT_JSON not set — skipping upload.")
         return None
 
-    parent_id = root_folder_id
-    for component in drive_folder_components:
-        parent_id = _ensure_folder(service, component, parent_id)
+    # Build a run label from the folder components e.g. "SundaySally_2026-03-08"
+    # drive_folder_components looks like ["Investing", "Sunday Sally", "2026", "2026-03-08 Weekly Review"]
+    # We use the last component (the dated one) as the label prefix
+    run_label = "SundaySally"
+    if drive_folder_components:
+        last = drive_folder_components[-1]
+        # Extract just the date portion if present e.g. "2026-03-08 Weekly Review" → "2026-03-08"
+        date_match = re.search(r"\d{4}-\d{2}-\d{2}", last)
+        if date_match:
+            run_label = f"SundaySally_{date_match.group()}"
 
-    for path in local_run_folder.rglob("*"):
+    uploaded = 0
+    errors = 0
+    last_url = f"https://drive.google.com/drive/folders/{root_folder_id}"
+
+    for path in sorted(local_run_folder.rglob("*")):
         if path.is_dir():
             continue
-        rel = path.relative_to(local_run_folder)
-        folder_parent = parent_id
-        for part in rel.parts[:-1]:
-            folder_parent = _ensure_folder(service, part, folder_parent)
+        drive_filename = _build_drive_filename(local_run_folder, path, run_label)
+        try:
+            url = _upload_file(service, path, drive_filename, root_folder_id)
+            if url:
+                uploaded += 1
+                last_url = url
+            else:
+                print(f"[google_drive_uploader] WARNING: upload returned no ID for {path.name}")
+                errors += 1
+        except Exception as exc:
+            print(f"[google_drive_uploader] WARNING: could not upload {path.name} — {exc}")
+            errors += 1
 
-        media = MediaFileUpload(str(path), resumable=False)
-        service.files().create(body={"name": rel.name, "parents": [folder_parent]}, media_body=media).execute()
+    print(
+        f"[google_drive_uploader] Upload complete: {uploaded} file(s) uploaded"
+        + (f", {errors} error(s)" if errors else ".")
+    )
 
-    return f"https://drive.google.com/drive/folders/{parent_id}"
+    # Return a link to the folder itself (same pattern Bob uses for folder links)
+    return f"https://drive.google.com/drive/folders/{root_folder_id}"

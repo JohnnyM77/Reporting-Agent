@@ -10,6 +10,7 @@ import yaml
 
 from .alert_engine import classify_alert
 from .chatgpt_handoff_builder import build_handoff_payload, save_handoff_payload
+from .claude_analyst import analyse_company
 from .document_fetcher import fetch_asx_announcements, save_source_documents
 from .email_sender import send_summary_email
 from .historical_multiple_analyzer import percentile_bucket, summarize_history, valuation_ratio
@@ -142,8 +143,20 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         }
     ]
 
+    claude_analysis = analyse_company(
+        ticker=company.ticker,
+        company_name=price.company_name,
+        summary=summary,
+        reasons=alert.reasons,
+        news=[n.get("headline", "") for n in news] if isinstance(news, list) else [],
+    )
+
     build_valuation_workbook(
-        ticker_folder / "valuation_review.xlsx", summary, history_rows, critical_rows
+        ticker_folder / "valuation_review.xlsx",
+        summary,
+        history_rows,
+        critical_rows,
+        claude_analysis=claude_analysis,
     )
 
     memo = build_memo_text(
@@ -152,6 +165,7 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         reasons=alert.reasons,
         doubts=hist.notes,
         decision_framing=summary["sally_verdict"],
+        claude_analysis=claude_analysis,
     )
     save_memo(ticker_folder / "memo.md", memo)
 

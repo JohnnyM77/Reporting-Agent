@@ -13,12 +13,6 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v4
 
-      - name: Debug - show files
-        run: |
-          pwd
-          ls -la
-          python --version
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -34,19 +28,24 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests beautifulsoup4 pyyaml pypdf openai google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib playwright
+          pip install requests beautifulsoup4 pyyaml pypdf openai playwright
           playwright install chromium
 
       - name: Run agent
         env:
+          # ── Telegram (primary delivery) ────────────────────────────────
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # ── Email (optional fallback) ──────────────────────────────────
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          # ── OpenAI ─────────────────────────────────────────────────────
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
-          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
-          BROTHER_EMAIL: ${{ secrets.BROTHER_EMAIL }}
+          # ── State ──────────────────────────────────────────────────────
           SEEN_STATE_PATH: state_seen.json
+          # ── Optional: AR9 sibling alert ────────────────────────────────
+          BROTHER_TELEGRAM_CHAT_ID: ${{ secrets.BROTHER_TELEGRAM_CHAT_ID }}
         run: |
           python agent.py
 
@@ -56,5 +55,3 @@ jobs:
         with:
           path: state_seen.json
           key: seen-state-${{ github.ref_name }}-${{ github.run_id }}
-
- 

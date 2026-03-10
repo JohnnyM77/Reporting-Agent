@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import mimetypes
 import os
 from pathlib import Path
 from typing import Optional
@@ -20,7 +21,16 @@ def _drive_service():
 
 
 def upload_or_replace_xlsx(local_path: Path, drive_name: str, folder_id: Optional[str] = None) -> str:
+    """Upload (or replace if already exists) any file to Google Drive.
+
+    Kept as ``upload_or_replace_xlsx`` for historical reasons; it now works for
+    any file type by auto-detecting the MIME type from the file extension.
+    """
     from googleapiclient.http import MediaFileUpload
+
+    mime, _ = mimetypes.guess_type(str(local_path))
+    if not mime:
+        mime = "application/octet-stream"
 
     service = _drive_service()
     q_parts = [f"name = '{drive_name}'", "trashed = false"]
@@ -30,11 +40,7 @@ def upload_or_replace_xlsx(local_path: Path, drive_name: str, folder_id: Optiona
 
     found = service.files().list(q=query, spaces="drive", fields="files(id,name)", pageSize=10).execute().get("files", [])
 
-    media = MediaFileUpload(
-        str(local_path),
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        resumable=False,
-    )
+    media = MediaFileUpload(str(local_path), mimetype=mime, resumable=False)
 
     if found:
         file_id = found[0]["id"]

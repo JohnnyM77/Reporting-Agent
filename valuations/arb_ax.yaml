@@ -1,0 +1,107 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ARB.AX — ARB Corporation  |  Value Chart Config
+# Example for quality compounder (no norm_eps, higher multiples, lower sell trigger)
+# ──────────────────────────────────────────────────────────────────────────────
+
+ticker: ARB.AX
+company_name: ARB Corporation
+business: "4WD accessories manufacturer & retailer — Aus domestic + export"
+exchange: ASX
+
+stock_type: quality       # Quality compounder — normal P/E framework applies
+
+buy_multiple: 20          # Only buy when market offers a reasonable entry multiple
+sell_multiple: 35         # Quality compounders deserve premium; sell only when extreme
+rror: 0.03                # Lower hurdle — quality business warrants lower yield requirement
+norm_eps: null            # Not applicable for quality stocks — earnings don't mean-revert
+
+chart:
+  dimensions:
+    width: 34
+    height: 20
+
+  left_axis:
+    label: "Price (AUD $)"
+    min: 0.0
+    max: 60.0             # ARB trades $10–$50 range historically
+    major_unit: 5.0
+    num_fmt: '"$"#,##0.00'
+
+  right_axis:
+    label: "P/E Ratio"
+    min: 0.0
+    max: 50.0             # Quality stocks carry higher P/Es
+    major_unit: 5.0
+    num_fmt: "0.0"
+
+  x_axis:
+    num_fmt: "MMM-YY"
+    tick_label_skip: 26
+    tick_mark_skip: 26
+
+  lines:
+    price:
+      color: "1565C0"
+      width_emu: 9525
+      style: solid
+    value_buy:
+      color: "1A5E20"
+      width_emu: 19050
+      style: dash
+    value_sell:
+      color: "C0392B"
+      width_emu: 19050
+      style: dash
+    div_rror:
+      color: "2E7D32"
+      width_emu: 19050
+      style: dash
+    pe_smooth:
+      color: "B8860B"
+      width_emu: 15875
+      style: solid
+
+  pe_smooth_days: 60
+  legend_position: "t"
+  legend_overlay: true
+  axis_title_box:
+    fill: "FFFF00"
+    border_color: "000000"
+    border_width_emu: 9525
+    text_bold: true
+    text_color: "000000"
+    font_size_pt: 9
+  legend_box:
+    fill: "FFFFFF"
+    border_color: "404040"
+    border_width_emu: 12700
+
+price_data:
+  frequency: weekly
+  resample_day: "W-FRI"
+  start_date: "2016-01-01"
+  source_hint: "marketindex.com.au/asx/arb — export daily CSV (Date as YYYYMMDD)"
+  stockhistory_formula: '=STOCKHISTORY("ARB.AX",DATE(2016,1,1),TODAY(),0,1,0,1)'
+
+earnings:
+  - {date: "2016-02-19", period: "H1 FY2016",  ttm_eps: 55.0,  ttm_div: 26.0, notes: ""}
+  - {date: "2016-08-19", period: "FY2016",      ttm_eps: 62.0,  ttm_div: 29.0, notes: ""}
+  - {date: "2017-02-17", period: "H1 FY2017",   ttm_eps: 65.0,  ttm_div: 30.5, notes: ""}
+  - {date: "2017-08-18", period: "FY2017",       ttm_eps: 73.0,  ttm_div: 34.0, notes: ""}
+  - {date: "2018-02-16", period: "H1 FY2018",   ttm_eps: 77.5,  ttm_div: 36.0, notes: ""}
+  - {date: "2018-08-17", period: "FY2018",       ttm_eps: 87.0,  ttm_div: 40.0, notes: ""}
+  - {date: "2019-02-15", period: "H1 FY2019",   ttm_eps: 88.5,  ttm_div: 41.5, notes: ""}
+  - {date: "2019-08-16", period: "FY2019",       ttm_eps: 95.0,  ttm_div: 44.0, notes: ""}
+  - {date: "2020-02-14", period: "H1 FY2020",   ttm_eps: 92.0,  ttm_div: 43.0, notes: "COVID uncertainty"}
+  - {date: "2020-08-21", period: "FY2020",       ttm_eps: 86.0,  ttm_div: 40.0, notes: "COVID year"}
+  - {date: "2021-02-19", period: "H1 FY2021",   ttm_eps: 110.0, ttm_div: 46.0, notes: "4WD demand surge"}
+  - {date: "2021-08-20", period: "FY2021",       ttm_eps: 150.0, ttm_div: 54.0, notes: "Record COVID-era earnings"}
+  - {date: "2022-02-18", period: "H1 FY2022",   ttm_eps: 165.0, ttm_div: 64.0, notes: ""}
+  - {date: "2022-08-19", period: "FY2022",       ttm_eps: 178.0, ttm_div: 68.0, notes: "Peak post-COVID"}
+  - {date: "2023-02-17", period: "H1 FY2023",   ttm_eps: 155.0, ttm_div: 62.0, notes: "Normalising"}
+  - {date: "2023-08-18", period: "FY2023",       ttm_eps: 131.0, ttm_div: 57.0, notes: ""}
+  - {date: "2024-02-16", period: "H1 FY2024",   ttm_eps: 124.0, ttm_div: 55.0, notes: "FY2024 underlying EPS ~124.88c"}
+  - {date: "2024-08-16", period: "FY2024",       ttm_eps: 124.88,ttm_div: 56.0, notes: "FY2024 confirmed EPS 124.88c"}
+  - {date: "2025-02-21", period: "H1 FY2025",   ttm_eps: 120.0, ttm_div: 54.0, notes: "Est."}
+  - {date: "2025-08-22", period: "FY2025",       ttm_eps: 118.0, ttm_div: 53.0, notes: "Est."}
+  - {date: "2026-02-20", period: "H1 FY2026",   ttm_eps: 116.0, ttm_div: 52.0, notes: "Est. — H1 FY2026 NPAT ~$42.2M confirmed; update TTM when full data available"}

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
 import pandas as pd
@@ -57,3 +58,21 @@ def fetch_price_history_10y_monthly(ticker: str) -> pd.Series:
     series = hist["Close"].dropna()
     series.index = pd.to_datetime(series.index)
     return series
+
+
+def fetch_price_history_10y_daily(ticker: str, csv_path: Path) -> Path:
+    """Fetch 10-year daily OHLCV history, save to CSV, and return the path.
+
+    The CSV uses YYYYMMDD-formatted dates in the Date column, which matches
+    the format expected by generate_asx_value_spreadsheet.
+    """
+    hist = yf.Ticker(ticker).history(period="10y", interval="1d", auto_adjust=False)
+    if hist.empty or "Close" not in hist:
+        raise RuntimeError(f"No 10-year daily history available for {ticker}")
+    df = hist[["Open", "High", "Low", "Close", "Volume"]].copy()
+    df = df.dropna(subset=["Close"])
+    df.index = pd.to_datetime(df.index).strftime("%Y%m%d")
+    df.index.name = "Date"
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(csv_path)
+    return csv_path

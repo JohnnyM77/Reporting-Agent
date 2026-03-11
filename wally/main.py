@@ -13,6 +13,11 @@ from .email_report import build_html, send_email
 from .screening import TickerScreenResult, screen_snapshot
 from .utils import safe_slug, write_json
 from .watchlist_loader import load_watchlist
+try:
+    from .value_chart_builder import build_value_chart as _build_xlsx
+    _XLSX_BUILDER_AVAILABLE = True
+except ImportError:
+    _XLSX_BUILDER_AVAILABLE = False
 
 
 def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
@@ -54,6 +59,18 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
                 chart_notes[ticker] = note
                 if value_png:
                     attachments.append(value_png)
+
+                # Build xlsx value chart workbook if a valuations config exists
+                if _XLSX_BUILDER_AVAILABLE:
+                    try:
+                        xlsx_out = ctx.output_root / f"{ticker.lower().replace('.', '_')}_value_chart.xlsx"
+                        xlsx_path = _build_xlsx(ticker, output_path=str(xlsx_out))
+                        attachments.append(Path(xlsx_path))
+                        chart_notes[ticker] = "Value chart xlsx attached"
+                    except FileNotFoundError:
+                        pass  # no valuations/<ticker>.yaml yet — not an error
+                    except Exception as xlsx_err:
+                        print(f"[wally] xlsx build failed for {ticker}: {xlsx_err}", flush=True)
         except Exception as e:
             results.append(
                 TickerScreenResult(

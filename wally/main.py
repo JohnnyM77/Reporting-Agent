@@ -5,12 +5,12 @@ import datetime as dt
 import os
 from pathlib import Path
 
-from .charts import _load_valuation_config, render_range_chart, render_value_vs_price_chart
+from .charts import render_range_chart, render_value_vs_price_chart
 from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, build_run_context, load_email_settings, should_run_tii75
-from .data_fetch import fetch_price_history_10y_daily, fetch_price_snapshot
+from .data_fetch import fetch_price_snapshot
+from .drive_upload import upload_or_replace_xlsx
 from .email_report import build_html, send_email
 from .screening import TickerScreenResult, screen_snapshot
-from .spreadsheet import generate_asx_value_spreadsheet
 from .utils import safe_slug, write_json
 from .watchlist_loader import load_watchlist
 try:
@@ -67,6 +67,17 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
                         xlsx_path = _build_xlsx(ticker, output_path=str(xlsx_out))
                         attachments.append(Path(xlsx_path))
                         chart_notes[ticker] = "Value chart xlsx attached"
+                        # Upload to Drive: YYMMDD-TICKER naming convention
+                        drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
+                        if drive_folder_id:
+                            drive_name = f"{ctx.run_dt.strftime('%y%m%d')}-{ticker.split('.')[0]}"
+                            try:
+                                url = upload_or_replace_xlsx(
+                                    Path(xlsx_path), drive_name, folder_id=drive_folder_id
+                                )
+                                print(f"[wally] Drive → {drive_name}: {url}", flush=True)
+                            except Exception as drive_err:
+                                print(f"[wally] Drive upload failed for {ticker}: {drive_err}", flush=True)
                     except FileNotFoundError:
                         pass  # no valuations/<ticker>.yaml yet — not an error
                     except Exception as xlsx_err:
@@ -114,43 +125,6 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
         f"Flagged tickers: {', '.join([r.ticker for r in flagged]) if flagged else 'None'}"
     )
     send_email(settings, subject, text, html, attachments)
-
-    # Generate value spreadsheets and upload to Google Drive for flagged tickers
-    # that have a valuation config defined.
-    gdrive_folder_id = os.environ.get("GDRIVE_FOLDER_ID") or None
-    for row in flagged:
-        valuation = _load_valuation_config(row.ticker)
-        if not valuation:
-            continue
-        years = sorted(set(valuation.eps.keys()) | set(valuation.dividend.keys()))
-        if not years:
-            continue
-        try:
-            csv_path = ctx.output_root / f"{safe_slug(row.ticker)}_prices.csv"
-            fetch_price_history_10y_daily(row.ticker, csv_path)
-            earnings = [
-                (
-                    dt.date(y, 12, 31),
-                    valuation.eps.get(y, 0.0) * 100,       # AUD $ → AUD cents
-                    valuation.dividend.get(y, 0.0) * 100,  # AUD $ → AUD cents
-                    f"FY{y}",
-                    "",
-                )
-                for y in years
-            ]
-            config = {
-                "company_name": row.company_name,
-                "ticker": row.ticker,
-                "multiple": int(valuation.multiple),
-                "rror": valuation.required_return_dividend or 0.0,
-                "earnings": earnings,
-                "drive_folder_id": gdrive_folder_id,
-            }
-            xlsx_path = ctx.output_root / f"{safe_slug(row.ticker)}_value.xlsx"
-            url = generate_asx_value_spreadsheet(config, str(csv_path), str(xlsx_path))
-            print(f"[wally] Spreadsheet uploaded for {row.ticker}: {url}", flush=True)
-        except Exception as exc:
-            print(f"[wally] Spreadsheet generation failed for {row.ticker}: {exc}", flush=True)
 
     return len(flagged)
 

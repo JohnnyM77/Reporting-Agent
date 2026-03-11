@@ -180,15 +180,23 @@ def patch_chart_xml(xlsx_path: Path, cfg: dict) -> None:
 
                 root = etree.fromstring(data)
 
-                # 1. Axis title boxes + secondary axPos
+                # 1. Axis title boxes + axis position enforcement
                 for ax in root.findall(f".//{C}valAx"):
                     ax_id_el = ax.find(f"{C}axId")
                     ax_id    = ax_id_el.get("val") if ax_id_el is not None else None
 
                     if ax_id == "200":
+                        # Secondary value axis must be on the RIGHT
                         axpos = ax.find(f"{C}axPos")
-                        if axpos is not None:
-                            axpos.set("val", "r")
+                        if axpos is None:
+                            axpos = etree.SubElement(ax, f"{C}axPos")
+                        axpos.set("val", "r")
+                    elif ax_id == "100":
+                        # Primary value axis must be on the LEFT
+                        axpos = ax.find(f"{C}axPos")
+                        if axpos is None:
+                            axpos = etree.SubElement(ax, f"{C}axPos")
+                        axpos.set("val", "l")
 
                     title_el = ax.find(f"{C}title")
                     if title_el is None:
@@ -675,6 +683,13 @@ def _build_chart(wb: Workbook, cfg: dict, ws3) -> None:
 
     # ── Primary chart (Price → left axis) ────────────────────────────────────
     ch = LineChart()
+    # Assign explicit axis IDs to avoid collision with secondary chart.
+    # openpyxl LineChart defaults: y_axis.axId=200, x_axis.axId=100.
+    # We override them so the primary value axis uses ID 100 (left) and the
+    # shared category axis uses ID 10, leaving ID 200 exclusively for the
+    # secondary value axis (right).
+    ch.y_axis.axId   = 100   # primary value axis — LEFT
+    ch.x_axis.axId   = 10    # category axis — shared with secondary chart
     ch.width  = int(_get(cfg, "chart", "dimensions", "width",  default=34))
     ch.height = int(_get(cfg, "chart", "dimensions", "height", default=20))
     ch.add_data(Reference(ws3, min_col=2, min_row=2, max_row=last_row),
@@ -706,6 +721,8 @@ def _build_chart(wb: Workbook, cfg: dict, ws3) -> None:
     ch.y_axis.scaling.min   = float(la.get("min",  0.0))
     ch.y_axis.scaling.max   = float(la.get("max",  10.0))
     ch.y_axis.majorGridlines = None
+    ch.y_axis.crossAx        = 10    # primary valAx crosses catAx (id=10)
+    ch.x_axis.crossAx        = 100   # catAx crosses primary valAx (id=100)
 
     xa = _get(cfg, "chart", "x_axis") or {}
     ch.x_axis.number_format  = xa.get("num_fmt",          "MMM-YY")
@@ -756,16 +773,18 @@ def _build_chart(wb: Workbook, cfg: dict, ws3) -> None:
         sec.series[i].title = SeriesLabel(v=title)
 
     ra = _get(cfg, "chart", "right_axis") or {}
-    sec.y_axis.axId          = 200
+    sec.y_axis.axId          = 200   # secondary value axis — RIGHT (unique, != primary's 100)
     sec.y_axis.title         = ra.get("label",      "P/E Ratio")
     sec.y_axis.crosses       = "max"
+    sec.y_axis.crossAx       = 10    # secondary valAx crosses shared catAx (id=10)
     sec.y_axis.number_format = ra.get("num_fmt",    "0.0")
     sec.y_axis.majorUnit     = float(ra.get("major_unit", 2.0))
     sec.y_axis.scaling.min   = float(ra.get("min",  0.0))
     sec.y_axis.scaling.max   = float(ra.get("max",  20.0))
     sec.y_axis.majorGridlines = None
-    sec.x_axis.axId           = 100
+    sec.x_axis.axId           = 10    # shares the primary chart's catAx (id=10)
     sec.x_axis.crosses        = "autoZero"
+    sec.x_axis.crossAx        = 100   # catAx crosses primary valAx (id=100)
 
     ch += sec
     ws4.add_chart(ch, "A3")

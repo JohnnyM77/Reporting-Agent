@@ -1,0 +1,112 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# BXB.AX — Brambles Limited  |  Value Chart Config
+# Global pallet-pooling and supply chain logistics leader.
+# CHEP pallets operate across 60+ countries — near-monopoly in many markets.
+# Quality compounder — network effects and switching costs give pricing power.
+# Reports in USD; EPS below in AUD cents at prevailing exchange rates.
+# ──────────────────────────────────────────────────────────────────────────────
+
+ticker: BXB.AX
+company_name: Brambles Limited
+business: "Global pallet/crate/container pooling (CHEP brand) — Americas, EMEA, Asia Pacific; supply chain logistics"
+exchange: ASX
+
+stock_type: quality         # Quality compounder — dominant market position with moat
+
+buy_multiple: 16            # Buy at 16x P/E — quality logistics with pricing power
+sell_multiple: 28           # Sell at 28x — premium to peers
+rror: 0.03                  # 3% — steady dividend growth
+norm_eps: null              # Quality compounder — no cyclical mean-reversion
+
+chart:
+  dimensions:
+    width: 34
+    height: 20
+
+  left_axis:
+    label: "Price (AUD $)"
+    min: 0.0
+    max: 25.0             # BXB peaked ~$20-21; $25 gives headroom
+    major_unit: 2.0
+    num_fmt: '"$"#,##0.00'
+
+  right_axis:
+    label: "P/E Ratio"
+    min: 0.0
+    max: 35.0             # Quality logistics can trade at up to 30+ P/E
+    major_unit: 5.0
+    num_fmt: "0.0"
+
+  x_axis:
+    num_fmt: "MMM-YY"
+    tick_label_skip: 26
+    tick_mark_skip: 26
+
+  lines:
+    price:
+      color: "1565C0"
+      width_emu: 9525
+      style: solid
+    value_buy:
+      color: "1A5E20"
+      width_emu: 19050
+      style: dash
+    value_sell:
+      color: "C0392B"
+      width_emu: 19050
+      style: dash
+    div_rror:
+      color: "2E7D32"
+      width_emu: 19050
+      style: dash
+    pe_smooth:
+      color: "B8860B"
+      width_emu: 15875
+      style: solid
+
+  pe_smooth_days: 60
+  legend_position: "t"
+  legend_overlay: true
+  axis_title_box:
+    fill: "FFFF00"
+    border_color: "000000"
+    border_width_emu: 9525
+    text_bold: true
+    text_color: "000000"
+    font_size_pt: 9
+  legend_box:
+    fill: "FFFFFF"
+    border_color: "404040"
+    border_width_emu: 12700
+
+price_data:
+  frequency: weekly
+  resample_day: "W-FRI"
+  start_date: "2016-01-01"
+  source_hint: "marketindex.com.au/asx/bxb — export daily CSV (Date as YYYYMMDD)"
+  stockhistory_formula: '=STOCKHISTORY("BXB.AX",DATE(2016,1,1),TODAY(),0,1,0,1)'
+
+# ── Earnings history ──────────────────────────────────────────────────────────
+# Brambles FY ends 30 June. H1 results released ~Feb, Full Year ~Aug.
+# Brambles reports in USD; AUD cents estimated at prevailing FX.
+# Use UNDERLYING EPS (excludes significant items and amortisation of intangibles).
+# All marked Est. — verify against Brambles ASX announcements.
+earnings:
+  - {date: "2016-08-23", period: "FY2016",     ttm_eps: 68,  ttm_div: 28,  notes: "Est."}
+  - {date: "2017-02-14", period: "H1 FY2017",  ttm_eps: 68,  ttm_div: 28,  notes: "Est."}
+  - {date: "2017-08-22", period: "FY2017",     ttm_eps: 73,  ttm_div: 30,  notes: "Est."}
+  - {date: "2018-02-13", period: "H1 FY2018",  ttm_eps: 74,  ttm_div: 31,  notes: "Est."}
+  - {date: "2018-08-21", period: "FY2018",     ttm_eps: 77,  ttm_div: 32,  notes: "Est."}
+  - {date: "2019-02-19", period: "H1 FY2019",  ttm_eps: 78,  ttm_div: 33,  notes: "Est."}
+  - {date: "2019-08-20", period: "FY2019",     ttm_eps: 80,  ttm_div: 33,  notes: "Est."}
+  - {date: "2020-02-18", period: "H1 FY2020",  ttm_eps: 80,  ttm_div: 33,  notes: "Est. | COVID supply chain disruption"}
+  - {date: "2020-08-18", period: "FY2020",     ttm_eps: 78,  ttm_div: 32,  notes: "Est."}
+  - {date: "2021-02-16", period: "H1 FY2021",  ttm_eps: 75,  ttm_div: 31,  notes: "Est. | Cost inflation beginning"}
+  - {date: "2021-08-17", period: "FY2021",     ttm_eps: 77,  ttm_div: 31,  notes: "Est."}
+  - {date: "2022-02-15", period: "H1 FY2022",  ttm_eps: 82,  ttm_div: 34,  notes: "Est. | Pallet shortage + pricing power"}
+  - {date: "2022-08-16", period: "FY2022",     ttm_eps: 90,  ttm_div: 37,  notes: "Est. | Strong pricing; cost inflation flowing through"}
+  - {date: "2023-02-14", period: "H1 FY2023",  ttm_eps: 100, ttm_div: 41,  notes: "Est."}
+  - {date: "2023-08-22", period: "FY2023",     ttm_eps: 115, ttm_div: 47,  notes: "Est. | Pricing power demonstrated; margins expanding"}
+  - {date: "2024-02-20", period: "H1 FY2024",  ttm_eps: 120, ttm_div: 49,  notes: "Est."}
+  - {date: "2024-08-20", period: "FY2024",     ttm_eps: 125, ttm_div: 51,  notes: "Est. — UPDATE when FY2024 results released"}
+  - {date: "2025-02-18", period: "H1 FY2025",  ttm_eps: 128, ttm_div: 52,  notes: "Est. — UPDATE when H1 FY2025 results released ~Feb 2025"}

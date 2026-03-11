@@ -1,0 +1,113 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# RMD.AX — ResMed Inc.  |  Value Chart Config
+# Global leader in sleep apnea (CPAP), respiratory care, digital health.
+# ASX CDIs are at 10:1 ratio to NYSE shares (1 CDI = 0.1 NYSE share).
+# All EPS and dividend figures below are per ASX CDI (i.e., 1/10th of NYSE figure).
+# Reports in USD; AUD values estimated at prevailing exchange rates.
+# ──────────────────────────────────────────────────────────────────────────────
+
+ticker: RMD.AX
+company_name: ResMed Inc.
+business: "Sleep apnea (CPAP/APAP devices + masks), out-of-hospital respiratory care, SaaS (Brightree/MatrixCare)"
+exchange: ASX
+
+stock_type: quality         # Quality compounder — market leader with recurring revenue
+
+buy_multiple: 25            # Buy at reasonable multiple for quality health-tech
+sell_multiple: 45           # Sell only at extreme richness
+rror: 0.02                  # Low dividend; return is mostly capital growth
+norm_eps: null              # Quality compounder — no mean-reversion assumption
+
+chart:
+  dimensions:
+    width: 34
+    height: 20
+
+  left_axis:
+    label: "Price (AUD $)"
+    min: 0.0
+    max: 45.0             # ASX CDI price; RMD.AX peaked ~$38-40 AUD
+    major_unit: 5.0
+    num_fmt: '"$"#,##0.00'
+
+  right_axis:
+    label: "P/E Ratio"
+    min: 0.0
+    max: 55.0             # Quality health-tech can trade at elevated P/Es
+    major_unit: 5.0
+    num_fmt: "0.0"
+
+  x_axis:
+    num_fmt: "MMM-YY"
+    tick_label_skip: 26
+    tick_mark_skip: 26
+
+  lines:
+    price:
+      color: "1565C0"
+      width_emu: 9525
+      style: solid
+    value_buy:
+      color: "1A5E20"
+      width_emu: 19050
+      style: dash
+    value_sell:
+      color: "C0392B"
+      width_emu: 19050
+      style: dash
+    div_rror:
+      color: "2E7D32"
+      width_emu: 19050
+      style: dash
+    pe_smooth:
+      color: "B8860B"
+      width_emu: 15875
+      style: solid
+
+  pe_smooth_days: 60
+  legend_position: "t"
+  legend_overlay: true
+  axis_title_box:
+    fill: "FFFF00"
+    border_color: "000000"
+    border_width_emu: 9525
+    text_bold: true
+    text_color: "000000"
+    font_size_pt: 9
+  legend_box:
+    fill: "FFFFFF"
+    border_color: "404040"
+    border_width_emu: 12700
+
+price_data:
+  frequency: weekly
+  resample_day: "W-FRI"
+  start_date: "2016-01-01"
+  source_hint: "marketindex.com.au/asx/rmd — export daily CSV (Date as YYYYMMDD)"
+  stockhistory_formula: '=STOCKHISTORY("RMD.AX",DATE(2016,1,1),TODAY(),0,1,0,1)'
+
+# ── Earnings history ──────────────────────────────────────────────────────────
+# ResMed FY ends 30 June. H1 results released ~Feb, Full Year ~Aug.
+# NOTE: ASX CDIs are 10:1 — each CDI = 1/10th of a NYSE share.
+# EPS per CDI = NYSE EPS / 10, converted to AUD cents at prevailing FX.
+# Dividends per CDI similarly scaled; RMD pays a modest USD quarterly dividend.
+# All marked Est. — verify against ResMed ASX/NYSE releases.
+earnings:
+  - {date: "2016-08-04", period: "FY2016",     ttm_eps: 62,  ttm_div: 4,  notes: "Est. | CDI basis (1/10 NYSE share)"}
+  - {date: "2017-02-02", period: "H1 FY2017",  ttm_eps: 65,  ttm_div: 4,  notes: "Est."}
+  - {date: "2017-08-03", period: "FY2017",     ttm_eps: 70,  ttm_div: 5,  notes: "Est."}
+  - {date: "2018-02-01", period: "H1 FY2018",  ttm_eps: 75,  ttm_div: 5,  notes: "Est."}
+  - {date: "2018-08-02", period: "FY2018",     ttm_eps: 82,  ttm_div: 5,  notes: "Est."}
+  - {date: "2019-01-31", period: "H1 FY2019",  ttm_eps: 88,  ttm_div: 5,  notes: "Est."}
+  - {date: "2019-08-01", period: "FY2019",     ttm_eps: 92,  ttm_div: 6,  notes: "Est."}
+  - {date: "2020-01-30", period: "H1 FY2020",  ttm_eps: 95,  ttm_div: 6,  notes: "Est. | COVID emerging"}
+  - {date: "2020-07-30", period: "FY2020",     ttm_eps: 105, ttm_div: 6,  notes: "Est. | COVID ventilator demand"}
+  - {date: "2021-01-28", period: "H1 FY2021",  ttm_eps: 112, ttm_div: 6,  notes: "Est."}
+  - {date: "2021-07-29", period: "FY2021",     ttm_eps: 118, ttm_div: 6,  notes: "Est. | CPAP demand strong (Philips recall)"}
+  - {date: "2022-01-27", period: "H1 FY2022",  ttm_eps: 122, ttm_div: 7,  notes: "Est. | Supply chain costs elevated"}
+  - {date: "2022-07-28", period: "FY2022",     ttm_eps: 125, ttm_div: 7,  notes: "Est. | Benefiting from Philips recall"}
+  - {date: "2023-01-26", period: "H1 FY2023",  ttm_eps: 130, ttm_div: 7,  notes: "Est."}
+  - {date: "2023-07-27", period: "FY2023",     ttm_eps: 138, ttm_div: 7,  notes: "Est. | GLP-1 drug concerns emerge"}
+  - {date: "2024-01-25", period: "H1 FY2024",  ttm_eps: 110, ttm_div: 7,  notes: "Est. | GLP-1 headwind pressure on stock"}
+  - {date: "2024-07-25", period: "FY2024",     ttm_eps: 108, ttm_div: 7,  notes: "Est. — UPDATE when FY2024 results released"}
+  - {date: "2025-01-30", period: "H1 FY2025",  ttm_eps: 115, ttm_div: 7,  notes: "Est. — UPDATE when H1 FY2025 results released ~Feb 2025"}

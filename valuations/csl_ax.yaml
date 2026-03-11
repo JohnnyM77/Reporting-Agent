@@ -1,15 +1,112 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# CSL.AX — CSL Limited  |  Value Chart Config
+# Global biotherapeutics leader — plasma-derived therapies (Behring), flu vaccines
+# (Seqirus), haemophilia (Haegarda, Alhemo), iron deficiency (Ferinject/Vifor).
+# Quality compounder — never cheap on P/E but has compounded strongly since 2010.
+# Reports financials in USD; EPS below in AUD cents at prevailing exchange rate.
+# ──────────────────────────────────────────────────────────────────────────────
+
 ticker: CSL.AX
-method: earnings_multiple
-multiple: 28
-series:
-  eps:
-    2015: 1.78
-    2016: 2.10
-    2017: 2.38
-    2018: 2.70
-    2019: 3.10
-    2020: 3.44
-    2021: 3.10
-    2022: 2.95
-    2023: 3.30
-    2024: 3.60
+company_name: CSL Limited
+business: "Global biotherapeutics — plasma (CSL Behring), vaccines (Seqirus), Vifor (iron/kidney disease)"
+exchange: ASX
+
+stock_type: quality         # Quality compounder — do NOT mean-revert; no norm_eps
+
+buy_multiple: 25            # Buy at reasonable multiple for a quality biotech
+sell_multiple: 45           # Sell only at extreme richness (rare for CSL to reach 45x)
+rror: 0.02                  # 2% — quality compounder; low dividend but strong capital growth
+norm_eps: null              # Not applicable for quality compounders
+
+chart:
+  dimensions:
+    width: 34
+    height: 20
+
+  left_axis:
+    label: "Price (AUD $)"
+    min: 0.0
+    max: 360.0            # CSL peaked ~$320 in 2021; $360 gives headroom
+    major_unit: 30.0
+    num_fmt: '"$"#,##0.00'
+
+  right_axis:
+    label: "P/E Ratio"
+    min: 0.0
+    max: 60.0             # Quality biotech can reach very high P/Es
+    major_unit: 5.0
+    num_fmt: "0.0"
+
+  x_axis:
+    num_fmt: "MMM-YY"
+    tick_label_skip: 26
+    tick_mark_skip: 26
+
+  lines:
+    price:
+      color: "1565C0"
+      width_emu: 9525
+      style: solid
+    value_buy:
+      color: "1A5E20"
+      width_emu: 19050
+      style: dash
+    value_sell:
+      color: "C0392B"
+      width_emu: 19050
+      style: dash
+    div_rror:
+      color: "2E7D32"
+      width_emu: 19050
+      style: dash
+    pe_smooth:
+      color: "B8860B"
+      width_emu: 15875
+      style: solid
+
+  pe_smooth_days: 60
+  legend_position: "t"
+  legend_overlay: true
+  axis_title_box:
+    fill: "FFFF00"
+    border_color: "000000"
+    border_width_emu: 9525
+    text_bold: true
+    text_color: "000000"
+    font_size_pt: 9
+  legend_box:
+    fill: "FFFFFF"
+    border_color: "404040"
+    border_width_emu: 12700
+
+price_data:
+  frequency: weekly
+  resample_day: "W-FRI"
+  start_date: "2016-01-01"
+  source_hint: "marketindex.com.au/asx/csl — export daily CSV (Date as YYYYMMDD)"
+  stockhistory_formula: '=STOCKHISTORY("CSL.AX",DATE(2016,1,1),TODAY(),0,1,0,1)'
+
+# ── Earnings history ──────────────────────────────────────────────────────────
+# CSL FY ends 30 June. H1 results released ~Feb, Full Year ~Aug.
+# CSL reports financials in USD; EPS/Div below are AUD cents at prevailing FX.
+# Use UNDERLYING EPS (excludes Vifor goodwill impairments and amortisation).
+# All marked Est. — verify against CSL ASX announcements for each period.
+earnings:
+  - {date: "2016-08-17", period: "FY2016",     ttm_eps: 700,  ttm_div: 220, notes: "Est."}
+  - {date: "2017-02-15", period: "H1 FY2017",  ttm_eps: 750,  ttm_div: 235, notes: "Est."}
+  - {date: "2017-08-16", period: "FY2017",     ttm_eps: 810,  ttm_div: 260, notes: "Est."}
+  - {date: "2018-02-14", period: "H1 FY2018",  ttm_eps: 860,  ttm_div: 275, notes: "Est."}
+  - {date: "2018-08-15", period: "FY2018",     ttm_eps: 920,  ttm_div: 295, notes: "Est."}
+  - {date: "2019-02-13", period: "H1 FY2019",  ttm_eps: 980,  ttm_div: 315, notes: "Est."}
+  - {date: "2019-08-14", period: "FY2019",     ttm_eps: 1050, ttm_div: 340, notes: "Est."}
+  - {date: "2020-02-12", period: "H1 FY2020",  ttm_eps: 1080, ttm_div: 348, notes: "Est."}
+  - {date: "2020-08-19", period: "FY2020",     ttm_eps: 1100, ttm_div: 355, notes: "Est. | COVID plasma demand"}
+  - {date: "2021-02-17", period: "H1 FY2021",  ttm_eps: 1060, ttm_div: 342, notes: "Est. | Plasma collection disrupted"}
+  - {date: "2021-08-18", period: "FY2021",     ttm_eps: 1000, ttm_div: 320, notes: "Est. | Donor centre costs elevated"}
+  - {date: "2022-02-16", period: "H1 FY2022",  ttm_eps: 940,  ttm_div: 300, notes: "Est. | Vifor acquisition integration"}
+  - {date: "2022-08-17", period: "FY2022",     ttm_eps: 880,  ttm_div: 280, notes: "Est. | High collection costs; Vifor acquired"}
+  - {date: "2023-02-15", period: "H1 FY2023",  ttm_eps: 940,  ttm_div: 300, notes: "Est. | Gross margin improving"}
+  - {date: "2023-08-16", period: "FY2023",     ttm_eps: 1000, ttm_div: 320, notes: "Est. | Plasma recovery well underway"}
+  - {date: "2024-02-14", period: "H1 FY2024",  ttm_eps: 1075, ttm_div: 345, notes: "Est."}
+  - {date: "2024-08-14", period: "FY2024",     ttm_eps: 1150, ttm_div: 370, notes: "Est. — UPDATE when FY2024 results released"}
+  - {date: "2025-02-12", period: "H1 FY2025",  ttm_eps: 1100, ttm_div: 355, notes: "Est. — UPDATE when H1 FY2025 results released ~Feb 2025"}

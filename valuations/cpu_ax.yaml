@@ -1,0 +1,113 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# CPU.AX — Computershare Limited  |  Value Chart Config
+# Global share registry and financial administration services.
+# Quality compounder — recurring revenue from corporate actions and registry.
+# Significant earnings uplift from high interest rates (margin income on client funds).
+# Reports in USD; EPS below in AUD cents at prevailing exchange rates.
+# ──────────────────────────────────────────────────────────────────────────────
+
+ticker: CPU.AX
+company_name: Computershare Limited
+business: "Global share registry, employee equity plans, mortgage services, corporate trust; margin income on client funds"
+exchange: ASX
+
+stock_type: quality         # Quality compounder — dominant global share registry
+
+buy_multiple: 18            # Buy at reasonable multiple (rates normalisation uncertainty)
+sell_multiple: 30           # Sell at premium to fair value
+rror: 0.03                  # 3% — moderate yield plus capital growth
+norm_eps: null              # Quality compounder — no mean-reversion
+
+chart:
+  dimensions:
+    width: 34
+    height: 20
+
+  left_axis:
+    label: "Price (AUD $)"
+    min: 0.0
+    max: 35.0             # CPU peaked ~$30 in 2023; $35 gives headroom
+    major_unit: 5.0
+    num_fmt: '"$"#,##0.00'
+
+  right_axis:
+    label: "P/E Ratio"
+    min: 0.0
+    max: 40.0             # CPU can trade at elevated P/Es for quality financials
+    major_unit: 5.0
+    num_fmt: "0.0"
+
+  x_axis:
+    num_fmt: "MMM-YY"
+    tick_label_skip: 26
+    tick_mark_skip: 26
+
+  lines:
+    price:
+      color: "1565C0"
+      width_emu: 9525
+      style: solid
+    value_buy:
+      color: "1A5E20"
+      width_emu: 19050
+      style: dash
+    value_sell:
+      color: "C0392B"
+      width_emu: 19050
+      style: dash
+    div_rror:
+      color: "2E7D32"
+      width_emu: 19050
+      style: dash
+    pe_smooth:
+      color: "B8860B"
+      width_emu: 15875
+      style: solid
+
+  pe_smooth_days: 60
+  legend_position: "t"
+  legend_overlay: true
+  axis_title_box:
+    fill: "FFFF00"
+    border_color: "000000"
+    border_width_emu: 9525
+    text_bold: true
+    text_color: "000000"
+    font_size_pt: 9
+  legend_box:
+    fill: "FFFFFF"
+    border_color: "404040"
+    border_width_emu: 12700
+
+price_data:
+  frequency: weekly
+  resample_day: "W-FRI"
+  start_date: "2016-01-01"
+  source_hint: "marketindex.com.au/asx/cpu — export daily CSV (Date as YYYYMMDD)"
+  stockhistory_formula: '=STOCKHISTORY("CPU.AX",DATE(2016,1,1),TODAY(),0,1,0,1)'
+
+# ── Earnings history ──────────────────────────────────────────────────────────
+# Computershare FY ends 30 June. H1 results released ~Feb, Full Year ~Aug.
+# CPU reports in USD; AUD cents estimated at prevailing FX.
+# Use MANAGEMENT EPS (underlying/adjusted) — excludes acquisition amortisation.
+# NOTE: FY2022-2024 EPS significantly boosted by margin income from high interest rates.
+# All marked Est. — verify against Computershare ASX announcements.
+earnings:
+  - {date: "2016-08-10", period: "FY2016",     ttm_eps: 95,  ttm_div: 48,  notes: "Est."}
+  - {date: "2017-02-08", period: "H1 FY2017",  ttm_eps: 95,  ttm_div: 48,  notes: "Est."}
+  - {date: "2017-08-09", period: "FY2017",     ttm_eps: 98,  ttm_div: 49,  notes: "Est."}
+  - {date: "2018-02-07", period: "H1 FY2018",  ttm_eps: 100, ttm_div: 50,  notes: "Est."}
+  - {date: "2018-08-08", period: "FY2018",     ttm_eps: 105, ttm_div: 52,  notes: "Est."}
+  - {date: "2019-02-13", period: "H1 FY2019",  ttm_eps: 108, ttm_div: 54,  notes: "Est."}
+  - {date: "2019-08-14", period: "FY2019",     ttm_eps: 115, ttm_div: 57,  notes: "Est."}
+  - {date: "2020-02-12", period: "H1 FY2020",  ttm_eps: 112, ttm_div: 56,  notes: "Est. | COVID emerging"}
+  - {date: "2020-08-12", period: "FY2020",     ttm_eps: 105, ttm_div: 51,  notes: "Est. | Low rates headwind begins"}
+  - {date: "2021-02-10", period: "H1 FY2021",  ttm_eps: 100, ttm_div: 48,  notes: "Est. | Rates near zero globally"}
+  - {date: "2021-08-11", period: "FY2021",     ttm_eps: 100, ttm_div: 48,  notes: "Est."}
+  - {date: "2022-02-09", period: "H1 FY2022",  ttm_eps: 115, ttm_div: 55,  notes: "Est. | Rate rise cycle begins"}
+  - {date: "2022-08-10", period: "FY2022",     ttm_eps: 130, ttm_div: 60,  notes: "Est. | Margin income surging with rate rises"}
+  - {date: "2023-02-08", period: "H1 FY2023",  ttm_eps: 148, ttm_div: 67,  notes: "Est. | Peak rate benefit"}
+  - {date: "2023-08-09", period: "FY2023",     ttm_eps: 165, ttm_div: 73,  notes: "Est. | Rates at cycle peak"}
+  - {date: "2024-02-14", period: "H1 FY2024",  ttm_eps: 160, ttm_div: 71,  notes: "Est. | Rate cuts beginning to weigh"}
+  - {date: "2024-08-14", period: "FY2024",     ttm_eps: 155, ttm_div: 70,  notes: "Est. — UPDATE when FY2024 results released"}
+  - {date: "2025-02-12", period: "H1 FY2025",  ttm_eps: 148, ttm_div: 67,  notes: "Est. — UPDATE when H1 FY2025 results released ~Feb 2025"}

@@ -1,27 +1,111 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# BHP.AX — BHP Group Limited  |  Value Chart Config
+# World's largest diversified miner — iron ore, copper, coal (divested), potash.
+# Classic cyclical: EPS swings wildly with commodity prices.
+# Use normalised through-cycle EPS for buy/sell decisions, not peak earnings.
+# ──────────────────────────────────────────────────────────────────────────────
+
 ticker: BHP.AX
-method: earnings_multiple
-multiple: 12
-required_return_dividend: 0.05
-series:
-  eps:
-    2015: 2.30
-    2016: 1.10
-    2017: 1.90
-    2018: 2.10
-    2019: 2.45
-    2020: 2.00
-    2021: 3.30
-    2022: 3.95
-    2023: 2.80
-    2024: 2.60
-  dividend:
-    2015: 1.20
-    2016: 0.60
-    2017: 0.95
-    2018: 1.05
-    2019: 1.25
-    2020: 1.00
-    2021: 1.80
-    2022: 2.20
-    2023: 1.50
-    2024: 1.40
+company_name: BHP Group Limited
+business: "Diversified mining — iron ore (largest), copper, nickel; potash (future); Pilbara + Olympic Dam"
+exchange: ASX
+
+stock_type: cyclical         # Classic commodity cyclical — 'low P/E = cheap' is INVERTED at peak
+
+buy_multiple: 9             # Slow to buy: enter at trough/normalised earnings
+sell_multiple: 16           # Even slower to sell: only at clearly stretched multiple
+rror: 0.06                  # 6% — commodity/cyclical stocks warrant higher return hurdle
+norm_eps: 250               # Through-cycle normalised EPS ~$2.50 (250 cents). Update as view evolves.
+
+chart:
+  dimensions:
+    width: 34
+    height: 20
+
+  left_axis:
+    label: "Price (AUD $)"
+    min: 0.0
+    max: 60.0             # BHP peaked ~$52 in FY2022; $60 gives headroom
+    major_unit: 5.0
+    num_fmt: '"$"#,##0.00'
+
+  right_axis:
+    label: "P/E Ratio"
+    min: 0.0
+    max: 20.0             # Cap at 20x — cyclicals rarely go beyond this on real earnings
+    major_unit: 2.0
+    num_fmt: "0.0"
+
+  x_axis:
+    num_fmt: "MMM-YY"
+    tick_label_skip: 26
+    tick_mark_skip: 26
+
+  lines:
+    price:
+      color: "1565C0"
+      width_emu: 9525
+      style: solid
+    value_buy:
+      color: "1A5E20"
+      width_emu: 19050
+      style: dash
+    value_sell:
+      color: "C0392B"
+      width_emu: 19050
+      style: dash
+    div_rror:
+      color: "2E7D32"
+      width_emu: 19050
+      style: dash
+    pe_smooth:
+      color: "B8860B"
+      width_emu: 15875
+      style: solid
+
+  pe_smooth_days: 60
+  legend_position: "t"
+  legend_overlay: true
+  axis_title_box:
+    fill: "FFFF00"
+    border_color: "000000"
+    border_width_emu: 9525
+    text_bold: true
+    text_color: "000000"
+    font_size_pt: 9
+  legend_box:
+    fill: "FFFFFF"
+    border_color: "404040"
+    border_width_emu: 12700
+
+price_data:
+  frequency: weekly
+  resample_day: "W-FRI"
+  start_date: "2016-01-01"
+  source_hint: "marketindex.com.au/asx/bhp — export daily CSV (Date as YYYYMMDD)"
+  stockhistory_formula: '=STOCKHISTORY("BHP.AX",DATE(2016,1,1),TODAY(),0,1,0,1)'
+
+# ── Earnings history ──────────────────────────────────────────────────────────
+# BHP FY ends 30 June. H1 results released ~Feb, Full Year ~Aug.
+# Figures below are AUD cents/share underlying EPS and ordinary dividends.
+# BHP reports financials in USD; AUD values estimated at prevailing exchange rates.
+# All marked Est. — verify against BHP ASX announcements or annual reports.
+earnings:
+  - {date: "2016-08-16", period: "FY2016",     ttm_eps: 170, ttm_div: 90,  notes: "Est. | Commodity trough; iron ore ~$55/t"}
+  - {date: "2017-02-21", period: "H1 FY2017",  ttm_eps: 175, ttm_div: 90,  notes: "Est."}
+  - {date: "2017-08-22", period: "FY2017",     ttm_eps: 215, ttm_div: 110, notes: "Est. | Iron ore recovery begins"}
+  - {date: "2018-02-20", period: "H1 FY2018",  ttm_eps: 218, ttm_div: 112, notes: "Est."}
+  - {date: "2018-08-21", period: "FY2018",     ttm_eps: 230, ttm_div: 120, notes: "Est."}
+  - {date: "2019-02-19", period: "H1 FY2019",  ttm_eps: 255, ttm_div: 135, notes: "Est."}
+  - {date: "2019-08-20", period: "FY2019",     ttm_eps: 285, ttm_div: 150, notes: "Est. | Strong iron ore"}
+  - {date: "2020-02-18", period: "H1 FY2020",  ttm_eps: 230, ttm_div: 120, notes: "Est. | COVID emerging"}
+  - {date: "2020-08-18", period: "FY2020",     ttm_eps: 170, ttm_div: 100, notes: "Est. | COVID impact"}
+  - {date: "2021-02-16", period: "H1 FY2021",  ttm_eps: 245, ttm_div: 130, notes: "Est. | Recovery + iron ore surging"}
+  - {date: "2021-08-17", period: "FY2021",     ttm_eps: 320, ttm_div: 170, notes: "Est. | Supercycle accelerating"}
+  - {date: "2022-02-15", period: "H1 FY2022",  ttm_eps: 450, ttm_div: 230, notes: "Est. | Iron ore >$150/t"}
+  - {date: "2022-08-16", period: "FY2022",     ttm_eps: 590, ttm_div: 285, notes: "Est. | Peak supercycle"}
+  - {date: "2023-02-21", period: "H1 FY2023",  ttm_eps: 450, ttm_div: 220, notes: "Est. | Pullback from peak"}
+  - {date: "2023-08-22", period: "FY2023",     ttm_eps: 305, ttm_div: 160, notes: "Est. | Iron ore moderating ~$110/t"}
+  - {date: "2024-02-20", period: "H1 FY2024",  ttm_eps: 270, ttm_div: 140, notes: "Est."}
+  - {date: "2024-08-27", period: "FY2024",     ttm_eps: 250, ttm_div: 130, notes: "Est. — UPDATE when FY2024 results released"}
+  - {date: "2025-02-18", period: "H1 FY2025",  ttm_eps: 240, ttm_div: 125, notes: "Est. — UPDATE when H1 FY2025 results released ~Feb 2025"}

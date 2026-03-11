@@ -1,0 +1,109 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# PWH.AX — PWR Holdings Limited  |  Value Chart Config
+# Niche manufacturer of high-performance cooling systems for motorsport, aerospace,
+# defence, and automotive OEM. F1, NASCAR, IndyCar, military vehicles.
+# Quality growth compounder — niche moat, recurring OEM relationships, expanding sectors.
+# ──────────────────────────────────────────────────────────────────────────────
+
+ticker: PWH.AX
+company_name: PWR Holdings Limited
+business: "High-performance cooling systems — Formula 1, NASCAR, IndyCar, military/defence, automotive OEM, aerospace"
+exchange: ASX
+
+stock_type: quality         # Quality niche growth — strong moat in high-performance cooling
+
+buy_multiple: 25            # Buy at reasonable multiple for quality niche manufacturer
+sell_multiple: 45           # Sell at extreme richness
+rror: 0.02                  # 2% — modest dividend; growth focus
+norm_eps: null              # Quality compounder — no cyclical mean-reversion
+
+chart:
+  dimensions:
+    width: 34
+    height: 20
+
+  left_axis:
+    label: "Price (AUD $)"
+    min: 0.0
+    max: 20.0             # PWH peaked ~$14-15 AUD; $20 gives ample headroom
+    major_unit: 2.0
+    num_fmt: '"$"#,##0.00'
+
+  right_axis:
+    label: "P/E Ratio"
+    min: 0.0
+    max: 55.0             # Quality growth can trade at elevated P/Es
+    major_unit: 5.0
+    num_fmt: "0.0"
+
+  x_axis:
+    num_fmt: "MMM-YY"
+    tick_label_skip: 26
+    tick_mark_skip: 26
+
+  lines:
+    price:
+      color: "1565C0"
+      width_emu: 9525
+      style: solid
+    value_buy:
+      color: "1A5E20"
+      width_emu: 19050
+      style: dash
+    value_sell:
+      color: "C0392B"
+      width_emu: 19050
+      style: dash
+    div_rror:
+      color: "2E7D32"
+      width_emu: 19050
+      style: dash
+    pe_smooth:
+      color: "B8860B"
+      width_emu: 15875
+      style: solid
+
+  pe_smooth_days: 60
+  legend_position: "t"
+  legend_overlay: true
+  axis_title_box:
+    fill: "FFFF00"
+    border_color: "000000"
+    border_width_emu: 9525
+    text_bold: true
+    text_color: "000000"
+    font_size_pt: 9
+  legend_box:
+    fill: "FFFFFF"
+    border_color: "404040"
+    border_width_emu: 12700
+
+price_data:
+  frequency: weekly
+  resample_day: "W-FRI"
+  start_date: "2016-01-01"
+  source_hint: "marketindex.com.au/asx/pwh — export daily CSV (Date as YYYYMMDD)"
+  stockhistory_formula: '=STOCKHISTORY("PWH.AX",DATE(2016,1,1),TODAY(),0,1,0,1)'
+
+# ── Earnings history ──────────────────────────────────────────────────────────
+# PWR Holdings FY ends 30 June. Full year results released ~August.
+# EPS in AUD cents per share (underlying). Dividend in AUD cents.
+# PWH listed on ASX in November 2016 (IPO); data before listing is pre-IPO estimates.
+# All marked Est. — verify against PWR Holdings ASX announcements.
+earnings:
+  - {date: "2017-08-23", period: "FY2017",     ttm_eps: 12,  ttm_div: 6,   notes: "Est. | First full year as listed company"}
+  - {date: "2018-02-22", period: "H1 FY2018",  ttm_eps: 12,  ttm_div: 6,   notes: "Est."}
+  - {date: "2018-08-22", period: "FY2018",     ttm_eps: 15,  ttm_div: 7,   notes: "Est. | Growing motorsport customer base"}
+  - {date: "2019-02-20", period: "H1 FY2019",  ttm_eps: 16,  ttm_div: 8,   notes: "Est."}
+  - {date: "2019-08-21", period: "FY2019",     ttm_eps: 19,  ttm_div: 9,   notes: "Est. | Defence and OEM segments growing"}
+  - {date: "2020-02-19", period: "H1 FY2020",  ttm_eps: 18,  ttm_div: 9,   notes: "Est. | COVID emerging; motorsport events at risk"}
+  - {date: "2020-08-19", period: "FY2020",     ttm_eps: 13,  ttm_div: 6,   notes: "Est. | COVID — motorsport events cancelled mid-season"}
+  - {date: "2021-02-17", period: "H1 FY2021",  ttm_eps: 17,  ttm_div: 8,   notes: "Est. | Recovery underway; defence growing"}
+  - {date: "2021-08-18", period: "FY2021",     ttm_eps: 23,  ttm_div: 11,  notes: "Est. | Strong recovery; new OEM contracts"}
+  - {date: "2022-02-16", period: "H1 FY2022",  ttm_eps: 26,  ttm_div: 12,  notes: "Est."}
+  - {date: "2022-08-17", period: "FY2022",     ttm_eps: 30,  ttm_div: 14,  notes: "Est. | Defence + EV segment growth"}
+  - {date: "2023-02-15", period: "H1 FY2023",  ttm_eps: 34,  ttm_div: 16,  notes: "Est."}
+  - {date: "2023-08-16", period: "FY2023",     ttm_eps: 38,  ttm_div: 18,  notes: "Est. | Expanding into new sectors; revenue diversifying"}
+  - {date: "2024-02-14", period: "H1 FY2024",  ttm_eps: 40,  ttm_div: 19,  notes: "Est."}
+  - {date: "2024-08-14", period: "FY2024",     ttm_eps: 43,  ttm_div: 20,  notes: "Est. — UPDATE when FY2024 results released"}
+  - {date: "2025-02-19", period: "H1 FY2025",  ttm_eps: 45,  ttm_div: 21,  notes: "Est. — UPDATE when H1 FY2025 results released ~Feb 2025"}

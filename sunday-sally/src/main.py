@@ -161,13 +161,30 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         news=[n.get("headline", "") for n in news] if isinstance(news, list) else [],
     )
 
-    build_valuation_workbook(
-        ticker_folder / "valuation_review.xlsx",
-        summary,
-        history_rows,
-        critical_rows,
-        claude_analysis=claude_analysis,
-    )
+    # Routing: prefer the value chart workbook (with graph) when a valuations
+    # config exists; fall back to the basic valuation_review workbook otherwise.
+    chart_built = False
+    if _VALUE_CHART_AVAILABLE:
+        try:
+            _build_value_chart(
+                company.exchange_ticker,
+                output_path=str(ticker_folder / "value_chart.xlsx"),
+            )
+            chart_built = True
+            print(f"[sally] value chart built for {company.ticker}")
+        except FileNotFoundError:
+            pass  # no valuations config — fall through to basic workbook
+        except Exception as exc:
+            print(f"[sally] value chart build failed for {company.ticker}: {exc}")
+
+    if not chart_built:
+        build_valuation_workbook(
+            ticker_folder / "valuation_review.xlsx",
+            summary,
+            history_rows,
+            critical_rows,
+            claude_analysis=claude_analysis,
+        )
 
     memo = build_memo_text(
         company={"ticker": company.ticker, "company_name": price.company_name},
@@ -178,19 +195,6 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         claude_analysis=claude_analysis,
     )
     save_memo(ticker_folder / "memo.md", memo)
-
-    # Build the 5-sheet value chart workbook (the one with the graph) if a
-    # valuations/<ticker>.yaml config exists for this company.
-    if _VALUE_CHART_AVAILABLE:
-        try:
-            _build_value_chart(
-                company.exchange_ticker,
-                output_path=str(ticker_folder / "value_chart.xlsx"),
-            )
-        except FileNotFoundError:
-            pass  # no valuations config yet — skip silently
-        except Exception as exc:
-            print(f"[sally] value chart build failed for {company.ticker}: {exc}")
 
     return summary
 
@@ -275,13 +279,14 @@ def main() -> None:
         ticker = row["ticker"]
         ticker_folder = run_folder / ticker
 
-        xlsx = ticker_folder / "valuation_review.xlsx"
-        if xlsx.exists():
-            attachments.append((xlsx, f"{ticker}_valuation_review.xlsx"))
-
+        # Attach the value chart (with graph) if it was built, otherwise
+        # fall back to the basic valuation review workbook.
         chart = ticker_folder / "value_chart.xlsx"
+        xlsx = ticker_folder / "valuation_review.xlsx"
         if chart.exists():
             attachments.append((chart, f"{ticker}_value_chart.xlsx"))
+        elif xlsx.exists():
+            attachments.append((xlsx, f"{ticker}_valuation_review.xlsx"))
 
         memo = ticker_folder / "memo.md"
         if memo.exists():

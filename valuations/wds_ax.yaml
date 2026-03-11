@@ -1,0 +1,105 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# WDS.AX — Woodside Energy Group Limited  |  Value Chart Config
+# Australia's largest independent oil & gas company — LNG, oil, new energy.
+# Merged with BHP Petroleum in June 2022 (shares roughly doubled in count).
+# Classic cyclical: EPS tracks oil/LNG prices. Buy low multiples at commodity trough.
+# Reports in USD; EPS below in AUD cents at prevailing exchange rates.
+# ──────────────────────────────────────────────────────────────────────────────
+
+ticker: WDS.AX
+company_name: Woodside Energy Group
+business: "LNG producer — Pluto LNG, North West Shelf, Wheatstone; Sangomar (Senegal); Trion (Mexico); acquired BHP Petroleum FY2022"
+exchange: ASX
+
+stock_type: cyclical         # Oil & gas commodity cyclical — 'low P/E = cheap' is INVERTED at peak
+
+buy_multiple: 9             # Slow to buy: enter at trough/normalised earnings
+sell_multiple: 14           # Even slower to sell: only at clearly stretched multiple
+rror: 0.07                  # 7% — energy sector warrants higher return hurdle
+norm_eps: 200               # Through-cycle normalised EPS ~$2.00 (200 cents). Update as view evolves.
+
+chart:
+  dimensions:
+    width: 34
+    height: 20
+
+  left_axis:
+    label: "Price (AUD $)"
+    min: 0.0
+    max: 45.0             # WDS peaked ~$38 in 2022; $45 gives headroom
+    major_unit: 5.0
+    num_fmt: '"$"#,##0.00'
+
+  right_axis:
+    label: "P/E Ratio"
+    min: 0.0
+    max: 20.0             # Cap at 20x — cyclicals rarely go beyond this on real earnings
+    major_unit: 2.0
+    num_fmt: "0.0"
+
+  x_axis:
+    num_fmt: "MMM-YY"
+    tick_label_skip: 26
+    tick_mark_skip: 26
+
+  lines:
+    price:
+      color: "1565C0"
+      width_emu: 9525
+      style: solid
+    value_buy:
+      color: "1A5E20"
+      width_emu: 19050
+      style: dash
+    value_sell:
+      color: "C0392B"
+      width_emu: 19050
+      style: dash
+    div_rror:
+      color: "2E7D32"
+      width_emu: 19050
+      style: dash
+    pe_smooth:
+      color: "B8860B"
+      width_emu: 15875
+      style: solid
+
+  pe_smooth_days: 60
+  legend_position: "t"
+  legend_overlay: true
+  axis_title_box:
+    fill: "FFFF00"
+    border_color: "000000"
+    border_width_emu: 9525
+    text_bold: true
+    text_color: "000000"
+    font_size_pt: 9
+  legend_box:
+    fill: "FFFFFF"
+    border_color: "404040"
+    border_width_emu: 12700
+
+price_data:
+  frequency: weekly
+  resample_day: "W-FRI"
+  start_date: "2016-01-01"
+  source_hint: "marketindex.com.au/asx/wds — export daily CSV (Date as YYYYMMDD)"
+  stockhistory_formula: '=STOCKHISTORY("WDS.AX",DATE(2016,1,1),TODAY(),0,1,0,1)'
+
+# ── Earnings history ──────────────────────────────────────────────────────────
+# Woodside FY ends 31 December. Full year results released ~February.
+# NOTE: Ticker was WPL.AX until June 2022; became WDS.AX after merging with BHP Petroleum.
+# Share count roughly doubled with the BHP Petroleum merger (June 2022), diluting per-share EPS.
+# WDS reports in USD; AUD cents estimated at prevailing FX.
+# All marked Est. — verify against Woodside ASX announcements.
+earnings:
+  - {date: "2016-02-23", period: "FY2015",     ttm_eps: 75,  ttm_div: 65,  notes: "Est. | Oil trough ~$40/bbl"}
+  - {date: "2017-02-22", period: "FY2016",     ttm_eps: 120, ttm_div: 80,  notes: "Est. | Oil recovering"}
+  - {date: "2018-02-21", period: "FY2017",     ttm_eps: 175, ttm_div: 120, notes: "Est. | Oil ~$55-65/bbl"}
+  - {date: "2019-02-20", period: "FY2018",     ttm_eps: 235, ttm_div: 165, notes: "Est. | Oil ~$65/bbl; strong LNG prices"}
+  - {date: "2020-02-19", period: "FY2019",     ttm_eps: 225, ttm_div: 155, notes: "Est."}
+  - {date: "2021-02-17", period: "FY2020",     ttm_eps: 55,  ttm_div: 30,  notes: "Est. | COVID — oil collapsed; impairments"}
+  - {date: "2022-02-16", period: "FY2021",     ttm_eps: 180, ttm_div: 125, notes: "Est. | Recovery; LNG prices rising"}
+  - {date: "2023-02-28", period: "FY2022",     ttm_eps: 430, ttm_div: 305, notes: "Est. | Energy crisis peak; BHP Petroleum merger diluted shares ~2x"}
+  - {date: "2024-02-27", period: "FY2023",     ttm_eps: 265, ttm_div: 185, notes: "Est. | Oil/LNG moderating; full year as WDS post-merger"}
+  - {date: "2025-02-25", period: "FY2024",     ttm_eps: 215, ttm_div: 150, notes: "Est. — UPDATE when FY2024 results released ~Feb 2025"}

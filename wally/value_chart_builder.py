@@ -986,11 +986,145 @@ Config schema:      valuations/nhc_ax.yaml  (full annotated example)
 #  MAIN PUBLIC FUNCTION
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ─────────────────────────────────────────────────────────────────────────────
+#  MATPLOTLIB PNG CHART
+# ─────────────────────────────────────────────────────────────────────────────
+
+def build_chart_png(
+    cfg: dict,
+    price_df: pd.DataFrame,
+    output_path: str,
+) -> str | None:
+    """
+    Render a dual-axis matplotlib PNG chart equivalent to the Excel ValueChart sheet.
+    Returns the saved path, or None if matplotlib is unavailable.
+    """
+    try:
+        import matplotlib
+        matplotlib.use("Agg")          # non-interactive backend — safe in CI / GitHub Actions
+        import matplotlib.pyplot as plt
+        import matplotlib.dates as mdates
+    except ImportError:
+        print("[vcb] matplotlib not available — skipping PNG generation")
+        return None
+
+    ticker = cfg["ticker"].split(".")[0]
+    name   = cfg["company_name"]
+    bmult  = cfg["buy_multiple"]
+    smult  = cfg.get("sell_multiple")
+    rror   = float(cfg["rror"])
+    norm   = cfg.get("norm_eps")
+
+    la  = _get(cfg, "chart", "left_axis")  or {}
+    ra  = _get(cfg, "chart", "right_axis") or {}
+    lns = _get(cfg, "chart", "lines")      or {}
+
+    def _hex(key: str, fallback: str) -> str:
+        return "#" + lns.get(key, {}).get("color", fallback)
+
+    # ── Compute value series ──────────────────────────────────────────────────
+    earn_dates = [
+        pd.Timestamp(e["date"] if isinstance(e["date"], date)
+                     else datetime.strptime(str(e["date"]), "%Y-%m-%d").date())
+        for e in cfg["earnings"]
+    ]
+    earn_eps = [float(e["ttm_eps"]) for e in cfg["earnings"]]
+    earn_div = [float(e["ttm_div"]) for e in cfg["earnings"]]
+
+    dates, prices, v_buys, v_sells, drrors, raw_pe = [], [], [], [], [], []
+
+    for _, row in price_df.iterrows():
+        d     = pd.Timestamp(row["Date"])
+        close = float(row["Close"])
+        eps   = _lookup_last(d, earn_dates, earn_eps)
+        div   = _lookup_last(d, earn_dates, earn_div)
+
+        dates.append(d.to_pydatetime())
+        prices.append(close)
+        v_buys.append((eps * bmult / 100)   if eps is not None else None)
+        v_sells.append((eps * smult / 100)  if (smult and eps is not None) else None)
+        drrors.append((div / rror / 100)    if (div is not None and rror > 0) else None)
+        raw_pe.append((close / (eps / 100)) if (eps is not None and eps > 0) else np.nan)
+
+    pe_smooth = (pd.Series(raw_pe, dtype=float)
+                   .rolling(window=12, min_periods=4).mean().tolist())
+
+    # ── Plot ──────────────────────────────────────────────────────────────────
+    fig, ax1 = plt.subplots(figsize=(14, 7))
+    fig.patch.set_facecolor("#FFFFFF")
+    ax1.set_facecolor("#FFFFFF")
+
+    ax1.plot(dates, prices, color=_hex("price", "1565C0"),
+             linewidth=1.0, label="Price (AUD $)", zorder=3)
+
+    ax2 = ax1.twinx()
+
+    ax2.plot(dates, v_buys, color=_hex("value_buy", "1A5E20"),
+             linewidth=2.0, linestyle="--", label=f"Value Buy ({bmult}× EPS)", zorder=2)
+    if smult:
+        ax2.plot(dates, v_sells, color=_hex("value_sell", "C0392B"),
+                 linewidth=2.0, linestyle="--", label=f"Value Sell ({smult}× EPS)", zorder=2)
+    ax2.plot(dates, drrors, color=_hex("div_rror", "2E7D32"),
+             linewidth=2.0, linestyle="--", label=f"Div/RRoR ({int(rror*100)}%)", zorder=2)
+    ax2.plot(dates, pe_smooth, color=_hex("pe_smooth", "B8860B"),
+             linewidth=1.5, linestyle="-", label="P/E (12wk avg)", zorder=2)
+
+    # Axis limits
+    ax1.set_ylim(float(la.get("min", 0.0)), float(la.get("max", 10.0)))
+    ax2.set_ylim(float(ra.get("min", 0.0)), float(ra.get("max", 20.0)))
+
+    # Axis labels — yellow box style matching the Excel chart
+    _label_kw = dict(fontsize=10, fontweight="bold",
+                     bbox=dict(boxstyle="round,pad=0.3",
+                                facecolor="#FFFF00", edgecolor="#000000", linewidth=1))
+    ax1.set_ylabel(la.get("label", "Price (AUD $)"), **_label_kw)
+    ax2.set_ylabel(ra.get("label", "P/E Ratio"),     **_label_kw)
+
+    # Title — navy banner
+    title = (f"{name} (ASX: {ticker})  —  Buy / Sell Zone Chart  |  Buy {bmult}×"
+             + (f"  |  Sell {smult}×" if smult else ""))
+    if norm:
+        title += (f"\nNorm EPS: {norm}¢  →  Buy ${norm*bmult/100:.2f}"
+                  + (f"  /  Sell ${norm*smult/100:.2f}" if smult else ""))
+    ax1.set_title(title, fontsize=11, fontweight="bold",
+                  color="white", backgroundcolor="#1F2D4E",
+                  pad=8, loc="left")
+
+    # X axis
+    ax1.xaxis.set_major_locator(mdates.MonthLocator(interval=6))
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%b-%y"))
+    plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha="right", fontsize=8)
+
+    # Gridlines off
+    ax1.grid(False)
+    ax2.grid(False)
+
+    # Legend — combined, white box with border
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2,
+               loc="upper left", fontsize=8, frameon=True,
+               framealpha=1.0, edgecolor="#404040")
+
+    plt.tight_layout()
+    out = Path(output_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(str(out), dpi=150, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    print(f"[vcb] PNG saved: {out}")
+    return str(out)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  MAIN PUBLIC FUNCTION
+# ─────────────────────────────────────────────────────────────────────────────
+
 def build_value_chart(
     ticker_or_config_path: str,
     output_path: str | None = None,
     price_csv_path: str | None = None,
     drive_folder_id: str | None = None,
+    save_png: bool = False,
 ) -> str:
     """
     Build the v3-style value chart workbook for any ASX company.
@@ -1001,6 +1135,7 @@ def build_value_chart(
         price_csv_path:        Optional path to marketindex CSV (YYYYMMDD, Close).
                                If None, tries yfinance then synthetic placeholder.
         drive_folder_id:       If set, uploads/replaces file in Google Drive.
+        save_png:              If True, also saves a PNG chart alongside the xlsx.
 
     Returns:
         str: Path to saved xlsx (or Drive URL if uploaded).
@@ -1035,6 +1170,10 @@ def build_value_chart(
 
     kb = round(out.stat().st_size / 1024, 1)
     print(f"[vcb] Saved & patched: {out}  ({kb} KB)")
+
+    if save_png:
+        png_path = str(out.with_suffix(".png"))
+        build_chart_png(cfg, price_df, png_path)
 
     if drive_folder_id:
         try:

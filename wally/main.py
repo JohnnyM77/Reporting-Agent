@@ -67,10 +67,10 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
                         xlsx_path = _build_xlsx(ticker, output_path=str(xlsx_out))
                         attachments.append(Path(xlsx_path))
                         chart_notes[ticker] = "Value chart xlsx attached"
-                        # Upload to Drive: YYMMDD-TICKER naming convention
+                        # Upload to Drive: YYMMDD-TICKER.xlsx naming convention
                         drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
                         if drive_folder_id:
-                            drive_name = f"{ctx.run_dt.strftime('%y%m%d')}-{ticker.split('.')[0]}"
+                            drive_name = f"{ctx.run_dt.strftime('%y%m%d')}-{ticker.split('.')[0]}.xlsx"
                             try:
                                 url = upload_or_replace_xlsx(
                                     Path(xlsx_path), drive_name, folder_id=drive_folder_id

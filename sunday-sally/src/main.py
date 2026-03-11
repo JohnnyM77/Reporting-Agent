@@ -27,12 +27,18 @@ from .weekly_scheduler import run_window_info
 # Value chart builder lives in the wally package at repo root
 import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+_build_value_chart = None
+_drive_upload = None
+_VALUE_CHART_AVAILABLE = False
 try:
     from wally.value_chart_builder import build_value_chart as _build_value_chart
-    from wally.drive_upload import upload_or_replace_xlsx as _drive_upload
     _VALUE_CHART_AVAILABLE = True
 except ImportError:
-    _VALUE_CHART_AVAILABLE = False
+    pass
+try:
+    from wally.drive_upload import upload_or_replace_xlsx as _drive_upload
+except ImportError:
+    pass
 
 
 def _load_settings() -> dict:
@@ -304,17 +310,21 @@ def main() -> None:
         attachments=attachments,
     )
 
-    # Upload value chart xlsx files to Google Drive (YYMMDD-TICKER naming)
+    # Upload spreadsheets to Google Drive (YYMMDD-TICKER.xlsx naming)
+    # Prefer value_chart.xlsx (with graph); fall back to valuation_review.xlsx.
     drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
     drive_uploads: list[str] = []
-    if _VALUE_CHART_AVAILABLE and drive_folder_id:
+    if drive_folder_id:
         for row in flagged_rows:
             ticker = row["ticker"]
-            chart = run_folder / ticker / "value_chart.xlsx"
-            if chart.exists():
-                drive_name = f"{now_local.strftime('%y%m%d')}-{ticker}"
+            ticker_folder = run_folder / ticker
+            chart = ticker_folder / "value_chart.xlsx"
+            fallback = ticker_folder / "valuation_review.xlsx"
+            upload_file = chart if chart.exists() else (fallback if fallback.exists() else None)
+            if upload_file and _drive_upload is not None:
+                drive_name = f"{now_local.strftime('%y%m%d')}-{ticker}.xlsx"
                 try:
-                    url = _drive_upload(chart, drive_name, folder_id=drive_folder_id)
+                    url = _drive_upload(upload_file, drive_name, folder_id=drive_folder_id)
                     drive_uploads.append(drive_name)
                     print(f"[sally] Drive → {drive_name}: {url}")
                 except Exception as exc:

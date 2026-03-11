@@ -1,0 +1,112 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# SEK.AX — SEEK Limited  |  Value Chart Config
+# Australia's dominant online job-ads marketplace.
+# Quality compounder — heavy investment phase 2020-2024 depressed statutory EPS;
+# use underlying EPS throughout (excludes impairments on international assets).
+# ──────────────────────────────────────────────────────────────────────────────
+
+ticker: SEK.AX
+company_name: SEEK Limited
+business: "Online job-ads marketplace — dominant in AU/NZ; also Asia Pacific via Jobstreet/Jobsdb"
+exchange: ASX
+
+stock_type: quality       # Quality compounder — monopoly-like domestic position
+
+buy_multiple: 20          # Only buy at reasonable multiple given structural growth tailwinds
+sell_multiple: 40         # Quality digital marketplace deserves premium; sell only when extreme
+rror: 0.03                # Lower hurdle — high-quality recurring revenue business
+norm_eps: null            # Not applicable — don't mean-revert quality compounders
+
+chart:
+  dimensions:
+    width: 34
+    height: 20
+
+  left_axis:
+    label: "Price (AUD $)"
+    min: 0.0
+    max: 40.0             # SEK peaked ~$37 in late 2021; $40 gives headroom
+    major_unit: 5.0
+    num_fmt: '"$"#,##0.00'
+
+  right_axis:
+    label: "P/E Ratio"
+    min: 0.0
+    max: 60.0             # Tech/marketplace stocks carry high P/Es
+    major_unit: 5.0
+    num_fmt: "0.0"
+
+  x_axis:
+    num_fmt: "MMM-YY"
+    tick_label_skip: 26
+    tick_mark_skip: 26
+
+  lines:
+    price:
+      color: "1565C0"
+      width_emu: 9525
+      style: solid
+    value_buy:
+      color: "1A5E20"
+      width_emu: 19050
+      style: dash
+    value_sell:
+      color: "C0392B"
+      width_emu: 19050
+      style: dash
+    div_rror:
+      color: "2E7D32"
+      width_emu: 19050
+      style: dash
+    pe_smooth:
+      color: "B8860B"
+      width_emu: 15875
+      style: solid
+
+  pe_smooth_days: 60
+  legend_position: "t"
+  legend_overlay: true
+  axis_title_box:
+    fill: "FFFF00"
+    border_color: "000000"
+    border_width_emu: 9525
+    text_bold: true
+    text_color: "000000"
+    font_size_pt: 9
+  legend_box:
+    fill: "FFFFFF"
+    border_color: "404040"
+    border_width_emu: 12700
+
+price_data:
+  frequency: weekly
+  resample_day: "W-FRI"
+  start_date: "2016-01-01"
+  source_hint: "marketindex.com.au/asx/sek — export daily CSV (Date as YYYYMMDD)"
+  stockhistory_formula: '=STOCKHISTORY("SEK.AX",DATE(2016,1,1),TODAY(),0,1,0,1)'
+
+# ── Earnings history ──────────────────────────────────────────────────────────
+# SEEK FY ends 30 June. H1 results released ~Feb, Full Year ~Aug.
+# Use UNDERLYING EPS (excludes impairments on international investments).
+# All figures AUD cents/share. Dividends are ordinary only.
+# All marked Est. — verify against ASX announcements for each period.
+earnings:
+  - {date: "2016-02-19", period: "H1 FY2016",  ttm_eps: 50.0,  ttm_div: 20.0, notes: "Est."}
+  - {date: "2016-08-19", period: "FY2016",      ttm_eps: 55.0,  ttm_div: 22.0, notes: "Est."}
+  - {date: "2017-02-17", period: "H1 FY2017",   ttm_eps: 55.0,  ttm_div: 22.0, notes: "Est."}
+  - {date: "2017-08-18", period: "FY2017",       ttm_eps: 58.0,  ttm_div: 23.0, notes: "Est."}
+  - {date: "2018-02-16", period: "H1 FY2018",   ttm_eps: 59.0,  ttm_div: 24.0, notes: "Est."}
+  - {date: "2018-08-17", period: "FY2018",       ttm_eps: 61.0,  ttm_div: 25.0, notes: "Est."}
+  - {date: "2019-02-15", period: "H1 FY2019",   ttm_eps: 59.0,  ttm_div: 24.0, notes: "Est."}
+  - {date: "2019-08-16", period: "FY2019",       ttm_eps: 57.0,  ttm_div: 23.0, notes: "Est."}
+  - {date: "2020-02-14", period: "H1 FY2020",   ttm_eps: 45.0,  ttm_div: 18.0, notes: "Est. | COVID impact emerging"}
+  - {date: "2020-08-21", period: "FY2020",       ttm_eps: 30.0,  ttm_div: 11.0, notes: "Est. | COVID — dividend cut"}
+  - {date: "2021-02-19", period: "H1 FY2021",   ttm_eps: 28.0,  ttm_div: 9.0,  notes: "Est. | Investment phase begins"}
+  - {date: "2021-08-20", period: "FY2021",       ttm_eps: 38.0,  ttm_div: 15.0, notes: "Est. | Recovery + Jobstreet investment"}
+  - {date: "2022-02-18", period: "H1 FY2022",   ttm_eps: 52.0,  ttm_div: 20.0, notes: "Est."}
+  - {date: "2022-08-19", period: "FY2022",       ttm_eps: 60.0,  ttm_div: 24.0, notes: "Est. | Strong jobs market"}
+  - {date: "2023-02-17", period: "H1 FY2023",   ttm_eps: 48.0,  ttm_div: 19.0, notes: "Est. | Softening ad volumes"}
+  - {date: "2023-08-18", period: "FY2023",       ttm_eps: 40.0,  ttm_div: 16.0, notes: "Est. | Heavy Zhaopin/OCC investment drag"}
+  - {date: "2024-02-16", period: "H1 FY2024",   ttm_eps: 45.0,  ttm_div: 18.0, notes: "Est."}
+  - {date: "2024-08-16", period: "FY2024",       ttm_eps: 55.0,  ttm_div: 22.0, notes: "Est. | Verify against Aug 2024 results"}
+  - {date: "2025-02-21", period: "H1 FY2025",   ttm_eps: 52.0,  ttm_div: 21.0, notes: "Est. — UPDATE when H1 FY2025 results released ~Feb 2025"}

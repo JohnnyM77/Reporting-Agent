@@ -24,6 +24,16 @@ from .spreadsheet_request_builder import build_valuation_workbook
 from .valuation_engine import fetch_valuation_snapshot
 from .weekly_scheduler import run_window_info
 
+# Value chart builder lives in the wally package at repo root
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+try:
+    from wally.value_chart_builder import build_value_chart as _build_value_chart
+    from wally.drive_upload import upload_or_replace_xlsx as _drive_upload
+    _VALUE_CHART_AVAILABLE = True
+except ImportError:
+    _VALUE_CHART_AVAILABLE = False
+
 
 def _load_settings() -> dict:
     cfg_path = os.environ.get("SALLY_CONFIG_PATH", "config/settings.yaml")
@@ -169,6 +179,19 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
     )
     save_memo(ticker_folder / "memo.md", memo)
 
+    # Build the 5-sheet value chart workbook (the one with the graph) if a
+    # valuations/<ticker>.yaml config exists for this company.
+    if _VALUE_CHART_AVAILABLE:
+        try:
+            _build_value_chart(
+                company.exchange_ticker,
+                output_path=str(ticker_folder / "value_chart.xlsx"),
+            )
+        except FileNotFoundError:
+            pass  # no valuations config yet — skip silently
+        except Exception as exc:
+            print(f"[sally] value chart build failed for {company.ticker}: {exc}")
+
     return summary
 
 
@@ -256,6 +279,10 @@ def main() -> None:
         if xlsx.exists():
             attachments.append((xlsx, f"{ticker}_valuation_review.xlsx"))
 
+        chart = ticker_folder / "value_chart.xlsx"
+        if chart.exists():
+            attachments.append((chart, f"{ticker}_value_chart.xlsx"))
+
         memo = ticker_folder / "memo.md"
         if memo.exists():
             attachments.append((memo, f"{ticker}_memo.md"))
@@ -272,6 +299,22 @@ def main() -> None:
         attachments=attachments,
     )
 
+    # Upload value chart xlsx files to Google Drive (YYMMDD-TICKER naming)
+    drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
+    drive_uploads: list[str] = []
+    if _VALUE_CHART_AVAILABLE and drive_folder_id:
+        for row in flagged_rows:
+            ticker = row["ticker"]
+            chart = run_folder / ticker / "value_chart.xlsx"
+            if chart.exists():
+                drive_name = f"{now_local.strftime('%y%m%d')}-{ticker}"
+                try:
+                    url = _drive_upload(chart, drive_name, folder_id=drive_folder_id)
+                    drive_uploads.append(drive_name)
+                    print(f"[sally] Drive → {drive_name}: {url}")
+                except Exception as exc:
+                    print(f"[sally] Drive upload failed for {ticker}: {exc}")
+
     run_log = {
         "job_name": settings.get("job_name", "sunday_sally_weekly_review"),
         "schedule": settings.get("schedule", {}),
@@ -283,6 +326,7 @@ def main() -> None:
         "attachments_sent": [name for _, name in attachments],
         "outputs_root": str(run_folder),
         "email_sent": email_ok,
+        "drive_uploads": drive_uploads,
     }
     write_run_log(run_folder / "run_log.json", run_log)
 

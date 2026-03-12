@@ -905,6 +905,10 @@ def main():
     material_blocks: List[str] = []
     fyi_blocks: List[str] = []
     brother_blocks: List[str] = []
+    # Structured data for dashboard
+    _hi_items: List[Dict] = []
+    _mat_items: List[Dict] = []
+    _fyi_items: List[Dict] = []
 
     # Fetch announcements by ticker
     by_ticker: Dict[str, List[Dict]] = {}
@@ -942,6 +946,7 @@ def main():
                 url = it["url"]
                 fyi_entry = f"{summarise_headline_two_lines(ticker, title)}\nOpen: {url}\n"
                 fyi_blocks.append(fyi_entry)
+                _fyi_items.append({"ticker": ticker, "title": title, "url": url})
                 if ticker == "AR9":
                     brother_blocks.append(fyi_entry)
 
@@ -1002,6 +1007,7 @@ def main():
                     if drive_links:
                         block += "Drive links:\n" + "\n".join(drive_links) + "\n"
                     high_impact_blocks.append(block)
+                    _hi_items.append({"ticker": ticker, "title": "Results (HY/FY) — text unavailable", "url": any_results_link, "type": "results"})
                     if ticker == "AR9":
                         brother_blocks.append(block)
                     continue
@@ -1019,6 +1025,7 @@ def main():
                 block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
 
                 high_impact_blocks.append(block)
+                _hi_items.append({"ticker": ticker, "title": "Results (HY/FY)", "url": any_results_link, "type": "results"})
                 if ticker == "AR9":
                     brother_blocks.append(block)
 
@@ -1080,10 +1087,12 @@ def main():
                         memo = deep_acquisition_memo(ticker, title, text, counters)
                         straw = strawman_post(ticker, "Acquisition", memo, counters)
                         block = f"{ticker} — Acquisition\n{memo}\nOpen: {url}\n"
+                        _hi_items.append({"ticker": ticker, "title": title[:120], "url": url, "type": "acquisition"})
                     else:
                         memo = deep_capital_memo(ticker, title, text, counters)
                         straw = strawman_post(ticker, "Capital/Debt Raise", memo, counters)
                         block = f"{ticker} — Capital/Debt Raise\n{memo}\nOpen: {url}\n"
+                        _hi_items.append({"ticker": ticker, "title": title[:120], "url": url, "type": "capital"})
 
                     if drive_links:
                         block += "Drive link(s):\n" + "\n".join(drive_links) + "\n"
@@ -1118,6 +1127,7 @@ def main():
 
                 block = f"{summary}\nOpen: {url}\n"
                 material_blocks.append(block)
+                _mat_items.append({"ticker": ticker, "title": title[:160], "url": url, "summary": summary or ""})
                 if ticker == "AR9":
                     brother_blocks.append(block)
 
@@ -1139,6 +1149,24 @@ def main():
         bro_html += _html_section("AR9 ONLY", COLOR_MATERIAL, brother_blocks)
         bro_html += "</div>"
         send_email(bro_subject, bro_text, bro_html, to_addr=brother_email)
+
+    # Write dashboard data
+    _dashboard_dir = Path("docs/data")
+    try:
+        _dashboard_dir.mkdir(parents=True, exist_ok=True)
+        (_dashboard_dir / "bob.json").write_text(
+            json.dumps({
+                "last_run": today_sgt_date().isoformat(),
+                "silence": not (high_impact_blocks or material_blocks or fyi_blocks),
+                "high_impact": _hi_items,
+                "material": _mat_items,
+                "fyi": _fyi_items,
+            }, indent=2),
+            encoding="utf-8",
+        )
+        log("Dashboard data written → docs/data/bob.json")
+    except Exception as _e:
+        log(f"Dashboard write failed: {_e}")
 
     save_seen_state(SEEN_STATE_PATH, prune_seen_state(seen_state_updated, SEEN_STATE_RETENTION_HOURS))
     log(f"Seen-state updated with {run_seen_count} new announcement(s).")

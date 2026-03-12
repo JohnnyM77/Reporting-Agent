@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import os
 from pathlib import Path
 
@@ -125,6 +126,37 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
         f"Flagged tickers: {', '.join([r.ticker for r in flagged]) if flagged else 'None'}"
     )
     send_email(settings, subject, text, html, attachments, inline_images=inline_images if inline_images else None)
+
+    # Write dashboard data (merge with existing wally.json so multiple watchlists accumulate)
+    _dash_path = Path("docs/data/wally.json")
+    try:
+        _dash_path.parent.mkdir(parents=True, exist_ok=True)
+        existing = json.loads(_dash_path.read_text()) if _dash_path.exists() else {}
+        watchlists = existing.get("watchlists", {})
+        watchlists[wl.name] = {
+            "run_timestamp": ctx.run_dt.isoformat(),
+            "total": len(results),
+            "flagged_count": len(flagged),
+            "flagged": [
+                {
+                    "ticker": r.ticker,
+                    "company_name": r.company_name,
+                    "current_price": r.current_price,
+                    "low_52w": r.low_52w,
+                    "high_52w": r.high_52w,
+                    "distance_to_low_pct": r.distance_to_low_pct,
+                    "below_high_pct": r.below_high_pct,
+                }
+                for r in flagged
+            ],
+        }
+        _dash_path.write_text(
+            json.dumps({"last_run": ctx.run_dt.isoformat(), "watchlists": watchlists}, indent=2),
+            encoding="utf-8",
+        )
+        print(f"[wally] Dashboard data written → {_dash_path}", flush=True)
+    except Exception as _e:
+        print(f"[wally] Dashboard write failed: {_e}", flush=True)
 
     return len(flagged)
 

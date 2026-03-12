@@ -206,6 +206,24 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
 
 
 def main() -> None:
+    # ── Startup diagnostics ───────────────────────────────────────────────────
+    print("[sally] Starting up...")
+    print(f"[sally] Value chart builder available: {_VALUE_CHART_AVAILABLE}")
+    print(f"[sally] Drive uploader available: {_drive_upload is not None}")
+    _gdrive_ok = bool(os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip())
+    _gfolder_ok = bool(os.environ.get("GDRIVE_FOLDER_ID", "").strip())
+    print(f"[sally] GDRIVE_SERVICE_ACCOUNT_JSON set: {_gdrive_ok}")
+    print(f"[sally] GDRIVE_FOLDER_ID set: {_gfolder_ok}")
+    _email_ok_pre = all([
+        os.environ.get("EMAIL_FROM") or os.environ.get("EMAIL_USER"),
+        os.environ.get("EMAIL_TO"),
+        os.environ.get("SMTP_PASS") or os.environ.get("EMAIL_APP_PASSWORD"),
+    ])
+    print(f"[sally] Email credentials present: {_email_ok_pre}")
+    if not _email_ok_pre:
+        missing = [k for k in ("EMAIL_FROM", "EMAIL_TO", "SMTP_PASS") if not os.environ.get(k)]
+        print(f"[sally] WARNING: missing env vars → {missing}")
+
     settings = _load_settings()
     tz = settings.get("timezone", "Asia/Singapore")
     thresholds = settings.get("thresholds", {})

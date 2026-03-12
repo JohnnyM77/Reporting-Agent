@@ -38,6 +38,12 @@ def send_summary_email(
     smtp_pass = os.environ.get("SMTP_PASS") or os.environ.get("EMAIL_APP_PASSWORD")
 
     if not all([email_from, email_to, smtp_user, smtp_pass]):
+        missing = []
+        if not email_from:  missing.append("EMAIL_FROM / EMAIL_USER")
+        if not email_to:    missing.append("EMAIL_TO")
+        if not smtp_user:   missing.append("SMTP_USER")
+        if not smtp_pass:   missing.append("SMTP_PASS / EMAIL_APP_PASSWORD")
+        print(f"[email_sender] Cannot send — missing env vars: {', '.join(missing)}")
         return False
 
     # ── Build MIME structure ───────────────────────────────────────────────────

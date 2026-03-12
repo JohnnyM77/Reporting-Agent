@@ -198,9 +198,19 @@ def main() -> None:
     print("[sally] Starting up...")
     print(f"[sally] Value chart builder available: {_VALUE_CHART_AVAILABLE}")
     print(f"[sally] Drive uploader available: {_drive_upload is not None}")
-    _gdrive_ok = bool(os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip())
+    _oauth_ok = all([
+        os.environ.get("GDRIVE_CLIENT_ID", "").strip(),
+        os.environ.get("GDRIVE_CLIENT_SECRET", "").strip(),
+        os.environ.get("GDRIVE_REFRESH_TOKEN", "").strip(),
+    ])
+    _sa_ok = bool(os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip())
     _gfolder_ok = bool(os.environ.get("GDRIVE_FOLDER_ID", "").strip())
-    print(f"[sally] GDRIVE_SERVICE_ACCOUNT_JSON set: {_gdrive_ok}")
+    if _oauth_ok:
+        print("[sally] Drive auth: OAuth2 user credentials (GDRIVE_CLIENT_ID/SECRET/REFRESH_TOKEN) ✓")
+    elif _sa_ok:
+        print("[sally] Drive auth: service account (WARNING — will fail on personal Gmail Drive — add OAuth2 secrets instead)")
+    else:
+        print("[sally] Drive auth: NO credentials set — uploads will be skipped")
     print(f"[sally] GDRIVE_FOLDER_ID set: {_gfolder_ok}")
     _email_ok_pre = all([
         os.environ.get("EMAIL_FROM") or os.environ.get("EMAIL_USER"),

@@ -63,14 +63,17 @@ jobs:
             echo "Not Friday — skipping TII75 on scheduled run"
           fi
 
-      - name: Build dashboard
-        run: python scripts/build_dashboard.py
-
       - name: Commit dashboard update
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/
-          git diff --staged --quiet || git commit -m "Dashboard update — Wally [skip ci]"
+          # Commit only Wally's data JSON — no conflict possible with other agents
+          git add docs/data/wally.json
+          git diff --staged --quiet || git commit -m "Wally data [skip ci]"
+          # Pull other agents' latest JSON files
           git pull --rebase origin HEAD
+          # Rebuild HTML with all agents' combined data, then push
+          python scripts/build_dashboard.py
+          git add docs/index.html
+          git diff --staged --quiet || git commit -m "Dashboard update — Wally [skip ci]"
           git push origin HEAD

@@ -390,6 +390,41 @@ def main() -> None:
     }
     write_run_log(run_folder / "run_log.json", run_log)
 
+    # Write dashboard data — path relative to repo root (sally runs from sunday-sally/ subdir)
+    _dash_path = Path(__file__).resolve().parent.parent.parent / "docs" / "data" / "sally.json"
+    try:
+        _dash_path.parent.mkdir(parents=True, exist_ok=True)
+        _dash_path.write_text(
+            json.dumps(
+                {
+                    "last_run": now_local.date().isoformat(),
+                    "portfolio_size": len(portfolio),
+                    "flagged_count": flag_count,
+                    "flagged": [
+                        {
+                            "ticker": r["ticker"],
+                            "company_name": r.get("company_name", ""),
+                            "current_price": r.get("current_price", 0),
+                            "high_52w": r.get("high_52w", 0),
+                            "distance_to_high_pct": r.get("distance_to_high_pct", 0),
+                            "trailing_pe": r.get("trailing_pe"),
+                            "forward_pe": r.get("forward_pe"),
+                            "dividend_yield": r.get("dividend_yield"),
+                            "valuation_percentile": r.get("valuation_percentile"),
+                            "alert_tier": r.get("alert_tier", ""),
+                            "sally_verdict": r.get("sally_verdict", ""),
+                        }
+                        for r in flagged_rows
+                    ],
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        print(f"[sally] Dashboard data written → {_dash_path}")
+    except Exception as _e:
+        print(f"[sally] Dashboard write failed: {_e}")
+
     print(json.dumps(run_log, indent=2))
 
 

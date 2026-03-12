@@ -1,7 +1,23 @@
 {
-  "last_run": null,
-  "silence": true,
+  "last_run": "2026-03-12",
+  "silence": false,
   "high_impact": [],
   "material": [],
-  "fyi": []
+  "fyi": [
+    {
+      "ticker": "WDS",
+      "title": "Notification of cessation of securities - WDS 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03071305"
+    },
+    {
+      "ticker": "WDS",
+      "title": "Notification regarding unquoted securities - WDS 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03071304"
+    },
+    {
+      "ticker": "PWH",
+      "title": "Becoming a substantial holder 51\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.1MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03071389"
+    }
+  ]
 }

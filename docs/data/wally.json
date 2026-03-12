@@ -1,4 +1,59 @@
 {
-  "last_run": null,
-  "watchlists": {}
+  "last_run": "2026-03-12T07:54:42.562000+00:00",
+  "watchlists": {
+    "TII Watchlist": {
+      "run_timestamp": "2026-03-12T07:54:18.475960+00:00",
+      "total": 3,
+      "flagged_count": 1,
+      "flagged": [
+        {
+          "ticker": "CSL.AX",
+          "company_name": "CSL Limited",
+          "current_price": 141.0399932861328,
+          "low_52w": 141.0399932861328,
+          "high_52w": 272.0,
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 48.14706129186293
+        }
+      ]
+    },
+    "JM Watch List": {
+      "run_timestamp": "2026-03-12T07:54:26.583537+00:00",
+      "total": 3,
+      "flagged_count": 1,
+      "flagged": [
+        {
+          "ticker": "ARB.AX",
+          "company_name": "ARB Corporation Limited",
+          "current_price": 22.06999969482422,
+          "low_52w": 21.360000610351562,
+          "high_52w": 40.81999969482422,
+          "distance_to_low_pct": 3.323965656295786,
+          "below_high_pct": 45.933366340464254
+        }
+      ]
+    },
+    "Aussie Tech Watchlist": {
+      "run_timestamp": "2026-03-12T07:54:33.959668+00:00",
+      "total": 3,
+      "flagged_count": 1,
+      "flagged": [
+        {
+          "ticker": "SEK.AX",
+          "company_name": "SEEK Limited",
+          "current_price": 15.180000305175781,
+          "low_52w": 15.180000305175781,
+          "high_52w": 29.18000030517578,
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 47.97806666752077
+        }
+      ]
+    },
+    "TII75 Watchlist": {
+      "run_timestamp": "2026-03-12T07:54:42.562000+00:00",
+      "total": 3,
+      "flagged_count": 0,
+      "flagged": []
+    }
+  }
 }

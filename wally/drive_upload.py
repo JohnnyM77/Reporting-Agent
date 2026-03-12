@@ -8,15 +8,52 @@ from typing import Optional
 
 
 def _drive_service():
-    from google.oauth2.service_account import Credentials
+    """
+    Build a Google Drive v3 service client.
+
+    Preference order:
+    1. OAuth2 refresh token  (GDRIVE_CLIENT_ID + GDRIVE_CLIENT_SECRET + GDRIVE_REFRESH_TOKEN)
+       — files are owned by your personal Google account and count against YOUR quota.
+       Use this for personal Gmail Drive folders.
+    2. Service account JSON  (GDRIVE_SERVICE_ACCOUNT_JSON)
+       — files are owned by the service account which has ZERO storage quota on personal
+       Gmail drives. Only works with Google Workspace Shared Drives.
+    """
     from googleapiclient.discovery import build
 
+    client_id     = os.environ.get("GDRIVE_CLIENT_ID", "").strip()
+    client_secret = os.environ.get("GDRIVE_CLIENT_SECRET", "").strip()
+    refresh_token = os.environ.get("GDRIVE_REFRESH_TOKEN", "").strip()
+
+    if client_id and client_secret and refresh_token:
+        # ── OAuth2 user credentials (recommended for personal Gmail Drive) ──
+        from google.oauth2.credentials import Credentials
+        from google.auth.transport.requests import Request
+
+        creds = Credentials(
+            token=None,
+            refresh_token=refresh_token,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=client_id,
+            client_secret=client_secret,
+            scopes=["https://www.googleapis.com/auth/drive"],
+        )
+        # Force a refresh so we have a valid access token before the first call
+        creds.refresh(Request())
+        return build("drive", "v3", credentials=creds)
+
+    # ── Fallback: service account (only works with Shared Drives / Workspace) ─
     sa_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
     if not sa_json:
-        raise RuntimeError("Missing GDRIVE_SERVICE_ACCOUNT_JSON")
+        raise RuntimeError(
+            "No Drive credentials found. Set GDRIVE_CLIENT_ID + GDRIVE_CLIENT_SECRET + "
+            "GDRIVE_REFRESH_TOKEN (recommended) or GDRIVE_SERVICE_ACCOUNT_JSON."
+        )
+    from google.oauth2.service_account import Credentials as SACredentials
     info = json.loads(sa_json)
-    scopes = ["https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_info(info, scopes=scopes)
+    creds = SACredentials.from_service_account_info(
+        info, scopes=["https://www.googleapis.com/auth/drive"]
+    )
     return build("drive", "v3", credentials=creds)
 
 
@@ -38,7 +75,12 @@ def upload_or_replace_xlsx(local_path: Path, drive_name: str, folder_id: Optiona
         q_parts.append(f"'{folder_id}' in parents")
     query = " and ".join(q_parts)
 
-    found = service.files().list(q=query, spaces="drive", fields="files(id,name)", pageSize=10).execute().get("files", [])
+    found = (
+        service.files()
+        .list(q=query, spaces="drive", fields="files(id,name)", pageSize=10)
+        .execute()
+        .get("files", [])
+    )
 
     media = MediaFileUpload(str(local_path), mimetype=mime, resumable=False)
 
@@ -47,7 +89,7 @@ def upload_or_replace_xlsx(local_path: Path, drive_name: str, folder_id: Optiona
         updated = service.files().update(fileId=file_id, media_body=media, fields="id").execute()
         file_id = updated.get("id", file_id)
     else:
-        metadata = {"name": drive_name}
+        metadata: dict = {"name": drive_name}
         if folder_id:
             metadata["parents"] = [folder_id]
         created = service.files().create(body=metadata, media_body=media, fields="id").execute()

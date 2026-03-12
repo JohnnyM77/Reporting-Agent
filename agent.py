@@ -661,16 +661,35 @@ def strawman_post(ticker: str, kind: str, analysis_text: str, counters: Dict) ->
 # Google Drive upload
 # ----------------------------
 def drive_service():
-    from google.oauth2.service_account import Credentials
     from googleapiclient.discovery import build
 
+    client_id     = os.environ.get("GDRIVE_CLIENT_ID", "").strip()
+    client_secret = os.environ.get("GDRIVE_CLIENT_SECRET", "").strip()
+    refresh_token = os.environ.get("GDRIVE_REFRESH_TOKEN", "").strip()
+
+    if client_id and client_secret and refresh_token:
+        from google.oauth2.credentials import Credentials
+        from google.auth.transport.requests import Request
+        creds = Credentials(
+            token=None,
+            refresh_token=refresh_token,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=client_id,
+            client_secret=client_secret,
+            scopes=["https://www.googleapis.com/auth/drive"],
+        )
+        creds.refresh(Request())
+        return build("drive", "v3", credentials=creds)
+
+    # Fallback: service account (only works with Google Workspace Shared Drives)
     sa_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
     if not sa_json:
-        raise RuntimeError("Missing GDRIVE_SERVICE_ACCOUNT_JSON")
+        raise RuntimeError("No Drive credentials: set GDRIVE_CLIENT_ID/SECRET/REFRESH_TOKEN")
+    from google.oauth2.service_account import Credentials
     info = json.loads(sa_json)
-
-    scopes = ["https://www.googleapis.com/auth/drive.file"]
-    creds = Credentials.from_service_account_info(info, scopes=scopes)
+    creds = Credentials.from_service_account_info(
+        info, scopes=["https://www.googleapis.com/auth/drive"]
+    )
     return build("drive", "v3", credentials=creds)
 
 

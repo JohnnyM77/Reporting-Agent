@@ -116,13 +116,13 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
     write_json(json_path, payload)
 
     settings = load_email_settings()
-    subject = f"Wally — {wl.name} — {ctx.run_dt.date().isoformat()}"
+    subject = f"Wally the Watcher — {wl.name} — {ctx.run_dt.date().isoformat()}"
     png_cids = {r.ticker: f"chart_{r.ticker.lower().replace('.', '_')}"
                 for r in flagged
                 if any(cid == f"chart_{r.ticker.lower().replace('.', '_')}" for cid, _ in inline_images)}
     html = build_html(wl.name, ctx.run_dt.date().isoformat(), results, flagged, chart_notes, inline_pngs=png_cids)
     text = (
-        f"Wally report\nWatchlist: {wl.name}\nChecked: {len(results)}\nFlagged: {len(flagged)}\n"
+        f"Wally the Watcher report\nWatchlist: {wl.name}\nChecked: {len(results)}\nFlagged: {len(flagged)}\n"
         f"Flagged tickers: {', '.join([r.ticker for r in flagged]) if flagged else 'None'}"
     )
     send_email(settings, subject, text, html, attachments, inline_images=inline_images if inline_images else None)

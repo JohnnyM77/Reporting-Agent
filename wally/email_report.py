@@ -55,7 +55,7 @@ def build_html(
         )
 
     return (
-        f"<h2>Wally — {watchlist_name}</h2>"
+        f"<h2>Wally the Watcher — {watchlist_name}</h2>"
         f"<p>Run date: {run_date}</p>"
         f"<p>Checked: <strong>{len(results)}</strong> | Flagged: <strong>{len(flagged)}</strong></p>"
         f"{flagged_table}"

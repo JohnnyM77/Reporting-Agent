@@ -189,7 +189,7 @@ def _wally_section(data: dict) -> str:
     <div class="agent-card">
       <div class="card-header">
         <div>
-          <span class="agent-name">Wally</span>
+          <span class="agent-name">Wally the Watcher</span>
           <span class="agent-role">Watchlist Low-Screen (Tue/Fri)</span>
         </div>
         <div style="text-align:right">
@@ -380,7 +380,7 @@ def build_dashboard() -> None:
     {_sally_section(sally)}
   </main>
   <footer>
-    Bob the Bot · Wally · Selling Sally &nbsp;·&nbsp; JohnnyM77/Reporting-Agent
+    Bob the Bot · Wally the Watcher · Selling Sally &nbsp;·&nbsp; JohnnyM77/Reporting-Agent
   </footer>
 </body>
 </html>"""

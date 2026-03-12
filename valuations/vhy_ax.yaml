@@ -1,0 +1,80 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# VHY.AX — Vanguard Australian Shares High Yield ETF  |  Value Chart Config
+# Passive ETF tracking ASX high-dividend stocks (banks, miners, infrastructure).
+# Pays quarterly distributions. "EPS" here = annual distribution per unit (cents).
+# Valuation framework: price-to-distribution multiple (P/D), not P/E.
+# ──────────────────────────────────────────────────────────────────────────────
+
+ticker: VHY.AX
+company_name: Vanguard Aust High Yield ETF
+business: "ASX high-dividend ETF — banks, miners, infrastructure, REITs. Quarterly distributions."
+exchange: ASX
+
+stock_type: income          # Income-focused — use distribution yield as primary metric
+
+buy_multiple: 35            # Buy at P/D ≤ 35 (implied yield ≥ 4.3% at ~$1.65 distribution)
+sell_multiple: 45           # Trim at P/D ≥ 45 (implied yield ≤ 3.3% — stretched)
+rror: 0.025                 # 2.5% required rate of return (low; ETF holds quality dividend payers)
+norm_eps: null              # No cyclical mean-reversion — distributions grow slowly over time
+
+chart:
+  dimensions:
+    width: 34
+    height: 20
+
+  left_axis:
+    label: "Price (AUD $)"
+    min: 0.0
+    max: 90.0
+    major_unit: 10.0
+    num_fmt: '"$"#,##0.00'
+
+  right_axis:
+    label: "Price / Distribution Multiple"
+    min: 0.0
+    max: 60.0
+    major_unit: 10.0
+    num_fmt: "0.0"
+
+  x_axis:
+    num_fmt: "MMM-YY"
+    tick_label_skip: 26
+    tick_mark_skip: 26
+
+  lines:
+    price:
+      color: "1565C0"
+      width_emu: 9525
+      style: solid
+    value_buy:
+      color: "1A5E20"
+      width_emu: 19050
+      style: dash
+    value_sell:
+      color: "C0392B"
+      width_emu: 19050
+      style: dash
+    drror:
+      color: "F57F17"
+      width_emu: 12700
+      style: sysDot
+    pe_trailing:
+      color: "7B1FA2"
+      width_emu: 9525
+      style: solid
+
+# Annual distributions per unit (cents) — used as proxy for TTM EPS.
+# ttm_div mirrors ttm_eps (ETF passes through essentially all income).
+# UPDATE after each quarterly distribution announcement.
+earnings:
+  - {date: "2016-06-30", period: "FY2016",  ttm_eps: 93,  ttm_div: 93,  notes: "Est. — early tracking period"}
+  - {date: "2017-06-30", period: "FY2017",  ttm_eps: 102, ttm_div: 102, notes: "Est."}
+  - {date: "2018-06-30", period: "FY2018",  ttm_eps: 112, ttm_div: 112, notes: "Est."}
+  - {date: "2019-06-30", period: "FY2019",  ttm_eps: 120, ttm_div: 120, notes: "Est."}
+  - {date: "2020-06-30", period: "FY2020",  ttm_eps: 88,  ttm_div: 88,  notes: "Est. — COVID dividend cuts by banks/miners"}
+  - {date: "2021-06-30", period: "FY2021",  ttm_eps: 108, ttm_div: 108, notes: "Est. — partial recovery"}
+  - {date: "2022-06-30", period: "FY2022",  ttm_eps: 138, ttm_div: 138, notes: "Est. — banks & resources recovery"}
+  - {date: "2023-06-30", period: "FY2023",  ttm_eps: 152, ttm_div: 152, notes: "Est."}
+  - {date: "2024-06-30", period: "FY2024",  ttm_eps: 163, ttm_div: 163, notes: "Est. — UPDATE with actuals"}
+  - {date: "2025-06-30", period: "FY2025",  ttm_eps: 170, ttm_div: 170, notes: "Est. — UPDATE when reported"}
+  - {date: "2026-06-30", period: "FY2026",  ttm_eps: 175, ttm_div: 175, notes: "Est. — UPDATE when reported"}

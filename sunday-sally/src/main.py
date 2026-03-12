@@ -20,7 +20,6 @@ from .pathing import repo_root, resolve_output_root
 from .portfolio_loader import load_portfolio
 from .price_monitor import fetch_price_data
 from .run_logger import write_run_log
-from .spreadsheet_request_builder import build_valuation_workbook
 from .valuation_engine import fetch_valuation_snapshot
 from .weekly_scheduler import run_window_info
 
@@ -167,30 +166,19 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         news=[n.get("headline", "") for n in news] if isinstance(news, list) else [],
     )
 
-    # Routing: prefer the value chart workbook (with graph) when a valuations
-    # config exists; fall back to the basic valuation_review workbook otherwise.
-    chart_built = False
+    # Build the value chart workbook (with graph) — requires a valuations/<ticker>.yaml config.
+    # If no config exists for this ticker, no xlsx is produced for it.
     if _VALUE_CHART_AVAILABLE:
         try:
             _build_value_chart(
                 company.exchange_ticker,
                 output_path=str(ticker_folder / "value_chart.xlsx"),
             )
-            chart_built = True
             print(f"[sally] value chart built for {company.ticker}")
         except FileNotFoundError:
-            pass  # no valuations config — fall through to basic workbook
+            print(f"[sally] WARNING: no valuations config for {company.ticker} — add valuations/{company.ticker.lower()}_ax.yaml to get a chart")
         except Exception as exc:
             print(f"[sally] value chart build failed for {company.ticker}: {exc}")
-
-    if not chart_built:
-        build_valuation_workbook(
-            ticker_folder / "valuation_review.xlsx",
-            summary,
-            history_rows,
-            critical_rows,
-            claude_analysis=claude_analysis,
-        )
 
     memo = build_memo_text(
         company={"ticker": company.ticker, "company_name": price.company_name},
@@ -206,6 +194,24 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
 
 
 def main() -> None:
+    # ── Startup diagnostics ───────────────────────────────────────────────────
+    print("[sally] Starting up...")
+    print(f"[sally] Value chart builder available: {_VALUE_CHART_AVAILABLE}")
+    print(f"[sally] Drive uploader available: {_drive_upload is not None}")
+    _gdrive_ok = bool(os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip())
+    _gfolder_ok = bool(os.environ.get("GDRIVE_FOLDER_ID", "").strip())
+    print(f"[sally] GDRIVE_SERVICE_ACCOUNT_JSON set: {_gdrive_ok}")
+    print(f"[sally] GDRIVE_FOLDER_ID set: {_gfolder_ok}")
+    _email_ok_pre = all([
+        os.environ.get("EMAIL_FROM") or os.environ.get("EMAIL_USER"),
+        os.environ.get("EMAIL_TO"),
+        os.environ.get("SMTP_PASS") or os.environ.get("EMAIL_APP_PASSWORD"),
+    ])
+    print(f"[sally] Email credentials present: {_email_ok_pre}")
+    if not _email_ok_pre:
+        missing = [k for k in ("EMAIL_FROM", "EMAIL_TO", "SMTP_PASS") if not os.environ.get(k)]
+        print(f"[sally] WARNING: missing env vars → {missing}")
+
     settings = _load_settings()
     tz = settings.get("timezone", "Asia/Singapore")
     thresholds = settings.get("thresholds", {})
@@ -285,14 +291,9 @@ def main() -> None:
         ticker = row["ticker"]
         ticker_folder = run_folder / ticker
 
-        # Attach the value chart (with graph) if it was built, otherwise
-        # fall back to the basic valuation review workbook.
         chart = ticker_folder / "value_chart.xlsx"
-        xlsx = ticker_folder / "valuation_review.xlsx"
         if chart.exists():
             attachments.append((chart, f"{ticker}_value_chart.xlsx"))
-        elif xlsx.exists():
-            attachments.append((xlsx, f"{ticker}_valuation_review.xlsx"))
 
         memo = ticker_folder / "memo.md"
         if memo.exists():
@@ -310,21 +311,17 @@ def main() -> None:
         attachments=attachments,
     )
 
-    # Upload spreadsheets to Google Drive (YYMMDD-TICKER.xlsx naming)
-    # Prefer value_chart.xlsx (with graph); fall back to valuation_review.xlsx.
+    # Upload value chart xlsx files to Google Drive (YYMMDD-TICKER.xlsx naming)
     drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
     drive_uploads: list[str] = []
-    if drive_folder_id:
+    if drive_folder_id and _drive_upload is not None:
         for row in flagged_rows:
             ticker = row["ticker"]
-            ticker_folder = run_folder / ticker
-            chart = ticker_folder / "value_chart.xlsx"
-            fallback = ticker_folder / "valuation_review.xlsx"
-            upload_file = chart if chart.exists() else (fallback if fallback.exists() else None)
-            if upload_file and _drive_upload is not None:
+            chart = run_folder / ticker / "value_chart.xlsx"
+            if chart.exists():
                 drive_name = f"{now_local.strftime('%y%m%d')}-{ticker}.xlsx"
                 try:
-                    url = _drive_upload(upload_file, drive_name, folder_id=drive_folder_id)
+                    url = _drive_upload(chart, drive_name, folder_id=drive_folder_id)
                     drive_uploads.append(drive_name)
                     print(f"[sally] Drive → {drive_name}: {url}")
                 except Exception as exc:

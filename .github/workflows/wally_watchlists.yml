@@ -33,8 +33,7 @@ jobs:
         run: |
           python -m wally.main --all-standard-watchlists
 
-      - name: Run TII75 (Fridays only; fortnightly gate inside Python)
-        if: github.event_name == 'workflow_dispatch' || startsWith(github.event.schedule, '30 22 * *')
+      - name: Run TII75 (manual=always; scheduled=Fridays with fortnightly gate)
         env:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
@@ -46,8 +45,12 @@ jobs:
           GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
         run: |
-          if [ "$(date -u +%u)" = "5" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual trigger: always run, bypass fortnightly gate
+            python -m wally.main --tii75 --force
+          elif [ "$(date -u +%u)" = "5" ]; then
+            # Scheduled Friday: apply fortnightly gate inside Python
             python -m wally.main --tii75
           else
-            echo "Not Friday UTC; skipping TII75"
+            echo "Not Friday — skipping TII75 on scheduled run"
           fi

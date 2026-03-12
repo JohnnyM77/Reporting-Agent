@@ -1,4 +1,4 @@
-name: Sunday Sally Weekly Review
+name: Selling Sally Weekly Review
 
 on:
   workflow_dispatch:
@@ -22,7 +22,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r sunday-sally/requirements.txt
 
-      - name: Run Sunday Sally
+      - name: Run Selling Sally
         working-directory: sunday-sally
         env:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
@@ -32,7 +32,9 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
-          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SALLY_CONFIG_PATH: config/settings.yaml

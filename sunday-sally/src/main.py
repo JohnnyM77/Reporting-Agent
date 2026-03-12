@@ -250,7 +250,7 @@ def main() -> None:
     # -------------------------------------------------------------------------
     if flagged_rows:
         lines = [
-            f"Sunday Sally Weekly Review — {now_local.date().isoformat()}",
+            f"Selling Sally Weekly Review — {now_local.date().isoformat()}",
             f"{len(flagged_rows)} company/companies flagged this week.",
             "",
             "Flagged companies:",
@@ -269,7 +269,7 @@ def main() -> None:
         ]
     else:
         lines = [
-            f"Sunday Sally Weekly Review — {now_local.date().isoformat()}",
+            f"Selling Sally Weekly Review — {now_local.date().isoformat()}",
             "No valuation stretch alerts this week. Nothing near 52-week highs.",
         ]
 
@@ -301,7 +301,7 @@ def main() -> None:
 
     flag_count = len(flagged_rows)
     subject = (
-        f"Sunday Sally — {now_local.date().isoformat()} — "
+        f"Selling Sally — {now_local.date().isoformat()} — "
         + (f"{flag_count} flagged" if flag_count else "All clear")
     )
 

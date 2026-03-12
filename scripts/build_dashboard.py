@@ -189,7 +189,7 @@ def _wally_section(data: dict) -> str:
     <div class="agent-card">
       <div class="card-header">
         <div>
-          <span class="agent-name">Wally</span>
+          <span class="agent-name">Wally the Watcher</span>
           <span class="agent-role">Watchlist Low-Screen (Tue/Fri)</span>
         </div>
         <div style="text-align:right">
@@ -286,6 +286,7 @@ def build_dashboard() -> None:
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Reporting Agent Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
@@ -380,7 +381,7 @@ def build_dashboard() -> None:
     {_sally_section(sally)}
   </main>
   <footer>
-    Bob the Bot · Wally · Selling Sally &nbsp;·&nbsp; JohnnyM77/Reporting-Agent
+    Bob the Bot · Wally the Watcher · Selling Sally &nbsp;·&nbsp; JohnnyM77/Reporting-Agent
   </footer>
 </body>
 </html>"""

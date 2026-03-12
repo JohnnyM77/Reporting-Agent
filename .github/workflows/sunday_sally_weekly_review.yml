@@ -9,6 +9,8 @@ on:
 jobs:
   sunday_sally_weekly_review:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     env:
       TZ: Asia/Singapore
     steps:

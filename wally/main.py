@@ -29,6 +29,7 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
     flagged: list[TickerScreenResult] = []
     attachments: list[Path] = []
     chart_notes: dict[str, str] = {}
+    inline_images: list[tuple[str, Path]] = []  # (content-id, png_path)
 
     for ticker in wl.tickers:
         try:
@@ -60,13 +61,18 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
                 if value_png:
                     attachments.append(value_png)
 
-                # Build xlsx value chart workbook if a valuations config exists
+                # Build xlsx + PNG value chart if a valuations config exists
                 if _XLSX_BUILDER_AVAILABLE:
                     try:
                         xlsx_out = ctx.output_root / f"{ticker.lower().replace('.', '_')}_value_chart.xlsx"
-                        xlsx_path = _build_xlsx(ticker, output_path=str(xlsx_out))
+                        xlsx_path = _build_xlsx(ticker, output_path=str(xlsx_out), save_png=True)
                         attachments.append(Path(xlsx_path))
                         chart_notes[ticker] = "Value chart xlsx attached"
+                        # Register PNG for inline email embedding
+                        png_path = Path(str(xlsx_path).replace(".xlsx", ".png"))
+                        if png_path.exists():
+                            cid = f"chart_{ticker.lower().replace('.', '_')}"
+                            inline_images.append((cid, png_path))
                         # Upload to Drive: YYMMDD-TICKER.xlsx naming convention
                         drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
                         if drive_folder_id:
@@ -108,23 +114,17 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
     json_path = ctx.output_root / f"{safe_slug(wl.name)}.json"
     write_json(json_path, payload)
 
-    drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
-    if drive_folder_id:
-        drive_name = f"Wally_{ctx.run_dt.date().isoformat()}_{safe_slug(wl.name)}.json"
-        try:
-            url = upload_or_replace_xlsx(json_path, drive_name, folder_id=drive_folder_id)
-            print(f"[wally] Drive upload: {url}", flush=True)
-        except Exception as exc:
-            print(f"[wally] Drive upload failed (non-fatal): {exc}", flush=True)
-
     settings = load_email_settings()
     subject = f"Wally — {wl.name} — {ctx.run_dt.date().isoformat()}"
-    html = build_html(wl.name, ctx.run_dt.date().isoformat(), results, flagged, chart_notes)
+    png_cids = {r.ticker: f"chart_{r.ticker.lower().replace('.', '_')}"
+                for r in flagged
+                if any(cid == f"chart_{r.ticker.lower().replace('.', '_')}" for cid, _ in inline_images)}
+    html = build_html(wl.name, ctx.run_dt.date().isoformat(), results, flagged, chart_notes, inline_pngs=png_cids)
     text = (
         f"Wally report\nWatchlist: {wl.name}\nChecked: {len(results)}\nFlagged: {len(flagged)}\n"
         f"Flagged tickers: {', '.join([r.ticker for r in flagged]) if flagged else 'None'}"
     )
-    send_email(settings, subject, text, html, attachments)
+    send_email(settings, subject, text, html, attachments, inline_images=inline_images if inline_images else None)
 
     return len(flagged)
 

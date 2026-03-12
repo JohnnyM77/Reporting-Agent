@@ -166,13 +166,13 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         news=[n.get("headline", "") for n in news] if isinstance(news, list) else [],
     )
 
-    # Build the value chart workbook (with graph) — requires a valuations/<ticker>.yaml config.
-    # If no config exists for this ticker, no xlsx is produced for it.
+    # Build the value chart workbook + PNG (requires a valuations/<ticker>.yaml config).
     if _VALUE_CHART_AVAILABLE:
         try:
             _build_value_chart(
                 company.exchange_ticker,
                 output_path=str(ticker_folder / "value_chart.xlsx"),
+                save_png=True,
             )
             print(f"[sally] value chart built for {company.ticker}")
         except FileNotFoundError:
@@ -287,11 +287,10 @@ def main() -> None:
         lines += ["", f"Tickers skipped due to data errors: {', '.join(skipped_tickers)}"]
 
     # -------------------------------------------------------------------------
-    # Build attachments: summary text + per-ticker xlsx + memo
-    # Each file is given a clear display name that includes the ticker so
-    # they don't all show up as "memo.md" in the email client.
+    # Build attachments and HTML email body with inline PNG charts
     # -------------------------------------------------------------------------
     attachments: list[tuple[Path, str]] = []
+    inline_images: list[tuple[str, Path]] = []   # (content_id, png_path)
 
     summary_email_path = run_folder / "summary_email.md"
     summary_email_path.write_text("\n".join(lines), encoding="utf-8")
@@ -305,9 +304,46 @@ def main() -> None:
         if chart.exists():
             attachments.append((chart, f"{ticker}_value_chart.xlsx"))
 
+        png = ticker_folder / "value_chart.png"
+        if png.exists():
+            cid = f"chart_{ticker.lower()}"
+            inline_images.append((cid, png))
+
         memo = ticker_folder / "memo.md"
         if memo.exists():
             attachments.append((memo, f"{ticker}_memo.md"))
+
+    # Build HTML body — summary table + inline chart images for each flagged ticker
+    html_parts = [
+        f"<h2>Selling Sally Weekly Review — {now_local.date().isoformat()}</h2>",
+    ]
+    if flagged_rows:
+        html_parts.append(f"<p><strong>{len(flagged_rows)} company/companies flagged this week.</strong></p>")
+        html_parts.append(
+            "<table border='1' cellspacing='0' cellpadding='6' style='border-collapse:collapse'>"
+            "<tr style='background:#1F2D4E;color:white'>"
+            "<th>Ticker</th><th>Alert Tier</th><th>% Below 52w High</th><th>Verdict</th></tr>"
+        )
+        for row in flagged_rows:
+            html_parts.append(
+                f"<tr><td><b>{row['ticker']}</b></td><td>{row['alert_tier']}</td>"
+                f"<td>{row['distance_to_high_pct']}%</td><td>{row['sally_verdict']}</td></tr>"
+            )
+        html_parts.append("</table>")
+        for row in flagged_rows:
+            ticker = row["ticker"]
+            cid = f"chart_{ticker.lower()}"
+            if any(c == cid for c, _ in inline_images):
+                html_parts.append(
+                    f"<h3>{ticker} — Value Chart</h3>"
+                    f"<img src='cid:{cid}' style='max-width:100%;border:1px solid #ccc'><br>"
+                )
+        html_parts.append("<p>Value chart workbooks and memos are attached.</p>")
+    else:
+        html_parts.append("<p>No valuation stretch alerts this week. Nothing near 52-week highs.</p>")
+    if skipped_tickers:
+        html_parts.append(f"<p><em>Tickers skipped due to data errors: {', '.join(skipped_tickers)}</em></p>")
+    body_html = "\n".join(html_parts)
 
     flag_count = len(flagged_rows)
     subject = (
@@ -319,6 +355,8 @@ def main() -> None:
         subject=subject,
         body_text="\n".join(lines),
         attachments=attachments,
+        inline_images=inline_images if inline_images else None,
+        body_html=body_html,
     )
 
     # Upload value chart xlsx files to Google Drive (YYMMDD-TICKER.xlsx naming)

@@ -39,6 +39,7 @@ jobs:
           GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
           SALLY_CONFIG_PATH: config/settings.yaml
         run: |
           python -m src.main
@@ -52,4 +53,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/
           git diff --staged --quiet || git commit -m "Dashboard update — Sally [skip ci]"
+          git pull --rebase origin HEAD
           git push origin HEAD

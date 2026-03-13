@@ -1,0 +1,50 @@
+# media_sources.yaml
+#
+# Ned the News Agent — media source configuration.
+#
+# HOW TO ADD/REMOVE SOURCES:
+#   YouTube: add a new entry under youtube_channels with the @handle and a
+#            friendly label. Ned resolves the channel ID at runtime via the
+#            YouTube Data API.
+#   RSS:     add a URL under rss_feeds. Any standard RSS/Atom feed works.
+#            Set news_scan: false on ETF tickers you want excluded.
+#
+# SCANNING WINDOW: Ned searches for videos/articles published within the
+# last `lookback_hours` hours on each run.
+
+lookback_hours: 48
+
+youtube_channels:
+  - handle: market-index
+    label: Market Index
+  - handle: ASXLtd
+    label: ASX Official
+  - handle: ASXSmallCapWrap
+    label: ASX Small Cap Wrap
+  - handle: TheStockNetwork
+    label: The Stock Network
+  - handle: FoolAu
+    label: Motley Fool Australia
+  - handle: foragerfundsmanagement5034
+    label: Forager Funds Management
+  - handle: NWRCommunications
+    label: NWR Communications
+
+rss_feeds:
+  - url: "https://news.google.com/rss/search?q={query}&hl=en-AU&gl=AU&ceid=AU:en"
+    label: Google News
+    type: google_news   # {query} is replaced per-company at runtime
+
+  - url: "https://www.livewiremarkets.com/feed"
+    label: Livewire Markets
+    type: static        # full feed, filtered by company name in content
+
+  - url: "https://stockanalysis.com/news/feed/"
+    label: Stock Analysis News
+    type: static
+
+# Tickers to skip for news scanning (ETFs — no meaningful press releases)
+skip_news_tickers:
+  - VAS
+  - VEU
+  - VHY

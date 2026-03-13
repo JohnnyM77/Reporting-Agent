@@ -1,0 +1,64 @@
+name: Ned News Agent
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily at 07:30 SGT (23:30 UTC previous day) — after Bob's ASX run
+    - cron: "30 23 * * *"
+
+jobs:
+  ned:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      TZ: Asia/Singapore
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Restore Ned seen state
+        uses: actions/cache/restore@v4
+        with:
+          path: ned_seen.json
+          key: ned-seen-${{ github.ref_name }}
+          restore-keys: |
+            ned-seen-${{ github.ref_name }}-
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ned.txt
+
+      - name: Run Ned
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NED_SEEN_STATE_PATH: ned_seen.json
+        run: |
+          python -m ned.main
+
+      - name: Commit dashboard update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data/ned.json
+          git diff --staged --quiet || git commit -m "Ned data [skip ci]"
+          git pull --rebase origin HEAD
+          python scripts/build_dashboard.py
+          git add docs/index.html
+          git diff --staged --quiet || git commit -m "Dashboard update — Ned [skip ci]"
+          git push origin HEAD
+
+      - name: Save Ned seen state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ned_seen.json
+          key: ned-seen-${{ github.ref_name }}-${{ github.run_id }}

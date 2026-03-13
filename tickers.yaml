@@ -1,28 +1,34 @@
 asx:
-  - DRO
-  - BBL
-  - RMD
-  - MSV
-  - ABB
-  - ATP
-  - CPU
-  - BXB
-  - VHY
-  - BHP
-  - NHC
-  - IAG
-  - CAT
-  - TWE
-  - VAS
-  - VEU
-  - WDS
-  - CSL
-  - PWH
-  - AHC
-  - MVP
-  - RTH
-  - AR9
-  - LAU
+  ABB: Aussie Broadband Limited
+  AHC: Austco Healthcare Limited
+  AR9: archTIS Limited
+  ATP: Atlas Pearls Limited
+  BBL: Brisbane Broncos Limited
+  BHP: BHP Group Limited
+  BXB: Brambles Limited
+  CAT: Catapult Sports Ltd
+  CPU: Computershare Limited
+  CSL: CSL Limited
+  DRO: DroneShield Limited
+  IAG: Insurance Australia Group Limited
+  LAU: Lindsay Australia Limited
+  MSV: Mitchell Services Limited
+  MVP: Medical Developments International Limited
+  NHC: New Hope Corporation Limited
+  PWH: PWR Holdings Limited
+  RMD: ResMed Inc
+  RTH: RAS Technology Holdings Limited
+  TWE: Treasury Wine Estates Limited
+  VAS: Vanguard Australian Shares Index ETF
+  VEU: Vanguard All-World ex-US Shares Index ETF
+  VHY: Vanguard Australian Shares High Yield ETF
+  WDS: Woodside Energy Group Ltd
 
 lse:
-  - RR.
+  RR.: Rolls-Royce Holdings plc
+
+# ETFs (VAS, VEU, VHY) are included for ASX announcements but skipped for news scanning
+etf_tickers:
+  - VAS
+  - VEU
+  - VHY

@@ -27,7 +27,7 @@ import requests
 from bs4 import BeautifulSoup
 import yaml
 from pypdf import PdfReader
-from openai import OpenAI
+import anthropic
 
 import asyncio
 from playwright_fetch import fetch_pdf_with_playwright  # must exist in repo root
@@ -55,7 +55,7 @@ MAX_PDFS_PER_RUN = 10
 MAX_LLM_CALLS_PER_RUN = 15
 
 MIN_RESULTS_TEXT_CHARS = 2500
-MODEL_DEFAULT = "gpt-4o-mini"
+MODEL_DEFAULT = "claude-haiku-4-5-20251001"
 
 # Hard time caps (keep runs reasonable)
 REQUESTS_PDF_TIMEOUT_SECS = 20
@@ -240,7 +240,12 @@ def send_email(subject: str, body_text: str, body_html: Optional[str] = None, to
 def read_tickers() -> Tuple[List[str], List[str]]:
     with open("tickers.yaml", "r", encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
-    return data.get("asx", []), data.get("lse", [])
+    asx = data.get("asx", {})
+    lse = data.get("lse", {})
+    # Support both old list format and new {TICKER: "Company Name"} dict format
+    asx_list = list(asx.keys()) if isinstance(asx, dict) else list(asx)
+    lse_list = list(lse.keys()) if isinstance(lse, dict) else list(lse)
+    return asx_list, lse_list
 
 
 # ----------------------------
@@ -392,10 +397,6 @@ def classify_from_title_only(title: str) -> str:
 # ----------------------------
 # LLM (with caps)
 # ----------------------------
-def llm_client() -> OpenAI:
-    return OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-
-
 def llm_chat(system_prompt: str, user_content: str, counters: Dict) -> str:
     if counters["llm_calls"] >= counters["MAX_LLM_CALLS_PER_RUN"]:
         return "__LLM_SKIPPED__"
@@ -406,16 +407,14 @@ def llm_chat(system_prompt: str, user_content: str, counters: Dict) -> str:
     user_content = user_content[:60_000]
 
     try:
-        client = llm_client()
-        resp = client.chat.completions.create(
+        client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        resp = client.messages.create(
             model=model,
-            temperature=0.2,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_content},
-            ],
+            max_tokens=1024,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_content}],
         )
-        return (resp.choices[0].message.content or "").strip()
+        return (resp.content[0].text or "").strip()
     except Exception as e:
         log(f"LLM failed: {e}")
         return "__LLM_FAILED__"

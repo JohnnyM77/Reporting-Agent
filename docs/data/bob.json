@@ -1,28 +1,7 @@
 {
-  "last_run": "2026-03-14",
-  "silence": false,
+  "last_run": "2026-03-15",
+  "silence": true,
   "high_impact": [],
   "material": [],
-  "fyi": [
-    {
-      "ticker": "CSL",
-      "title": "Appendix 3Y - Gordon Naylor 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 255.8KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03071987"
-    },
-    {
-      "ticker": "CSL",
-      "title": "Notification regarding unquoted securities - CSL 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03071969"
-    },
-    {
-      "ticker": "DRO",
-      "title": "Application for quotation of securities - DRO 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072005"
-    },
-    {
-      "ticker": "PWH",
-      "title": "Ceasing to be a substantial holder 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 750.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072153"
-    }
-  ]
+  "fyi": []
 }

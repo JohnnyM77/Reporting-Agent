@@ -18,6 +18,76 @@ def _fmt(n: float) -> str:
     return f"{n:.2f}"
 
 
+def build_combined_html(
+    watchlist_data: list[dict],  # list of {watchlist_name, run_date, results, flagged, chart_notes, inline_pngs}
+) -> str:
+    """Build HTML for multiple watchlists combined in one email."""
+    if not watchlist_data:
+        return "<p>No watchlist data available.</p>"
+    
+    # Get run date from first watchlist (should be same for all)
+    run_date = watchlist_data[0]["run_date"]
+    
+    # Overall summary
+    total_checked = sum(len(w["results"]) for w in watchlist_data)
+    total_flagged = sum(len(w["flagged"]) for w in watchlist_data)
+    
+    html_parts = [
+        f"<h1>Wally the Watcher — Combined Report</h1>",
+        f"<p>Run date: {run_date}</p>",
+        f"<p><strong>Summary:</strong> Checked {total_checked} tickers across {len(watchlist_data)} watchlist(s) | Flagged {total_flagged} ticker(s)</p>",
+        "<hr>"
+    ]
+    
+    # Add each watchlist section
+    for wl_data in watchlist_data:
+        watchlist_name = wl_data["watchlist_name"]
+        results = wl_data["results"]
+        flagged = wl_data["flagged"]
+        chart_notes = wl_data.get("chart_notes", {})
+        inline_pngs = wl_data.get("inline_pngs")
+        
+        html_parts.append(f"<h2>{watchlist_name}</h2>")
+        html_parts.append(f"<p>Checked: <strong>{len(results)}</strong> | Flagged: <strong>{len(flagged)}</strong></p>")
+        
+        # Build table for this watchlist
+        if flagged:
+            rows = []
+            for r in flagged:
+                rows.append(
+                    f"<tr><td>{r.ticker}</td><td>{r.company_name}</td><td>{_fmt(r.current_price)}</td><td>{_fmt(r.low_52w)}</td>"
+                    f"<td>{_fmt(r.high_52w)}</td><td>{_fmt(r.distance_to_low_pct)}%</td><td>{_fmt(r.below_high_pct)}%</td></tr>"
+                )
+            
+            flagged_table = (
+                "<table border='1' cellspacing='0' cellpadding='6' style='border-collapse:collapse'>"
+                "<tr style='background:#1F2D4E;color:white'>"
+                "<th>Ticker</th><th>Name</th><th>Current</th><th>52W Low</th><th>52W High</th><th>% Above Low</th><th>% Below High</th></tr>"
+                + "".join(rows)
+                + "</table>"
+            )
+            html_parts.append(flagged_table)
+            
+            # Add details for each flagged ticker
+            for r in flagged:
+                cid = (inline_pngs or {}).get(r.ticker)
+                chart_img = (
+                    f"<img src='cid:{cid}' style='max-width:100%;border:1px solid #ccc'><br>"
+                    if cid
+                    else f"<p><em>Value chart: {chart_notes.get(r.ticker, 'No valuation config found yet for this ticker')}</em></p>"
+                )
+                html_parts.append(
+                    f"<h3>{r.ticker} — {r.company_name}</h3>"
+                    f"{chart_img}"
+                )
+        else:
+            html_parts.append("<p><strong>No stocks within 5% of 52-week low.</strong></p>")
+        
+        html_parts.append("<hr>")
+    
+    return "".join(html_parts)
+
+
 def build_html(
     watchlist_name: str,
     run_date: str,

@@ -23,15 +23,23 @@ def fetch_price_snapshot(ticker: str) -> Optional[PriceSnapshot]:
     info = {}
     try:
         info = tk.info or {}
-    except Exception:
+    except Exception as e:
+        print(f"[wally/data_fetch] Failed to get info for {ticker}: {e}", flush=True)
         info = {}
 
-    hist = tk.history(period="1y", interval="1d", auto_adjust=False)
+    try:
+        hist = tk.history(period="1y", interval="1d", auto_adjust=False)
+    except Exception as e:
+        print(f"[wally/data_fetch] Failed to fetch 1y history for {ticker}: {e}", flush=True)
+        return None
+    
     if hist.empty:
+        print(f"[wally/data_fetch] Empty history returned for {ticker}", flush=True)
         return None
 
     close = hist["Close"].dropna()
     if close.empty:
+        print(f"[wally/data_fetch] No Close prices available for {ticker}", flush=True)
         return None
 
     current_price = float(close.iloc[-1])
@@ -40,8 +48,10 @@ def fetch_price_snapshot(ticker: str) -> Optional[PriceSnapshot]:
     name = str(info.get("longName") or info.get("shortName") or ticker)
 
     if low_52w <= 0:
+        print(f"[wally/data_fetch] Invalid 52-week low ({low_52w}) for {ticker}", flush=True)
         return None
 
+    print(f"[wally/data_fetch] Successfully fetched {ticker}: current=${current_price:.2f}, 52w low=${low_52w:.2f}, 52w high=${high_52w:.2f}", flush=True)
     return PriceSnapshot(
         ticker=ticker,
         company_name=name,

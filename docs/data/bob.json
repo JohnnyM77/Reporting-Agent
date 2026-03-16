@@ -1,38 +1,80 @@
 {
-  "last_run": "2026-03-16",
+  "last_run": "2026-03-17",
   "silence": false,
-  "high_impact": [],
+  "high_impact": [
+    {
+      "ticker": "NHC",
+      "title": "Results (HY/FY)",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072858",
+      "type": "results"
+    }
+  ],
   "material": [],
   "fyi": [
     {
+      "ticker": "ABB",
+      "title": "Notification of cessation of securities - ABB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072641"
+    },
+    {
       "ticker": "BXB",
       "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072312"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072946"
     },
     {
       "ticker": "BXB",
       "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072260"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072826"
     },
     {
       "ticker": "CSL",
       "title": "Update - Notification of buy-back - CSL 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072264"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072835"
     },
     {
       "ticker": "IAG",
       "title": "Update - Notification of buy-back - IAG 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072357"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072925"
     },
     {
-      "ticker": "RMD",
-      "title": "Change in substantial holding 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 13.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072206"
+      "ticker": "NHC",
+      "title": "Half Year Results Presentation 19\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.8MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072858"
+    },
+    {
+      "ticker": "NHC",
+      "title": "FY26 Half Year Results 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 257.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072856"
+    },
+    {
+      "ticker": "NHC",
+      "title": "Dividend/Distribution - NHC 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072848"
+    },
+    {
+      "ticker": "NHC",
+      "title": "Appendix 4D and Half Year Financial Report 40\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.4MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072843"
+    },
+    {
+      "ticker": "PWH",
+      "title": "Becoming a substantial holder 46\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.1MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072686"
+    },
+    {
+      "ticker": "TWE",
+      "title": "Becoming a substantial holder 55\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.2MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072830"
+    },
+    {
+      "ticker": "TWE",
+      "title": "Change in substantial holding 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 263.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072616"
     },
     {
       "ticker": "WDS",
-      "title": "Sustainability Briefing 2026 33\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.7MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072359"
+      "title": "Sustainability Briefing 2026 Transcript 14\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 286.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072739"
     }
   ]
 }

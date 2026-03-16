@@ -1,15 +1,28 @@
 {
-  "last_run": "2026-03-12",
+  "last_run": "2026-03-16",
   "portfolio_size": 24,
   "flagged_count": 3,
   "flagged": [
     {
+      "ticker": "NHC",
+      "company_name": "New Hope Corporation Limited",
+      "current_price": 5.300000190734863,
+      "high_52w": 5.349999904632568,
+      "distance_to_high_pct": 0.93,
+      "trailing_pe": 10.6,
+      "forward_pe": 15.57953,
+      "dividend_yield": 5.61,
+      "valuation_percentile": 0.8833333333333333,
+      "alert_tier": "Tier 2: Review",
+      "sally_verdict": "Hold but stop adding"
+    },
+    {
       "ticker": "VHY",
       "company_name": "Vanguard Australian Shares High Yield ETF",
-      "current_price": 81.75,
+      "current_price": 82.12999725341797,
       "high_52w": 85.1500015258789,
-      "distance_to_high_pct": 3.99,
-      "trailing_pe": 19.78386,
+      "distance_to_high_pct": 3.55,
+      "trailing_pe": 19.87582,
       "forward_pe": null,
       "dividend_yield": 7.28,
       "valuation_percentile": null,
@@ -17,28 +30,15 @@
       "sally_verdict": "Watch only"
     },
     {
-      "ticker": "NHC",
-      "company_name": "New Hope Corporation Limited",
-      "current_price": 5.260000228881836,
-      "high_52w": 5.260000228881836,
-      "distance_to_high_pct": 0.0,
-      "trailing_pe": 10.52,
-      "forward_pe": 15.461948,
-      "dividend_yield": 5.94,
-      "valuation_percentile": 0.8833333333333333,
-      "alert_tier": "Tier 2: Review",
-      "sally_verdict": "Hold but stop adding"
-    },
-    {
       "ticker": "WDS",
       "company_name": "Woodside Energy Group Ltd",
-      "current_price": 31.049999237060547,
-      "high_52w": 31.360000610351562,
-      "distance_to_high_pct": 0.99,
-      "trailing_pe": 15.447761,
-      "forward_pe": 18.774742,
-      "dividend_yield": 5.43,
-      "valuation_percentile": 0.5916666666666667,
+      "current_price": 31.6299991607666,
+      "high_52w": 31.6299991607666,
+      "distance_to_high_pct": 0.0,
+      "trailing_pe": 15.581281,
+      "forward_pe": 19.341408,
+      "dividend_yield": 5.23,
+      "valuation_percentile": 0.6333333333333333,
       "alert_tier": "Tier 1: Watch",
       "sally_verdict": "Watch only"
     }

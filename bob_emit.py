@@ -8,7 +8,7 @@
 # This avoids re-running the full Bob pipeline (which involves LLM calls,
 # PDF downloads, etc.) and instead consumes Bob's latest output.
 #
-# For a full live run, call bob_collect_live() which invokes Bob's ASX
+# For a full live run, call collect_events_live() which invokes Bob's ASX
 # announcement fetcher directly.
 
 from __future__ import annotations

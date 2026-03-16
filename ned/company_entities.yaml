@@ -1,0 +1,437 @@
+# Company Entity Disambiguation Configuration
+# Each entry defines how to properly identify and disambiguate ASX-listed companies
+
+ABB:
+  company_name: Aussie Broadband Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: ABB.AX
+  aliases:
+    - Aussie Broadband
+    - Aussie Broadband Limited
+  required_terms:
+    - aussie broadband
+  optional_terms:
+    - asx
+    - australia
+    - broadband
+    - telecom
+    - nbn
+    - internet
+  exclude_terms:
+    - abb ltd
+    - abb group
+    - abb switzerland
+    - robotics
+    - electrification
+    - industrial automation
+    - zurich
+
+AHC:
+  company_name: Austco Healthcare Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: AHC.AX
+  aliases:
+    - Austco Healthcare
+    - Austco Healthcare Limited
+    - Austco
+  required_terms:
+    - austco
+  optional_terms:
+    - asx
+    - australia
+    - healthcare
+    - nurse call
+    - hospital
+
+AR9:
+  company_name: archTIS Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: AR9.AX
+  aliases:
+    - archTIS
+    - archTIS Limited
+  required_terms:
+    - arctis
+  optional_terms:
+    - asx
+    - australia
+    - cybersecurity
+    - data security
+    - nc protect
+
+ATP:
+  company_name: Atlas Pearls Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: ATP.AX
+  aliases:
+    - Atlas Pearls
+    - Atlas Pearls Limited
+  required_terms:
+    - atlas pearls
+  optional_terms:
+    - asx
+    - australia
+    - pearls
+    - south sea pearls
+    - indonesia
+    - aquaculture
+  exclude_terms:
+    - atp tour
+    - tennis
+    - association of tennis professionals
+    - grand slam
+    - wimbledon
+    - us open
+    - french open
+
+BBL:
+  company_name: Brisbane Broncos Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: BBL.AX
+  aliases:
+    - Brisbane Broncos
+    - Brisbane Broncos Limited
+    - Broncos
+  required_terms:
+    - brisbane broncos
+  optional_terms:
+    - asx
+    - australia
+    - nrl
+    - rugby league
+    - suncorp stadium
+  exclude_terms:
+    - big bash
+    - big bash league
+    - cricket
+    - bbl cricket
+    - t20
+
+BHP:
+  company_name: BHP Group Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: BHP.AX
+  aliases:
+    - BHP
+    - BHP Group
+    - BHP Group Limited
+  required_terms:
+    - bhp
+  optional_terms:
+    - asx
+    - australia
+    - mining
+    - iron ore
+    - copper
+    - metallurgical coal
+
+BXB:
+  company_name: Brambles Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: BXB.AX
+  aliases:
+    - Brambles
+    - Brambles Limited
+  required_terms:
+    - brambles
+  optional_terms:
+    - asx
+    - australia
+    - chep
+    - pallets
+    - supply chain
+    - logistics
+
+CAT:
+  company_name: Catapult Sports Ltd
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: CAT.AX
+  aliases:
+    - Catapult Sports
+    - Catapult Sports Ltd
+    - Catapult
+  required_terms:
+    - catapult sports
+  optional_terms:
+    - asx
+    - australia
+    - sports analytics
+    - wearable technology
+    - athlete tracking
+    - gps tracking
+  exclude_terms:
+    - caterpillar
+    - construction equipment
+    - heavy machinery
+    - excavator
+    - bulldozer
+
+CPU:
+  company_name: Computershare Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: CPU.AX
+  aliases:
+    - Computershare
+    - Computershare Limited
+  required_terms:
+    - computershare
+  optional_terms:
+    - asx
+    - australia
+    - share registry
+    - investor services
+    - transfer agent
+  exclude_terms:
+    - processor
+    - intel
+    - amd
+    - chip
+    - semiconductor
+    - computing
+
+CSL:
+  company_name: CSL Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: CSL.AX
+  aliases:
+    - CSL
+    - CSL Limited
+  required_terms:
+    - csl
+  optional_terms:
+    - asx
+    - australia
+    - biotech
+    - biotechnology
+    - plasma
+    - seqirus
+    - behring
+
+DRO:
+  company_name: DroneShield Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: DRO.AX
+  aliases:
+    - DroneShield
+    - DroneShield Limited
+  required_terms:
+    - droneshield
+  optional_terms:
+    - asx
+    - australia
+    - counter-drone
+    - drone detection
+    - security
+    - defense
+
+IAG:
+  company_name: Insurance Australia Group Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: IAG.AX
+  aliases:
+    - Insurance Australia Group
+    - Insurance Australia Group Limited
+    - IAG
+  required_terms:
+    - insurance australia group
+  optional_terms:
+    - asx
+    - australia
+    - nrma
+    - cgi
+    - suncorp
+    - insurance
+  exclude_terms:
+    - international airlines group
+    - british airways
+    - iberia
+    - aer lingus
+    - vueling
+
+LAU:
+  company_name: Lindsay Australia Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: LAU.AX
+  aliases:
+    - Lindsay Australia
+    - Lindsay Australia Limited
+  required_terms:
+    - lindsay australia
+  optional_terms:
+    - asx
+    - australia
+    - transport
+    - logistics
+    - rural services
+
+MSV:
+  company_name: Mitchell Services Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: MSV.AX
+  aliases:
+    - Mitchell Services
+    - Mitchell Services Limited
+  required_terms:
+    - mitchell services
+  optional_terms:
+    - asx
+    - australia
+    - drilling
+    - mineral drilling
+
+MVP:
+  company_name: Medical Developments International Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: MVP.AX
+  aliases:
+    - Medical Developments International
+    - Medical Developments International Limited
+    - MDI
+  required_terms:
+    - medical developments international
+  optional_terms:
+    - asx
+    - australia
+    - penthrox
+    - green whistle
+    - pain relief
+
+NHC:
+  company_name: New Hope Corporation Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: NHC.AX
+  aliases:
+    - New Hope Corporation
+    - New Hope Corporation Limited
+    - New Hope
+  required_terms:
+    - new hope corporation
+  optional_terms:
+    - asx
+    - australia
+    - coal
+    - mining
+    - queensland
+
+PWH:
+  company_name: PWR Holdings Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: PWH.AX
+  aliases:
+    - PWR Holdings
+    - PWR Holdings Limited
+    - PWR
+  required_terms:
+    - pwr holdings
+  optional_terms:
+    - asx
+    - australia
+    - cooling
+    - heat exchange
+    - motorsport
+    - automotive
+
+RMD:
+  company_name: ResMed Inc
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: RMD.AX
+  aliases:
+    - ResMed
+    - ResMed Inc
+  required_terms:
+    - resmed
+  optional_terms:
+    - asx
+    - australia
+    - sleep apnea
+    - cpap
+    - respiratory
+    - medical devices
+
+RTH:
+  company_name: RAS Technology Holdings Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: RTH.AX
+  aliases:
+    - RAS Technology Holdings
+    - RAS Technology Holdings Limited
+    - RAS Technology
+  required_terms:
+    - ras technology
+  optional_terms:
+    - asx
+    - australia
+
+TWE:
+  company_name: Treasury Wine Estates Limited
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: TWE.AX
+  aliases:
+    - Treasury Wine Estates
+    - Treasury Wine Estates Limited
+    - Treasury Wine
+  required_terms:
+    - treasury wine
+  optional_terms:
+    - asx
+    - australia
+    - penfolds
+    - wine
+    - grange
+
+WDS:
+  company_name: Woodside Energy Group Ltd
+  exchange: ASX
+  country: Australia
+  yahoo_symbol: WDS.AX
+  aliases:
+    - Woodside Energy
+    - Woodside Energy Group
+    - Woodside
+  required_terms:
+    - woodside
+  optional_terms:
+    - asx
+    - australia
+    - energy
+    - lng
+    - gas
+    - petroleum
+
+# LSE companies
+RR.:
+  company_name: Rolls-Royce Holdings plc
+  exchange: LSE
+  country: United Kingdom
+  yahoo_symbol: RR.L
+  aliases:
+    - Rolls-Royce
+    - Rolls-Royce Holdings
+  required_terms:
+    - rolls-royce
+  optional_terms:
+    - lse
+    - uk
+    - aerospace
+    - engines
+    - defense

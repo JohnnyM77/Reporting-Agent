@@ -103,6 +103,7 @@ def run(
     output_dir: Optional[Path] = None,
     run_date: Optional[str] = None,
     send_email: bool = True,
+    dry_run: bool = False,
 ) -> dict[str, object]:
     """
     Run the full Super Investor workflow.
@@ -118,6 +119,8 @@ def run(
         ISO date string (defaults to today UTC).
     send_email : bool
         Whether to send the digest email.
+    dry_run : bool
+        When True, collect and score events but skip file writing and email.
 
     Returns
     -------
@@ -154,13 +157,17 @@ def run(
     events = prioritize(events)
     logger.info("[super_investor] %d event(s) scored and ranked", len(events))
 
-    # Step 6: Generate digest
-    digest = generate_digest(events, output_dir, run_date)
+    # Step 6: Generate digest (skip file writing in dry-run mode)
+    if dry_run:
+        logger.info("[super_investor] DRY RUN — skipping file writes and email")
+        digest = {}
+    else:
+        digest = generate_digest(events, output_dir, run_date)
 
     # Step 7: Notify
     from master_engine.notifier import send_email as _send_email
     email_sent = False
-    if send_email:
+    if send_email and not dry_run:
         subject = f"Johnny Master Investor Alert — {run_date} ({len(events)} alert(s))"
         email_sent = _send_email(
             subject=subject,

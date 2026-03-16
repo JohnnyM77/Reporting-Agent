@@ -183,9 +183,10 @@ def main(argv: list[str] | None = None) -> int:
             ned_collector=ned_collector,
             wally_collector=wally_collector,
             bob_collector=bob_collector,
-            output_dir=None if args.dry_run else output_dir,
+            output_dir=output_dir,
             run_date=run_date,
             send_email=(not args.no_email and not args.dry_run),
+            dry_run=args.dry_run,
         )
     except Exception as exc:
         logger.exception("[runner] Super Investor Agent failed: %s", exc)

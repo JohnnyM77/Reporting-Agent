@@ -9,9 +9,20 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
+from typing import TypedDict
 
 from .config import EmailSettings
 from .screening import TickerScreenResult
+
+
+class WatchlistEmailData(TypedDict):
+    """Data structure for a single watchlist in combined email."""
+    watchlist_name: str
+    run_date: str
+    results: list[TickerScreenResult]
+    flagged: list[TickerScreenResult]
+    chart_notes: dict[str, str]
+    inline_pngs: dict[str, str] | None  # ticker -> content-id
 
 
 def _fmt(n: float) -> str:
@@ -19,7 +30,7 @@ def _fmt(n: float) -> str:
 
 
 def build_combined_html(
-    watchlist_data: list[dict],  # list of {watchlist_name, run_date, results, flagged, chart_notes, inline_pngs}
+    watchlist_data: list[WatchlistEmailData],
 ) -> str:
     """Build HTML for multiple watchlists combined in one email."""
     if not watchlist_data:

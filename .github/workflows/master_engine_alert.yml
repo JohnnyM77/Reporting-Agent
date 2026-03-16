@@ -51,7 +51,7 @@ jobs:
         run: |
           pip install -r requirements-wally.txt
           pip install -r requirements-ned.txt
-          pip install requests beautifulsoup4 pyyaml pypdf anthropic google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib playwright
+          pip install requests beautifulsoup4 pyyaml pypdf anthropic openai google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib playwright
 
       - name: Run Master Investor Alert
         env:

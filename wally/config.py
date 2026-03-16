@@ -76,5 +76,4 @@ def load_email_settings() -> EmailSettings:
 def should_run_tii75(today: dt.date, force: bool = False) -> bool:
     if force:
         return True
-    iso_week = today.isocalendar().week
-    return (iso_week - TII75_ANCHOR_ISO_WEEK) % 2 == 0
+    return True

@@ -449,6 +449,23 @@ Workflow: `.github/workflows/wally_watchlists.yml`
   - gate logic in `wally.config.should_run_tii75`
   - adjustable via env `TII75_ANCHOR_ISO_WEEK`
 
+### Combined email mode
+
+As of the latest update, Wally supports combined email mode to consolidate all watchlist results into a single email:
+
+```bash
+# Run all watchlists (standard + TII75) with combined email
+python -m wally.main --all-combined
+
+# Run standard watchlists only with combined email
+python -m wally.main --all-standard-watchlists --combined-email
+
+# Force TII75 inclusion even if gated
+python -m wally.main --all-combined --force
+```
+
+The GitHub Actions workflow now uses combined email mode by default. See `docs/WALLY_AND_MASTER_ENGINE_CHANGES.md` for details.
+
 ### Required secrets / env
 
 Wally reuses Bob email settings where possible:
@@ -472,3 +489,38 @@ python -m wally.main --tii75 --force
 
 A new weekly agent is available under `sunday-sally/` to review names near 52-week highs and assess valuation stretch vs history.
 See `sunday-sally/README.md` and `.github/workflows/sunday_sally_weekly_review.yml`.
+
+## Master Engine Alert (Super Investor)
+
+The Master Engine Alert aggregates events from all agents (Bob, Wally, Ned) into a unified investor briefing with prioritized alerts.
+
+### How to run
+
+**Via GitHub Actions:**
+1. Go to the Actions tab in GitHub
+2. Select "Master Engine Alert (Super Investor)" workflow
+3. Click "Run workflow"
+4. Configure options (include TII75, skip agents, etc.)
+5. Click "Run workflow" button
+
+**Locally:**
+```bash
+python run_master_investor.py
+python run_master_investor.py --wally-tii75  # Include TII75 watchlist
+python run_master_investor.py --no-ned --no-bob  # Skip specific agents
+python run_master_investor.py --no-email  # Generate digest without sending email
+```
+
+### Output locations
+
+- **Email:** Sent to `EMAIL_TO` with subject "Johnny Master Investor Alert — {date} ({N} alert(s))"
+- **Files:** Saved in `outputs/YYYY-MM-DD/`:
+  - `master_investor_digest.html` - Full HTML digest
+  - `master_investor_digest.md` - Markdown summary
+  - `master_investor_events.json` - JSON archive
+
+### Scheduled runs
+
+The workflow runs automatically daily at 00:00 UTC, after all individual agent workflows have completed.
+
+See `docs/WALLY_AND_MASTER_ENGINE_CHANGES.md` for detailed documentation.

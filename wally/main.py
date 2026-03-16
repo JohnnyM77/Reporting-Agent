@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from .charts import render_range_chart, render_value_vs_price_chart
-from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, build_run_context, load_email_settings, should_run_tii75
+from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, LOW_THRESHOLD_PCT, build_run_context, load_email_settings, should_run_tii75
 from .data_fetch import fetch_price_snapshot
 from .drive_upload import upload_or_replace_xlsx
 from .email_report import build_html, build_combined_html, send_email
@@ -35,18 +35,33 @@ class WatchlistProcessResult:
     inline_images: list[tuple[str, Path]]
 
 
-def _process_watchlist(watchlist_path: str, force: bool = False, send_individual_email: bool = True) -> WatchlistProcessResult:
+def _log_screen_result(row: TickerScreenResult) -> None:
+    """Print a one-line screening diagnostic for a single ticker."""
+    print(
+        f"[wally] {row.ticker}"
+        f" current={row.current_price:.2f}"
+        f" low_52w={row.low_52w:.2f}"
+        f" high_52w={row.high_52w:.2f}"
+        f" distance_to_low_pct={row.distance_to_low_pct:.2f}"
+        f" threshold={LOW_THRESHOLD_PCT:.2f}"
+        f" flagged={row.flagged}",
+        flush=True,
+    )
+
+
+def _process_watchlist(watchlist_path: str, force: bool = False, send_individual_email: bool = True, is_tii75: bool = False) -> WatchlistProcessResult:
     """Process a watchlist and optionally send individual email.
     
     Args:
         watchlist_path: Path to the watchlist YAML file
         force: Force processing even if gated
         send_individual_email: If True, send email immediately. If False, return data for combined email.
+        is_tii75: If True, apply TII75 canonical validation when loading.
     
     Returns:
         WatchlistProcessResult with all processed data
     """
-    wl = load_watchlist(watchlist_path)
+    wl = load_watchlist(watchlist_path, validate_tii75=is_tii75)
     ctx = build_run_context()
     ctx.output_root.mkdir(parents=True, exist_ok=True)
 
@@ -76,6 +91,7 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                 continue
 
             row = screen_snapshot(snap)
+            _log_screen_result(row)
             results.append(row)
             if row.flagged:
                 flagged.append(row)
@@ -205,7 +221,8 @@ def _process_watchlists_combined(watchlist_paths: list[str], force: bool = False
     all_inline_images = []
     
     for path in watchlist_paths:
-        result = _process_watchlist(path, force=force, send_individual_email=False)
+        is_tii75 = (path == TII75_WATCHLIST)
+        result = _process_watchlist(path, force=force, send_individual_email=False, is_tii75=is_tii75)
         all_results.append(result)
         all_attachments.extend(result.attachments)
         all_inline_images.extend(result.inline_images)
@@ -270,23 +287,46 @@ def _run_standard(force: bool = False, combined_email: bool = False) -> None:
 
 def _run_tii75(force: bool = False, combined_email: bool = False) -> None:
     today = dt.datetime.now(dt.timezone.utc).date()
-    if should_run_tii75(today, force=force):
-        _process_watchlist(TII75_WATCHLIST, force=force, send_individual_email=not combined_email)
+    if force:
+        print("[wally] TII75 forced run enabled: bypassing schedule gate", flush=True)
+    gate_result = should_run_tii75(today, force=force)
+    if gate_result:
+        _process_watchlist(TII75_WATCHLIST, force=force, send_individual_email=not combined_email, is_tii75=True)
     else:
-        print("[wally] Skipping TII75 this week (fortnightly gate). Use --force to run.", flush=True)
+        print("[wally] TII75 skipped: fortnightly gate not satisfied (use --force to override)", flush=True)
 
 
 def _run_all_combined(force: bool = False) -> None:
     """Run all watchlists (standard + TII75) with combined email."""
     today = dt.datetime.now(dt.timezone.utc).date()
     watchlists_to_run = list(STANDARD_WATCHLISTS)
-    
+
+    if force:
+        print("[wally] TII75 forced run enabled: bypassing schedule gate", flush=True)
     if should_run_tii75(today, force=force):
         watchlists_to_run.append(TII75_WATCHLIST)
     else:
-        print("[wally] Skipping TII75 this week (fortnightly gate). Use --force to include it.", flush=True)
-    
+        print("[wally] TII75 skipped: fortnightly gate not satisfied (use --force to include it)", flush=True)
+
     _process_watchlists_combined(watchlists_to_run, force=force)
+
+
+def _debug_ticker(ticker: str) -> None:
+    """Load TII75 watchlist, check ticker presence, fetch data, and print screening result."""
+    wl = load_watchlist(TII75_WATCHLIST, validate_tii75=True)
+    ticker_upper = ticker.strip().upper()
+    if ticker_upper in wl.tickers:
+        print(f"[wally] {ticker_upper} is present in TII75 watchlist", flush=True)
+    else:
+        print(f"[wally] WARNING: {ticker_upper} is NOT in TII75 watchlist", flush=True)
+
+    snap = fetch_price_snapshot(ticker_upper)
+    if not snap:
+        print(f"[wally] No market data returned for {ticker_upper}", flush=True)
+        return
+
+    row = screen_snapshot(snap)
+    _log_screen_result(row)
 
 
 def main() -> None:
@@ -297,8 +337,13 @@ def main() -> None:
     parser.add_argument("--force", action="store_true", help="Force run (bypass fortnightly gate)")
     parser.add_argument("--combined-email", action="store_true", help="Send one combined email for all watchlists")
     parser.add_argument("--all-combined", action="store_true", help="Run all watchlists (standard + TII75) with combined email")
+    parser.add_argument("--debug-ticker", metavar="TICKER", help="Debug a single ticker: load TII75, fetch data, print result, no email")
 
     args = parser.parse_args()
+
+    if args.debug_ticker:
+        _debug_ticker(args.debug_ticker)
+        return
 
     if args.watchlist:
         _process_watchlist(args.watchlist, force=args.force, send_individual_email=True)
@@ -315,7 +360,7 @@ def main() -> None:
         _run_tii75(force=args.force, combined_email=args.combined_email)
 
     if not args.watchlist and not args.all_standard_watchlists and not args.tii75 and not args.all_combined:
-        parser.error("Choose --watchlist, --all-standard-watchlists, --tii75, or --all-combined")
+        parser.error("Choose --watchlist, --all-standard-watchlists, --tii75, --all-combined, or --debug-ticker TICKER")
 
 
 if __name__ == "__main__":

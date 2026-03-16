@@ -73,7 +73,6 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                         error="No market data",
                     )
                 )
-                print(f"[wally] No market data for {ticker}", flush=True)
                 continue
 
             row = screen_snapshot(snap)

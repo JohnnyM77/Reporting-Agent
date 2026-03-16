@@ -43,3 +43,6 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Master Investor Alert — generated digests and runtime outputs
+outputs/

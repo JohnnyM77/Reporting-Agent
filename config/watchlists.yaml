@@ -1,0 +1,55 @@
+# config/watchlists.yaml
+#
+# Universe / watchlist membership for the Super Investor Agent.
+#
+# Priority order for universe assignment (highest wins):
+#   1. portfolio      — active holdings
+#   2. high_conviction — high-conviction candidates on watchlist
+#   3. tii75          — TII75 watchlist
+
+# ---------------------------------------------------------------------------
+# Portfolio holdings
+# Tickers listed here receive +20 universe relevance bonus.
+# Keep in sync with tickers.yaml (ASX format: TICKER.AX)
+# ---------------------------------------------------------------------------
+portfolio:
+  - ABB.AX
+  - AHC.AX
+  - AR9.AX
+  - ATP.AX
+  - BBL.AX
+  - BHP.AX
+  - BXB.AX
+  - CAT.AX
+  - CPU.AX
+  - CSL.AX
+  - DRO.AX
+  - IAG.AX
+  - LAU.AX
+  - MSV.AX
+  - MVP.AX
+  - NHC.AX
+  - PWH.AX
+  - RMD.AX
+  - RTH.AX
+  - TWE.AX
+  - WDS.AX
+  - RR.L        # LSE: Rolls-Royce
+
+# ---------------------------------------------------------------------------
+# High conviction watchlist
+# Tickers listed here (but NOT in portfolio) receive +15 universe bonus.
+# ---------------------------------------------------------------------------
+high_conviction:
+  - ARB.AX
+  - QOR.AX
+  - TNE.AX
+
+# ---------------------------------------------------------------------------
+# TII75 watchlist
+# Tickers listed here (but NOT in portfolio or high_conviction) receive +10.
+# ---------------------------------------------------------------------------
+tii75:
+  - WOW.AX
+  - COL.AX
+  - REA.AX

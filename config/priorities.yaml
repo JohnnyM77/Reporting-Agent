@@ -1,0 +1,129 @@
+# config/priorities.yaml
+#
+# Score weights, priority thresholds, and event type mappings for the
+# Master Engine Alert and Super Investor Agent.
+#
+# Edit these values to tune scoring behaviour without touching Python code.
+
+# ---------------------------------------------------------------------------
+# Base event severity — added first regardless of universe
+# ---------------------------------------------------------------------------
+base_severity:
+  earnings_release: 50
+  guidance_change: 50
+  capital_raise: 50
+  takeover: 50
+  regulator_action: 50
+  appendix_4d: 50
+  appendix_4e: 50
+  acquisition: 50
+  major_contract: 30
+  ceo_change: 30
+  litigation: 30
+  profit_warning: 30
+  valuation_trigger: 20
+  near_52w_low: 10
+  generic_news: 5
+
+# ---------------------------------------------------------------------------
+# Universe relevance bonus
+# ---------------------------------------------------------------------------
+universe_bonus:
+  portfolio: 20
+  high_conviction: 15
+  TII75: 10
+  other: 0
+
+# ---------------------------------------------------------------------------
+# Valuation / opportunity bonus
+# ---------------------------------------------------------------------------
+valuation_bonus:
+  within_5pct_of_52w_low: 15
+  within_2pct_of_52w_low: 25
+  reverse_dcf_attractive: 25
+  below_target_buy_band: 20
+
+# ---------------------------------------------------------------------------
+# Recency bonus
+# ---------------------------------------------------------------------------
+recency_bonus:
+  within_2_hours: 10
+  same_day: 5
+
+# ---------------------------------------------------------------------------
+# Priority band thresholds (score ≥ threshold → that priority)
+# ---------------------------------------------------------------------------
+priority_thresholds:
+  CRITICAL: 80
+  HIGH: 55
+  MEDIUM: 30
+  LOW: 10
+  # Below 10 → FYI
+
+# ---------------------------------------------------------------------------
+# Event type keyword mappings
+# Used by Ned to map headline keywords to canonical event_type values
+# ---------------------------------------------------------------------------
+event_type_keywords:
+  earnings_release:
+    - "earnings"
+    - "results"
+    - "half year results"
+    - "full year results"
+    - "hy results"
+    - "fy results"
+    - "appendix 4d"
+    - "appendix 4e"
+  guidance_change:
+    - "guidance"
+    - "outlook"
+    - "forecast update"
+    - "earnings guidance"
+  capital_raise:
+    - "capital raise"
+    - "placement"
+    - "entitlement offer"
+    - "rights issue"
+    - "share purchase plan"
+  takeover:
+    - "takeover"
+    - "scheme of arrangement"
+    - "merger"
+    - "bid"
+    - "acquisition offer"
+  regulator_action:
+    - "regulator"
+    - "asic"
+    - "asx query"
+    - "asx aware letter"
+    - "investigation"
+    - "fine"
+  major_contract:
+    - "contract"
+    - "partnership"
+    - "agreement"
+    - "memorandum of understanding"
+    - "mou"
+  ceo_change:
+    - "ceo"
+    - "managing director"
+    - "chief executive"
+    - "leadership change"
+    - "new ceo"
+    - "ceo appointment"
+  litigation:
+    - "lawsuit"
+    - "litigation"
+    - "legal proceedings"
+    - "court"
+    - "class action"
+  profit_warning:
+    - "profit warning"
+    - "earnings downgrade"
+    - "downgrade"
+    - "lower than expected"
+  acquisition:
+    - "acquisition"
+    - "acquires"
+    - "buys"
+    - "purchased"

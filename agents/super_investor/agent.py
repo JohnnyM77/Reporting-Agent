@@ -28,11 +28,8 @@ from master_engine.schemas import (
 from master_engine.aggregator import aggregate
 from master_engine.linker import attach_links
 from master_engine.prioritizer import prioritize
-from master_engine.notifier import notify
 
-from .config import load_priorities_yaml
 from .digest import generate_digest
-from .scoring import score_event, score_to_priority
 
 logger = logging.getLogger(__name__)
 

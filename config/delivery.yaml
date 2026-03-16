@@ -1,0 +1,57 @@
+# config/delivery.yaml
+#
+# Email delivery settings, file output locations, and Google Drive destinations
+# for the Master Engine Alert and Super Investor Agent.
+#
+# Credentials (EMAIL_FROM, EMAIL_TO, SMTP_PASS, etc.) are loaded from
+# environment variables and are NOT stored here.
+
+# ---------------------------------------------------------------------------
+# Email delivery
+# ---------------------------------------------------------------------------
+email:
+  # SMTP host and port — override via SMTP_HOST / SMTP_PORT env vars
+  smtp_host: smtp.gmail.com
+  smtp_port: 465
+
+  # Subject line prefix for digest emails
+  subject_prefix: "Johnny Master Investor Alert"
+
+  # Set to false to skip email delivery (useful for local testing)
+  enabled: true
+
+# ---------------------------------------------------------------------------
+# File output locations
+# ---------------------------------------------------------------------------
+output:
+  # Root directory for all generated digest files
+  # Relative paths are resolved from the repository root
+  root: outputs
+
+  # Sub-folder naming pattern: {root}/{run_date}/
+  # e.g. outputs/2025-06-01/master_investor_digest_2025-06-01.html
+  date_subfolder: true
+
+  # Which formats to generate
+  formats:
+    html: true
+    markdown: true
+    json: true
+
+# ---------------------------------------------------------------------------
+# Google Drive
+# ---------------------------------------------------------------------------
+google_drive:
+  # Folder path in Drive where digests are uploaded
+  # Leave blank to skip Drive upload
+  folder_path: "Investing/Master Investor Alert"
+
+  # Naming convention: {run_date}-master-investor-digest.html
+  file_prefix: "master-investor-digest"
+
+# ---------------------------------------------------------------------------
+# Dashboard JSON
+# ---------------------------------------------------------------------------
+dashboard:
+  # Path to the dashboard data file (relative to repo root)
+  json_path: docs/data/master_investor.json

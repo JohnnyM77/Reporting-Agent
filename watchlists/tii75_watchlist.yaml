@@ -1,5 +1,63 @@
 name: TII75 Watchlist
+notes: "75th anniversary of The Intelligent Investor — 30 greatest compounders of all time"
 tickers:
-  - WOW.AX
-  - COL.AX
-  - REA.AX
+  - ticker: CPRT
+    name: Copart, Inc.
+  - ticker: RMD
+    name: ResMed Inc.
+  - ticker: BIIB
+    name: Biogen Inc.
+  - ticker: GILD
+    name: Gilead Sciences, Inc.
+  - ticker: 2914.T
+    name: Japan Tobacco Inc.
+  - ticker: ORLY
+    name: O'Reilly Automotive, Inc.
+  - ticker: ODFL
+    name: Old Dominion Freight Line, Inc.
+  - ticker: MSFT
+    name: Microsoft Corporation
+  - ticker: WSO
+    name: Watsco, Inc.
+  - ticker: ADBE
+    name: Adobe Inc.
+  - ticker: COHR
+    name: Coherent Corp.
+  - ticker: BMI
+    name: Badger Meter, Inc.
+  - ticker: AAON
+    name: AAON, Inc.
+  - ticker: FIZZ
+    name: National Beverage Corp.
+  - ticker: INTU
+    name: Intuit Inc.
+  - ticker: MNST
+    name: Monster Beverage Corporation
+  - ticker: AMZN
+    name: Amazon.com, Inc.
+  - ticker: NVDA
+    name: NVIDIA Corporation
+  - ticker: AAPL
+    name: Apple Inc.
+  - ticker: NVR
+    name: NVR, Inc.
+  - ticker: POOL
+    name: Pool Corporation
+  - ticker: HEI
+    name: HEICO Corporation
+  - ticker: AXON
+    name: Axon Enterprise, Inc.
+  - ticker: ROST
+    name: Ross Stores, Inc.
+  - ticker: NFLX
+    name: Netflix, Inc.
+  - ticker: CTSH
+    name: Cognizant Technology Solutions
+  - ticker: COO
+    name: The Cooper Companies, Inc.
+  - ticker: FICO
+    name: Fair Isaac Corporation
+  - ticker: BCPC
+    name: Balchem Corporation
+  - ticker: MIDD
+    name: The Middleby Corporation

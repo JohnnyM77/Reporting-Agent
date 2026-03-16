@@ -21,24 +21,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-wally.txt
 
-      - name: Run standard watchlists (TII/JM/Aussie Tech)
-        env:
-          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
-          EMAIL_TO: ${{ secrets.EMAIL_TO }}
-          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
-          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
-          GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
-          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
-          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
-        run: |
-          python -m wally.main --all-standard-watchlists
-
-      - name: Run TII75 (manual=always; scheduled=Fridays with fortnightly gate)
+      - name: Run all watchlists with combined email
         env:
           EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
@@ -54,13 +37,14 @@ jobs:
           ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            # Manual trigger: always run, bypass fortnightly gate
-            python -m wally.main --tii75 --force
+            # Manual trigger: run all with combined email (force TII75)
+            python -m wally.main --all-combined --force
           elif [ "$(date -u +%u)" = "5" ]; then
-            # Scheduled Friday: apply fortnightly gate inside Python
-            python -m wally.main --tii75
+            # Scheduled Friday: run all with combined email (TII75 with fortnightly gate)
+            python -m wally.main --all-combined
           else
-            echo "Not Friday — skipping TII75 on scheduled run"
+            # Scheduled Tuesday: run standard watchlists only with combined email
+            python -m wally.main --all-standard-watchlists --combined-email
           fi
 
       - name: Commit dashboard update

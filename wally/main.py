@@ -5,12 +5,14 @@ import datetime as dt
 import json
 import os
 from pathlib import Path
+from dataclasses import dataclass
+from typing import Optional
 
 from .charts import render_range_chart, render_value_vs_price_chart
 from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, build_run_context, load_email_settings, should_run_tii75
 from .data_fetch import fetch_price_snapshot
 from .drive_upload import upload_or_replace_xlsx
-from .email_report import build_html, send_email
+from .email_report import build_html, build_combined_html, send_email
 from .screening import TickerScreenResult, screen_snapshot
 from .utils import safe_slug, write_json
 from .watchlist_loader import load_watchlist
@@ -21,7 +23,29 @@ except ImportError:
     _XLSX_BUILDER_AVAILABLE = False
 
 
-def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
+@dataclass
+class WatchlistProcessResult:
+    """Result of processing a single watchlist."""
+    watchlist_name: str
+    run_date: str
+    results: list[TickerScreenResult]
+    flagged: list[TickerScreenResult]
+    attachments: list[Path]
+    chart_notes: dict[str, str]
+    inline_images: list[tuple[str, Path]]
+
+
+def _process_watchlist(watchlist_path: str, force: bool = False, send_individual_email: bool = True) -> WatchlistProcessResult:
+    """Process a watchlist and optionally send individual email.
+    
+    Args:
+        watchlist_path: Path to the watchlist YAML file
+        force: Force processing even if gated
+        send_individual_email: If True, send email immediately. If False, return data for combined email.
+    
+    Returns:
+        WatchlistProcessResult with all processed data
+    """
     wl = load_watchlist(watchlist_path)
     ctx = build_run_context()
     ctx.output_root.mkdir(parents=True, exist_ok=True)
@@ -90,6 +114,7 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
                     except Exception as xlsx_err:
                         print(f"[wally] xlsx build failed for {ticker}: {xlsx_err}", flush=True)
         except Exception as e:
+            print(f"[wally] Error processing {ticker}: {e}", flush=True)
             results.append(
                 TickerScreenResult(
                     ticker=ticker,
@@ -114,18 +139,6 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
     }
     json_path = ctx.output_root / f"{safe_slug(wl.name)}.json"
     write_json(json_path, payload)
-
-    settings = load_email_settings()
-    subject = f"Wally the Watcher — {wl.name} — {ctx.run_dt.date().isoformat()}"
-    png_cids = {r.ticker: f"chart_{r.ticker.lower().replace('.', '_')}"
-                for r in flagged
-                if any(cid == f"chart_{r.ticker.lower().replace('.', '_')}" for cid, _ in inline_images)}
-    html = build_html(wl.name, ctx.run_dt.date().isoformat(), results, flagged, chart_notes, inline_pngs=png_cids)
-    text = (
-        f"Wally the Watcher report\nWatchlist: {wl.name}\nChecked: {len(results)}\nFlagged: {len(flagged)}\n"
-        f"Flagged tickers: {', '.join([r.ticker for r in flagged]) if flagged else 'None'}"
-    )
-    send_email(settings, subject, text, html, attachments, inline_images=inline_images if inline_images else None)
 
     # Write dashboard data (merge with existing wally.json so multiple watchlists accumulate)
     _dash_path = Path("docs/data/wally.json")
@@ -158,20 +171,122 @@ def _process_watchlist(watchlist_path: str, force: bool = False) -> int:
     except Exception as _e:
         print(f"[wally] Dashboard write failed: {_e}", flush=True)
 
-    return len(flagged)
+    # Send individual email if requested
+    if send_individual_email:
+        settings = load_email_settings()
+        subject = f"Wally the Watcher — {wl.name} — {ctx.run_dt.date().isoformat()}"
+        png_cids = {r.ticker: f"chart_{r.ticker.lower().replace('.', '_')}"
+                    for r in flagged
+                    if any(cid == f"chart_{r.ticker.lower().replace('.', '_')}" for cid, _ in inline_images)}
+        html = build_html(wl.name, ctx.run_dt.date().isoformat(), results, flagged, chart_notes, inline_pngs=png_cids)
+        text = (
+            f"Wally the Watcher report\nWatchlist: {wl.name}\nChecked: {len(results)}\nFlagged: {len(flagged)}\n"
+            f"Flagged tickers: {', '.join([r.ticker for r in flagged]) if flagged else 'None'}"
+        )
+        send_email(settings, subject, text, html, attachments, inline_images=inline_images if inline_images else None)
+
+    return WatchlistProcessResult(
+        watchlist_name=wl.name,
+        run_date=ctx.run_dt.date().isoformat(),
+        results=results,
+        flagged=flagged,
+        attachments=attachments,
+        chart_notes=chart_notes,
+        inline_images=inline_images,
+    )
 
 
-def _run_standard(force: bool = False) -> None:
-    for path in STANDARD_WATCHLISTS:
-        _process_watchlist(path, force=force)
+def _process_watchlists_combined(watchlist_paths: list[str], force: bool = False) -> None:
+    """Process multiple watchlists and send one combined email."""
+    print(f"[wally] Processing {len(watchlist_paths)} watchlists with combined email...", flush=True)
+    
+    all_results = []
+    all_attachments = []
+    all_inline_images = []
+    
+    for path in watchlist_paths:
+        result = _process_watchlist(path, force=force, send_individual_email=False)
+        all_results.append(result)
+        all_attachments.extend(result.attachments)
+        all_inline_images.extend(result.inline_images)
+    
+    # Build combined email
+    if not all_results:
+        print("[wally] No watchlists processed", flush=True)
+        return
+    
+    settings = load_email_settings()
+    run_date = all_results[0].run_date
+    
+    # Prepare data for combined HTML
+    watchlist_data = []
+    for result in all_results:
+        png_cids = {r.ticker: f"chart_{r.ticker.lower().replace('.', '_')}"
+                    for r in result.flagged
+                    if any(cid == f"chart_{r.ticker.lower().replace('.', '_')}" for cid, _ in result.inline_images)}
+        watchlist_data.append({
+            "watchlist_name": result.watchlist_name,
+            "run_date": result.run_date,
+            "results": result.results,
+            "flagged": result.flagged,
+            "chart_notes": result.chart_notes,
+            "inline_pngs": png_cids,
+        })
+    
+    html = build_combined_html(watchlist_data)
+    
+    # Build text summary
+    total_checked = sum(len(r.results) for r in all_results)
+    total_flagged = sum(len(r.flagged) for r in all_results)
+    watchlist_names = [r.watchlist_name for r in all_results]
+    
+    text = (
+        f"Wally the Watcher — Combined Report\n"
+        f"Run date: {run_date}\n"
+        f"Watchlists: {', '.join(watchlist_names)}\n"
+        f"Total checked: {total_checked}\n"
+        f"Total flagged: {total_flagged}\n"
+        f"\nFlagged tickers:\n"
+    )
+    for result in all_results:
+        if result.flagged:
+            text += f"\n{result.watchlist_name}:\n"
+            text += f"  {', '.join([r.ticker for r in result.flagged])}\n"
+        else:
+            text += f"\n{result.watchlist_name}: None\n"
+    
+    subject = f"Wally the Watcher — Combined Report — {run_date}"
+    send_email(settings, subject, text, html, all_attachments, inline_images=all_inline_images if all_inline_images else None)
+    print(f"[wally] Combined email sent for {len(all_results)} watchlist(s)", flush=True)
 
 
-def _run_tii75(force: bool = False) -> None:
+def _run_standard(force: bool = False, combined_email: bool = False) -> None:
+    if combined_email:
+        _process_watchlists_combined(STANDARD_WATCHLISTS, force=force)
+    else:
+        for path in STANDARD_WATCHLISTS:
+            _process_watchlist(path, force=force, send_individual_email=True)
+
+
+def _run_tii75(force: bool = False, combined_email: bool = False) -> None:
     today = dt.datetime.now(dt.timezone.utc).date()
     if should_run_tii75(today, force=force):
-        _process_watchlist(TII75_WATCHLIST, force=force)
+        _process_watchlist(TII75_WATCHLIST, force=force, send_individual_email=not combined_email)
     else:
         print("[wally] Skipping TII75 this week (fortnightly gate). Use --force to run.", flush=True)
+
+
+def _run_all_combined(force: bool = False) -> None:
+    """Run all watchlists (standard + TII75) with combined email."""
+    today = dt.datetime.now(dt.timezone.utc).date()
+    watchlists_to_run = list(STANDARD_WATCHLISTS)
+    
+    if should_run_tii75(today, force=force):
+        watchlists_to_run.append(TII75_WATCHLIST)
+    else:
+        print("[wally] Skipping TII75 this week (fortnightly gate). Use --force to include it.", flush=True)
+    
+    _process_watchlists_combined(watchlists_to_run, force=force)
 
 
 def main() -> None:
@@ -180,21 +295,27 @@ def main() -> None:
     parser.add_argument("--all-standard-watchlists", action="store_true", help="Run TII/JM/Aussie Tech")
     parser.add_argument("--tii75", action="store_true", help="Run TII75 watchlist with fortnightly gate")
     parser.add_argument("--force", action="store_true", help="Force run (bypass fortnightly gate)")
+    parser.add_argument("--combined-email", action="store_true", help="Send one combined email for all watchlists")
+    parser.add_argument("--all-combined", action="store_true", help="Run all watchlists (standard + TII75) with combined email")
 
     args = parser.parse_args()
 
     if args.watchlist:
-        _process_watchlist(args.watchlist, force=args.force)
+        _process_watchlist(args.watchlist, force=args.force, send_individual_email=True)
+        return
+
+    if args.all_combined:
+        _run_all_combined(force=args.force)
         return
 
     if args.all_standard_watchlists:
-        _run_standard(force=args.force)
+        _run_standard(force=args.force, combined_email=args.combined_email)
 
     if args.tii75:
-        _run_tii75(force=args.force)
+        _run_tii75(force=args.force, combined_email=args.combined_email)
 
-    if not args.watchlist and not args.all_standard_watchlists and not args.tii75:
-        parser.error("Choose --watchlist, --all-standard-watchlists, or --tii75")
+    if not args.watchlist and not args.all_standard_watchlists and not args.tii75 and not args.all_combined:
+        parser.error("Choose --watchlist, --all-standard-watchlists, --tii75, or --all-combined")
 
 
 if __name__ == "__main__":

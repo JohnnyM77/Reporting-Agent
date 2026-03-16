@@ -1,0 +1,111 @@
+name: Master Engine Alert (Super Investor)
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_tii75:
+        description: 'Include TII75 watchlist in Wally data'
+        required: false
+        type: boolean
+        default: false
+      skip_ned:
+        description: 'Skip Ned news collection'
+        required: false
+        type: boolean
+        default: false
+      skip_wally:
+        description: 'Skip Wally watchlist screening'
+        required: false
+        type: boolean
+        default: false
+      skip_bob:
+        description: 'Skip Bob ASX announcements'
+        required: false
+        type: boolean
+        default: false
+      skip_email:
+        description: 'Skip sending email (generate digest only)'
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    # Run daily at 00:00 UTC (after all agents have completed)
+    - cron: "0 0 * * *"
+
+jobs:
+  master-engine:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-wally.txt
+          pip install -r requirements-ned.txt
+          pip install requests beautifulsoup4 pyyaml pypdf anthropic openai google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib playwright
+
+      - name: Run Master Investor Alert
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: |
+          # Build command with optional flags
+          CMD="python run_master_investor.py"
+          
+          # Handle workflow_dispatch inputs
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ inputs.include_tii75 }}" = "true" ]; then
+              CMD="$CMD --wally-tii75"
+            fi
+            if [ "${{ inputs.skip_ned }}" = "true" ]; then
+              CMD="$CMD --no-ned"
+            fi
+            if [ "${{ inputs.skip_wally }}" = "true" ]; then
+              CMD="$CMD --no-wally"
+            fi
+            if [ "${{ inputs.skip_bob }}" = "true" ]; then
+              CMD="$CMD --no-bob"
+            fi
+            if [ "${{ inputs.skip_email }}" = "true" ]; then
+              CMD="$CMD --no-email"
+            fi
+          fi
+          
+          echo "Running: $CMD"
+          $CMD
+
+      - name: Commit digest files
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Add any generated digest files
+          git add outputs/*/master_investor_*.* || true
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "Master Engine Alert digest [skip ci]"
+            git push origin HEAD
+          else
+            echo "No changes to commit"
+          fi

@@ -9,8 +9,16 @@ import datetime as dt
 import re
 import urllib.parse
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 import requests
+
+from ned.entity_resolver import (
+    load_company_entities,
+    build_google_news_query,
+    matches_entity,
+    get_yahoo_symbol,
+)
 
 _HEADERS = {
     "User-Agent": (
@@ -21,6 +29,9 @@ _HEADERS = {
 }
 
 _RSS_TIMEOUT = 15
+
+# Load entity configurations once at module level
+_ENTITIES = load_company_entities()
 
 
 def _fetch_rss(url: str) -> list[dict]:
@@ -79,14 +90,38 @@ def _parse_date(s: str) -> dt.datetime | None:
     return None
 
 
-def _mentions_company(text: str, ticker: str, company_name: str) -> bool:
-    haystack = text.lower()
-    if re.search(rf"\b{re.escape(ticker.lower())}\b", haystack):
-        return True
-    first_word = company_name.split()[0].lower()
-    if len(first_word) > 3 and first_word in haystack:
-        return True
-    return False
+def _matches_company(text: str, ticker: str, company_name: str) -> tuple[bool, str]:
+    """
+    Check if text matches a company using entity-based disambiguation.
+    
+    Returns:
+        Tuple of (matches: bool, reason: str)
+    """
+    entity = _ENTITIES.get(ticker)
+    
+    if entity:
+        # Use entity-based matching for configured companies
+        match, reason = matches_entity(text, entity)
+        if match:
+            print(f"[ned/news] {ticker} matched: {reason}")
+        return match, reason
+    else:
+        # Fallback to basic matching for unconfigured companies
+        # (Less strict, but maintains backward compatibility)
+        haystack = text.lower()
+        
+        # Check for ticker match
+        if re.search(rf"\b{re.escape(ticker.lower())}\b", haystack):
+            print(f"[ned/news] {ticker} matched: ticker found")
+            return True, "ticker found"
+        
+        # Check for first word of company name (if >3 chars)
+        first_word = company_name.split()[0].lower()
+        if len(first_word) > 3 and first_word in haystack:
+            print(f"[ned/news] {ticker} matched: company name word '{first_word}'")
+            return True, f"company name word '{first_word}'"
+        
+        return False, "no match"
 
 
 def scan_rss_feeds(
@@ -107,20 +142,47 @@ def scan_rss_feeds(
         label = feed.get("label", feed["url"])
 
         if feed_type == "google_news":
-            # One RSS query per company
+            # One RSS query per company using entity-driven queries
             for ticker, name in companies.items():
-                query = urllib.parse.quote_plus(f'"{name}"')
+                entity = _ENTITIES.get(ticker)
+                
+                if entity:
+                    # Build entity-driven query
+                    query = build_google_news_query(entity)
+                    print(f"[ned/news] Google News query for {ticker}: {urllib.parse.unquote_plus(query)}")
+                else:
+                    # Fallback to simple query for unconfigured companies
+                    query = urllib.parse.quote_plus(f'"{name}"')
+                    print(f"[ned/news] Google News query for {ticker} (fallback): {urllib.parse.unquote_plus(query)}")
+                
                 url = feed["url"].replace("{query}", query)
                 items = _fetch_rss(url)
+                
+                # Apply second-pass validation to each item
+                validated_count = 0
+                rejected_count = 0
+                
                 for item in items:
-                    _check_item(item, ticker, name, label, cutoff, seen_keys, hits, f"gnews|{ticker}|{item['link']}")
+                    text = f"{item['title']} {item['description']}".lower()
+                    matches, reason = _matches_company(text, ticker, name)
+                    
+                    if matches:
+                        _check_item(item, ticker, name, label, cutoff, seen_keys, hits, f"gnews|{ticker}|{item['link']}")
+                        validated_count += 1
+                    else:
+                        rejected_count += 1
+                        print(f"[ned/news] {ticker} rejected: {reason} - {item['title'][:60]}")
+                
+                if validated_count > 0 or rejected_count > 0:
+                    print(f"[ned/news] {ticker}: {validated_count} accepted, {rejected_count} rejected")
         else:
-            # Static feed — fetch once, filter by company
+            # Static feed — fetch once, filter by company with validation
             items = _fetch_rss(feed["url"])
             for item in items:
                 text = f"{item['title']} {item['description']}"
                 for ticker, name in companies.items():
-                    if _mentions_company(text, ticker, name):
+                    matches, reason = _matches_company(text, ticker, name)
+                    if matches:
                         _check_item(item, ticker, name, label, cutoff, seen_keys, hits, f"rss|{ticker}|{item['link']}")
 
     return hits
@@ -174,12 +236,32 @@ def scan_yahoo_finance(
     hits: list[dict] = []
 
     for ticker, name in companies.items():
-        exchange_ticker = f"{ticker}.AX" if ticker not in ("RR.",) else ticker
+        # Use entity-specific Yahoo symbol if available
+        entity = _ENTITIES.get(ticker)
+        exchange_ticker = get_yahoo_symbol(ticker, entity)
+        
+        print(f"[ned/news] Yahoo Finance for {ticker}: using symbol {exchange_ticker}")
+        
         items = fetch_news_context(exchange_ticker, max_items=5)
+        
+        validated_count = 0
+        rejected_count = 0
+        
         for item in items:
             pub_ts = item.get("published_at") or 0
             if pub_ts and pub_ts < cutoff_ts:
                 continue
+            
+            # Apply second-pass validation
+            text = f"{item.get('title', '')} {item.get('description', '')}".lower()
+            matches, reason = _matches_company(text, ticker, name)
+            
+            if not matches:
+                rejected_count += 1
+                print(f"[ned/news] {ticker} (Yahoo) rejected: {reason} - {item.get('title', '')[:60]}")
+                continue
+            
+            validated_count += 1
             key = f"yf|{ticker}|{item.get('link', '')}"
             if key in seen_keys:
                 continue
@@ -193,5 +275,8 @@ def scan_yahoo_finance(
                 "published": str(pub_ts),
                 "seen_key": key,
             })
+        
+        if validated_count > 0 or rejected_count > 0:
+            print(f"[ned/news] {ticker} (Yahoo): {validated_count} accepted, {rejected_count} rejected")
 
     return hits

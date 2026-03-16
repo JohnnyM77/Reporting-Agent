@@ -1,9 +1,9 @@
 # master_engine/prioritizer.py
 #
 # Scores and ranks InvestorEvent objects using a weighted multi-factor model.
-# Scoring logic mirrors the specification in agents/super_investor/scoring.py
-# but is applied here at the engine level before the Super Investor Agent
-# re-applies its own universe-aware weights.
+# Scoring logic is delegated to agents/super_investor/scoring.py when
+# available so we mirror the same specification here; otherwise a basic
+# local fallback scorer is used.
 
 from __future__ import annotations
 

@@ -57,7 +57,7 @@ def _hit_html(hit: dict, llm_summary: str | None) -> str:
     url = htmlmod.escape(hit["url"])
     source = htmlmod.escape(hit["source"])
     
-    # Add importance badge if present
+    # Add importance badge if present - inline with ticker badges
     importance_badge = ""
     if "importance_level" in hit:
         importance_badge = _importance_badge(hit["importance_level"])
@@ -70,7 +70,7 @@ def _hit_html(hit: dict, llm_summary: str | None) -> str:
         )
     return (
         f'<div style="margin-bottom:14px;padding:12px;background:{COLOR_PANEL};border-radius:10px;">'
-        f'<div style="margin-bottom:6px;">{importance_badge}{_ticker_badges(hit["tickers"])}</div>'
+        f'{importance_badge}{_ticker_badges(hit["tickers"])}'
         f'<div style="margin-top:6px;font-size:14px;font-weight:700;">'
         f'<a href="{url}" style="color:#60A5FA;text-decoration:none;">{title}</a></div>'
         f'<div style="font-size:12px;color:#64748B;margin-top:3px;">{source}</div>'

@@ -45,9 +45,10 @@ def score_news_item(headline: str) -> int:
     Score a news item based on headline keywords.
     
     Rules:
-    - CRITICAL_KEYWORDS: +5 points each
-    - HIGH_KEYWORDS: +3 points each
-    - MEDIUM_KEYWORDS: +2 points each
+    - Each CRITICAL_KEYWORD match: +5 points
+    - Each HIGH_KEYWORD match: +3 points
+    - Each MEDIUM_KEYWORD match: +2 points
+    - Each keyword can only contribute once (no double-counting same keyword)
     
     Args:
         headline: The news headline to score
@@ -55,22 +56,31 @@ def score_news_item(headline: str) -> int:
     Returns:
         Total score (integer)
     """
+    import re
+    
     score = 0
     headline_lower = headline.lower()
     
-    # Check for critical keywords
+    # Use word boundary matching to avoid false positives like 'ceo' matching 'ceolite'
+    # Track which keywords were matched to avoid double-counting
+    
+    # Check for critical keywords (each unique match adds 5)
     for keyword in CRITICAL_KEYWORDS:
-        if keyword in headline_lower:
+        # Use word boundaries for better matching
+        pattern = r'\b' + re.escape(keyword) + r'\b'
+        if re.search(pattern, headline_lower):
             score += 5
     
-    # Check for high-priority keywords
+    # Check for high-priority keywords (each unique match adds 3)
     for keyword in HIGH_KEYWORDS:
-        if keyword in headline_lower:
+        pattern = r'\b' + re.escape(keyword) + r'\b'
+        if re.search(pattern, headline_lower):
             score += 3
     
-    # Check for medium-priority keywords
+    # Check for medium-priority keywords (each unique match adds 2)
     for keyword in MEDIUM_KEYWORDS:
-        if keyword in headline_lower:
+        pattern = r'\b' + re.escape(keyword) + r'\b'
+        if re.search(pattern, headline_lower):
             score += 2
     
     return score

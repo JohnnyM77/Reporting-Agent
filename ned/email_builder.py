@@ -15,6 +15,30 @@ COLOR_YOUTUBE = "#EF4444"   # red
 COLOR_NEWS = "#3B82F6"      # blue
 COLOR_SILENCE = "#6B7280"   # grey
 
+# Importance level colors
+COLOR_CRITICAL = "#DC2626"  # red
+COLOR_HIGH = "#F59E0B"      # amber
+COLOR_MEDIUM = "#3B82F6"    # blue
+COLOR_LOW = "#10B981"       # green
+COLOR_FYI = "#6B7280"       # grey
+
+
+def _importance_badge(importance_level: str) -> str:
+    """Generate an importance badge with appropriate color."""
+    color_map = {
+        "CRITICAL": COLOR_CRITICAL,
+        "HIGH": COLOR_HIGH,
+        "MEDIUM": COLOR_MEDIUM,
+        "LOW": COLOR_LOW,
+        "FYI": COLOR_FYI,
+    }
+    color = color_map.get(importance_level, COLOR_FYI)
+    return (
+        f'<span style="display:inline-block;background:{color};color:#FFFFFF;'
+        f'font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;'
+        f'margin-right:6px;letter-spacing:0.5px;">{htmlmod.escape(importance_level)}</span>'
+    )
+
 
 def _ticker_badges(tickers: list[str]) -> str:
     badges = ""
@@ -32,6 +56,12 @@ def _hit_html(hit: dict, llm_summary: str | None) -> str:
     title = htmlmod.escape(hit["title"])
     url = htmlmod.escape(hit["url"])
     source = htmlmod.escape(hit["source"])
+    
+    # Add importance badge if present
+    importance_badge = ""
+    if "importance_level" in hit:
+        importance_badge = _importance_badge(hit["importance_level"])
+    
     summary_block = ""
     if llm_summary:
         summary_block = (
@@ -40,7 +70,7 @@ def _hit_html(hit: dict, llm_summary: str | None) -> str:
         )
     return (
         f'<div style="margin-bottom:14px;padding:12px;background:{COLOR_PANEL};border-radius:10px;">'
-        f'{_ticker_badges(hit["tickers"])}'
+        f'<div style="margin-bottom:6px;">{importance_badge}{_ticker_badges(hit["tickers"])}</div>'
         f'<div style="margin-top:6px;font-size:14px;font-weight:700;">'
         f'<a href="{url}" style="color:#60A5FA;text-decoration:none;">{title}</a></div>'
         f'<div style="font-size:12px;color:#64748B;margin-top:3px;">{source}</div>'
@@ -78,7 +108,9 @@ def build_email(
         lines += ["YOUTUBE MENTIONS", "-" * 60]
         for h in youtube_hits:
             tickers = ", ".join(h["tickers"])
-            lines.append(f"[{tickers}] {h['title']}")
+            importance = h.get("importance_level", "")
+            importance_str = f"[{importance}] " if importance else ""
+            lines.append(f"{importance_str}[{tickers}] {h['title']}")
             lines.append(f"  Source: {h['source']}  {h['url']}")
             if h["seen_key"] in summaries:
                 lines.append(f"  {summaries[h['seen_key']]}")
@@ -88,7 +120,9 @@ def build_email(
         lines += ["NEWS & PRESS RELEASES", "-" * 60]
         for h in news_hits:
             tickers = ", ".join(h["tickers"])
-            lines.append(f"[{tickers}] {h['title']}")
+            importance = h.get("importance_level", "")
+            importance_str = f"[{importance}] " if importance else ""
+            lines.append(f"{importance_str}[{tickers}] {h['title']}")
             lines.append(f"  Source: {h['source']}  {h['url']}")
             if h["seen_key"] in summaries:
                 lines.append(f"  {summaries[h['seen_key']]}")

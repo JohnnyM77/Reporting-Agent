@@ -38,6 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from ned.youtube_scanner import scan_youtube_channels
 from ned.news_scanner import scan_rss_feeds, scan_yahoo_finance
 from ned.email_builder import build_email
+from ned.importance_scorer import sort_by_importance
 
 # ----------------------------
 # Config / paths
@@ -201,6 +202,10 @@ def main():
     # Filter out "[not material]" hits where LLM flagged them
     youtube_hits = [h for h in youtube_hits if summaries.get(h["seen_key"]) != "[not material]"]
     news_hits = [h for h in news_hits if summaries.get(h["seen_key"]) != "[not material]"]
+
+    # Sort news by importance (adds importance_score and importance_level to each hit)
+    youtube_hits = sort_by_importance(youtube_hits)
+    news_hits = sort_by_importance(news_hits)
 
     # Build + send email
     run_date = today_sgt()

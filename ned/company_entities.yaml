@@ -88,30 +88,6 @@ ATP:
     - us open
     - french open
 
-BBL:
-  company_name: Brisbane Broncos Limited
-  exchange: ASX
-  country: Australia
-  yahoo_symbol: BBL.AX
-  aliases:
-    - Brisbane Broncos
-    - Brisbane Broncos Limited
-    - Broncos
-  required_terms:
-    - brisbane broncos
-  optional_terms:
-    - asx
-    - australia
-    - nrl
-    - rugby league
-    - suncorp stadium
-  exclude_terms:
-    - big bash
-    - big bash league
-    - cricket
-    - bbl cricket
-    - t20
-
 BHP:
   company_name: BHP Group Limited
   exchange: ASX

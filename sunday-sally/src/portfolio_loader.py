@@ -17,10 +17,10 @@ def load_portfolio(source_file: str = "tickers.yaml", source_key: str = "asx", e
     path = Path(source_file)
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     tickers_data = data.get(source_key)
-    
+
     if tickers_data is None:
         raise ValueError(f"Portfolio source key '{source_key}' not found in {source_file}")
-    
+
     # Handle both list format (old) and dict format (new enriched with company names)
     if isinstance(tickers_data, dict):
         tickers = list(tickers_data.keys())

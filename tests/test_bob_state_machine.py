@@ -204,7 +204,7 @@ def test_skip_failed_outside_24h_window():
         NHC_KEY, NHC_TICKER, NHC_TITLE, state, False, frozenset()
     )
     assert ok is False
-    assert "24" in reason or "window" in reason
+    assert "24 h retry window" in reason
 
 
 def test_retry_processing_state():

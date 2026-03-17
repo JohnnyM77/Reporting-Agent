@@ -93,6 +93,18 @@ REQUESTS_PDF_TIMEOUT_SECS = 20
 HTML_TIMEOUT_SECS = 30
 FUN_CONTENT_TIMEOUT_SECS = 10
 
+# Sentinel strings returned by deep-analysis helpers when the LLM fails or
+# cannot run.  Used to detect analysis failure and mark the announcement FAILED.
+_LLM_FAIL_MSGS: frozenset = frozenset([
+    "LLM could not run (limit/billing).",
+    "__LLM_FAILED__",
+    "__LLM_SKIPPED__",
+])
+_TEXT_UNAVAIL = (
+    "Could not extract meaningful announcement text automatically. "
+    "Open the link and review manually."
+)
+
 # Email styling colours (match your diagram intent)
 COLOR_HIGH_IMPACT = "#F59E0B"  # amber/gold
 COLOR_MATERIAL = "#3B82F6"     # blue
@@ -1202,7 +1214,6 @@ def main():
 
                 log(f"[bob] {ticker} | processing earnings/results analysis")
                 analysis = deep_results_analysis(ticker, report_text, deck_text, counters)
-                _LLM_FAIL_MSGS = frozenset(["LLM could not run (limit/billing).", "__LLM_FAILED__", "__LLM_SKIPPED__"])
                 analysis_ok = analysis not in _LLM_FAIL_MSGS
                 straw = strawman_post(ticker, "HY/FY Results", analysis, counters)
 
@@ -1290,20 +1301,18 @@ def main():
                         except Exception:
                             pass
 
-                    _LLM_FAIL_MSGS = frozenset(["LLM could not run (limit/billing).", "__LLM_FAILED__", "__LLM_SKIPPED__"])
-                    _TEXT_UNAVAIL = "Could not extract meaningful announcement text automatically. Open the link and review manually."
                     if cls_title == "ACQUISITION":
                         memo = deep_acquisition_memo(ticker, title, text, counters)
-                        memo_ok = memo not in _LLM_FAIL_MSGS and memo != _TEXT_UNAVAIL
                         straw = strawman_post(ticker, "Acquisition", memo, counters)
                         block = f"{ticker} — Acquisition\n{memo}\nOpen: {url}\n"
                         _hi_items.append({"ticker": ticker, "title": title[:120], "url": url, "type": "acquisition"})
                     else:
                         memo = deep_capital_memo(ticker, title, text, counters)
-                        memo_ok = memo not in _LLM_FAIL_MSGS and memo != _TEXT_UNAVAIL
                         straw = strawman_post(ticker, "Capital/Debt Raise", memo, counters)
                         block = f"{ticker} — Capital/Debt Raise\n{memo}\nOpen: {url}\n"
                         _hi_items.append({"ticker": ticker, "title": title[:120], "url": url, "type": "capital"})
+
+                    memo_ok = memo not in _LLM_FAIL_MSGS and memo != _TEXT_UNAVAIL
 
                     if drive_links:
                         block += "Drive link(s):\n" + "\n".join(drive_links) + "\n"

@@ -1,7 +1,23 @@
 {
   "last_run": "2026-03-17",
-  "silence": true,
+  "silence": false,
   "high_impact": [],
   "material": [],
-  "fyi": []
+  "fyi": [
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 398.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073075"
+    },
+    {
+      "ticker": "CSL",
+      "title": "Notification of cessation of securities - CSL 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073144"
+    },
+    {
+      "ticker": "PWH",
+      "title": "Ceasing to be a substantial holder 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 789.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073191"
+    }
+  ]
 }

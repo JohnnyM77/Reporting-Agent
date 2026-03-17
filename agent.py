@@ -50,6 +50,15 @@ HOURS_BACK = 24
 SEEN_STATE_PATH = Path(os.environ.get("SEEN_STATE_PATH", "state_seen.json"))
 SEEN_STATE_RETENTION_HOURS = 72
 
+# Comma-separated list of ASX tickers that should bypass the 24 hr dedup
+# check on this run (e.g. "NHC" or "NHC,BHP").  Set via the FORCE_RERUN_TICKERS
+# environment variable or the matching workflow_dispatch input.
+FORCE_RERUN_TICKERS: frozenset = frozenset(
+    t.strip().upper()
+    for t in os.environ.get("FORCE_RERUN_TICKERS", "").split(",")
+    if t.strip()
+)
+
 MAX_ANNOUNCEMENTS_PER_TICKER = 12
 MAX_PDFS_PER_RUN = 10
 MAX_LLM_CALLS_PER_RUN = 15
@@ -462,10 +471,22 @@ def fetch_html_text(session: requests.Session, url: str) -> str:
 
 
 def looks_like_asx_access_gate(text: str) -> bool:
+    """Return True when text is ASX consent-gate or terms-of-service boilerplate.
+
+    ``fetch_html_text`` strips <header>, <footer>, and <nav> tags before
+    extracting text.  The ASX consent page often places the "Agree and proceed"
+    button inside one of those stripped elements, so the phrase may be absent
+    from the extracted text even though the page is just the gate.  We therefore
+    treat "access to this site" alone as sufficient evidence of the gate — that
+    heading is in the page <body> and survives the strip.  The secondary pattern
+    (general conditions + agree and proceed) is kept as a belt-and-braces check.
+    """
     t = (text or "").lower()
-    return ("access to this site" in t and "agree and proceed" in t) or (
-        "general conditions" in t and "agree and proceed" in t
-    )
+    if "access to this site" in t:
+        return True
+    if "general conditions" in t and "agree and proceed" in t:
+        return True
+    return False
 
 
 def is_meaningful_text(text: str, min_chars: int = 1200) -> bool:
@@ -902,6 +923,9 @@ def main():
     seen_state_updated = dict(seen_state)
     run_seen_count = 0
 
+    if FORCE_RERUN_TICKERS:
+        log(f"FORCE_RERUN_TICKERS active — bypassing 24 hr dedup for: {', '.join(sorted(FORCE_RERUN_TICKERS))}")
+
     # Bucket outputs
     high_impact_blocks: List[str] = []
     material_blocks: List[str] = []
@@ -933,7 +957,7 @@ def main():
             fresh_items: List[Dict] = []
             for it in items:
                 key = announcement_key(ticker, it["url"])
-                if key in seen_state:
+                if key in seen_state and ticker not in FORCE_RERUN_TICKERS:
                     continue
                 it["seen_key"] = key
                 fresh_items.append(it)

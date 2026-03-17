@@ -2,6 +2,11 @@ name: Daily Announcement Digest
 
 on:
   workflow_dispatch:
+    inputs:
+      force_rerun_tickers:
+        description: 'Comma-separated ASX tickers to force re-run (bypass 24 hr dedup), e.g. NHC or NHC,BHP'
+        required: false
+        default: ''
   schedule:
     - cron: "13 23 * * *"
 
@@ -51,6 +56,7 @@ jobs:
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
           BROTHER_EMAIL: ${{ secrets.BROTHER_EMAIL }}
           SEEN_STATE_PATH: state_seen.json
+          FORCE_RERUN_TICKERS: ${{ github.event.inputs.force_rerun_tickers }}
         run: |
           python agent.py
 

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -16,7 +16,7 @@ sys.path.insert(0, str(_REPO_ROOT))
 
 from wally.watchlist_loader import load_watchlist
 from wally.screening import screen_snapshot
-from wally.data_fetch import PriceSnapshot
+from wally.data_fetch import PriceSnapshot, ValuationSnapshot
 
 _TII75_PATH = _REPO_ROOT / "watchlists" / "tii75_watchlist.yaml"
 
@@ -120,3 +120,146 @@ class TestScreenSnapshot:
         result = screen_snapshot(snap, threshold_pct=5.0)
         assert result.flagged is False
         assert result.error is not None
+
+
+# ---------------------------------------------------------------------------
+# Claude analyst unit tests
+# ---------------------------------------------------------------------------
+
+class TestClaudeAnalyst:
+    """Unit tests for wally.claude_analyst.analyse_opportunity."""
+
+    def test_returns_none_when_no_api_key(self):
+        """analyse_opportunity returns None gracefully when ANTHROPIC_API_KEY is absent."""
+        from wally.claude_analyst import analyse_opportunity
+
+        with patch.dict("os.environ", {}, clear=True):
+            result = analyse_opportunity(
+                ticker="CPRT",
+                company_name="Copart Inc.",
+                summary={"current_price": 50.0, "low_52w": 49.0, "high_52w": 70.0, "distance_to_low_pct": 2.04},
+                reasons=["Trading 2.0% above 52-week low of 49.00"],
+            )
+        assert result is None
+
+    def test_returns_dict_with_expected_keys_on_success(self):
+        """analyse_opportunity returns dict with all five section keys when API call succeeds."""
+        from wally.claude_analyst import analyse_opportunity
+
+        fake_block = MagicMock()
+        fake_block.type = "text"
+        fake_block.text = (
+            "VERDICT: Looks interesting.\n\n"
+            "BULL CASE: Strong moat.\n\n"
+            "BEAR CASE: Market risk.\n\n"
+            "WHAT MUST BE TRUE: Earnings stable.\n\n"
+            "RECOMMENDATION: Monitor for now."
+        )
+        fake_response = MagicMock()
+        fake_response.content = [fake_block]
+
+        fake_client = MagicMock()
+        fake_client.messages.create.return_value = fake_response
+
+        fake_anthropic = MagicMock()
+        fake_anthropic.Anthropic.return_value = fake_client
+
+        with patch.dict("os.environ", {"ANTHROPIC_API_KEY": "test-key"}):
+            with patch.dict("sys.modules", {"anthropic": fake_anthropic}):
+                result = analyse_opportunity(
+                    ticker="CPRT",
+                    company_name="Copart Inc.",
+                    summary={"current_price": 50.0, "low_52w": 49.0},
+                    reasons=["Near 52-week low"],
+                )
+
+        assert result is not None
+        assert set(result.keys()) == {"verdict", "bull_case", "bear_case", "what_must_be_true", "recommendation"}
+        assert "interesting" in result["verdict"].lower()
+        assert result["recommendation"] == "Monitor for now."
+
+
+# ---------------------------------------------------------------------------
+# Valuation workbook builder unit tests
+# ---------------------------------------------------------------------------
+
+class TestValuationWorkbook:
+    """Unit tests for wally.valuation_workbook.build_valuation_workbook."""
+
+    def test_creates_xlsx_without_claude_analysis(self, tmp_path):
+        """build_valuation_workbook creates a valid .xlsx when claude_analysis is None."""
+        from wally.valuation_workbook import build_valuation_workbook
+
+        out = tmp_path / "cprt_value_chart.xlsx"
+        summary = {
+            "company_name": "Copart Inc.",
+            "ticker": "CPRT",
+            "current_price": 50.0,
+            "low_52w": 49.0,
+            "high_52w": 70.0,
+            "distance_to_low_pct": 2.04,
+            "trailing_pe": 25.0,
+            "forward_pe": 22.0,
+            "ev_ebitda": 18.0,
+            "price_to_sales": 4.5,
+            "fcf_yield": 0.04,
+            "dividend_yield": None,
+        }
+        build_valuation_workbook(out, summary=summary, history_rows=[], decision_rows=[], claude_analysis=None)
+
+        assert out.exists()
+        import openpyxl
+        wb = openpyxl.load_workbook(out)
+        assert "Summary Dashboard" in wb.sheetnames
+        assert "Decision Framework" in wb.sheetnames
+        assert "Claude AI Analysis" not in wb.sheetnames
+
+    def test_creates_claude_sheet_when_analysis_provided(self, tmp_path):
+        """build_valuation_workbook includes 'Claude AI Analysis' sheet when analysis is given."""
+        from wally.valuation_workbook import build_valuation_workbook
+
+        out = tmp_path / "orly_value_chart.xlsx"
+        claude_analysis = {
+            "verdict": "Looks interesting.",
+            "bull_case": "Strong moat.",
+            "bear_case": "Market risk.",
+            "what_must_be_true": "Earnings stable.",
+            "recommendation": "Monitor for now.",
+        }
+        build_valuation_workbook(
+            out,
+            summary={"ticker": "ORLY", "company_name": "O'Reilly Automotive"},
+            history_rows=[],
+            decision_rows=[],
+            claude_analysis=claude_analysis,
+        )
+
+        assert out.exists()
+        import openpyxl
+        wb = openpyxl.load_workbook(out)
+        assert "Claude AI Analysis" in wb.sheetnames
+
+    def test_all_expected_sheets_present(self, tmp_path):
+        """All six standard sheets are always present in the output workbook."""
+        from wally.valuation_workbook import build_valuation_workbook
+
+        out = tmp_path / "adbe_value_chart.xlsx"
+        build_valuation_workbook(
+            out,
+            summary={"ticker": "ADBE", "company_name": "Adobe Inc."},
+            history_rows=[{"period": "current", "trailing_pe": 30.0}],
+            decision_rows=[{"issue": "Near 52-week low"}],
+            claude_analysis=None,
+        )
+
+        import openpyxl
+        wb = openpyxl.load_workbook(out)
+        for expected in [
+            "Summary Dashboard",
+            "Historical Valuation",
+            "Valuation Comparison",
+            "Implied Expectations",
+            "Critical Review Notes",
+            "Decision Framework",
+        ]:
+            assert expected in wb.sheetnames, f"Missing sheet: {expected}"

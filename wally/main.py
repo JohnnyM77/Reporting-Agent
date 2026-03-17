@@ -10,7 +10,7 @@ from typing import Optional
 
 from .charts import render_range_chart, render_value_vs_price_chart
 from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, LOW_THRESHOLD_PCT, build_run_context, load_email_settings, should_run_tii75
-from .data_fetch import fetch_price_snapshot
+from .data_fetch import fetch_price_snapshot, fetch_valuation_snapshot
 from .drive_upload import upload_or_replace_xlsx
 from .email_report import build_html, build_combined_html, send_email
 from .screening import TickerScreenResult, screen_snapshot
@@ -21,6 +21,12 @@ try:
     _XLSX_BUILDER_AVAILABLE = True
 except ImportError:
     _XLSX_BUILDER_AVAILABLE = False
+try:
+    from .valuation_workbook import build_valuation_workbook as _build_valuation_workbook
+    from .claude_analyst import analyse_opportunity as _analyse_opportunity
+    _VALUATION_WORKBOOK_AVAILABLE = True
+except ImportError:
+    _VALUATION_WORKBOOK_AVAILABLE = False
 
 
 @dataclass
@@ -126,7 +132,76 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                             except Exception as drive_err:
                                 print(f"[wally] Drive upload failed for {ticker}: {drive_err}", flush=True)
                     except FileNotFoundError:
-                        pass  # no valuations/<ticker>.yaml yet — not an error
+                        # No valuations/<ticker>.yaml — fall back to a Claude-powered
+                        # analysis workbook so all flagged tickers get a spreadsheet.
+                        if _VALUATION_WORKBOOK_AVAILABLE:
+                            try:
+                                val_snap = fetch_valuation_snapshot(ticker)
+                                fallback_summary = {
+                                    "company_name": row.company_name,
+                                    "ticker": ticker,
+                                    "current_price": row.current_price,
+                                    "low_52w": row.low_52w,
+                                    "high_52w": row.high_52w,
+                                    "distance_to_low_pct": round(row.distance_to_low_pct, 2),
+                                    "trailing_pe": val_snap.trailing_pe,
+                                    "forward_pe": val_snap.forward_pe,
+                                    "ev_ebitda": val_snap.ev_to_ebitda,
+                                    "price_to_sales": val_snap.price_to_sales,
+                                    "fcf_yield": val_snap.fcf_yield,
+                                    "dividend_yield": val_snap.dividend_yield,
+                                }
+                                reasons = [
+                                    f"Trading {row.distance_to_low_pct:.1f}% above "
+                                    f"52-week low of {row.low_52w:.2f}"
+                                ]
+                                claude_analysis = _analyse_opportunity(
+                                    ticker, row.company_name, fallback_summary, reasons
+                                )
+                                history_rows = [
+                                    {
+                                        "period": "current",
+                                        "trailing_pe": val_snap.trailing_pe,
+                                        "forward_pe": val_snap.forward_pe,
+                                        "ev_ebitda": val_snap.ev_to_ebitda,
+                                    }
+                                ]
+                                decision_rows = [
+                                    {
+                                        "issue": "Near 52-week low",
+                                        "bull_case": "Quality business at discounted price",
+                                        "bear_case": "Value trap / structural decline",
+                                        "evidence": f"Distance to 52w low: {row.distance_to_low_pct:.1f}%",
+                                        "wally_judgment": "Requires thesis review",
+                                    }
+                                ]
+                                _build_valuation_workbook(
+                                    output_path=xlsx_out,
+                                    summary=fallback_summary,
+                                    history_rows=history_rows,
+                                    decision_rows=decision_rows,
+                                    claude_analysis=claude_analysis,
+                                )
+                                attachments.append(xlsx_out)
+                                note = (
+                                    "Valuation workbook attached (Claude analysis)"
+                                    if claude_analysis
+                                    else "Valuation workbook attached"
+                                )
+                                chart_notes[ticker] = note
+                                # Upload to Drive
+                                drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
+                                if drive_folder_id:
+                                    drive_name = f"{ctx.run_dt.strftime('%y%m%d')}-{ticker.split('.')[0]}.xlsx"
+                                    try:
+                                        url = upload_or_replace_xlsx(
+                                            xlsx_out, drive_name, folder_id=drive_folder_id
+                                        )
+                                        print(f"[wally] Drive → {drive_name}: {url}", flush=True)
+                                    except Exception as drive_err:
+                                        print(f"[wally] Drive upload failed for {ticker}: {drive_err}", flush=True)
+                            except Exception as fallback_err:
+                                print(f"[wally] Fallback workbook build failed for {ticker}: {fallback_err}", flush=True)
                     except Exception as xlsx_err:
                         print(f"[wally] xlsx build failed for {ticker}: {xlsx_err}", flush=True)
         except Exception as e:

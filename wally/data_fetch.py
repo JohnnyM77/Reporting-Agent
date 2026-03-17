@@ -9,6 +9,24 @@ import yfinance as yf
 
 
 @dataclass
+class ValuationSnapshot:
+    """Current valuation metrics for a ticker fetched via yfinance.
+
+    All fields may be None when the data is unavailable.
+    Ratios (trailing_pe, forward_pe, ev_to_ebitda, price_to_sales) are plain
+    multiples (e.g. 25.0 means 25×). fcf_yield and dividend_yield are
+    expressed as decimals (e.g. 0.04 means 4%).
+    """
+
+    trailing_pe: Optional[float]
+    forward_pe: Optional[float]
+    ev_to_ebitda: Optional[float]
+    price_to_sales: Optional[float]
+    fcf_yield: Optional[float]
+    dividend_yield: Optional[float]
+
+
+@dataclass
 class PriceSnapshot:
     ticker: str
     company_name: str
@@ -86,3 +104,37 @@ def fetch_price_history_10y_daily(ticker: str, csv_path: Path) -> Path:
     csv_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(csv_path)
     return csv_path
+
+
+def fetch_valuation_snapshot(ticker: str) -> ValuationSnapshot:
+    """Fetch current valuation metrics for a ticker via yfinance.
+
+    Works for any exchange (ASX, NYSE, NASDAQ, TSE, etc.).
+    Returns a ValuationSnapshot with None values for any unavailable metric.
+    """
+    tk = yf.Ticker(ticker)
+    try:
+        info = tk.info or {}
+    except Exception:
+        info = {}
+
+    market_cap = info.get("marketCap")
+    fcf = info.get("freeCashflow")
+    fcf_yield = (
+        fcf / market_cap
+        if (
+            isinstance(fcf, (int, float))
+            and isinstance(market_cap, (int, float))
+            and market_cap
+        )
+        else None
+    )
+
+    return ValuationSnapshot(
+        trailing_pe=info.get("trailingPE"),
+        forward_pe=info.get("forwardPE"),
+        ev_to_ebitda=info.get("enterpriseToEbitda"),
+        price_to_sales=info.get("priceToSalesTrailing12Months"),
+        fcf_yield=fcf_yield,
+        dividend_yield=info.get("dividendYield"),
+    )

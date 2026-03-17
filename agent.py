@@ -91,7 +91,6 @@ MODEL_DEFAULT = "claude-haiku-4-5-20251001"
 # Hard time caps (keep runs reasonable)
 REQUESTS_PDF_TIMEOUT_SECS = 20
 HTML_TIMEOUT_SECS = 30
-FUN_CONTENT_TIMEOUT_SECS = 10
 
 # Sentinel strings returned by deep-analysis helpers when the LLM fails or
 # cannot run.  Used to detect analysis failure and mark the announcement FAILED.
@@ -109,19 +108,9 @@ _TEXT_UNAVAIL = (
 COLOR_HIGH_IMPACT = "#F59E0B"  # amber/gold
 COLOR_MATERIAL = "#3B82F6"     # blue
 COLOR_FYI = "#10B981"          # green
-COLOR_SILENCE = "#6B7280"      # grey
 COLOR_BG = "#0B1220"           # dark navy
 COLOR_PANEL = "#111B2E"        # panel
 COLOR_TEXT = "#E5E7EB"         # light text
-
-JOKE_API_URL = os.environ.get(
-    "JOKE_API_URL",
-    "https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,racist,sexist,explicit&type=single",
-).strip()
-CARTOON_PAGE_URL = os.environ.get(
-    "CARTOON_PAGE_URL",
-    "https://www.cagle.com/category/political-cartoon/",
-).strip()
 
 
 # ----------------------------
@@ -305,66 +294,6 @@ def mark_state(
         "last_attempt": now_sgt().isoformat(timespec="seconds"),
         "error": error,
     }
-
-
-    try:
-        resp = session.get(
-            JOKE_API_URL,
-            timeout=FUN_CONTENT_TIMEOUT_SECS,
-            headers={"Accept": "application/json"},
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        if isinstance(data, dict):
-            if data.get("type") == "single" and isinstance(data.get("joke"), str):
-                joke = data["joke"].strip()
-                if joke:
-                    return joke
-            if data.get("type") == "twopart":
-                setup = str(data.get("setup", "")).strip()
-                delivery = str(data.get("delivery", "")).strip()
-                joined = " — ".join([p for p in [setup, delivery] if p])
-                if joined:
-                    return joined
-    except Exception as e:
-        log(f"Joke fetch failed: {e}")
-
-    return "Why did the investor bring a ladder? To reach higher returns."
-
-
-def fetch_cartoon_of_the_day(session: requests.Session) -> Tuple[str, str]:
-    fallback_title = "Political cartoon pick"
-    fallback_url = CARTOON_PAGE_URL
-
-    try:
-        resp = session.get(CARTOON_PAGE_URL, timeout=FUN_CONTENT_TIMEOUT_SECS)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
-
-        for a in soup.select("a[href]"):
-            href = (a.get("href") or "").strip()
-            if not href:
-                continue
-            lowered = href.lower()
-            if "cagle.com" in lowered and "/cartoon/" in lowered:
-                title = " ".join(a.get_text(" ", strip=True).split()) or fallback_title
-                return title, href
-
-    except Exception as e:
-        log(f"Cartoon fetch failed: {e}")
-
-    return fallback_title, fallback_url
-
-
-def build_silence_line(session: requests.Session) -> str:
-    base = f"No announcements found in the last {HOURS_BACK} hours."
-    joke = fetch_joke_of_the_day(session)
-    cartoon_title, cartoon_url = fetch_cartoon_of_the_day(session)
-    return (
-        f"{base}\n"
-        f"Joke of the day: {joke}\n"
-        f"Cartoon of the day: {cartoon_title} — {cartoon_url}"
-    )
 
 
 # ----------------------------
@@ -984,8 +913,8 @@ def build_email(
     high_impact: List[str],
     material: List[str],
     fyi: List[str],
-    silence_line: str,
 ) -> Tuple[str, str]:
+    no_announcements_msg = f"No reportable announcements found in the last {HOURS_BACK} hours."
     # Plain text
     lines: List[str] = []
     lines.append(f"{BOB_NAME} {VERSION_LABEL}")
@@ -1013,7 +942,7 @@ def build_email(
         lines.append("")
 
     if not high_impact and not material and not fyi:
-        lines.append(silence_line)
+        lines.append(no_announcements_msg)
 
     body_text = "\n".join(lines)
 
@@ -1037,11 +966,8 @@ def build_email(
     if not high_impact and not material and not fyi:
         sections_html += f"""
         <div style="margin:18px 0;">
-          <div style="padding:10px 12px; background:{COLOR_SILENCE}; color:#0B1220; font-weight:800; border-radius:10px; letter-spacing:0.6px;">
-            SILENCE
-          </div>
           <div style="margin-top:10px; padding:12px; background:{COLOR_PANEL}; border-radius:10px; color:{COLOR_TEXT};">
-            {htmlmod.escape(silence_line)}
+            {htmlmod.escape(no_announcements_msg)}
           </div>
         </div>
         """
@@ -1366,8 +1292,11 @@ def main():
     # ----------------------------
     # Build email (clean + colour-coded HTML)
     # ----------------------------
-    silence_line = build_silence_line(session)
-    body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks, silence_line)
+    reportable_count = len(high_impact_blocks) + len(material_blocks) + len(fyi_blocks)
+    log(f"[bob] reportable_announcements={reportable_count}")
+    if reportable_count == 0:
+        log("[bob] emitting plain no-announcements message")
+    body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks)
 
     send_email(subject, body_text, body_html)
 

@@ -1,56 +1,56 @@
 {
-  "last_run": "2026-03-17T02:34:15.445282+00:00",
+  "last_run": "2026-03-17T09:16:46.416394+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-03-17T02:34:01.395407+00:00",
+      "run_timestamp": "2026-03-17T09:16:29.887787+00:00",
       "total": 3,
       "flagged_count": 1,
       "flagged": [
         {
           "ticker": "CSL.AX",
           "company_name": "CSL Limited",
-          "current_price": 139.72999572753906,
-          "low_52w": 139.72999572753906,
+          "current_price": 141.14999389648438,
+          "low_52w": 140.66000366210938,
           "high_52w": 272.0,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 48.628678041345935
+          "distance_to_low_pct": 0.3483507902872267,
+          "below_high_pct": 48.106619890998395
         }
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-03-17T02:34:06.555288+00:00",
+      "run_timestamp": "2026-03-17T09:16:35.982431+00:00",
       "total": 3,
       "flagged_count": 1,
       "flagged": [
         {
           "ticker": "ARB.AX",
           "company_name": "ARB Corporation Limited",
-          "current_price": 21.649999618530273,
+          "current_price": 21.860000610351562,
           "low_52w": 21.360000610351562,
           "high_52w": 40.81999969482422,
-          "distance_to_low_pct": 1.3576732204687791,
-          "below_high_pct": 46.962273933394
+          "distance_to_low_pct": 2.340823903149554,
+          "below_high_pct": 46.4478178006373
         }
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-03-17T02:34:11.131440+00:00",
+      "run_timestamp": "2026-03-17T09:16:41.213595+00:00",
       "total": 3,
       "flagged_count": 1,
       "flagged": [
         {
           "ticker": "SEK.AX",
           "company_name": "SEEK Limited",
-          "current_price": 14.479999542236328,
-          "low_52w": 14.479999542236328,
+          "current_price": 14.600000381469727,
+          "low_52w": 14.600000381469727,
           "high_52w": 29.18000030517578,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 50.37697261549394
+          "below_high_pct": 49.9657291680012
         }
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-03-17T02:34:15.445282+00:00",
+      "run_timestamp": "2026-03-17T09:16:46.416394+00:00",
       "total": 30,
       "flagged_count": 6,
       "flagged": [

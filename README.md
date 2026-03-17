@@ -340,6 +340,27 @@ OPENAI_API_KEY
 GDRIVE_SERVICE_ACCOUNT_JSON
 GDRIVE_FOLDER_ID
 BROTHER_EMAIL
+Forcing a Re-run for a Specific Ticker
+
+Bob tracks every announcement it has already processed in `state_seen.json`.
+Seen entries expire after 72 hours, but within that window any announcement that was processed in a previous run is skipped — even if you trigger Bob manually on the same day.
+
+To re-process announcements for one or more tickers without clearing the entire state file:
+
+1. Go to the **Actions** tab in GitHub.
+2. Select the **Daily Announcement Digest** workflow.
+3. Click **Run workflow**.
+4. Enter the ticker(s) in the **"Comma-separated ASX tickers to force re-run"** field (e.g. `NHC` or `NHC,BHP`).
+5. Click **Run workflow**.
+
+Bob will bypass the dedup check only for those tickers and re-process any of their announcements that fall within the current `HOURS_BACK` window — all other tickers remain deduplicated as normal.
+
+This can also be triggered by setting the `FORCE_RERUN_TICKERS` environment variable when running locally:
+
+```bash
+FORCE_RERUN_TICKERS=NHC python agent.py
+```
+
 Safety Limits
 
 To prevent runaway API usage:

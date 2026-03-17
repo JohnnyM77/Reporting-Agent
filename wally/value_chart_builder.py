@@ -643,8 +643,9 @@ def _build_earnings(wb: Workbook, cfg: dict) -> None:
 
     # If no earnings data, show a visible DATA REQUIRED warning and exit early
     if not earnings:
+        from openpyxl.utils import get_column_letter
         ncols = len(headers)
-        end_col = chr(64 + ncols) if ncols <= 26 else "Z"
+        end_col = get_column_letter(ncols)
         ws2.merge_cells(f"A3:{end_col}4")
         ws2["A3"] = (
             "⚠ DATA REQUIRED — Add earnings history to "

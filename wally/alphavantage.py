@@ -127,6 +127,80 @@ class EarningsData:
         return sum(eps_vals)
 
 
+def build_workbook_earnings_history(
+    earnings_data: EarningsData,
+    div_series: Optional[pd.Series] = None,
+    eps_scale: float = 100.0,
+) -> list[dict]:
+    """Convert Alpha Vantage earnings + dividend data into workbook earnings history format.
+
+    Args:
+        earnings_data: EarningsData from fetch_earnings().
+        div_series:    yfinance dividends Series (dollar/share per payment, DatetimeIndex).
+                       Pass None if no dividend data is available.
+        eps_scale:     Multiply reported EPS (in native currency dollars) by this factor
+                       to get the "cents" unit used by the workbook (default 100 for USD/AUD).
+
+    Returns:
+        List of dicts {date, period, ttm_eps, ttm_div, notes}, sorted oldest-first.
+        Only includes entries where a full 4-quarter TTM window is available.
+    """
+    quarters = [q for q in earnings_data.quarterly if q.reported_eps is not None]
+    if len(quarters) < 4:
+        return []
+
+    # Normalise dividend series index to tz-naive timestamps for comparison.
+    div_ts: Optional[pd.Series] = None
+    if div_series is not None and not div_series.empty:
+        idx = div_series.index
+        if hasattr(idx, "tz") and idx.tz is not None:
+            idx = idx.tz_localize(None)
+        div_ts = pd.Series(div_series.values, index=pd.DatetimeIndex(idx))
+
+    result = []
+    for i in range(len(quarters) - 3):
+        window = quarters[i : i + 4]
+        eps_vals = [q.reported_eps for q in window if q.reported_eps is not None]
+        if len(eps_vals) < 4:
+            continue
+        ttm_eps_dollars = sum(eps_vals)
+
+        q = quarters[i]  # most-recent quarter in this window (list is most-recent-first, so index i is newest)
+
+        # Use reported_date when valid, otherwise fall back to fiscal_date.
+        date_str = (
+            q.reported_date
+            if (q.reported_date and q.reported_date.strip())
+            else q.fiscal_date
+        )
+        report_ts = pd.Timestamp(date_str)
+
+        # TTM dividends: sum all payments in the 12 months ending at report_ts.
+        ttm_div_dollars = 0.0
+        if div_ts is not None:
+            start = report_ts - pd.DateOffset(years=1)
+            mask = (div_ts.index >= start) & (div_ts.index <= report_ts)
+            ttm_div_dollars = float(div_ts[mask].sum())
+
+        # Period label from fiscal quarter.
+        fiscal_dt = pd.Timestamp(q.fiscal_date)
+        quarter_num = (fiscal_dt.month - 1) // 3 + 1
+        period = f"Q{quarter_num} FY{fiscal_dt.year}"
+
+        result.append(
+            {
+                "date": date_str,
+                "period": period,
+                "ttm_eps": round(ttm_eps_dollars * eps_scale, 1),
+                "ttm_div": round(ttm_div_dollars * eps_scale, 1),
+                "notes": "alphavantage",
+            }
+        )
+
+    result.sort(key=lambda e: e["date"])
+    return result
+
+
 def fetch_earnings(ticker: str, api_key: str) -> EarningsData:
     """Fetch annual and quarterly earnings for *ticker* from Alpha Vantage.
 

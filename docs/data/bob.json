@@ -9,41 +9,8 @@
       "type": "results"
     }
   ],
-  "material": [
-    {
-      "ticker": "BHP",
-      "title": "Brandon Craig to succeed Mike Henry as BHP CEO 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 812.9KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073262",
-      "summary": "BHP: Brandon Craig to succeed Mike Henry as BHP CEO 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 812.9KB\nSo what: price-sensitive headline \u2014 open link for details."
-    },
-    {
-      "ticker": "WDS",
-      "title": "Liz Westcott appointed Woodside CEO 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 154.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073345",
-      "summary": "WDS: Liz Westcott appointed Woodside CEO 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 154.2KB\nSo what: price-sensitive headline \u2014 open link for details."
-    }
-  ],
+  "material": [],
   "fyi": [
-    {
-      "ticker": "ABB",
-      "title": "Becoming a substantial holder 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 437.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073292"
-    },
-    {
-      "ticker": "BHP",
-      "title": "Brandon Craig to succeed Mike Henry as BHP CEO 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 812.9KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073262"
-    },
-    {
-      "ticker": "CSL",
-      "title": "Update - Notification of buy-back - CSL 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073306"
-    },
-    {
-      "ticker": "IAG",
-      "title": "Update - Notification of buy-back - IAG 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073378"
-    },
     {
       "ticker": "NHC",
       "title": "Half Year Results Presentation 19\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.8MB",
@@ -56,23 +23,8 @@
     },
     {
       "ticker": "NHC",
-      "title": "Dividend/Distribution - NHC 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072848"
-    },
-    {
-      "ticker": "NHC",
       "title": "Appendix 4D and Half Year Financial Report 40\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.4MB",
       "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072843"
-    },
-    {
-      "ticker": "WDS",
-      "title": "Appendix 3X 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 284.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073347"
-    },
-    {
-      "ticker": "WDS",
-      "title": "Liz Westcott appointed Woodside CEO 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 154.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073345"
     }
   ]
 }

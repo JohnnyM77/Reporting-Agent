@@ -39,6 +39,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from agent import (  # noqa: E402  (import after stub setup)
     looks_like_asx_access_gate,
     is_meaningful_text,
+    looks_like_results_title,
     announcement_key,
     now_sgt,
 )
@@ -197,4 +198,39 @@ def test_force_rerun_tickers_empty_string():
             if t.strip()
         )
     assert result == frozenset()
+
+
+# ---------------------------------------------------------------------------
+# 3. looks_like_results_title — NHC half-year announcement title patterns
+# ---------------------------------------------------------------------------
+
+def test_results_title_hyphenated_half_year_report():
+    """'Half-Year Report' (hyphen, no 'results') must be recognised."""
+    assert looks_like_results_title("Appendix 4D and Half-Year Report") is True
+    assert looks_like_results_title("Half-Year Report") is True
+
+
+def test_results_title_1h_fy_format():
+    """'1H FY...' titles (number-then-H, common in Australian reporting) must match."""
+    assert looks_like_results_title("1H FY2026 Results") is True
+    assert looks_like_results_title("NHC 1H FY2026 Results") is True
+    assert looks_like_results_title("1H FY2026 Results Presentation") is True
+
+
+def test_results_title_1hfy_no_space():
+    """Compact '1HFY26' notation (no space between 1H and FY) must match."""
+    assert looks_like_results_title("1HFY26 Results") is True
+
+
+def test_results_title_half_year_financial_results():
+    """'Half-Year Financial Results' (hyphen + 'results' not preceded by more keywords) must match."""
+    assert looks_like_results_title("Half-Year Financial Results") is True
+
+
+def test_results_title_false_positives_unchanged():
+    """Titles that should NOT trigger deep analysis are still rejected."""
+    assert looks_like_results_title("Investor Call Transcript") is False
+    assert looks_like_results_title("Webcast of Half-Year Results") is False
+    assert looks_like_results_title("Conference Call Transcript") is False
+    assert looks_like_results_title("Random Corporate Update") is False
 

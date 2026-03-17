@@ -12,6 +12,7 @@
 
 import os
 import re
+import sys
 import json
 import ssl
 import hashlib
@@ -59,6 +60,27 @@ FORCE_RERUN_TICKERS: frozenset = frozenset(
     if t.strip()
 )
 
+# Force-reprocess ALL announcements (regardless of seen state).
+# Set via FORCE env var or --force CLI flag.
+FORCE: bool = os.environ.get("FORCE", "").strip().lower() in ("1", "true", "yes")
+
+# ----------------------------
+# Announcement status machine
+# ----------------------------
+STATUS_NEW = "NEW"
+STATUS_PROCESSING = "PROCESSING"
+STATUS_COMPLETED = "COMPLETED"
+STATUS_FAILED = "FAILED"
+
+MAX_RETRIES = 3
+
+# Keywords that make an announcement high-priority (always reprocess if not COMPLETED,
+# and reprocess even if COMPLETED when --force / FORCE_RERUN_TICKERS applies).
+HIGH_PRIORITY_KEYWORDS: List[str] = [
+    "half year", "h1", "interim", "appendix 4d", "appendix 4e",
+    "results", "earnings", "guidance",
+]
+
 MAX_ANNOUNCEMENTS_PER_TICKER = 12
 MAX_PDFS_PER_RUN = 10
 MAX_LLM_CALLS_PER_RUN = 15
@@ -70,6 +92,18 @@ MODEL_DEFAULT = "claude-haiku-4-5-20251001"
 REQUESTS_PDF_TIMEOUT_SECS = 20
 HTML_TIMEOUT_SECS = 30
 FUN_CONTENT_TIMEOUT_SECS = 10
+
+# Sentinel strings returned by deep-analysis helpers when the LLM fails or
+# cannot run.  Used to detect analysis failure and mark the announcement FAILED.
+_LLM_FAIL_MSGS: frozenset = frozenset([
+    "LLM could not run (limit/billing).",
+    "__LLM_FAILED__",
+    "__LLM_SKIPPED__",
+])
+_TEXT_UNAVAIL = (
+    "Could not extract meaningful announcement text automatically. "
+    "Open the link and review manually."
+)
 
 # Email styling colours (match your diagram intent)
 COLOR_HIGH_IMPACT = "#F59E0B"  # amber/gold
@@ -117,7 +151,13 @@ def announcement_key(ticker: str, url: str) -> str:
     return hashlib.sha1(raw).hexdigest()
 
 
-def load_seen_state(path: Path) -> Dict[str, str]:
+def load_seen_state(path: Path) -> Dict[str, Dict]:
+    """Load announcement state from disk.
+
+    Supports both the legacy format ``{key: iso_timestamp_str}`` and the
+    current format ``{key: {status, ticker, headline, retry_count, …}}``.
+    Legacy entries are promoted to status=COMPLETED.
+    """
     if not path.exists():
         return {}
 
@@ -127,39 +167,146 @@ def load_seen_state(path: Path) -> Dict[str, str]:
         log(f"Could not read seen state file: {e}")
         return {}
 
+    now_iso = now_sgt().isoformat(timespec="seconds")
+
     if isinstance(data, list):
-        # backward-compatible shape (list of keys)
-        now_iso = now_sgt().isoformat(timespec="seconds")
-        return {k: now_iso for k in data if isinstance(k, str)}
+        # Very old format: plain list of key strings
+        return {
+            k: {
+                "announcement_id": k, "ticker": "", "headline": "",
+                "status": STATUS_COMPLETED, "retry_count": 0,
+                "last_attempt": now_iso, "error": "",
+            }
+            for k in data if isinstance(k, str)
+        }
 
     if not isinstance(data, dict):
         return {}
 
-    state: Dict[str, str] = {}
-    for key, seen_iso in data.items():
-        if isinstance(key, str) and isinstance(seen_iso, str):
-            state[key] = seen_iso
+    state: Dict[str, Dict] = {}
+    for key, value in data.items():
+        if not isinstance(key, str):
+            continue
+        if isinstance(value, str):
+            # Legacy format: {key: iso_timestamp}
+            state[key] = {
+                "announcement_id": key, "ticker": "", "headline": "",
+                "status": STATUS_COMPLETED, "retry_count": 0,
+                "last_attempt": value, "error": "",
+            }
+        elif isinstance(value, dict):
+            state[key] = value
     return state
 
 
-def prune_seen_state(state: Dict[str, str], retention_hours: int) -> Dict[str, str]:
+def prune_seen_state(state: Dict[str, Dict], retention_hours: int) -> Dict[str, Dict]:
+    """Remove entries whose last_attempt is older than retention_hours."""
     cutoff = now_sgt() - dt.timedelta(hours=retention_hours)
-    out: Dict[str, str] = {}
-    for key, seen_iso in state.items():
+    out: Dict[str, Dict] = {}
+    for key, entry in state.items():
+        last_attempt = entry.get("last_attempt", "")
         try:
-            seen_dt = dt.datetime.fromisoformat(seen_iso)
+            entry_dt = dt.datetime.fromisoformat(last_attempt)
         except Exception:
             continue
-        if seen_dt >= cutoff:
-            out[key] = seen_iso
+        if entry_dt >= cutoff:
+            out[key] = entry
     return out
 
 
-def save_seen_state(path: Path, state: Dict[str, str]) -> None:
+def save_seen_state(path: Path, state: Dict[str, Dict]) -> None:
     path.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
 
 
-def fetch_joke_of_the_day(session: requests.Session) -> str:
+# ----------------------------
+# State-machine helpers
+# ----------------------------
+def is_high_priority_title(title: str) -> bool:
+    """Return True if the headline matches any high-priority keyword."""
+    t = title.lower()
+    return any(kw in t for kw in HIGH_PRIORITY_KEYWORDS)
+
+
+def should_process_item(
+    key: str,
+    ticker: str,
+    title: str,
+    state: Dict[str, Dict],
+    force: bool,
+    force_tickers: frozenset,
+) -> Tuple[bool, str]:
+    """Return (should_process, reason) for an announcement.
+
+    Decision logic (in priority order):
+    1. --force / FORCE env var → always process
+    2. ticker in FORCE_RERUN_TICKERS → always process
+    3. High-priority title (results, earnings, guidance…) → process if not COMPLETED
+    4. COMPLETED → skip
+    5. FAILED within 24 h AND retry_count < MAX_RETRIES → retry
+    6. FAILED beyond 24 h or max retries → skip
+    7. PROCESSING (crashed mid-run) → retry
+    8. NEW / unknown → process
+    """
+    if force or ticker in force_tickers:
+        return True, "force reprocess"
+
+    high_pri = is_high_priority_title(title)
+
+    if key not in state:
+        return True, "new announcement"
+
+    entry = state[key]
+    status = entry.get("status", STATUS_COMPLETED)
+
+    if status == STATUS_COMPLETED:
+        if high_pri:
+            return True, "high-priority: reprocessing despite COMPLETED"
+        return False, "already COMPLETED"
+
+    if status == STATUS_FAILED:
+        retry_count = entry.get("retry_count", 0)
+        if retry_count >= MAX_RETRIES:
+            return False, f"FAILED {retry_count}x — max retries reached"
+        last_attempt = entry.get("last_attempt", "")
+        try:
+            last_dt = dt.datetime.fromisoformat(last_attempt)
+            if now_sgt() - last_dt > dt.timedelta(hours=HOURS_BACK):
+                return False, "FAILED but outside 24 h retry window"
+        except Exception:
+            pass
+        return True, f"status=FAILED → retrying (attempt {retry_count + 1}/{MAX_RETRIES})"
+
+    if status == STATUS_PROCESSING:
+        return True, "status=PROCESSING → treating as crashed, retrying"
+
+    # STATUS_NEW or unrecognised
+    return True, "new announcement"
+
+
+def mark_state(
+    state: Dict[str, Dict],
+    key: str,
+    ticker: str,
+    title: str,
+    status: str,
+    error: str = "",
+) -> None:
+    """Write or update the state entry for a given announcement."""
+    existing = state.get(key, {})
+    retry_count = existing.get("retry_count", 0)
+    if status == STATUS_FAILED:
+        retry_count += 1
+    state[key] = {
+        "announcement_id": key,
+        "ticker": ticker,
+        "headline": title[:200],
+        "status": status,
+        "retry_count": retry_count,
+        "last_attempt": now_sgt().isoformat(timespec="seconds"),
+        "error": error,
+    }
+
+
     try:
         resp = session.get(
             JOKE_API_URL,
@@ -908,6 +1055,9 @@ def build_email(
 # MAIN
 # ----------------------------
 def main():
+    # Allow --force CLI flag to force reprocess all announcements regardless of state.
+    _force = FORCE or "--force" in sys.argv
+
     subject = f"{BOB_NAME} {VERSION_LABEL} — Daily Announcements Digest — {today_sgt_date().isoformat()} (SGT)"
 
     session = http_session()
@@ -924,10 +1074,12 @@ def main():
 
     seen_state = prune_seen_state(load_seen_state(SEEN_STATE_PATH), SEEN_STATE_RETENTION_HOURS)
     seen_state_updated = dict(seen_state)
-    run_seen_count = 0
+    run_completed_count = 0
 
+    if _force:
+        log("[bob] --force active — reprocessing all announcements regardless of state")
     if FORCE_RERUN_TICKERS:
-        log(f"FORCE_RERUN_TICKERS active — bypassing 24 hr dedup for: {', '.join(sorted(FORCE_RERUN_TICKERS))}")
+        log(f"[bob] FORCE_RERUN_TICKERS active — bypassing state for: {', '.join(sorted(FORCE_RERUN_TICKERS))}")
 
     # Bucket outputs
     high_impact_blocks: List[str] = []
@@ -960,7 +1112,17 @@ def main():
             fresh_items: List[Dict] = []
             for it in items:
                 key = announcement_key(ticker, it["url"])
-                if key in seen_state and ticker not in FORCE_RERUN_TICKERS:
+                title = it["title"]
+                process, reason = should_process_item(
+                    key, ticker, title, seen_state, _force, FORCE_RERUN_TICKERS
+                )
+                cur_status = seen_state.get(key, {}).get("status", STATUS_NEW)
+                detected_type = classify_from_title_only(title)
+                log(
+                    f"[bob] {ticker} | '{title[:60]}' | type={detected_type} | "
+                    f"status={cur_status} | decision={'process' if process else 'skip'} | reason={reason}"
+                )
+                if not process:
                     continue
                 it["seen_key"] = key
                 fresh_items.append(it)
@@ -979,11 +1141,6 @@ def main():
                 if ticker == "AR9":
                     brother_blocks.append(fyi_entry)
 
-                key = it.get("seen_key")
-                if key:
-                    seen_state_updated[key] = now_sgt().isoformat(timespec="seconds")
-                    run_seen_count += 1
-
             # ----------------------------
             # RESULTS bundle (per ticker)
             # ----------------------------
@@ -991,6 +1148,15 @@ def main():
                 processed_results.add(ticker)
 
                 bundle = likely_results_bundle_items(items)
+                bundle_keys = {announcement_key(ticker, b["url"]) for b in bundle}
+                non_bundle_items = [i for i in items if announcement_key(ticker, i["url"]) not in bundle_keys]
+
+                # Non-bundle items for this results ticker: FYI-only → mark COMPLETED immediately
+                for it in non_bundle_items:
+                    _k = it.get("seen_key") or announcement_key(ticker, it["url"])
+                    mark_state(seen_state_updated, _k, ticker, it["title"], STATUS_COMPLETED)
+                    run_completed_count += 1
+
                 downloaded_texts: List[Tuple[str, str]] = []
                 drive_links: List[str] = []
                 any_results_link = bundle[0]["url"] if bundle else items[0]["url"]
@@ -1039,9 +1205,16 @@ def main():
                     _hi_items.append({"ticker": ticker, "title": "Results (HY/FY) — text unavailable", "url": any_results_link, "type": "results"})
                     if ticker == "AR9":
                         brother_blocks.append(block)
+                    # Text extraction failed: mark bundle items FAILED so they retry next run
+                    for b in bundle:
+                        _k = b.get("seen_key") or announcement_key(ticker, b["url"])
+                        log(f"[bob] {ticker} | '{b['title'][:60]}' | FAILED → text extraction failed, will retry")
+                        mark_state(seen_state_updated, _k, ticker, b["title"], STATUS_FAILED, "text extraction failed")
                     continue
 
+                log(f"[bob] {ticker} | processing earnings/results analysis")
                 analysis = deep_results_analysis(ticker, report_text, deck_text, counters)
+                analysis_ok = analysis not in _LLM_FAIL_MSGS
                 straw = strawman_post(ticker, "HY/FY Results", analysis, counters)
 
                 header = f"{ticker} — Results (HY/FY)"
@@ -1058,6 +1231,17 @@ def main():
                 if ticker == "AR9":
                     brother_blocks.append(block)
 
+                # Mark bundle items based on analysis outcome
+                for b in bundle:
+                    _k = b.get("seen_key") or announcement_key(ticker, b["url"])
+                    if analysis_ok:
+                        log(f"[bob] {ticker} | '{b['title'][:60]}' | SUCCESS → marked COMPLETED")
+                        mark_state(seen_state_updated, _k, ticker, b["title"], STATUS_COMPLETED)
+                        run_completed_count += 1
+                    else:
+                        log(f"[bob] {ticker} | '{b['title'][:60]}' | FAILED → LLM analysis failed, will retry")
+                        mark_state(seen_state_updated, _k, ticker, b["title"], STATUS_FAILED, "LLM analysis failed")
+
                 # Continue; results bundle handled as high impact
                 continue
 
@@ -1067,12 +1251,15 @@ def main():
             for it in items:
                 title = it["title"]
                 url = it["url"]
+                item_key = it.get("seen_key") or announcement_key(ticker, url)
 
                 is_price = is_price_sensitive_title(title)
                 cls_title = classify_from_title_only(title)
 
-                # Non-price-sensitive: FYI already captured; do nothing else
+                # Non-price-sensitive: FYI already captured; mark COMPLETED and move on
                 if not is_price:
+                    mark_state(seen_state_updated, item_key, ticker, title, STATUS_COMPLETED)
+                    run_completed_count += 1
                     continue
 
                 # High impact types (even if title-based)
@@ -1094,6 +1281,8 @@ def main():
                                 pdf_path.unlink()
                             except Exception:
                                 pass
+                        log(f"[bob] {ticker} | '{title[:60]}' | FAILED → ASX consent gate blocked PDF fetch")
+                        mark_state(seen_state_updated, item_key, ticker, title, STATUS_FAILED, "ASX consent gate")
                         continue
 
                     drive_links: List[str] = []
@@ -1123,6 +1312,8 @@ def main():
                         block = f"{ticker} — Capital/Debt Raise\n{memo}\nOpen: {url}\n"
                         _hi_items.append({"ticker": ticker, "title": title[:120], "url": url, "type": "capital"})
 
+                    memo_ok = memo not in _LLM_FAIL_MSGS and memo != _TEXT_UNAVAIL
+
                     if drive_links:
                         block += "Drive link(s):\n" + "\n".join(drive_links) + "\n"
                     block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
@@ -1130,6 +1321,14 @@ def main():
                     high_impact_blocks.append(block)
                     if ticker == "AR9":
                         brother_blocks.append(block)
+
+                    if memo_ok:
+                        log(f"[bob] {ticker} | '{title[:60]}' | SUCCESS → marked COMPLETED")
+                        mark_state(seen_state_updated, item_key, ticker, title, STATUS_COMPLETED)
+                        run_completed_count += 1
+                    else:
+                        log(f"[bob] {ticker} | '{title[:60]}' | FAILED → LLM memo failed, will retry")
+                        mark_state(seen_state_updated, item_key, ticker, title, STATUS_FAILED, "LLM memo failed")
                     continue
 
                 # Otherwise: MATERIAL (price-sensitive but not deep)
@@ -1159,6 +1358,10 @@ def main():
                 _mat_items.append({"ticker": ticker, "title": title[:160], "url": url, "summary": summary or ""})
                 if ticker == "AR9":
                     brother_blocks.append(block)
+
+                log(f"[bob] {ticker} | '{title[:60]}' | SUCCESS → marked COMPLETED (material)")
+                mark_state(seen_state_updated, item_key, ticker, title, STATUS_COMPLETED)
+                run_completed_count += 1
 
     # ----------------------------
     # Build email (clean + colour-coded HTML)
@@ -1198,7 +1401,7 @@ def main():
         log(f"Dashboard write failed: {_e}")
 
     save_seen_state(SEEN_STATE_PATH, prune_seen_state(seen_state_updated, SEEN_STATE_RETENTION_HOURS))
-    log(f"Seen-state updated with {run_seen_count} new announcement(s).")
+    log(f"State updated: {run_completed_count} announcement(s) marked COMPLETED this run.")
     log("Email sent.")
 
 

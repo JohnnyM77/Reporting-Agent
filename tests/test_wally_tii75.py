@@ -263,3 +263,114 @@ class TestValuationWorkbook:
             "Decision Framework",
         ]:
             assert expected in wb.sheetnames, f"Missing sheet: {expected}"
+
+
+# ---------------------------------------------------------------------------
+# Integration: fallback workbook path registers range PNG as inline image
+# ---------------------------------------------------------------------------
+
+class TestFallbackInlineImage:
+    """Verify that _process_watchlist registers the range-chart PNG as an
+    inline email image when the fallback valuation workbook is used.
+
+    This ensures TII75 companies (which have no valuations YAML config) show
+    a visual chart in the email body, matching the experience for Aussie Tech
+    companies that DO have a config (whose value-chart PNG is registered inline).
+    """
+
+    def test_range_png_registered_as_inline_image_for_fallback_ticker(self, tmp_path):
+        """When a ticker has no valuations config, the fallback workbook is built
+        AND the 52-week range chart PNG is added to inline_images so the email
+        body shows a chart rather than plain text."""
+        import os
+        from pathlib import Path
+        from unittest.mock import MagicMock, patch
+
+        from wally.data_fetch import PriceSnapshot, ValuationSnapshot
+
+        # ── Mock price and valuation data ───────────────────────────────────
+        fake_snap = PriceSnapshot(
+            ticker="CPRT",
+            company_name="Copart Inc.",
+            current_price=33.88,
+            low_52w=33.88,
+            high_52w=63.84,
+        )
+        fake_val_snap = ValuationSnapshot(
+            trailing_pe=25.0,
+            forward_pe=22.0,
+            ev_to_ebitda=18.0,
+            price_to_sales=4.5,
+            fcf_yield=0.04,
+            dividend_yield=None,
+        )
+
+        # Create a real (but tiny) PNG so path.read_bytes() in send_email succeeds
+        range_png_path = tmp_path / "cprt_range.png"
+        range_png_path.write_bytes(b"\x89PNG\r\n\x1a\n")  # minimal PNG header
+
+        # Build a minimal watchlist YAML (written before patching Path methods)
+        wl_yaml = tmp_path / "test_watchlist.yaml"
+        wl_yaml.write_text(
+            "name: Test TII75\ntickers:\n  - ticker: CPRT\n    name: Copart Inc.\n"
+        )
+
+        with (
+            patch("wally.main.fetch_price_snapshot", return_value=fake_snap),
+            patch("wally.main.fetch_valuation_snapshot", return_value=fake_val_snap),
+            patch("wally.main.render_range_chart", return_value=range_png_path),
+            patch("wally.main.render_value_vs_price_chart", return_value=(None, "No valuation config found yet for this ticker")),
+            patch("wally.main._build_xlsx", side_effect=FileNotFoundError("no config")),
+            patch("wally.main._build_valuation_workbook") as mock_build_wb,
+            patch("wally.main._analyse_opportunity", return_value=None),
+            patch("wally.main.send_email", return_value=True),
+            patch("wally.main.load_email_settings"),
+            patch("wally.main.build_run_context") as mock_ctx,
+            patch("wally.main.write_json"),
+            patch("wally.main._XLSX_BUILDER_AVAILABLE", True),
+            patch("wally.main._VALUATION_WORKBOOK_AVAILABLE", True),
+        ):
+            # Use a write_text that does nothing for the dashboard JSON
+            with patch("wally.main.Path") as mock_path_cls:
+                # Make Path("docs/data/wally.json") a no-op but keep real tmp_path
+                mock_dash = MagicMock()
+                mock_dash.exists.return_value = False
+                mock_dash.parent.mkdir.return_value = None
+                mock_path_cls.side_effect = lambda *a, **kw: (
+                    mock_dash if "docs/data" in str(a[0]) else Path(*a, **kw)
+                )
+
+                # Configure run context to use tmp_path as output root
+                run_ctx = MagicMock()
+                run_ctx.output_root = tmp_path
+                run_ctx.run_dt.strftime.return_value = "260317"
+                mock_ctx.return_value = run_ctx
+
+                # No Drive upload during test
+                os.environ.pop("GDRIVE_FOLDER_ID", None)
+
+                from wally.main import _process_watchlist
+
+                result = _process_watchlist(
+                    str(wl_yaml),
+                    force=True,
+                    send_individual_email=False,
+                    is_tii75=False,
+                )
+
+        # The range PNG must be in inline_images with the correct CID so the
+        # email body renders a chart image instead of plain text.
+        cid_expected = "chart_cprt"
+        inline_cids = [cid for cid, _ in result.inline_images]
+        assert cid_expected in inline_cids, (
+            f"Expected '{cid_expected}' in inline_images {inline_cids}. "
+            "The range-chart PNG must be registered inline so TII75 emails "
+            "show a visual chart (not just text)."
+        )
+
+        # The xlsx must also be in attachments
+        xlsx_paths = [p for p in result.attachments if Path(p).suffix == ".xlsx"]
+        assert xlsx_paths, "Expected fallback xlsx to be in attachments"
+
+        # build_valuation_workbook must have been called once
+        mock_build_wb.assert_called_once()

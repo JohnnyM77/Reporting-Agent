@@ -189,6 +189,12 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                                     else "Valuation workbook attached"
                                 )
                                 chart_notes[ticker] = note
+                                # Register the 52-week range chart as inline email image so
+                                # the email body shows a visual chart (same experience as
+                                # tickers with a valuations config whose value-chart PNG is
+                                # registered inline above).
+                                cid = f"chart_{ticker.lower().replace('.', '_')}"
+                                inline_images.append((cid, range_png))
                                 # Upload to Drive
                                 drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
                                 if drive_folder_id:

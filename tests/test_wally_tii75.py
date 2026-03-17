@@ -806,3 +806,469 @@ class TestMainLogsErrorBeforeFallback:
         assert "fallback_review" in captured.out, (
             "Expected '_fallback_review' in the fallback filename log"
         )
+
+
+# ---------------------------------------------------------------------------
+# Live fundamentals fetch — earnings and dividend wiring
+# ---------------------------------------------------------------------------
+
+class TestLiveFundamentalsFetch:
+    """Tests confirming live fundamentals are wired into workbook generation."""
+
+    def _make_av_earnings_data(self, n_quarters: int = 8):
+        """Return a fake EarningsData with *n_quarters* quarters of data."""
+        from wally.alphavantage import AnnualEarning, EarningsData, QuarterlyEarning
+
+        quarters = []
+        for i in range(n_quarters):
+            # Quarters are most-recent-first; fiscal dates step back 3 months each
+            year = 2024 - i // 4
+            month = 12 - (i % 4) * 3
+            if month <= 0:
+                month += 12
+                year -= 1
+            fiscal = f"{year}-{month:02d}-{28 if month != 2 else 28:02d}"
+            reported = f"{year}-{month:02d}-25"
+            quarters.append(
+                QuarterlyEarning(
+                    fiscal_date=fiscal,
+                    reported_date=reported,
+                    reported_eps=3.50 + i * 0.10,  # EPS in dollars
+                    estimated_eps=3.40 + i * 0.10,
+                    surprise=0.10,
+                    surprise_pct=2.9,
+                )
+            )
+        annual = [AnnualEarning(fiscal_date="2024-12-31", reported_eps=14.0)]
+        return EarningsData(ticker="POOL", annual=annual, quarterly=quarters)
+
+    def _make_div_series(self):
+        """Return a fake yfinance dividends Series (4 × $1.10 = $4.40 TTM)."""
+        import pandas as pd
+
+        dates = pd.to_datetime(
+            ["2024-09-15", "2024-06-15", "2024-03-15", "2023-12-15"]
+        )
+        return pd.Series([1.10, 1.10, 1.10, 1.10], index=dates)
+
+    # ── build_workbook_earnings_history ──────────────────────────────────────
+
+    def test_build_workbook_earnings_history_basic(self):
+        """build_workbook_earnings_history converts AV earnings into workbook format."""
+        from wally.alphavantage import build_workbook_earnings_history
+
+        av_data = self._make_av_earnings_data(8)
+        history = build_workbook_earnings_history(av_data)
+
+        assert len(history) == 5, f"Expected 5 entries (8-3), got {len(history)}"
+        first = history[0]
+        assert "date" in first
+        assert "period" in first
+        assert "ttm_eps" in first
+        assert "ttm_div" in first
+        assert first["ttm_eps"] > 0, "TTM EPS should be positive"
+        assert first["notes"] == "alphavantage"
+
+    def test_build_workbook_earnings_history_sorted_oldest_first(self):
+        """build_workbook_earnings_history returns entries oldest-first."""
+        from wally.alphavantage import build_workbook_earnings_history
+
+        av_data = self._make_av_earnings_data(8)
+        history = build_workbook_earnings_history(av_data)
+
+        dates = [e["date"] for e in history]
+        assert dates == sorted(dates), "History must be sorted oldest-first"
+
+    def test_build_workbook_earnings_history_with_dividends(self):
+        """build_workbook_earnings_history computes TTM dividends from div series."""
+        from wally.alphavantage import build_workbook_earnings_history
+
+        av_data = self._make_av_earnings_data(8)
+        div_series = self._make_div_series()
+        history = build_workbook_earnings_history(av_data, div_series)
+
+        # The most recent entry should have non-zero TTM div
+        # (4 payments × $1.10 = $4.40 = 440 cents)
+        last = history[-1]
+        assert last["ttm_div"] > 0, "TTM Div should be populated from dividend series"
+
+    def test_build_workbook_earnings_history_no_div_gives_zero_div(self):
+        """Without dividend data, TTM Div should be 0 (not None)."""
+        from wally.alphavantage import build_workbook_earnings_history
+
+        av_data = self._make_av_earnings_data(8)
+        history = build_workbook_earnings_history(av_data, div_series=None)
+
+        for entry in history:
+            assert entry["ttm_div"] == 0.0, (
+                f"Expected 0 TTM Div when no dividends passed, got {entry['ttm_div']}"
+            )
+
+    def test_build_workbook_earnings_history_insufficient_quarters(self):
+        """Returns empty list when fewer than 4 quarters of data are available."""
+        from wally.alphavantage import build_workbook_earnings_history
+
+        av_data = self._make_av_earnings_data(3)
+        history = build_workbook_earnings_history(av_data)
+
+        assert history == [], "Should return [] when < 4 quarters available"
+
+    def test_build_workbook_earnings_history_ttm_eps_in_cents(self):
+        """TTM EPS is returned in cents (eps_scale=100), not dollars."""
+        from wally.alphavantage import build_workbook_earnings_history
+
+        av_data = self._make_av_earnings_data(4)
+        # 4 quarters of $3.50 EPS each → TTM = $14.00 → 1400 cents
+        history = build_workbook_earnings_history(av_data, eps_scale=100.0)
+
+        assert len(history) == 1
+        # TTM EPS should be around 1400 cents (4 × ~3.5 dollars × 100)
+        assert history[0]["ttm_eps"] > 100, (
+            f"TTM EPS should be in cents (>100), got {history[0]['ttm_eps']}"
+        )
+
+    # ── _fetch_live_fundamentals ─────────────────────────────────────────────
+
+    def test_fetch_live_fundamentals_calls_av_when_key_set(self, capsys):
+        """_fetch_live_fundamentals calls Alpha Vantage when ALPHAVANTAGE_API_KEY is set."""
+        from unittest.mock import MagicMock, patch
+
+        av_data = self._make_av_earnings_data(8)
+        fake_divs = self._make_div_series()
+
+        with (
+            patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
+            patch("wally.alphavantage.fetch_earnings", return_value=av_data) as mock_av,
+            patch("yfinance.Ticker") as mock_yf,
+        ):
+            mock_yf.return_value.dividends = fake_divs
+
+            from wally.value_chart_builder import _fetch_live_fundamentals
+
+            history, earnings_src, div_src, warning = _fetch_live_fundamentals(
+                "POOL", {"ticker": "POOL"}
+            )
+
+        mock_av.assert_called_once_with("POOL", "test-key")
+        assert earnings_src == "alphavantage"
+        assert len(history) > 0, "Should return earnings history when AV succeeds"
+        assert warning == "", "No warning expected on successful fetch"
+
+    def test_fetch_live_fundamentals_price_only_when_no_key(self, capsys):
+        """_fetch_live_fundamentals returns PRICE_ONLY when no AV key is set."""
+        from unittest.mock import patch
+
+        import pandas as pd
+
+        fake_divs = self._make_div_series()
+
+        with (
+            patch.dict("os.environ", {}, clear=True),
+            patch("yfinance.Ticker") as mock_yf,
+        ):
+            mock_yf.return_value.dividends = fake_divs
+
+            from wally.value_chart_builder import _fetch_live_fundamentals
+
+            history, earnings_src, div_src, warning = _fetch_live_fundamentals(
+                "POOL", {"ticker": "POOL"}
+            )
+
+        assert history == [], "No earnings when AV key missing"
+        assert "ALPHAVANTAGE_API_KEY" in warning, (
+            "Warning should mention missing API key"
+        )
+
+        captured = capsys.readouterr()
+        assert "PRICE_ONLY_BUILD" in captured.out
+
+    def test_fetch_live_fundamentals_logs_sources(self, capsys):
+        """_fetch_live_fundamentals logs price_source, earnings_source, dividends_source."""
+        from unittest.mock import patch
+
+        av_data = self._make_av_earnings_data(8)
+        fake_divs = self._make_div_series()
+
+        with (
+            patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
+            patch("wally.alphavantage.fetch_earnings", return_value=av_data),
+            patch("yfinance.Ticker") as mock_yf,
+        ):
+            mock_yf.return_value.dividends = fake_divs
+
+            from wally.value_chart_builder import _fetch_live_fundamentals
+
+            _fetch_live_fundamentals("POOL", {"ticker": "POOL"})
+
+        captured = capsys.readouterr()
+        assert "price_source=yfinance" in captured.out
+        assert "earnings_source=alphavantage" in captured.out
+        assert "earnings_records=" in captured.out
+        assert "dividend_records=" in captured.out
+        assert "FULL_BUILD" in captured.out
+
+    def test_fetch_live_fundamentals_logs_price_only_on_av_failure(self, capsys):
+        """_fetch_live_fundamentals logs PRICE_ONLY_BUILD when AV call fails."""
+        from unittest.mock import patch
+
+        import pandas as pd
+
+        fake_divs = self._make_div_series()
+
+        with (
+            patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
+            patch("wally.alphavantage.fetch_earnings", side_effect=RuntimeError("API error")),
+            patch("yfinance.Ticker") as mock_yf,
+        ):
+            mock_yf.return_value.dividends = fake_divs
+
+            from wally.value_chart_builder import _fetch_live_fundamentals
+
+            history, _, _, warning = _fetch_live_fundamentals("POOL", {"ticker": "POOL"})
+
+        assert history == []
+        assert "WARNING" in warning
+        captured = capsys.readouterr()
+        assert "PRICE_ONLY_BUILD" in captured.out
+
+    # ── build_value_chart integration ────────────────────────────────────────
+
+    def _base_cfg(self, ticker: str = "POOL") -> dict:
+        """Return a minimal in-memory config for integration tests (no file I/O)."""
+        return {
+            "ticker": ticker,
+            "company_name": f"{ticker} Corporation",
+            "exchange": "NASDAQ",
+            "currency": "USD",
+            "buy_multiple": 25,
+            "rror": 0.04,
+            "earnings": [],
+        }
+
+    def test_build_value_chart_calls_fetch_when_earnings_empty(self, tmp_path):
+        """build_value_chart calls _fetch_live_fundamentals when config has empty earnings."""
+        from unittest.mock import patch
+
+        import numpy as np
+        import pandas as pd
+
+        av_data = self._make_av_earnings_data(8)
+        fake_divs = self._make_div_series()
+
+        fake_price_df = pd.DataFrame(
+            {
+                "Date": pd.date_range("2020-01-01", periods=50, freq="W-FRI"),
+                "Close": np.random.uniform(200, 400, 50),
+            }
+        )
+
+        with (
+            patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
+            patch("wally.alphavantage.fetch_earnings", return_value=av_data) as mock_av,
+            patch("yfinance.Ticker") as mock_yf,
+            patch("wally.value_chart_builder.load_config", return_value=self._base_cfg("POOL")),
+        ):
+            mock_yf.return_value.dividends = fake_divs
+            mock_yf.return_value.history.return_value = fake_price_df.set_index("Date")
+            # Provide price data via monkeypatch to avoid live yfinance call for prices
+            with patch(
+                "wally.value_chart_builder.get_price_data",
+                return_value=fake_price_df,
+            ):
+                from wally.value_chart_builder import build_value_chart
+
+                out_path = str(tmp_path / "pool_test.xlsx")
+                build_value_chart("POOL", output_path=out_path)
+
+        mock_av.assert_called_once_with("POOL", "test-key")
+
+    def test_pool_ttm_eps_populated_in_workbook(self, tmp_path):
+        """POOL workbook has TTM EPS values in PriceData when AV fetch succeeds."""
+        import openpyxl
+        from unittest.mock import patch
+
+        import numpy as np
+        import pandas as pd
+
+        av_data = self._make_av_earnings_data(8)
+        fake_divs = self._make_div_series()
+
+        fake_price_df = pd.DataFrame(
+            {
+                "Date": pd.date_range("2022-01-01", periods=150, freq="W-FRI"),
+                "Close": np.random.uniform(200, 400, 150),
+            }
+        )
+
+        with (
+            patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
+            patch("wally.alphavantage.fetch_earnings", return_value=av_data),
+            patch("yfinance.Ticker") as mock_yf,
+            patch("wally.value_chart_builder.load_config", return_value=self._base_cfg("POOL")),
+            patch(
+                "wally.value_chart_builder.get_price_data",
+                return_value=fake_price_df,
+            ),
+        ):
+            mock_yf.return_value.dividends = fake_divs
+
+            from wally.value_chart_builder import build_value_chart
+
+            out_path = str(tmp_path / "pool_full.xlsx")
+            build_value_chart("POOL", output_path=out_path)
+
+        wb = openpyxl.load_workbook(out_path)
+        ws = wb["PriceData"]
+
+        # Check that TTM EPS column (col 3) has at least some non-None values
+        eps_values = [ws.cell(row=r, column=3).value for r in range(3, ws.max_row + 1)]
+        non_null = [v for v in eps_values if v is not None]
+        assert non_null, (
+            "PriceData TTM EPS column should be populated when AV data is fetched"
+        )
+
+        # And PE Ratio column should also have values
+        pe_col = 8  # with no sell_multiple: Date(1) Price(2) EPS(3) VBuy(4) Div(5) DivRRoR(6) PE(7) PEsmooth(8)
+        pe_values = [ws.cell(row=r, column=7).value for r in range(3, ws.max_row + 1)]
+        non_null_pe = [v for v in pe_values if v is not None]
+        assert non_null_pe, "PE Ratio column should be populated when TTM EPS is available"
+
+    def test_dividend_paying_stock_populates_div_rror(self, tmp_path):
+        """A stock with dividend history gets non-zero Div/RRoR in PriceData."""
+        import openpyxl
+        from unittest.mock import patch
+
+        import numpy as np
+        import pandas as pd
+
+        av_data = self._make_av_earnings_data(8)
+        # 4 quarterly dividends of $1.10
+        fake_divs = self._make_div_series()
+
+        fake_price_df = pd.DataFrame(
+            {
+                "Date": pd.date_range("2022-01-01", periods=150, freq="W-FRI"),
+                "Close": np.random.uniform(200, 400, 150),
+            }
+        )
+
+        with (
+            patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
+            patch("wally.alphavantage.fetch_earnings", return_value=av_data),
+            patch("yfinance.Ticker") as mock_yf,
+            patch("wally.value_chart_builder.load_config", return_value=self._base_cfg("POOL")),
+            patch(
+                "wally.value_chart_builder.get_price_data",
+                return_value=fake_price_df,
+            ),
+        ):
+            mock_yf.return_value.dividends = fake_divs
+
+            from wally.value_chart_builder import build_value_chart
+
+            out_path = str(tmp_path / "pool_div.xlsx")
+            build_value_chart("POOL", output_path=out_path)
+
+        wb = openpyxl.load_workbook(out_path)
+
+        # EarningsData TTM Div column (col 6) should have non-zero values
+        ws_earn = wb["EarningsData"]
+        div_vals = [
+            ws_earn.cell(row=r, column=6).value
+            for r in range(3, ws_earn.max_row + 1)
+        ]
+        non_zero_div = [v for v in div_vals if v is not None and v != 0]
+        assert non_zero_div, (
+            "EarningsData TTM Div should be non-zero for a dividend-paying stock"
+        )
+
+    def test_non_dividend_stock_still_populates_eps_value_lines(self, tmp_path):
+        """A non-dividend stock still populates EPS-based Value Buy in PriceData."""
+        import openpyxl
+        from unittest.mock import patch
+
+        import numpy as np
+        import pandas as pd
+
+        av_data = self._make_av_earnings_data(8)
+        # No dividends
+        empty_divs = pd.Series([], dtype=float)
+
+        fake_price_df = pd.DataFrame(
+            {
+                "Date": pd.date_range("2022-01-01", periods=150, freq="W-FRI"),
+                "Close": np.random.uniform(200, 400, 150),
+            }
+        )
+
+        with (
+            patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
+            patch("wally.alphavantage.fetch_earnings", return_value=av_data),
+            patch("yfinance.Ticker") as mock_yf,
+            patch("wally.value_chart_builder.load_config", return_value=self._base_cfg("FICO")),
+            patch(
+                "wally.value_chart_builder.get_price_data",
+                return_value=fake_price_df,
+            ),
+        ):
+            mock_yf.return_value.dividends = empty_divs
+
+            from wally.value_chart_builder import build_value_chart
+
+            out_path = str(tmp_path / "fico_no_div.xlsx")
+            build_value_chart("FICO", output_path=out_path)
+
+        wb = openpyxl.load_workbook(out_path)
+        ws = wb["PriceData"]
+
+        # Value Buy col (col 4) should be populated even without dividends
+        vbuy_vals = [ws.cell(row=r, column=4).value for r in range(3, ws.max_row + 1)]
+        non_null = [v for v in vbuy_vals if v is not None]
+        assert non_null, (
+            "PriceData Value Buy should be populated even for a non-dividend stock"
+        )
+
+    def test_blank_earnings_not_silent_when_fetch_fails(self, tmp_path):
+        """When fundamentals fetch fails, EarningsData shows a visible WARNING message."""
+        import openpyxl
+        from unittest.mock import patch
+
+        import numpy as np
+        import pandas as pd
+
+        fake_price_df = pd.DataFrame(
+            {
+                "Date": pd.date_range("2020-01-01", periods=20, freq="W-FRI"),
+                "Close": np.random.uniform(200, 400, 20),
+            }
+        )
+
+        with (
+            patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
+            patch(
+                "wally.alphavantage.fetch_earnings",
+                side_effect=RuntimeError("rate limited"),
+            ),
+            patch("yfinance.Ticker") as mock_yf,
+            patch("wally.value_chart_builder.load_config", return_value=self._base_cfg("POOL")),
+            patch(
+                "wally.value_chart_builder.get_price_data",
+                return_value=fake_price_df,
+            ),
+        ):
+            mock_yf.return_value.dividends = pd.Series([], dtype=float)
+
+            from wally.value_chart_builder import build_value_chart
+
+            out_path = str(tmp_path / "pool_fail.xlsx")
+            build_value_chart("POOL", output_path=out_path)
+
+        wb = openpyxl.load_workbook(out_path)
+        ws_earn = wb["EarningsData"]
+
+        # Cell A3 must contain a visible warning — not be blank
+        a3 = str(ws_earn["A3"].value or "")
+        assert a3.strip() != "", "EarningsData A3 must not be blank when fetch fails"
+        assert "WARNING" in a3 or "DATA REQUIRED" in a3 or "⚠" in a3, (
+            f"EarningsData should contain a visible warning, got: {a3!r}"
+        )

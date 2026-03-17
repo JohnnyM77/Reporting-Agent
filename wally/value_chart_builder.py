@@ -403,6 +403,108 @@ def _lookup_last(ts: pd.Timestamp,
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+#  LIVE FUNDAMENTALS FETCH
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _fetch_live_fundamentals(
+    ticker: str, cfg: dict
+) -> tuple[list[dict], str, str, str]:
+    """Fetch live earnings and dividend fundamentals for *ticker*.
+
+    Uses Alpha Vantage for quarterly EPS history (requires ALPHAVANTAGE_API_KEY)
+    and yfinance for dividend history (no key required).
+
+    Returns:
+        (earnings_history, earnings_source, div_source, warning_msg)
+
+        *earnings_history* is a list of workbook-format dicts (may be empty).
+        *earnings_source* / *div_source* are descriptive source labels.
+        *warning_msg* is empty on success; set to a human-readable explanation
+        when fundamentals could not be fetched (PRICE_ONLY fallback).
+    """
+    from .alphavantage import (
+        build_workbook_earnings_history,
+        fetch_earnings,
+        get_api_key,
+    )
+
+    av_key = get_api_key()
+    earnings_source = "none"
+    div_source = "none"
+    earnings_records = 0
+    div_records = 0
+    av_earnings_data = None
+    div_series = None
+    warnings: list[str] = []
+
+    # ── Step 1: dividend history from yfinance (no API key needed) ────────────
+    try:
+        import yfinance as yf
+
+        tk = yf.Ticker(ticker)
+        divs = tk.dividends
+        if divs is not None and not divs.empty:
+            div_series = divs
+            div_records = len(divs)
+            div_source = "yfinance"
+        else:
+            div_source = "yfinance(none)"
+    except Exception as e:
+        print(f"[wally] {ticker} dividend fetch failed (yfinance): {e}", flush=True)
+        warnings.append(f"dividend fetch failed: {e}")
+
+    # ── Step 2: quarterly earnings from Alpha Vantage ─────────────────────────
+    if av_key:
+        try:
+            av_earnings_data = fetch_earnings(ticker, av_key)
+            earnings_records = len(av_earnings_data.quarterly)
+            earnings_source = "alphavantage"
+        except Exception as e:
+            print(
+                f"[wally] {ticker} earnings fetch failed (alphavantage): {e}",
+                flush=True,
+            )
+            warnings.append(f"earnings fetch failed: {e}")
+    else:
+        print(
+            f"[wally] {ticker} no ALPHAVANTAGE_API_KEY — skipping earnings fetch",
+            flush=True,
+        )
+        warnings.append("no ALPHAVANTAGE_API_KEY set")
+
+    # ── Step 3: build workbook earnings history ───────────────────────────────
+    history: list[dict] = []
+    if av_earnings_data is not None:
+        history = build_workbook_earnings_history(av_earnings_data, div_series)
+
+    # ── Step 4: log sources ───────────────────────────────────────────────────
+    print(
+        f"[wally] {ticker} price_source=yfinance"
+        f" earnings_source={earnings_source}"
+        f" dividends_source={div_source}",
+        flush=True,
+    )
+    print(
+        f"[wally] {ticker} earnings_records={earnings_records}"
+        f" dividend_records={div_records}",
+        flush=True,
+    )
+
+    if history:
+        print(f"[wally] {ticker} build_status=FULL_BUILD", flush=True)
+        return history, earnings_source, div_source, ""
+
+    # ── Fallback: PRICE_ONLY ──────────────────────────────────────────────────
+    reason = "; ".join(warnings) if warnings else "unknown reason"
+    warning_msg = (
+        "WARNING: Price data loaded, but live earnings/dividend data could not "
+        f"be fetched. Reason: {reason}"
+    )
+    print(f"[wally] {ticker} build_status=PRICE_ONLY_BUILD", flush=True)
+    return [], earnings_source, div_source, warning_msg
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 #  PRICE DATA
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -641,18 +743,33 @@ def _build_earnings(wb: Workbook, cfg: dict) -> None:
 
     earnings = cfg.get("earnings") or []
 
-    # If no earnings data, show a visible DATA REQUIRED warning and exit early
+    # If no earnings data, show a visible DATA REQUIRED / PRICE_ONLY warning and exit early
     if not earnings:
         from openpyxl.utils import get_column_letter
         ncols = len(headers)
         end_col = get_column_letter(ncols)
-        ws2.merge_cells(f"A3:{end_col}4")
-        ws2["A3"] = (
-            "⚠ DATA REQUIRED — Add earnings history to "
-            f"valuations/{_ticker_slug(cfg['ticker'])}.yaml to enable valuation lines"
-        )
-        _sc(ws2["A3"], bold=True, color="8B0000", fill="FFF3E0", wrap=True)
-        ws2.row_dimensions[3].height = 40
+        price_only_msg = cfg.get("_price_only_warning", "")
+        if price_only_msg:
+            ws2.merge_cells(f"A3:{end_col}3")
+            ws2["A3"] = price_only_msg
+            _sc(ws2["A3"], bold=True, color="8B2500", fill="FFF3E0", wrap=True)
+            ws2.row_dimensions[3].height = 40
+            ws2.merge_cells(f"A4:{end_col}5")
+            ws2["A4"] = (
+                "Add earnings history to "
+                f"valuations/{_ticker_slug(cfg['ticker'])}.yaml "
+                "or set ALPHAVANTAGE_API_KEY to enable valuation lines."
+            )
+            _sc(ws2["A4"], bold=False, color="8B0000", fill="FFF3E0", wrap=True)
+            ws2.row_dimensions[4].height = 30
+        else:
+            ws2.merge_cells(f"A3:{end_col}4")
+            ws2["A3"] = (
+                "⚠ DATA REQUIRED — Add earnings history to "
+                f"valuations/{_ticker_slug(cfg['ticker'])}.yaml to enable valuation lines"
+            )
+            _sc(ws2["A3"], bold=True, color="8B0000", fill="FFF3E0", wrap=True)
+            ws2.row_dimensions[3].height = 40
         return
     ttm_eps  = [float(e["ttm_eps"]) for e in earnings]
     ttm_div  = [float(e["ttm_div"]) for e in earnings]
@@ -1131,6 +1248,26 @@ Config schema:      valuations/nhc_ax.yaml  (full annotated example)
   Resample: df.set_index("Date").resample("{_get(cfg,"price_data","resample_day",default="W-FRI")}").last().dropna().reset_index()
   Why weekly: ~530 rows vs ~2600 daily. Thinner, cleaner price line without changing line width.
   Microsoft 365: {_get(cfg,"price_data","stockhistory_formula",default="")}
+
+━━━━ LIVE FUNDAMENTALS (AUTO-FETCH) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  If earnings: [] is empty in the YAML config, Wally automatically fetches live
+  fundamentals before building the workbook:
+    - Quarterly EPS history   → Alpha Vantage EARNINGS endpoint (requires ALPHAVANTAGE_API_KEY)
+    - Dividend history        → yfinance (no API key required)
+    - TTM EPS                 → rolling sum of last 4 reported quarterly EPS values
+    - TTM Div                 → rolling sum of dividends in the 12 months before each EPS date
+    - eps_scale               → 100  (converts USD/AUD dollars to cents as stored in workbook)
+
+  Manual YAML earnings history is NOT the only source — live data is fetched automatically
+  for US stocks when ALPHAVANTAGE_API_KEY is set.
+
+  Build status logged to stdout:
+    [wally] TICKER price_source=yfinance earnings_source=alphavantage dividends_source=yfinance
+    [wally] TICKER earnings_records=N dividend_records=M
+    [wally] TICKER build_status=FULL_BUILD | PRICE_ONLY_BUILD
+
+  If live fundamentals cannot be fetched, the workbook is clearly labelled PRICE_ONLY with
+  a visible warning in the EarningsData sheet — blank charts are never silently produced.
 """
 
     for i, line in enumerate(prompt.splitlines(), start=2):
@@ -1308,6 +1445,18 @@ def build_value_chart(
         str: Local path to saved xlsx, or Drive URL when *drive_folder_id* is set.
     """
     cfg = load_config(ticker_or_config_path)
+
+    # Auto-fetch live fundamentals when earnings history is absent from config.
+    # This populates cfg["earnings"] from Alpha Vantage (EPS) + yfinance (dividends)
+    # so that TII75 US stocks build with real value lines instead of blank DATA REQUIRED.
+    if not cfg.get("earnings"):
+        live_earnings, _, _, price_only_warning = _fetch_live_fundamentals(
+            cfg["ticker"], cfg
+        )
+        if live_earnings:
+            cfg["earnings"] = live_earnings
+        elif price_only_warning:
+            cfg["_price_only_warning"] = price_only_warning
 
     if output_path is None:
         out_dir = Path("outputs")

@@ -108,7 +108,10 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                 if value_png:
                     attachments.append(value_png)
 
-                # Build xlsx + PNG value chart if a valuations config exists
+                # Build full canonical value chart workbook (5 sheets).
+                # value_chart_builder.build_value_chart is the SOLE primary path.
+                # A fallback summary workbook is only used when the full build fails,
+                # and is always named explicitly as a fallback.
                 if _XLSX_BUILDER_AVAILABLE:
                     try:
                         xlsx_out = ctx.output_root / f"{ticker.lower().replace('.', '_')}_value_chart.xlsx"
@@ -131,9 +134,9 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                                 print(f"[wally] Drive → {drive_name}: {url}", flush=True)
                             except Exception as drive_err:
                                 print(f"[wally] Drive upload failed for {ticker}: {drive_err}", flush=True)
-                    except FileNotFoundError:
-                        # No valuations/<ticker>.yaml — fall back to a Claude-powered
-                        # analysis workbook so all flagged tickers get a spreadsheet.
+                    except Exception as xlsx_err:
+                        # Full value-chart build failed — log exact reason, then fallback.
+                        print(f"[wally] ERROR building full workbook for {ticker}: {xlsx_err}", flush=True)
                         if _VALUATION_WORKBOOK_AVAILABLE:
                             try:
                                 val_snap = fetch_valuation_snapshot(ticker)
@@ -175,20 +178,23 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                                         "wally_judgment": "Requires thesis review",
                                     }
                                 ]
+                                # Fallback file: explicitly named to distinguish from full output
+                                fallback_out = ctx.output_root / f"{ticker.lower().replace('.', '_')}_fallback_review.xlsx"
                                 _build_valuation_workbook(
-                                    output_path=xlsx_out,
+                                    output_path=fallback_out,
                                     summary=fallback_summary,
                                     history_rows=history_rows,
                                     decision_rows=decision_rows,
                                     claude_analysis=claude_analysis,
                                 )
-                                attachments.append(xlsx_out)
+                                attachments.append(fallback_out)
                                 note = (
-                                    "Valuation workbook attached (Claude analysis)"
+                                    "Fallback review workbook attached (Claude analysis)"
                                     if claude_analysis
-                                    else "Valuation workbook attached"
+                                    else "Fallback review workbook attached"
                                 )
                                 chart_notes[ticker] = note
+                                print(f"[wally] Fallback workbook created: {fallback_out.name}", flush=True)
                                 # Register the 52-week range chart as inline email image so
                                 # the email body shows a visual chart (same experience as
                                 # tickers with a valuations config whose value-chart PNG is
@@ -198,18 +204,16 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                                 # Upload to Drive
                                 drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
                                 if drive_folder_id:
-                                    drive_name = f"{ctx.run_dt.strftime('%y%m%d')}-{ticker.split('.')[0]}.xlsx"
+                                    drive_name = f"{ctx.run_dt.strftime('%y%m%d')}-{ticker.split('.')[0]}_fallback.xlsx"
                                     try:
                                         url = upload_or_replace_xlsx(
-                                            xlsx_out, drive_name, folder_id=drive_folder_id
+                                            fallback_out, drive_name, folder_id=drive_folder_id
                                         )
                                         print(f"[wally] Drive → {drive_name}: {url}", flush=True)
                                     except Exception as drive_err:
                                         print(f"[wally] Drive upload failed for {ticker}: {drive_err}", flush=True)
                             except Exception as fallback_err:
                                 print(f"[wally] Fallback workbook build failed for {ticker}: {fallback_err}", flush=True)
-                    except Exception as xlsx_err:
-                        print(f"[wally] xlsx build failed for {ticker}: {xlsx_err}", flush=True)
         except Exception as e:
             print(f"[wally] Error processing {ticker}: {e}", flush=True)
             results.append(

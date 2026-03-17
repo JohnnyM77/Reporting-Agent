@@ -1,18 +1,31 @@
 """
 wally/value_chart_builder.py
 ────────────────────────────
-Generic ASX value-chart spreadsheet builder.
+Universal value-chart spreadsheet builder for any market (ASX, US, Tokyo, etc.).
 Reads a per-company YAML config from valuations/<ticker_slug>.yaml
-and produces the v3-style workbook (5 sheets, dual-axis chart, XML-patched
+and produces the canonical workbook (5 sheets, dual-axis chart, XML-patched
 axis title boxes and legend).
 
-Reference template: outputs/NHC_ASX_Value_Analysis_v3.xlsx
-                    (cyclical / sell-zone framework example)
+Ticker → config mapping (universal, no .AX hard-coding):
+  NHC.AX  → valuations/nhc_ax.yaml
+  POOL    → valuations/pool.yaml
+  FICO    → valuations/fico.yaml
+  2914.T  → valuations/2914_t.yaml
+
+If no config file exists, a starter config is auto-created and the workbook
+is built with DATA REQUIRED placeholders where earnings history is absent.
+
+Required workbook sheets (in order):
+  1. Settings
+  2. EarningsData
+  3. PriceData
+  4. ValueChart
+  5. FuturePrompt
 
 Called by:
   - scripts/build_value_chart.py  (CLI / agent invocation)
-  - sunday_sally main.py          (auto-triggered on flagged companies)
-  - wally charts.py               (watchlist low-screen supplement)
+  - wally/main.py                 (auto-triggered on flagged companies)
+  - wally/charts.py               (watchlist low-screen supplement)
 """
 
 from __future__ import annotations
@@ -52,16 +65,110 @@ BORDER_COL = "BBBBBB"
 #  CONFIG LOADING
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ── Exchange / currency inference ─────────────────────────────────────────────
+
+_EXCHANGE_BY_SUFFIX: dict[str, str] = {
+    "AX": "ASX",
+    "T":  "TSE",
+    "L":  "LSE",
+    "HK": "HKEX",
+    "SS": "SSE",
+    "SZ": "SZSE",
+}
+
+_CURRENCY_BY_EXCHANGE: dict[str, str] = {
+    "ASX":   "AUD",
+    "TSE":   "JPY",
+    "LSE":   "GBP",
+    "HKEX":  "HKD",
+    "SSE":   "CNY",
+    "SZSE":  "CNY",
+    "NYSE":  "USD",
+    "NASDAQ": "USD",
+}
+
+
 def _ticker_slug(ticker: str) -> str:
-    """NHC.AX → nhc_ax"""
+    """Convert any ticker to a filesystem-safe slug.
+
+    Examples::
+
+        NHC.AX  → nhc_ax
+        POOL    → pool
+        FICO    → fico
+        2914.T  → 2914_t
+        MSFT    → msft
+    """
     return ticker.lower().replace(".", "_")
 
 
-def load_config(ticker_or_path: str) -> dict[str, Any]:
+def _infer_exchange(ticker: str) -> str:
+    """Infer the primary listing exchange from a ticker string.
+
+    Examples::
+
+        NHC.AX  → ASX
+        2914.T  → TSE
+        POOL    → NASDAQ  (plain ticker — assumed US)
+        MSFT    → NASDAQ
     """
-    Load and validate a company config from:
-      - an explicit file path, OR
-      - valuations/<ticker_slug>.yaml (auto-resolved from repo root)
+    if "." in ticker:
+        suffix = ticker.rsplit(".", 1)[1].upper()
+        return _EXCHANGE_BY_SUFFIX.get(suffix, suffix)
+    # Plain ticker (no suffix) → assume US NASDAQ/NYSE
+    return "NASDAQ"
+
+
+def _infer_currency(exchange: str) -> str:
+    """Return the primary currency for a given exchange code."""
+    return _CURRENCY_BY_EXCHANGE.get(exchange.upper(), "USD")
+
+
+def _auto_create_starter_config(ticker: str, path: Path) -> dict[str, Any]:
+    """Auto-create a minimal starter config when none exists.
+
+    The created config is a valid starting point but will produce a workbook
+    with "DATA REQUIRED" placeholders until earnings history is added.
+    Logs the creation so the caller can see it happened.
+    """
+    exchange = _infer_exchange(ticker)
+    currency = _infer_currency(exchange)
+    cfg: dict[str, Any] = {
+        "ticker":       ticker,
+        "company_name": ticker.split(".")[0],
+        "business":     "— update this field —",
+        "exchange":     exchange,
+        "currency":     currency,
+        "stock_type":   "quality",
+        "buy_multiple": 15,
+        "sell_multiple": None,
+        "rror":         0.04,
+        "norm_eps":     None,
+        "earnings":     [],
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    header = (
+        f"# {ticker} — Value Chart Config (auto-generated starter)\n"
+        f"# Exchange: {exchange} | Currency: {currency}\n"
+        f"# TODO: Update company_name, business, buy_multiple, rror, and earnings.\n"
+        f"# Run: python scripts/build_value_chart.py {ticker}\n\n"
+    )
+    path.write_text(
+        header + yaml.dump(cfg, default_flow_style=False, sort_keys=False),
+        encoding="utf-8",
+    )
+    print(f"[wally] Auto-created starter config: {path}", flush=True)
+    return cfg
+
+
+def load_config(ticker_or_path: str) -> dict[str, Any]:
+    """Load and validate a company config.
+
+    Resolves in this order:
+      1. Treat *ticker_or_path* as a literal file path.
+      2. Auto-resolve to ``valuations/<ticker_slug>.yaml`` relative to repo root.
+      3. If still not found, auto-create a minimal starter config (never raises
+         ``FileNotFoundError`` — builds a DATA REQUIRED workbook instead).
     """
     p = Path(ticker_or_path)
     if not p.exists():
@@ -69,24 +176,37 @@ def load_config(ticker_or_path: str) -> dict[str, Any]:
         repo_root = Path(__file__).resolve().parents[1]
         p = repo_root / "valuations" / f"{_ticker_slug(ticker_or_path)}.yaml"
     if not p.exists():
-        raise FileNotFoundError(
-            f"No config found for '{ticker_or_path}'. "
-            f"Expected: valuations/{_ticker_slug(ticker_or_path)}.yaml"
-        )
-    cfg = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+        # Auto-create starter config rather than raising
+        cfg = _auto_create_starter_config(ticker_or_path, p)
+    else:
+        cfg = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
     _validate_config(cfg)
     return cfg
 
 
 def _validate_config(cfg: dict) -> None:
-    required = ["ticker", "company_name", "buy_multiple", "rror", "earnings"]
+    """Validate and normalise a company config dict.
+
+    Hard requirements: ``ticker``, ``company_name``, ``buy_multiple``, ``rror``.
+    Optional (defaults applied if absent):
+      - ``earnings``     → empty list (workbook shows DATA REQUIRED placeholders)
+      - ``sell_multiple``→ None (no sell line drawn)
+      - ``exchange``     → inferred from ticker suffix
+      - ``currency``     → inferred from exchange
+    """
+    required = ["ticker", "company_name", "buy_multiple", "rror"]
     missing  = [k for k in required if k not in cfg or cfg[k] is None]
     if missing:
         raise ValueError(f"Config missing required keys: {missing}")
-    if not cfg.get("earnings"):
-        raise ValueError("Config must include at least one earnings entry.")
+    # Apply optional-field defaults
     if not cfg.get("sell_multiple"):
-        cfg["sell_multiple"] = None   # optional — omits sell line if absent
+        cfg["sell_multiple"] = None
+    if "earnings" not in cfg or cfg["earnings"] is None:
+        cfg["earnings"] = []
+    if not cfg.get("exchange"):
+        cfg["exchange"] = _infer_exchange(cfg["ticker"])
+    if not cfg.get("currency"):
+        cfg["currency"] = _infer_currency(cfg["exchange"])
 
 
 def _get(cfg: dict, *keys, default=None):
@@ -359,18 +479,24 @@ def _build_settings(wb: Workbook, cfg: dict) -> None:
     ws.column_dimensions["B"].width = 22
     ws.column_dimensions["C"].width = 62
 
-    ticker  = cfg["ticker"]
-    name    = cfg["company_name"]
-    biz     = cfg.get("business", "")
-    bmult   = cfg["buy_multiple"]
-    smult   = cfg.get("sell_multiple")
-    rror    = float(cfg["rror"])
-    norm    = cfg.get("norm_eps")
-    stype   = cfg.get("stock_type", "quality")
+    ticker   = cfg["ticker"]
+    name     = cfg["company_name"]
+    biz      = cfg.get("business", "")
+    bmult    = cfg["buy_multiple"]
+    smult    = cfg.get("sell_multiple")
+    rror     = float(cfg["rror"])
+    norm     = cfg.get("norm_eps")
+    stype    = cfg.get("stock_type", "quality")
+    exchange = cfg.get("exchange", "")
+    currency = cfg.get("currency", "USD")
+
+    # Exchange label for titles: "ASX: NHC" or "NASDAQ: POOL" or "TSE: 2914"
+    ticker_display = ticker.split(".")[0]
+    exchange_label = f"{exchange}: " if exchange else ""
 
     # Title
     ws.merge_cells("A1:C1")
-    ws["A1"] = f"{name} (ASX: {ticker.split('.')[0]}) — Value Analysis — Settings"
+    ws["A1"] = f"{name} ({exchange_label}{ticker_display}) — Value Analysis — Settings"
     _sc(ws["A1"], bold=True, color="FFFFFF", fill=NAVY, align="center", size=13)
     ws.row_dimensions[1].height = 28
 
@@ -387,9 +513,9 @@ def _build_settings(wb: Workbook, cfg: dict) -> None:
         ws.row_dimensions[r].height = 20
 
     for r, lbl, val in [
-        (4, "Company Name",  name),
-        (5, "ASX Ticker",    ticker.split(".")[0]),
-        (6, "Business",      biz),
+        (4, "Company Name",                              name),
+        (5, f"{exchange} Ticker" if exchange else "Ticker", ticker),
+        (6, "Business",                                  biz),
     ]:
         ws[f"A{r}"] = lbl;  ws[f"B{r}"] = val
         for c in ["A", "B", "C"]: _sc(ws[f"{c}{r}"])
@@ -478,15 +604,19 @@ def _build_settings(wb: Workbook, cfg: dict) -> None:
 def _build_earnings(wb: Workbook, cfg: dict) -> None:
     ws2 = wb.create_sheet("EarningsData")
     ws2.sheet_view.showGridLines = False
-    ticker = cfg["ticker"].split(".")[0]
-    name   = cfg["company_name"]
-    bmult  = cfg["buy_multiple"]
-    smult  = cfg.get("sell_multiple")
+    ticker   = cfg["ticker"].split(".")[0]
+    name     = cfg["company_name"]
+    bmult    = cfg["buy_multiple"]
+    smult    = cfg.get("sell_multiple")
+    exchange = cfg.get("exchange", "")
+    currency = cfg.get("currency", "USD")
+
+    exchange_label = f"{exchange}: " if exchange else ""
 
     headers = [
         "Ann. Date", "Period",
-        "Half EPS\n(AUD ¢)", "TTM EPS\n(AUD ¢)",
-        "Half Div\n(AUD ¢)", "TTM Div\n(AUD ¢)",
+        f"Half EPS\n({currency} ¢)", f"TTM EPS\n({currency} ¢)",
+        f"Half Div\n({currency} ¢)", f"TTM Div\n({currency} ¢)",
         f"Value Buy\n({bmult}× E)",
     ]
     if smult:
@@ -500,7 +630,7 @@ def _build_earnings(wb: Workbook, cfg: dict) -> None:
         ws2.column_dimensions[chr(64+i)].width = w
 
     ws2.merge_cells(f"A1:{chr(64+len(headers))}1")
-    ws2["A1"] = f"{name} (ASX: {ticker}) — Half-Year Earnings & Dividend Data"
+    ws2["A1"] = f"{name} ({exchange_label}{ticker}) — Earnings & Dividend Data"
     _sc(ws2["A1"], bold=True, color="FFFFFF", fill=NAVY, size=13)
     ws2.row_dimensions[1].height = 28
 
@@ -509,7 +639,20 @@ def _build_earnings(wb: Workbook, cfg: dict) -> None:
         _sc(cell, bold=True, color="FFFFFF", fill=NAVY, align="center", wrap=True)
     ws2.row_dimensions[2].height = 42
 
-    earnings = cfg["earnings"]
+    earnings = cfg.get("earnings") or []
+
+    # If no earnings data, show a visible DATA REQUIRED warning and exit early
+    if not earnings:
+        ncols = len(headers)
+        end_col = chr(64 + ncols) if ncols <= 26 else "Z"
+        ws2.merge_cells(f"A3:{end_col}4")
+        ws2["A3"] = (
+            "⚠ DATA REQUIRED — Add earnings history to "
+            f"valuations/{_ticker_slug(cfg['ticker'])}.yaml to enable valuation lines"
+        )
+        _sc(ws2["A3"], bold=True, color="8B0000", fill="FFF3E0", wrap=True)
+        ws2.row_dimensions[3].height = 40
+        return
     ttm_eps  = [float(e["ttm_eps"]) for e in earnings]
     ttm_div  = [float(e["ttm_div"]) for e in earnings]
     half_eps = _safe_half(ttm_eps)
@@ -574,9 +717,13 @@ def _build_price_data(wb: Workbook, cfg: dict,
     pe_days    = int(_get(cfg, "chart", "pe_smooth_days", default=60))
     resample_r = _get(cfg, "price_data", "resample_day", default="W-FRI")
     pe_window  = 12 if "W" in resample_r else pe_days
+    exchange   = cfg.get("exchange", "")
+    currency   = cfg.get("currency", "USD")
+
+    exchange_label = f"{exchange}: " if exchange else ""
 
     cols = [
-        ("Date\n(Fri)", 13), (f"Price\n(AUD $)", 11),
+        ("Date\n(Fri)", 13), (f"Price\n({currency} $)", 11),
         ("TTM EPS\n(¢)", 10), (f"Value Buy\n({bmult}× E)", 14),
     ]
     if smult:
@@ -589,19 +736,20 @@ def _build_price_data(wb: Workbook, cfg: dict,
         ws3.column_dimensions[chr(64+i)].width = w
 
     ws3.merge_cells(f"A1:{chr(64+len(cols))}1")
-    ws3["A1"] = f"{name} (ASX: {ticker}) — Weekly Price & Value Data"
+    ws3["A1"] = f"{name} ({exchange_label}{ticker}) — Weekly Price & Value Data"
     _sc(ws3["A1"], bold=True, color="FFFFFF", fill=NAVY, size=11)
     for c, (h, _) in enumerate(cols, start=1):
         cell = ws3.cell(2, c, h)
         _sc(cell, bold=True, color="FFFFFF", fill=NAVY, align="center", wrap=True)
     ws3.row_dimensions[2].height = 42
 
+    _earnings = cfg.get("earnings") or []
     earn_dates = [pd.Timestamp(
         e["date"] if isinstance(e["date"], date)
         else datetime.strptime(str(e["date"]), "%Y-%m-%d").date()
-    ) for e in cfg["earnings"]]
-    earn_eps = [float(e["ttm_eps"]) for e in cfg["earnings"]]
-    earn_div = [float(e["ttm_div"]) for e in cfg["earnings"]]
+    ) for e in _earnings]
+    earn_eps = [float(e["ttm_eps"]) for e in _earnings]
+    earn_div = [float(e["ttm_div"]) for e in _earnings]
 
     rows_data = []
     for _, row in price_df.iterrows():
@@ -652,17 +800,20 @@ def _build_price_data(wb: Workbook, cfg: dict,
 def _build_chart(wb: Workbook, cfg: dict, ws3) -> None:
     ws4 = wb.create_sheet("ValueChart")
     ws4.sheet_view.showGridLines = False
-    ticker = cfg["ticker"].split(".")[0]
-    name   = cfg["company_name"]
-    bmult  = cfg["buy_multiple"]
-    smult  = cfg.get("sell_multiple")
-    rror   = float(cfg["rror"])
-    pe_d   = int(_get(cfg, "chart", "pe_smooth_days", default=60))
+    ticker   = cfg["ticker"].split(".")[0]
+    name     = cfg["company_name"]
+    bmult    = cfg["buy_multiple"]
+    smult    = cfg.get("sell_multiple")
+    rror     = float(cfg["rror"])
+    pe_d     = int(_get(cfg, "chart", "pe_smooth_days", default=60))
+    exchange = cfg.get("exchange", "")
+
+    exchange_label = f"{exchange}: " if exchange else ""
 
     # Chart subtitle row
     ws4.merge_cells("A1:N1")
     ws4["A1"] = (
-        f"{name} (ASX: {ticker})  —  Buy / Sell Zone Chart  |  "
+        f"{name} ({exchange_label}{ticker})  —  Buy / Sell Zone Chart  |  "
         f"Buy {bmult}×  (Slow to buy)"
         + (f"  |  Sell {smult}×  (Even slower to sell)" if smult else "")
     )
@@ -832,7 +983,7 @@ def _build_future_prompt(wb: Workbook, cfg: dict) -> None:
     ws5.column_dimensions["A"].width = 110
     ws5.merge_cells("A1:B1")
     ws5["A1"] = ("FUTURE PROMPT — Copy this text to regenerate or "
-                 "adapt the spreadsheet for any ASX company")
+                 "adapt the spreadsheet for any company on any market")
     _sc(ws5["A1"], bold=True, color="FFFFFF", fill=NAVY, size=11)
 
     ticker  = cfg["ticker"]
@@ -853,18 +1004,23 @@ def _build_future_prompt(wb: Workbook, cfg: dict) -> None:
     def lc(key): return lns.get(key, {}).get("color", "—")
     def ls(key): return lns.get(key, {}).get("style", "—")
 
-    prompt = f"""=== ASX VALUE CHART — AGENT PROMPT v3 ===
+    exchange = cfg.get("exchange", "")
+    currency = cfg.get("currency", "USD")
+    slug     = _ticker_slug(ticker)
+    prompt = f"""=== VALUE CHART — AGENT PROMPT v3 (supports ASX, US, TSE and all markets) ===
 To regenerate: run  python scripts/build_value_chart.py {ticker}
 To create new company: copy valuations/{ticker.lower().replace('.','_')}.yaml,
-  update all fields, then run  python scripts/build_value_chart.py NEW.AX
+  update all fields, then run  python scripts/build_value_chart.py NEW_TICKER
 
 Reference template: outputs/NHC_ASX_Value_Analysis_v3.xlsx  (cyclical example)
 Builder module:     wally/value_chart_builder.py
 Config schema:      valuations/nhc_ax.yaml  (full annotated example)
 
 ━━━━ COMPANY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ticker:       {ticker}
+  ticker:       {ticker}    (slug → valuations/{slug}.yaml)
   company_name: {name}
+  exchange:     {exchange}  (ASX | NASDAQ | NYSE | TSE | LSE | …)
+  currency:     {currency}  (AUD | USD | JPY | GBP | …)
   business:     {cfg.get("business", "")}
   stock_type:   {stype}  ("cyclical" | "quality" | "growth" | "income")
 
@@ -1081,7 +1237,9 @@ def build_chart_png(
     ax2.set_ylabel(ra.get("label", "P/E Ratio"),     **_label_kw)
 
     # Title — navy banner
-    title = (f"{name} (ASX: {ticker})  —  Buy / Sell Zone Chart  |  Buy {bmult}×"
+    _exchange_png = cfg.get("exchange", "")
+    _exl_png = f"{_exchange_png}: " if _exchange_png else ""
+    title = (f"{name} ({_exl_png}{ticker})  —  Buy / Sell Zone Chart  |  Buy {bmult}×"
              + (f"  |  Sell {smult}×" if smult else ""))
     if norm:
         title += (f"\nNorm EPS: {norm}¢  →  Buy ${norm*bmult/100:.2f}"
@@ -1127,25 +1285,33 @@ def build_value_chart(
     save_png: bool = False,
 ) -> str:
     """
-    Build the v3-style value chart workbook for any ASX company.
+    Build the canonical 5-sheet value chart workbook for any company on any market.
+
+    Produces workbook sheets (in order): Settings, EarningsData, PriceData,
+    ValueChart, FuturePrompt.  If no config file exists for *ticker_or_config_path*,
+    a starter config is auto-created and the workbook is built with DATA REQUIRED
+    placeholders — no FileNotFoundError is raised.
 
     Args:
-        ticker_or_config_path: ASX ticker (e.g. "NHC.AX") or full path to YAML config.
-        output_path:           Where to save the xlsx. Defaults to outputs/<TICKER>.xlsx
-        price_csv_path:        Optional path to marketindex CSV (YYYYMMDD, Close).
-                               If None, tries yfinance then synthetic placeholder.
+        ticker_or_config_path: Ticker (e.g. "NHC.AX", "POOL", "2914.T") or
+                               full path to a YAML config file.
+        output_path:           Where to save the xlsx.  Defaults to
+                               ``outputs/<TICKER>_value_chart.xlsx``.
+        price_csv_path:        Optional path to a price CSV (Date as YYYYMMDD,
+                               Close column).  Falls back to yfinance then
+                               synthetic placeholder.
         drive_folder_id:       If set, uploads/replaces file in Google Drive.
         save_png:              If True, also saves a PNG chart alongside the xlsx.
 
     Returns:
-        str: Path to saved xlsx (or Drive URL if uploaded).
+        str: Local path to saved xlsx, or Drive URL when *drive_folder_id* is set.
     """
     cfg = load_config(ticker_or_config_path)
 
     if output_path is None:
         out_dir = Path("outputs")
         out_dir.mkdir(parents=True, exist_ok=True)
-        output_path = str(out_dir / f"{cfg['ticker'].split('.')[0]}_ASX_Value_Analysis.xlsx")
+        output_path = str(out_dir / f"{_ticker_slug(cfg['ticker'])}_value_chart.xlsx")
 
     price_df = get_price_data(cfg, price_csv_path)
 

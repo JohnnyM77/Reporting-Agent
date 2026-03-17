@@ -374,3 +374,435 @@ class TestFallbackInlineImage:
 
         # build_valuation_workbook must have been called once
         mock_build_wb.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# Universal ticker normalization tests
+# ---------------------------------------------------------------------------
+
+class TestTickerNormalization:
+    """Verify _ticker_slug works for all market formats."""
+
+    def test_asx_ticker_slug(self):
+        from wally.value_chart_builder import _ticker_slug
+        assert _ticker_slug("NHC.AX") == "nhc_ax"
+
+    def test_us_ticker_slug(self):
+        from wally.value_chart_builder import _ticker_slug
+        assert _ticker_slug("POOL") == "pool"
+        assert _ticker_slug("FICO") == "fico"
+        assert _ticker_slug("MSFT") == "msft"
+
+    def test_tokyo_ticker_slug(self):
+        from wally.value_chart_builder import _ticker_slug
+        assert _ticker_slug("2914.T") == "2914_t"
+
+    def test_infer_exchange_asx(self):
+        from wally.value_chart_builder import _infer_exchange
+        assert _infer_exchange("NHC.AX") == "ASX"
+        assert _infer_exchange("BHP.AX") == "ASX"
+
+    def test_infer_exchange_us_plain(self):
+        from wally.value_chart_builder import _infer_exchange
+        assert _infer_exchange("POOL") == "NASDAQ"
+        assert _infer_exchange("FICO") == "NASDAQ"
+        assert _infer_exchange("MSFT") == "NASDAQ"
+
+    def test_infer_exchange_tokyo(self):
+        from wally.value_chart_builder import _infer_exchange
+        assert _infer_exchange("2914.T") == "TSE"
+
+    def test_infer_currency_aud(self):
+        from wally.value_chart_builder import _infer_currency
+        assert _infer_currency("ASX") == "AUD"
+
+    def test_infer_currency_usd(self):
+        from wally.value_chart_builder import _infer_currency
+        assert _infer_currency("NASDAQ") == "USD"
+        assert _infer_currency("NYSE") == "USD"
+
+    def test_infer_currency_jpy(self):
+        from wally.value_chart_builder import _infer_currency
+        assert _infer_currency("TSE") == "JPY"
+
+
+# ---------------------------------------------------------------------------
+# Auto-create starter config tests
+# ---------------------------------------------------------------------------
+
+class TestAutoCreateStarterConfig:
+    """Verify starter configs are auto-created when missing."""
+
+    def test_auto_create_for_us_ticker(self, tmp_path):
+        """load_config auto-creates a starter YAML for a US ticker with no config."""
+        import yaml
+        from wally.value_chart_builder import _ticker_slug
+
+        yaml_path = tmp_path / f"{_ticker_slug('POOL')}.yaml"
+        assert not yaml_path.exists()
+
+        # Monkey-patch repo_root so auto-create writes to tmp_path
+        with patch("wally.value_chart_builder.Path") as mock_path_cls:
+            # Allow real Path() calls, but intercept the valuations/<slug>.yaml resolution
+            _real_path = Path
+
+            def _side_effect(*args, **kwargs):
+                p = _real_path(*args, **kwargs)
+                return p
+
+            mock_path_cls.side_effect = _side_effect
+
+            # Instead of complex patching, test the function directly
+            from wally.value_chart_builder import _auto_create_starter_config
+            cfg = _auto_create_starter_config("POOL", yaml_path)
+
+        assert yaml_path.exists(), "Starter YAML should be created"
+        assert cfg["ticker"] == "POOL"
+        assert cfg["exchange"] == "NASDAQ"
+        assert cfg["currency"] == "USD"
+        assert cfg["earnings"] == []
+
+    def test_auto_create_for_tokyo_ticker(self, tmp_path):
+        from wally.value_chart_builder import _auto_create_starter_config
+        yaml_path = tmp_path / "2914_t.yaml"
+        cfg = _auto_create_starter_config("2914.T", yaml_path)
+        assert cfg["exchange"] == "TSE"
+        assert cfg["currency"] == "JPY"
+        assert cfg["ticker"] == "2914.T"
+
+    def test_auto_create_for_asx_ticker(self, tmp_path):
+        from wally.value_chart_builder import _auto_create_starter_config
+        yaml_path = tmp_path / "xyz_ax.yaml"
+        cfg = _auto_create_starter_config("XYZ.AX", yaml_path)
+        assert cfg["exchange"] == "ASX"
+        assert cfg["currency"] == "AUD"
+
+
+# ---------------------------------------------------------------------------
+# validate_config no longer requires earnings
+# ---------------------------------------------------------------------------
+
+class TestValidateConfigRelaxed:
+    """Verify that _validate_config allows missing/empty earnings."""
+
+    def test_empty_earnings_allowed(self):
+        from wally.value_chart_builder import _validate_config
+        cfg = {
+            "ticker": "POOL",
+            "company_name": "Pool Corporation",
+            "buy_multiple": 25,
+            "rror": 0.03,
+            "earnings": [],
+        }
+        _validate_config(cfg)  # Should NOT raise
+        assert cfg["earnings"] == []
+
+    def test_missing_earnings_key_defaults_to_empty(self):
+        from wally.value_chart_builder import _validate_config
+        cfg = {
+            "ticker": "FICO",
+            "company_name": "Fair Isaac Corporation",
+            "buy_multiple": 30,
+            "rror": 0.03,
+        }
+        _validate_config(cfg)
+        assert cfg["earnings"] == []
+
+    def test_exchange_inferred_when_missing(self):
+        from wally.value_chart_builder import _validate_config
+        cfg = {
+            "ticker": "NHC.AX",
+            "company_name": "New Hope Corporation",
+            "buy_multiple": 7,
+            "rror": 0.05,
+        }
+        _validate_config(cfg)
+        assert cfg["exchange"] == "ASX"
+        assert cfg["currency"] == "AUD"
+
+    def test_missing_required_key_raises(self):
+        from wally.value_chart_builder import _validate_config
+        import pytest
+        cfg = {
+            "ticker": "POOL",
+            "company_name": "Pool Corporation",
+            # buy_multiple is missing
+            "rror": 0.03,
+        }
+        with pytest.raises(ValueError, match="buy_multiple"):
+            _validate_config(cfg)
+
+
+# ---------------------------------------------------------------------------
+# Canonical 5-sheet workbook output — with and without earnings
+# ---------------------------------------------------------------------------
+
+class TestCanonicalWorkbookSheets:
+    """Verify the canonical 5-sheet workbook is always produced."""
+
+    _REQUIRED_SHEETS = {"Settings", "EarningsData", "PriceData", "ValueChart", "FuturePrompt"}
+
+    def _make_cfg(self, ticker: str, exchange: str, currency: str,
+                  earnings: list | None = None) -> dict:
+        return {
+            "ticker": ticker,
+            "company_name": f"{ticker} Corp",
+            "exchange": exchange,
+            "currency": currency,
+            "buy_multiple": 15,
+            "rror": 0.04,
+            "earnings": earnings or [],
+        }
+
+    def test_all_5_sheets_present_with_earnings(self, tmp_path):
+        """Full build with earnings produces all 5 required sheets."""
+        import openpyxl
+        from wally.value_chart_builder import _validate_config, _build_settings, _build_earnings, _build_price_data, _build_chart, _build_future_prompt, get_price_data
+        from openpyxl import Workbook
+
+        cfg = self._make_cfg("TESTUS", "NASDAQ", "USD", earnings=[
+            {"date": "2022-01-15", "period": "H1 FY2022", "ttm_eps": 100, "ttm_div": 20, "notes": ""},
+            {"date": "2022-07-15", "period": "FY2022",    "ttm_eps": 110, "ttm_div": 22, "notes": ""},
+        ])
+        _validate_config(cfg)
+
+        # Use synthetic price data (no yfinance needed)
+        import pandas as pd
+        import numpy as np
+        dates = pd.date_range("2020-01-01", periods=100, freq="W-FRI")
+        price_df = pd.DataFrame({"Date": dates, "Close": np.random.uniform(10, 20, 100)})
+
+        wb = Workbook()
+        wb.remove(wb.active)
+        _build_settings(wb, cfg)
+        _build_earnings(wb, cfg)
+        _build_price_data(wb, cfg, price_df)
+        _build_chart(wb, cfg, wb["PriceData"])
+        _build_future_prompt(wb, cfg)
+
+        out = tmp_path / "test_full.xlsx"
+        wb.save(out)
+
+        wb2 = openpyxl.load_workbook(out)
+        missing = self._REQUIRED_SHEETS - set(wb2.sheetnames)
+        assert not missing, f"Missing sheets: {missing}"
+
+    def test_all_5_sheets_present_empty_earnings(self, tmp_path):
+        """Build with empty earnings still produces all 5 required sheets (DATA REQUIRED)."""
+        import openpyxl
+        from wally.value_chart_builder import _validate_config, _build_settings, _build_earnings, _build_price_data, _build_chart, _build_future_prompt
+        from openpyxl import Workbook
+
+        cfg = self._make_cfg("POOL", "NASDAQ", "USD", earnings=[])
+        _validate_config(cfg)
+
+        import pandas as pd
+        import numpy as np
+        dates = pd.date_range("2020-01-01", periods=50, freq="W-FRI")
+        price_df = pd.DataFrame({"Date": dates, "Close": np.random.uniform(200, 400, 50)})
+
+        wb = Workbook()
+        wb.remove(wb.active)
+        _build_settings(wb, cfg)
+        _build_earnings(wb, cfg)
+        _build_price_data(wb, cfg, price_df)
+        _build_chart(wb, cfg, wb["PriceData"])
+        _build_future_prompt(wb, cfg)
+
+        out = tmp_path / "pool_empty.xlsx"
+        wb.save(out)
+
+        wb2 = openpyxl.load_workbook(out)
+        missing = self._REQUIRED_SHEETS - set(wb2.sheetnames)
+        assert not missing, f"Missing sheets: {missing}"
+
+        # DATA REQUIRED warning should appear in EarningsData
+        ws_earn = wb2["EarningsData"]
+        cell_a3 = ws_earn["A3"].value or ""
+        assert "DATA REQUIRED" in str(cell_a3), (
+            "EarningsData sheet should contain DATA REQUIRED warning when earnings list is empty"
+        )
+
+    def test_settings_title_uses_exchange_label(self, tmp_path):
+        """Settings sheet title shows exchange label, not hardcoded 'ASX'."""
+        import openpyxl
+        from wally.value_chart_builder import _validate_config, _build_settings
+        from openpyxl import Workbook
+
+        for ticker, exchange, expected_label in [
+            ("POOL",   "NASDAQ", "NASDAQ: POOL"),
+            ("NHC.AX", "ASX",    "ASX: NHC"),
+            ("2914.T", "TSE",    "TSE: 2914"),
+        ]:
+            cfg = self._make_cfg(ticker, exchange, "USD")
+            _validate_config(cfg)
+            wb = Workbook()
+            wb.remove(wb.active)
+            _build_settings(wb, cfg)
+            out = tmp_path / f"{ticker.replace('.','_')}_settings.xlsx"
+            wb.save(out)
+            wb2 = openpyxl.load_workbook(out)
+            title = wb2["Settings"]["A1"].value or ""
+            assert expected_label in title, (
+                f"Expected '{expected_label}' in Settings title, got: {title!r}"
+            )
+
+    def test_earnings_data_title_uses_exchange_label(self, tmp_path):
+        """EarningsData title uses exchange label, not hardcoded 'ASX'."""
+        import openpyxl
+        from wally.value_chart_builder import _validate_config, _build_earnings
+        from openpyxl import Workbook
+
+        cfg = self._make_cfg("2914.T", "TSE", "JPY", earnings=[
+            {"date": "2022-03-31", "period": "FY2022", "ttm_eps": 300, "ttm_div": 50, "notes": ""},
+        ])
+        _validate_config(cfg)
+        wb = Workbook()
+        wb.remove(wb.active)
+        _build_earnings(wb, cfg)
+        out = tmp_path / "tokyo_earnings.xlsx"
+        wb.save(out)
+        wb2 = openpyxl.load_workbook(out)
+        title = wb2["EarningsData"]["A1"].value or ""
+        assert "TSE: 2914" in title, f"Expected 'TSE: 2914' in title, got: {title!r}"
+        # Column headers should use JPY not AUD
+        h3 = wb2["EarningsData"]["C2"].value or ""
+        assert "JPY" in h3, f"Expected 'JPY' in EPS column header, got: {h3!r}"
+
+
+# ---------------------------------------------------------------------------
+# main.py: explicit ERROR log before fallback
+# ---------------------------------------------------------------------------
+
+class TestMainLogsErrorBeforeFallback:
+    """Verify main.py logs the exact error reason before creating fallback."""
+
+    def test_error_logged_when_full_build_fails(self, tmp_path, capsys):
+        """When _build_xlsx raises any exception, main logs ERROR before fallback."""
+        import os
+        from unittest.mock import MagicMock, patch
+        from wally.data_fetch import PriceSnapshot, ValuationSnapshot
+
+        fake_snap = PriceSnapshot(
+            ticker="POOL",
+            company_name="Pool Corporation",
+            current_price=208.0,
+            low_52w=203.0,
+            high_52w=353.0,
+        )
+        fake_val_snap = ValuationSnapshot(
+            trailing_pe=25.0, forward_pe=22.0, ev_to_ebitda=18.0,
+            price_to_sales=4.5, fcf_yield=0.04, dividend_yield=None,
+        )
+        range_png = tmp_path / "pool_range.png"
+        range_png.write_bytes(b"\x89PNG\r\n\x1a\n")
+
+        wl_yaml = tmp_path / "test_wl.yaml"
+        wl_yaml.write_text("name: Test\ntickers:\n  - ticker: POOL\n    name: Pool Corp\n")
+
+        error_reason = "synthetic build failure for test"
+
+        with (
+            patch("wally.main.fetch_price_snapshot", return_value=fake_snap),
+            patch("wally.main.fetch_valuation_snapshot", return_value=fake_val_snap),
+            patch("wally.main.render_range_chart", return_value=range_png),
+            patch("wally.main.render_value_vs_price_chart", return_value=(None, "no config")),
+            patch("wally.main._build_xlsx", side_effect=RuntimeError(error_reason)),
+            patch("wally.main._build_valuation_workbook"),
+            patch("wally.main._analyse_opportunity", return_value=None),
+            patch("wally.main.send_email"),
+            patch("wally.main.load_email_settings"),
+            patch("wally.main.build_run_context") as mock_ctx,
+            patch("wally.main.write_json"),
+            patch("wally.main._XLSX_BUILDER_AVAILABLE", True),
+            patch("wally.main._VALUATION_WORKBOOK_AVAILABLE", True),
+        ):
+            with patch("wally.main.Path") as mock_path_cls:
+                _real_path = Path
+                mock_dash = MagicMock()
+                mock_dash.exists.return_value = False
+                mock_dash.parent.mkdir.return_value = None
+                mock_path_cls.side_effect = lambda *a, **kw: (
+                    mock_dash if "docs/data" in str(a[0]) else _real_path(*a, **kw)
+                )
+                run_ctx = MagicMock()
+                run_ctx.output_root = tmp_path
+                run_ctx.run_dt.strftime.return_value = "260317"
+                mock_ctx.return_value = run_ctx
+                os.environ.pop("GDRIVE_FOLDER_ID", None)
+
+                from wally.main import _process_watchlist
+                _process_watchlist(str(wl_yaml), force=True, send_individual_email=False)
+
+        captured = capsys.readouterr()
+        assert "ERROR building full workbook for POOL" in captured.out, (
+            "Expected '[wally] ERROR building full workbook for POOL:' in stdout.\n"
+            f"Actual stdout:\n{captured.out}"
+        )
+        assert error_reason in captured.out, (
+            f"Expected the error reason '{error_reason}' in log output"
+        )
+
+    def test_fallback_filename_contains_fallback_review(self, tmp_path, capsys):
+        """Fallback workbook is logged with '_fallback_review' in the filename."""
+        import os
+        from unittest.mock import MagicMock, patch
+        from wally.data_fetch import PriceSnapshot, ValuationSnapshot
+
+        fake_snap = PriceSnapshot(
+            ticker="FICO",
+            company_name="Fair Isaac",
+            current_price=1700.0,
+            low_52w=1680.0,
+            high_52w=2200.0,
+        )
+        fake_val_snap = ValuationSnapshot(
+            trailing_pe=60.0, forward_pe=50.0, ev_to_ebitda=40.0,
+            price_to_sales=20.0, fcf_yield=0.01, dividend_yield=None,
+        )
+        range_png = tmp_path / "fico_range.png"
+        range_png.write_bytes(b"\x89PNG\r\n\x1a\n")
+
+        wl_yaml = tmp_path / "test_wl_fico.yaml"
+        wl_yaml.write_text("name: Test\ntickers:\n  - ticker: FICO\n    name: Fair Isaac\n")
+
+        with (
+            patch("wally.main.fetch_price_snapshot", return_value=fake_snap),
+            patch("wally.main.fetch_valuation_snapshot", return_value=fake_val_snap),
+            patch("wally.main.render_range_chart", return_value=range_png),
+            patch("wally.main.render_value_vs_price_chart", return_value=(None, "no config")),
+            patch("wally.main._build_xlsx", side_effect=RuntimeError("no price data")),
+            patch("wally.main._build_valuation_workbook"),
+            patch("wally.main._analyse_opportunity", return_value=None),
+            patch("wally.main.send_email"),
+            patch("wally.main.load_email_settings"),
+            patch("wally.main.build_run_context") as mock_ctx,
+            patch("wally.main.write_json"),
+            patch("wally.main._XLSX_BUILDER_AVAILABLE", True),
+            patch("wally.main._VALUATION_WORKBOOK_AVAILABLE", True),
+        ):
+            with patch("wally.main.Path") as mock_path_cls:
+                _real_path = Path
+                mock_dash = MagicMock()
+                mock_dash.exists.return_value = False
+                mock_dash.parent.mkdir.return_value = None
+                mock_path_cls.side_effect = lambda *a, **kw: (
+                    mock_dash if "docs/data" in str(a[0]) else _real_path(*a, **kw)
+                )
+                run_ctx = MagicMock()
+                run_ctx.output_root = tmp_path
+                run_ctx.run_dt.strftime.return_value = "260317"
+                mock_ctx.return_value = run_ctx
+                os.environ.pop("GDRIVE_FOLDER_ID", None)
+
+                from wally.main import _process_watchlist
+                _process_watchlist(str(wl_yaml), force=True, send_individual_email=False)
+
+        captured = capsys.readouterr()
+        assert "Fallback workbook created" in captured.out, (
+            "Expected 'Fallback workbook created:' in log output.\n"
+            f"Actual stdout:\n{captured.out}"
+        )
+        assert "fallback_review" in captured.out, (
+            "Expected '_fallback_review' in the fallback filename log"
+        )

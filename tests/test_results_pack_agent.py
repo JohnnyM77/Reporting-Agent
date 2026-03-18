@@ -836,3 +836,380 @@ def test_trigger_half_year_result_singular():
     """'half year result' (singular) should trigger."""
     assert is_result_day_trigger("NHC Half Year Result") is True
 
+
+
+# ---------------------------------------------------------------------------
+# 19. NHC regression — 17/03/2026 result date (mandatory regression test)
+# ---------------------------------------------------------------------------
+
+_NHC_17MAR_MOCK_HTML = """
+<html><body><table>
+<tr>
+  <td>17/03/2026</td><td>10:00 am</td>
+  <td><a href="/asx/v2/announcements/NHC?id=10">Half Year Results Presentation</a></td>
+</tr>
+<tr>
+  <td>17/03/2026</td><td>10:01 am</td>
+  <td><a href="/asx/v2/announcements/NHC?id=11">FY26 Half Year Results</a></td>
+</tr>
+<tr>
+  <td>17/03/2026</td><td>10:02 am</td>
+  <td><a href="/asx/v2/announcements/NHC?id=12">Dividend/Distribution - NHC</a></td>
+</tr>
+<tr>
+  <td>17/03/2026</td><td>10:03 am</td>
+  <td><a href="/asx/v2/announcements/NHC?id=13">Appendix 4D and Half Year Financial Report</a></td>
+</tr>
+<tr>
+  <td>20/01/2026</td><td>09:00 am</td>
+  <td><a href="/asx/v2/announcements/NHC?id=14">Quarterly Activities Report</a></td>
+</tr>
+</table></body></html>
+"""
+
+_NHC_17MAR_MOCK_JSON = """{
+  "data": [
+    {
+      "header": "Half Year Results Presentation",
+      "releasedDate": "17/03/2026 10:00 am",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=3001",
+      "documentKey": "3001"
+    },
+    {
+      "header": "FY26 Half Year Results",
+      "releasedDate": "17/03/2026 10:01 am",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=3002",
+      "documentKey": "3002"
+    },
+    {
+      "header": "Dividend/Distribution - NHC",
+      "releasedDate": "17/03/2026 10:02 am",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=3003",
+      "documentKey": "3003"
+    },
+    {
+      "header": "Appendix 4D and Half Year Financial Report",
+      "releasedDate": "17/03/2026 10:03 am",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=3004",
+      "documentKey": "3004"
+    },
+    {
+      "header": "Quarterly Activities Report",
+      "releasedDate": "20/01/2026 09:00 am",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=3005",
+      "documentKey": "3005"
+    }
+  ]
+}"""
+
+_NHC_17MAR_MOCK_JSON_V1 = """{
+  "data": [
+    {
+      "id": "3001",
+      "header": "Half Year Results Presentation",
+      "document_date": "2026-03-17T10:00:00+11:00",
+      "url": "https://www.asx.com.au/announcements/NHC/3001"
+    },
+    {
+      "id": "3002",
+      "header": "FY26 Half Year Results",
+      "document_date": "2026-03-17T10:01:00+11:00",
+      "url": "https://www.asx.com.au/announcements/NHC/3002"
+    },
+    {
+      "id": "3003",
+      "header": "Dividend/Distribution - NHC",
+      "document_date": "2026-03-17T10:02:00+11:00",
+      "url": "https://www.asx.com.au/announcements/NHC/3003"
+    },
+    {
+      "id": "3004",
+      "header": "Appendix 4D and Half Year Financial Report",
+      "document_date": "2026-03-17T10:03:00+11:00",
+      "url": "https://www.asx.com.au/announcements/NHC/3004"
+    },
+    {
+      "id": "3005",
+      "header": "Quarterly Activities Report",
+      "document_date": "2026-01-20T09:00:00+11:00",
+      "url": "https://www.asx.com.au/announcements/NHC/3005"
+    }
+  ]
+}"""
+
+
+def test_nhc_regression_17mar2026_html():
+    """Mandatory regression: NHC HY pack on 17/03/2026 detected from HTML."""
+    from results_pack_agent.asx_fetcher import _parse_announcements_html
+
+    anns = _parse_announcements_html(_NHC_17MAR_MOCK_HTML, ticker="NHC")
+    assert len(anns) == 5
+
+    pack = detect_result_pack(anns, report_type="HY")
+    assert pack is not None, "NHC HY pack on 17/03/2026 must be detected"
+    assert pack.ticker == "NHC"
+    assert pack.result_type == "HY"
+    assert pack.result_date == "17/03/2026"
+
+    titles = {a.title for a in pack.announcements}
+    assert "Half Year Results Presentation" in titles
+    assert "FY26 Half Year Results" in titles
+    assert "Dividend/Distribution - NHC" in titles
+    assert "Appendix 4D and Half Year Financial Report" in titles
+    assert "Quarterly Activities Report" not in titles
+
+    assert pack.folder_name == "260317-NHC-HY-Results-Pack"
+    assert pack.file_prefix == "260317-NHC-HY"
+
+
+def test_nhc_regression_17mar2026_json():
+    """Mandatory regression: NHC HY pack on 17/03/2026 detected from v2 JSON."""
+    from results_pack_agent.asx_fetcher import _parse_announcements_json
+
+    anns = _parse_announcements_json(_NHC_17MAR_MOCK_JSON, ticker="NHC")
+    assert len(anns) == 5
+
+    pack = detect_result_pack(anns, report_type="HY")
+    assert pack is not None, "NHC HY pack on 17/03/2026 must be detected"
+    assert pack.result_date == "17/03/2026"
+    assert pack.folder_name == "260317-NHC-HY-Results-Pack"
+
+
+# ---------------------------------------------------------------------------
+# 20. v1 JSON API format (_parse_announcements_json_v1)
+# ---------------------------------------------------------------------------
+
+def test_parse_json_v1_iso_dates():
+    """v1 JSON (document_date ISO 8601) is parsed correctly."""
+    from results_pack_agent.asx_fetcher import _parse_announcements_json_v1
+
+    anns = _parse_announcements_json_v1(_NHC_17MAR_MOCK_JSON_V1, ticker="NHC")
+    assert len(anns) == 5
+    assert anns[0].title == "Half Year Results Presentation"
+    assert anns[0].date == "17/03/2026"
+    assert "asx.com.au" in anns[0].url
+
+
+def test_parse_json_v1_id_url_fallback():
+    """v1 parser constructs URL from 'id' when 'url' field is absent."""
+    from results_pack_agent.asx_fetcher import _parse_announcements_json_v1
+
+    payload = """{
+      "data": [
+        {
+          "id": "9999",
+          "header": "FY26 Half Year Results",
+          "document_date": "2026-03-17T10:00:00+11:00"
+        }
+      ]
+    }"""
+    anns = _parse_announcements_json_v1(payload, ticker="NHC")
+    assert len(anns) == 1
+    assert "NHC/9999" in anns[0].url
+
+
+def test_parse_json_v1_date_filter():
+    """v1 JSON parser respects from_date/to_date window."""
+    import datetime as dt
+    from results_pack_agent.asx_fetcher import _parse_announcements_json_v1
+
+    target = dt.date(2026, 3, 17)
+    anns = _parse_announcements_json_v1(
+        _NHC_17MAR_MOCK_JSON_V1, ticker="NHC", from_date=target, to_date=target
+    )
+    assert len(anns) == 4
+    assert all(a.date == "17/03/2026" for a in anns)
+
+
+def test_parse_json_v1_invalid_returns_empty():
+    """v1 parser returns empty list on invalid input."""
+    from results_pack_agent.asx_fetcher import _parse_announcements_json_v1
+
+    assert _parse_announcements_json_v1("not json", ticker="NHC") == []
+    assert _parse_announcements_json_v1('{"other": []}', ticker="NHC") == []
+
+
+def test_nhc_regression_17mar2026_json_v1():
+    """Mandatory regression: NHC HY pack on 17/03/2026 detected from v1 JSON."""
+    from results_pack_agent.asx_fetcher import _parse_announcements_json_v1
+
+    anns = _parse_announcements_json_v1(_NHC_17MAR_MOCK_JSON_V1, ticker="NHC")
+    assert len(anns) == 5
+
+    pack = detect_result_pack(anns, report_type="HY")
+    assert pack is not None, "NHC HY pack on 17/03/2026 must be detected from v1 JSON"
+    assert pack.result_date == "17/03/2026"
+    assert pack.folder_name == "260317-NHC-HY-Results-Pack"
+    assert pack.file_prefix == "260317-NHC-HY"
+
+    titles = {a.title for a in pack.announcements}
+    assert "Half Year Results Presentation" in titles
+    assert "FY26 Half Year Results" in titles
+    assert "Dividend/Distribution - NHC" in titles
+    assert "Appendix 4D and Half Year Financial Report" in titles
+
+
+# ---------------------------------------------------------------------------
+# 21. fetch_announcements — fallback chain (unit test with mocked HTTP)
+# ---------------------------------------------------------------------------
+
+def test_fetch_announcements_v2_json_used_when_available():
+    """fetch_announcements returns v2 JSON results when v2 succeeds."""
+    from unittest.mock import MagicMock, patch
+    from results_pack_agent.asx_fetcher import fetch_announcements
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.headers = {"Content-Type": "application/json"}
+    mock_resp.text = _NHC_17MAR_MOCK_JSON
+    mock_resp.raise_for_status = MagicMock()
+
+    mock_session = MagicMock()
+    mock_session.get.return_value = mock_resp
+
+    anns = fetch_announcements("NHC", session=mock_session)
+    assert len(anns) == 5
+    assert anns[0].ticker == "NHC"
+
+
+def test_fetch_announcements_falls_back_to_v2_html():
+    """fetch_announcements falls back to HTML parsing when v2 JSON has no data key."""
+    from unittest.mock import MagicMock, patch
+    from results_pack_agent.asx_fetcher import fetch_announcements
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.headers = {"Content-Type": "text/html"}
+    mock_resp.text = _NHC_17MAR_MOCK_HTML
+    mock_resp.raise_for_status = MagicMock()
+
+    mock_session = MagicMock()
+    mock_session.get.return_value = mock_resp
+
+    anns = fetch_announcements("NHC", session=mock_session)
+    assert len(anns) == 5
+
+
+def test_fetch_announcements_falls_back_to_v1_when_v2_empty():
+    """fetch_announcements falls back to v1 JSON when v2 returns no items."""
+    from unittest.mock import MagicMock
+    from results_pack_agent.asx_fetcher import fetch_announcements
+
+    empty_resp = MagicMock()
+    empty_resp.status_code = 200
+    empty_resp.headers = {"Content-Type": "text/html"}
+    empty_resp.text = "<html><body>No table here.</body></html>"
+    empty_resp.raise_for_status = MagicMock()
+
+    v1_resp = MagicMock()
+    v1_resp.status_code = 200
+    v1_resp.headers = {"Content-Type": "application/json"}
+    v1_resp.text = _NHC_17MAR_MOCK_JSON_V1
+    v1_resp.raise_for_status = MagicMock()
+
+    # v2 gets empty HTML; v1 gets the JSON payload; company page never called
+    mock_session = MagicMock()
+    mock_session.get.side_effect = [empty_resp, v1_resp]
+
+    anns = fetch_announcements("NHC", session=mock_session)
+    assert len(anns) == 5
+    # v1 URL was called (second get call)
+    assert mock_session.get.call_count == 2
+
+
+def test_fetch_announcements_falls_back_to_company_page_when_v1_empty():
+    """fetch_announcements falls back to company page when v1 also returns nothing."""
+    from unittest.mock import MagicMock
+    from results_pack_agent.asx_fetcher import fetch_announcements
+
+    empty_resp = MagicMock()
+    empty_resp.status_code = 200
+    empty_resp.headers = {"Content-Type": "text/html"}
+    empty_resp.text = "<html><body></body></html>"
+    empty_resp.raise_for_status = MagicMock()
+
+    company_page_resp = MagicMock()
+    company_page_resp.status_code = 200
+    company_page_resp.headers = {"Content-Type": "text/html"}
+    company_page_resp.text = _NHC_17MAR_MOCK_HTML
+    company_page_resp.raise_for_status = MagicMock()
+
+    # v2 empty, v1 empty, company page has data
+    mock_session = MagicMock()
+    mock_session.get.side_effect = [empty_resp, empty_resp, company_page_resp]
+
+    anns = fetch_announcements("NHC", session=mock_session)
+    assert len(anns) == 5
+    assert mock_session.get.call_count == 3
+
+
+# ---------------------------------------------------------------------------
+# 22. Defaults: upload / strawman / valuation are ON by default
+# ---------------------------------------------------------------------------
+
+def test_run_defaults_include_strawman(monkeypatch):
+    """run() includes strawman_post in prompts by default (include_strawman=True)."""
+    from results_pack_agent import main as rpa_main
+    from unittest.mock import patch, MagicMock
+
+    mock_anns = [
+        _make_ann("NHC Half Year Results FY26", date="17/03/2026"),
+        _make_ann("Appendix 4D", date="17/03/2026"),
+    ]
+
+    with patch("results_pack_agent.main.fetch_announcements", return_value=mock_anns), \
+         patch("results_pack_agent.main.download_pack_pdfs", return_value=0), \
+         patch("results_pack_agent.main.save_pack_metadata", return_value=MagicMock()), \
+         patch("results_pack_agent.main.run_prompts", return_value={}) as mock_run_prompts, \
+         patch("results_pack_agent.main.make_output_folder", return_value=MagicMock()):
+
+        rpa_main.run(ticker="NHC", report_type="HY")
+
+    call_kwargs = mock_run_prompts.call_args
+    # strawman_post must be in prompts_to_run by default
+    prompts = call_kwargs[1].get("prompts_to_run") or call_kwargs[0][2]
+    assert "strawman_post" in prompts
+
+
+def test_run_skip_strawman_excludes_it(monkeypatch):
+    """run() excludes strawman_post when skip_strawman=True."""
+    from results_pack_agent import main as rpa_main
+    from unittest.mock import patch, MagicMock
+
+    mock_anns = [
+        _make_ann("NHC Half Year Results FY26", date="17/03/2026"),
+        _make_ann("Appendix 4D", date="17/03/2026"),
+    ]
+
+    with patch("results_pack_agent.main.fetch_announcements", return_value=mock_anns), \
+         patch("results_pack_agent.main.download_pack_pdfs", return_value=0), \
+         patch("results_pack_agent.main.save_pack_metadata", return_value=MagicMock()), \
+         patch("results_pack_agent.main.run_prompts", return_value={}) as mock_run_prompts, \
+         patch("results_pack_agent.main.make_output_folder", return_value=MagicMock()):
+
+        rpa_main.run(ticker="NHC", report_type="HY", skip_strawman=True)
+
+    call_kwargs = mock_run_prompts.call_args
+    prompts = call_kwargs[1].get("prompts_to_run") or call_kwargs[0][2]
+    assert "strawman_post" not in prompts
+
+
+# ---------------------------------------------------------------------------
+# 23. Error message — no "ticker may be invalid" when fetch returns empty
+# ---------------------------------------------------------------------------
+
+def test_no_announcements_error_message_does_not_blame_ticker():
+    """run() error message must NOT say 'ticker may be invalid' on fetch failure."""
+    from results_pack_agent import main as rpa_main
+    from unittest.mock import patch
+
+    with patch("results_pack_agent.main.fetch_announcements", return_value=[]):
+        summary = rpa_main.run(ticker="NHC")
+
+    assert summary.failure_reason == "NO_ANNOUNCEMENTS_FOUND"
+    msg = summary.failure_message or ""
+    # Must NOT blame the ticker
+    assert "ticker may be invalid" not in msg.lower()
+    assert "not listed on asx" not in msg.lower()
+    # Must give a useful diagnostic direction
+    assert "fetch" in msg.lower() or "parsing" in msg.lower()

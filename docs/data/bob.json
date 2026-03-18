@@ -1,13 +1,7 @@
 {
-  "last_run": "2026-03-18",
-  "silence": false,
+  "last_run": "2026-03-19",
+  "silence": true,
   "high_impact": [],
   "material": [],
-  "fyi": [
-    {
-      "ticker": "IAG",
-      "title": "Dividend/Distribution - IAGPF 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.9KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073530"
-    }
-  ]
+  "fyi": []
 }

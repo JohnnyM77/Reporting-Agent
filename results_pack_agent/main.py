@@ -93,23 +93,44 @@ def _build_parser() -> argparse.ArgumentParser:
         ),
     )
 
-    # Feature flags
+    # Feature flags — all default ON; use the --no-* / --skip-* flags to disable
+    p.add_argument(
+        "--no-upload",
+        dest="no_upload",
+        action="store_true",
+        help="Suppress the Google Drive upload (upload is ON by default).",
+    )
+    p.add_argument(
+        "--skip-valuation",
+        dest="skip_valuation",
+        action="store_true",
+        help="Skip the valuation workbook build step (valuation is ON by default).",
+    )
+    p.add_argument(
+        "--skip-strawman",
+        dest="skip_strawman",
+        action="store_true",
+        help="Skip the Strawman post draft (Strawman is ON by default).",
+    )
+
+    # Legacy opt-in flags kept for backwards compatibility — they are now no-ops
+    # because the features are enabled by default.
     p.add_argument(
         "--upload",
         action="store_true",
-        help="Upload all artifacts to Google Drive after the run.",
+        help=argparse.SUPPRESS,  # hidden; upload is now the default
     )
     p.add_argument(
         "--build-valuation",
         dest="build_valuation",
         action="store_true",
-        help="Build the Wally value-chart spreadsheet for the ticker.",
+        help=argparse.SUPPRESS,  # hidden; valuation is now the default
     )
     p.add_argument(
         "--include-strawman",
         dest="include_strawman",
         action="store_true",
-        help="Include a Strawman.com post draft in the outputs.",
+        help=argparse.SUPPRESS,  # hidden; Strawman is now the default
     )
 
     # Debug / testing
@@ -121,18 +142,6 @@ def _build_parser() -> argparse.ArgumentParser:
             "Log what would happen without making any HTTP requests or "
             "writing any files (implies --no-upload and --skip-valuation)."
         ),
-    )
-    p.add_argument(
-        "--no-upload",
-        dest="no_upload",
-        action="store_true",
-        help="Suppress the Drive upload even when --upload is set.",
-    )
-    p.add_argument(
-        "--skip-valuation",
-        dest="skip_valuation",
-        action="store_true",
-        help="Skip the valuation workbook build step.",
     )
     p.add_argument(
         "--force",
@@ -209,12 +218,13 @@ def run(
     market: str = "ASX",
     report_type: Optional[str] = None,
     target_date: Optional[str] = None,
-    upload: bool = False,
-    build_valuation_flag: bool = False,
-    include_strawman: bool = False,
+    upload: bool = True,
+    build_valuation_flag: bool = True,
+    include_strawman: bool = True,
     dry_run: bool = False,
     no_upload: bool = False,
     skip_valuation: bool = False,
+    skip_strawman: bool = False,
     force: bool = False,
 ) -> RunSummary:
     """Run the full results-pack workflow and return a ``RunSummary``.
@@ -228,6 +238,7 @@ def run(
     ticker = ticker.upper().strip()
     do_upload = upload and not no_upload and not dry_run
     do_valuation = build_valuation_flag and not skip_valuation
+    do_strawman = include_strawman and not skip_strawman
 
     log("=" * 60)
     log(f"  Results Pack Agent — {ticker} ({market}) {report_type or 'AUTO'}")
@@ -269,10 +280,11 @@ def run(
     announcements = fetch_announcements(ticker=ticker)
 
     if not announcements:
-        # Distinguish: ticker not found vs date filtering
         msg = (
-            f"No announcements found for {ticker} in the last 6 months. "
-            "The ticker may be invalid or not listed on ASX."
+            f"No announcements were extracted for {ticker} from the ASX fetch response. "
+            "This likely indicates a fetch/parsing issue or unexpected ASX response format. "
+            "Check the [asx_fetcher] log lines above for the HTTP status, content-type, "
+            "and body preview to diagnose the root cause."
         )
         log(f"[main] {msg}")
         summary = _make_failure(ticker, "NO_ANNOUNCEMENTS_FOUND", msg, report_type=report_type or "AUTO")
@@ -373,7 +385,7 @@ def run(
 
     # ── 6. Run Claude prompts ───────────────────────────────────────────────────
     prompts_to_run = ["management_report", "equity_report"]
-    if include_strawman:
+    if do_strawman:
         prompts_to_run.append("strawman_post")
 
     log(f"[main] Running Claude prompts: {prompts_to_run} …")
@@ -381,7 +393,7 @@ def run(
         pack=pack,
         output_folder=output_folder,
         prompts_to_run=prompts_to_run,
-        include_strawman=include_strawman,
+        include_strawman=do_strawman,
         dry_run=dry_run,
     )
     artifacts.update(prompt_artifacts)
@@ -415,10 +427,10 @@ def run(
             log(f"[main] Drive upload complete: {drive_url}")
         else:
             log("[main] Drive upload failed or not configured.")
-    elif upload and no_upload:
+    elif no_upload:
         log("[main] --no-upload set — skipping Drive upload.")
-    elif not upload:
-        log("[main] --upload not set — skipping Drive upload.")
+    else:
+        log("[main] Drive upload skipped (no credentials or disabled).")
 
     # ── 9. Return summary ───────────────────────────────────────────────────────
     summary = RunSummary(
@@ -455,12 +467,13 @@ def main() -> None:
         market=args.market,
         report_type=args.report_type,
         target_date=args.date,
-        upload=args.upload,
-        build_valuation_flag=args.build_valuation,
-        include_strawman=args.include_strawman,
+        upload=True,  # upload is ON by default; --no-upload disables it
+        build_valuation_flag=True,  # valuation is ON by default; --skip-valuation disables it
+        include_strawman=True,  # Strawman is ON by default; --skip-strawman disables it
         dry_run=args.dry_run,
         no_upload=args.no_upload,
         skip_valuation=args.skip_valuation,
+        skip_strawman=args.skip_strawman,
         force=args.force,
     )
 

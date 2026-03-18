@@ -13,10 +13,23 @@ _REPO_ROOT = Path(__file__).parent.parent
 OUTPUT_ROOT = _REPO_ROOT / "outputs" / "results_pack"
 
 # ── ASX API ───────────────────────────────────────────────────────────────────
+# Primary endpoint (v2 legacy): returns JSON {"data":[{header,releasedDate,url,documentKey}]}
+# or HTML table depending on server version.
 ASX_ANNOUNCEMENTS_URL = (
     "https://www.asx.com.au/asx/v2/statistics/announcements.do"
     "?asxCode={ticker}&by=asxCode&period=M6&timeframe=D"
 )
+
+# Fallback endpoint (v1 JSON API): returns {"data":[{id,header,document_date,url,...}]}
+# Used when the v2 endpoint returns zero items or an unexpected response.
+ASX_ANNOUNCEMENTS_URL_V1 = (
+    "https://www.asx.com.au/asx/1/company/{ticker}/announcements"
+    "?count=100&market_sensitive=false"
+)
+
+# Final fallback: public company announcements page (HTML).
+# Used when both v2 and v1 API return zero items.
+ASX_COMPANY_PAGE_URL = "https://www.asx.com.au/companies/{ticker}/announcements"
 
 # Months of history to scan when searching for the latest result day.
 ASX_HISTORY_MONTHS = 6

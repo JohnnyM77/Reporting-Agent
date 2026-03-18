@@ -3,7 +3,7 @@ name: Wally Watchlist Screening
 on:
   workflow_dispatch:
   schedule:
-    # Tue/Fri (UTC) for standard watchlists; TII75 handled on Friday inside job
+    # Tue/Fri (UTC) — all watchlists including TII75 run every scheduled execution
     - cron: "30 22 * * 2,5"
 
 jobs:
@@ -39,12 +39,9 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             # Manual trigger: run all with combined email (force TII75)
             python -m wally.main --all-combined --force
-          elif [ "$(date -u +%u)" = "5" ]; then
-            # Scheduled Friday: run all with combined email (TII75 with fortnightly gate)
-            python -m wally.main --all-combined
           else
-            # Scheduled Tuesday: run standard watchlists only with combined email
-            python -m wally.main --all-standard-watchlists --combined-email
+            # Scheduled run (Tue or Fri): run all watchlists including TII75
+            python -m wally.main --all-combined
           fi
 
       - name: Commit dashboard update

@@ -20,10 +20,35 @@ from .claude_runner import run_prompts
 from .config import GDRIVE_FOLDER_ID, OUTPUT_ROOT
 from .gdrive_uploader import upload_results_pack
 from .models import RunSummary
-from .pack_detector import detect_result_pack
+from .pack_detector import detect_result_pack, find_nearest_result_dates
 from .pdf_downloader import download_pack_pdfs, save_pack_metadata
 from .utils import iso_to_asx_date, log, make_output_folder
 from .valuation_runner import build_valuation
+
+
+# ── Company name lookup ────────────────────────────────────────────────────────
+
+def _resolve_company_name(ticker: str) -> str:
+    """Look up the company name for *ticker* from tickers.yaml.
+
+    Falls back to the ticker code itself if no entry is found.
+    """
+    try:
+        import yaml
+        _repo_root = Path(__file__).parent.parent
+        tickers_file = _repo_root / "tickers.yaml"
+        if tickers_file.exists():
+            data = yaml.safe_load(tickers_file.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                # Search all market sections (asx, lse, etc.)
+                for _market, entries in data.items():
+                    if isinstance(entries, dict) and ticker in entries:
+                        name = entries[ticker]
+                        if isinstance(name, str) and name:
+                            return name
+    except Exception:
+        pass
+    return ticker
 
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
@@ -62,7 +87,8 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         metavar="YYYY-MM-DD",
         help=(
-            "Target a specific result date instead of detecting the latest. "
+            "Target a specific result date (treated as a preference, not a "
+            "hard filter). If no exact match, nearest valid dates are suggested. "
             "Useful for replay/testing."
         ),
     )
@@ -113,8 +139,67 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Re-download and reprocess even if outputs already exist.",
     )
+    p.add_argument(
+        "--list-recent-dates",
+        dest="list_recent_dates",
+        action="store_true",
+        help=(
+            "Print recent result-day candidate dates for the ticker and exit. "
+            "Use with --report-type to filter by HY or FY. "
+            "Example: python -m results_pack_agent.main --ticker NHC --list-recent-dates"
+        ),
+    )
 
     return p
+
+
+# ── Helper: _make_failure ──────────────────────────────────────────────────────
+
+def _make_failure(
+    ticker: str,
+    reason: str,
+    message: str,
+    nearest_dates: Optional[List[str]] = None,
+    report_type: str = "AUTO",
+) -> RunSummary:
+    """Return a RunSummary that represents a structured failure."""
+    summary = RunSummary(
+        ticker=ticker,
+        result_date="N/A",
+        result_type=report_type,
+        pdfs_downloaded=0,
+        prompts_run=[],
+        local_folder="N/A",
+        drive_folder_url=None,
+        valuation_path=None,
+        failure_reason=reason,
+        failure_message=message,
+        nearest_dates=nearest_dates or [],
+    )
+    return summary
+
+
+# ── List-recent-dates mode ─────────────────────────────────────────────────────
+
+def list_recent_dates(ticker: str, report_type: Optional[str] = None, n: int = 10) -> None:
+    """Fetch and print recent result-day candidate dates for *ticker*."""
+    ticker = ticker.upper().strip()
+    log(f"[main] Fetching announcement history for {ticker} …")
+    announcements = fetch_announcements(ticker=ticker)
+    if not announcements:
+        log(f"[main] No announcements found for {ticker}. The ticker may be invalid.")
+        print(f"\nNo announcements found for {ticker}.")
+        return
+
+    dates = find_nearest_result_dates(announcements, report_type=report_type, n=n)
+    type_label = f" ({report_type})" if report_type else ""
+    print(f"\nRecent result-day candidates for {ticker}{type_label}:")
+    if dates:
+        for d in dates:
+            print(f"  - {d}")
+    else:
+        print("  (none found in the last 6 months)")
+    print()
 
 
 # ── Main workflow ──────────────────────────────────────────────────────────────
@@ -136,6 +221,9 @@ def run(
 
     This function is the programmatic entry point — it is also called by
     ``main()`` after parsing CLI arguments.
+
+    The function always returns a ``RunSummary`` (never calls sys.exit).
+    Check ``summary.failure_reason`` to determine whether the run succeeded.
     """
     ticker = ticker.upper().strip()
     do_upload = upload and not no_upload and not dry_run
@@ -144,21 +232,23 @@ def run(
     log("=" * 60)
     log(f"  Results Pack Agent — {ticker} ({market}) {report_type or 'AUTO'}")
     log("=" * 60)
+    if target_date:
+        log(f"[main] Target date: {target_date} (preference, not hard filter)")
 
-    # ── 1. Fetch ASX announcements ──────────────────────────────────────────────
-    log(f"[main] Fetching announcements for {ticker} …")
-
+    # ── 1. Parse target date ────────────────────────────────────────────────────
     target_dt: Optional[dt.date] = None
     if target_date:
         try:
             target_dt = dt.datetime.strptime(target_date, "%Y-%m-%d").date()
         except ValueError:
-            log(f"[main] Invalid --date format '{target_date}' — expected YYYY-MM-DD. Aborting.")
-            sys.exit(1)
+            msg = f"Invalid --date format '{target_date}' — expected YYYY-MM-DD."
+            log(f"[main] {msg}")
+            summary = _make_failure(ticker, "INVALID_DATE_FORMAT", msg, report_type=report_type or "AUTO")
+            summary.print_summary()
+            return summary
 
     if dry_run:
         log("[main] [DRY-RUN] Would fetch ASX announcements — skipping.")
-        # Return a minimal summary for dry-run
         summary = RunSummary(
             ticker=ticker,
             result_date=target_date or "N/A",
@@ -172,43 +262,101 @@ def run(
         summary.print_summary()
         return summary
 
-    announcements = fetch_announcements(
-        ticker=ticker,
-        from_date=target_dt,
-        to_date=target_dt,
-    )
+    # ── 2. Fetch ASX announcements (full 6-month history, no date pre-filter) ──
+    # We intentionally do NOT pass from_date/to_date here so the full history
+    # is available for nearest-date matching and latest-pack selection.
+    log(f"[main] Fetching announcement history for {ticker} (last 6 months) …")
+    announcements = fetch_announcements(ticker=ticker)
 
     if not announcements:
-        log(f"[main] No announcements found for {ticker}. Check the ticker and try again.")
-        sys.exit(1)
+        # Distinguish: ticker not found vs date filtering
+        msg = (
+            f"No announcements found for {ticker} in the last 6 months. "
+            "The ticker may be invalid or not listed on ASX."
+        )
+        log(f"[main] {msg}")
+        summary = _make_failure(ticker, "NO_ANNOUNCEMENTS_FOUND", msg, report_type=report_type or "AUTO")
+        summary.print_summary()
+        return summary
 
     log(f"[main] Found {len(announcements)} announcement(s) for {ticker}.")
 
-    # ── 2. Detect result day pack ───────────────────────────────────────────────
-    log("[main] Detecting result day …")
+    # ── 3. Detect result day pack ───────────────────────────────────────────────
+    log("[main] Detecting result day pack …")
+
+    # First attempt: exact date match (if target_dt given)
     pack = detect_result_pack(
         announcements=announcements,
         report_type=report_type,
         target_date=target_dt,
     )
 
-    if pack is None:
+    if pack is None and target_dt is not None:
+        # Exact date match failed — try without date constraint to find nearest
         log(
-            f"[main] No {report_type or 'HY/FY'} result day found for {ticker}. "
-            "Try --date YYYY-MM-DD to target a specific date, or check the ticker."
+            f"[main] No exact match on {target_date}. "
+            "Searching for nearest result-day candidates …"
         )
-        sys.exit(1)
+        nearest = find_nearest_result_dates(
+            announcements, report_type=report_type, n=5
+        )
+
+        if nearest:
+            dates_str = ", ".join(nearest)
+            msg = (
+                f"No {report_type or 'HY/FY'} result pack found for {ticker} "
+                f"on {target_date}.\n"
+                f"Nearest candidate date(s): {dates_str}\n"
+                "Re-run with one of these dates or omit --date to use the latest."
+            )
+            log(f"[main] {msg}")
+            summary = _make_failure(
+                ticker,
+                "TICKER_VALID_BUT_NO_MATCHING_DATE",
+                msg,
+                nearest_dates=nearest,
+                report_type=report_type or "AUTO",
+            )
+            summary.print_summary()
+            return summary
+        else:
+            msg = (
+                f"No {report_type or 'HY/FY'} result pack found for {ticker}. "
+                "No result-day triggers found in the last 6 months of announcements."
+            )
+            log(f"[main] {msg}")
+            summary = _make_failure(ticker, "NO_RESULT_PACK_FOUND", msg, report_type=report_type or "AUTO")
+            summary.print_summary()
+            return summary
+
+    if pack is None:
+        # No date constraint but still no pack found
+        nearest = find_nearest_result_dates(announcements, report_type=report_type, n=3)
+        msg = (
+            f"No {report_type or 'HY/FY'} result pack found for {ticker} "
+            "in the last 6 months of announcements."
+        )
+        if nearest:
+            msg += f" Nearest candidate date(s): {', '.join(nearest)}"
+        log(f"[main] {msg}")
+        summary = _make_failure(ticker, "NO_RESULT_PACK_FOUND", msg, nearest_dates=nearest, report_type=report_type or "AUTO")
+        summary.print_summary()
+        return summary
+
+    # Resolve real company name (prefer tickers.yaml over raw ticker)
+    company_name = _resolve_company_name(ticker)
+    pack.company_name = company_name
 
     log(
         f"[main] Pack detected: {pack.result_type} results on {pack.result_date} "
-        f"— {len(pack.announcements)} document(s)."
+        f"for {pack.company_name} — {len(pack.announcements)} document(s)."
     )
 
-    # ── 3. Create output folder ─────────────────────────────────────────────────
+    # ── 4. Create output folder ─────────────────────────────────────────────────
     output_folder = make_output_folder(OUTPUT_ROOT, pack.folder_name)
     log(f"[main] Output folder: {output_folder}")
 
-    # ── 4. Download PDFs ────────────────────────────────────────────────────────
+    # ── 5. Download PDFs ────────────────────────────────────────────────────────
     log("[main] Downloading PDFs …")
     pdfs_downloaded = download_pack_pdfs(
         pack=pack,
@@ -216,14 +364,14 @@ def run(
         dry_run=dry_run,
     )
 
+    if pdfs_downloaded == 0:
+        log("[main] WARNING: No PDFs downloaded — Claude analysis will be limited.")
+
     # Save metadata JSON
     meta_path = save_pack_metadata(pack, output_folder)
     artifacts: dict[str, str] = {"metadata": str(meta_path)}
 
-    # ── 5. Run Claude prompts ───────────────────────────────────────────────────
-    if pdfs_downloaded == 0:
-        log("[main] WARNING: No PDFs downloaded — Claude analysis will be limited.")
-
+    # ── 6. Run Claude prompts ───────────────────────────────────────────────────
     prompts_to_run = ["management_report", "equity_report"]
     if include_strawman:
         prompts_to_run.append("strawman_post")
@@ -238,11 +386,10 @@ def run(
     )
     artifacts.update(prompt_artifacts)
 
-    # ── 6. Build valuation workbook ─────────────────────────────────────────────
+    # ── 7. Build valuation workbook ─────────────────────────────────────────────
     valuation_path: Optional[str] = None
     if do_valuation:
         log("[main] Building valuation workbook …")
-        # Valuation uses ticker without exchange suffix for Wally config lookup
         wally_ticker = f"{ticker}.AX" if market == "ASX" and "." not in ticker else ticker
         valuation_path = build_valuation(
             ticker=wally_ticker,
@@ -253,7 +400,7 @@ def run(
         if valuation_path:
             artifacts["valuation"] = valuation_path
 
-    # ── 7. Upload to Google Drive ───────────────────────────────────────────────
+    # ── 8. Upload to Google Drive ───────────────────────────────────────────────
     drive_url: Optional[str] = None
     if do_upload:
         log("[main] Uploading to Google Drive …")
@@ -273,7 +420,7 @@ def run(
     elif not upload:
         log("[main] --upload not set — skipping Drive upload.")
 
-    # ── 8. Return summary ───────────────────────────────────────────────────────
+    # ── 9. Return summary ───────────────────────────────────────────────────────
     summary = RunSummary(
         ticker=ticker,
         result_date=pack.result_date,
@@ -294,7 +441,16 @@ def main() -> None:
     parser = _build_parser()
     args = parser.parse_args()
 
-    run(
+    # List-recent-dates mode: print candidates and exit
+    if args.list_recent_dates:
+        list_recent_dates(
+            ticker=args.ticker,
+            report_type=args.report_type,
+            n=10,
+        )
+        return
+
+    summary = run(
         ticker=args.ticker,
         market=args.market,
         report_type=args.report_type,
@@ -307,6 +463,10 @@ def main() -> None:
         skip_valuation=args.skip_valuation,
         force=args.force,
     )
+
+    # Exit with non-zero code on failure so CI/workflows detect problems
+    if not summary.success:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

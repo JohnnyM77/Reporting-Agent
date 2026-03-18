@@ -67,6 +67,23 @@ RESULT_DAY_TRIGGER_KEYWORDS: list[str] = [
     "results announcement",
     "1h fy",
     "1hfy",
+    # Common patterns for company-prefixed results titles (e.g. "NHC Half Year Results")
+    "half year result",
+    "full year result",
+    # "FY26 Results", "FY2026 Results", etc.
+    "fy26 results",
+    "fy25 results",
+    "fy24 results",
+    "fy2026 results",
+    "fy2025 results",
+    "fy2024 results",
+    # "1HFY26", "2HFY26" style
+    "2h fy",
+    "2hfy",
+    # Financial results or earnings release
+    "financial results",
+    "earnings release",
+    "preliminary final report",
 ]
 
 # Keywords that indicate a same-day document worth including in the pack
@@ -77,14 +94,19 @@ PACK_INCLUDE_KEYWORDS: list[str] = [
     "full year",
     "annual report",
     "interim financial report",
+    "half-year financial report",
+    "full year financial report",
     "financial report",
     "investor presentation",
     "results presentation",
+    "management presentation",
     "dividend",
     "distribution",
     "fy ",
     "appendix 4d",
     "appendix 4e",
+    "preliminary final",
+    "earnings release",
 ]
 
 # These titles are excluded even if other keywords match.

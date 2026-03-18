@@ -35,6 +35,7 @@ import anthropic
 import asyncio
 from playwright_fetch import fetch_pdf_with_playwright  # must exist in repo root
 
+from asx_fetch import fetch_asx_announcements_html, parse_asx_html_announcements
 from prompts import (
     DEFAULT_2LINE_PROMPT,
     ACQUISITION_PROMPT,
@@ -674,42 +675,20 @@ def is_meaningful_text(text: str, min_chars: int = 1200) -> bool:
 # ASX announcement fetching
 # ----------------------------
 def fetch_asx_announcements(session: requests.Session, ticker: str, hours_back: int = 24) -> List[Dict]:
-    url = (
-        "https://www.asx.com.au/asx/v2/statistics/announcements.do"
-        f"?asxCode={ticker}&by=asxCode&period=M6&timeframe=D"
-    )
-    r = session.get(url, timeout=30)
-    r.raise_for_status()
-
-    soup = BeautifulSoup(r.text, "html.parser")
-    rows = soup.select("table tr")
-
+    # Use the shared HTML fetch; then apply the 24-hour cutoff as a post-filter.
     cutoff_dt = cutoff_dt_sgt(hours_back)
+
+    all_items = fetch_asx_announcements_html(session, ticker)
+
     items: List[Dict] = []
+    for it in all_items:
+        date_text = it["date"]
+        time_text = it["time"]
 
-    for row in rows:
-        cols = [c.get_text(" ", strip=True) for c in row.select("td")]
-        if len(cols) < 2:
-            continue
-
-        link = row.select_one("a")
-        if not link or not link.get("href"):
-            continue
-
-        title = link.get_text(" ", strip=True)
-        href = link["href"]
-        if href.startswith("/"):
-            href = "https://www.asx.com.au" + href
-
-        # Typical ASX: col0 = date, col1 = time (sometimes blank / not parseable)
-        date_text = cols[0]
-        time_text = cols[1] if len(cols) > 1 else ""
-
-        # Parse datetime in SGT-ish format shown on ASX pages (we treat as local SGT for cutoff)
+        # Parse datetime for the cutoff check
         dt_str = f"{date_text} {time_text}".strip()
         item_dt: Optional[dt.datetime] = None
 
-        # Common patterns like: "26/02/2026 6:09 pm"
         for fmt in ("%d/%m/%Y %I:%M %p", "%d/%m/%Y %I:%M%p", "%d/%m/%Y"):
             try:
                 parsed = dt.datetime.strptime(dt_str, fmt)
@@ -720,7 +699,6 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, hours_back: 
             except Exception:
                 continue
 
-        # If time parsing fails, try date-only
         if not item_dt:
             try:
                 parsed_date = dt.datetime.strptime(date_text, "%d/%m/%Y").date()
@@ -731,27 +709,9 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, hours_back: 
         if item_dt < cutoff_dt:
             continue
 
-        items.append(
-            {
-                "exchange": "ASX",
-                "ticker": ticker,
-                "date": date_text,
-                "time": time_text,
-                "title": title,
-                "url": href,
-            }
-        )
+        items.append(it)
 
-    # de-dupe by URL
-    seen = set()
-    out: List[Dict] = []
-    for it in items:
-        if it["url"] in seen:
-            continue
-        seen.add(it["url"])
-        out.append(it)
-
-    return out[:MAX_ANNOUNCEMENTS_PER_TICKER]
+    return items[:MAX_ANNOUNCEMENTS_PER_TICKER]
 
 
 def fetch_asx_announcements_replay(
@@ -766,57 +726,9 @@ def fetch_asx_announcements_replay(
     cutoff — it filters purely by calendar date so historical packs can be
     retrieved for replay / debugging.
     """
-    url = (
-        "https://www.asx.com.au/asx/v2/statistics/announcements.do"
-        f"?asxCode={ticker}&by=asxCode&period=M6&timeframe=D"
+    return fetch_asx_announcements_html(
+        session, ticker, from_date=from_date, to_date=to_date
     )
-    r = session.get(url, timeout=30)
-    r.raise_for_status()
-
-    soup = BeautifulSoup(r.text, "html.parser")
-    rows = soup.select("table tr")
-
-    items: List[Dict] = []
-    for row in rows:
-        cols = [c.get_text(" ", strip=True) for c in row.select("td")]
-        if len(cols) < 2:
-            continue
-        link = row.select_one("a")
-        if not link or not link.get("href"):
-            continue
-        title = link.get_text(" ", strip=True)
-        href = link["href"]
-        if href.startswith("/"):
-            href = "https://www.asx.com.au" + href
-
-        date_text = cols[0]
-        time_text = cols[1] if len(cols) > 1 else ""
-
-        try:
-            item_date = dt.datetime.strptime(date_text, "%d/%m/%Y").date()
-        except Exception:
-            continue
-
-        if not (from_date <= item_date <= to_date):
-            continue
-
-        items.append({
-            "exchange": "ASX",
-            "ticker": ticker,
-            "date": date_text,
-            "time": time_text,
-            "title": title,
-            "url": href,
-        })
-
-    seen: set = set()
-    out: List[Dict] = []
-    for it in items:
-        if it["url"] in seen:
-            continue
-        seen.add(it["url"])
-        out.append(it)
-    return out
 
 
 def fetch_asx_announcements_by_ids(
@@ -830,51 +742,8 @@ def fetch_asx_announcements_by_ids(
     time-window filter.
     """
     id_set = set(announcement_ids)
-    url = (
-        "https://www.asx.com.au/asx/v2/statistics/announcements.do"
-        f"?asxCode={ticker}&by=asxCode&period=M6&timeframe=D"
-    )
-    r = session.get(url, timeout=30)
-    r.raise_for_status()
-
-    soup = BeautifulSoup(r.text, "html.parser")
-    rows = soup.select("table tr")
-
-    items: List[Dict] = []
-    for row in rows:
-        cols = [c.get_text(" ", strip=True) for c in row.select("td")]
-        if len(cols) < 2:
-            continue
-        link = row.select_one("a")
-        if not link or not link.get("href"):
-            continue
-        title = link.get_text(" ", strip=True)
-        href = link["href"]
-        if href.startswith("/"):
-            href = "https://www.asx.com.au" + href
-
-        if not any(ids_id in href for ids_id in id_set):
-            continue
-
-        date_text = cols[0]
-        time_text = cols[1] if len(cols) > 1 else ""
-        items.append({
-            "exchange": "ASX",
-            "ticker": ticker,
-            "date": date_text,
-            "time": time_text,
-            "title": title,
-            "url": href,
-        })
-
-    seen: set = set()
-    out: List[Dict] = []
-    for it in items:
-        if it["url"] in seen:
-            continue
-        seen.add(it["url"])
-        out.append(it)
-    return out
+    all_items = fetch_asx_announcements_html(session, ticker)
+    return [it for it in all_items if any(ids_id in it["url"] for ids_id in id_set)]
 
 
 def asx_pdf_url_from_item_url(url: str) -> Optional[str]:

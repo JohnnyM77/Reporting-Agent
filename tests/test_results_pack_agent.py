@@ -442,142 +442,12 @@ def test_nhc_end_to_end_pack_detection():
     assert pack.file_prefix == "260318-NHC-HY"
 
 
+
 # ---------------------------------------------------------------------------
-# 12. JSON response parsing (_parse_announcements_json)
+# 12. (Removed: JSON response parsing tests — JSON paths replaced by Bob's
+#      HTML-only v2 code path via the shared asx_fetch module.)
 # ---------------------------------------------------------------------------
 
-_NHC_MOCK_JSON = """{
-  "data": [
-    {
-      "header": "NHC Half Year Results FY26",
-      "releasedDate": "18/03/2026 10:00 am",
-      "url": "/asx/v2/statistics/displayAnnouncement.do?idsId=1001",
-      "documentKey": "1001"
-    },
-    {
-      "header": "Appendix 4D",
-      "releasedDate": "18/03/2026 10:01 am",
-      "url": "/asx/v2/statistics/displayAnnouncement.do?idsId=1002",
-      "documentKey": "1002"
-    },
-    {
-      "header": "Dividend/Distribution Announcement",
-      "releasedDate": "18/03/2026 10:02 am",
-      "url": "/asx/v2/statistics/displayAnnouncement.do?idsId=1003",
-      "documentKey": "1003"
-    },
-    {
-      "header": "Investor Presentation — 1H FY26",
-      "releasedDate": "18/03/2026 10:03 am",
-      "url": "/asx/v2/statistics/displayAnnouncement.do?idsId=1004",
-      "documentKey": "1004"
-    },
-    {
-      "header": "Quarterly Activities Report",
-      "releasedDate": "20/01/2026 09:00 am",
-      "url": "/asx/v2/statistics/displayAnnouncement.do?idsId=1005",
-      "documentKey": "1005"
-    }
-  ]
-}"""
-
-_NHC_MOCK_JSON_ISO_DATES = """{
-  "data": [
-    {
-      "header": "NHC Half Year Results FY26",
-      "releasedDate": "2026-03-18T10:00:00.000+11:00",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=2001",
-      "documentKey": "2001"
-    },
-    {
-      "header": "Appendix 4D",
-      "releasedDate": "2026-03-18T10:01:00.000+11:00",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=2002",
-      "documentKey": "2002"
-    }
-  ]
-}"""
-
-
-def test_parse_json_dmy_dates():
-    """JSON response with DD/MM/YYYY dates is parsed correctly."""
-    from results_pack_agent.asx_fetcher import _parse_announcements_json
-
-    anns = _parse_announcements_json(_NHC_MOCK_JSON, ticker="NHC")
-    assert len(anns) == 5
-    assert anns[0].title == "NHC Half Year Results FY26"
-    assert anns[0].date == "18/03/2026"
-    assert anns[0].time == "10:00 am"
-    assert "asx.com.au" in anns[0].url
-    assert anns[0].url == "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=1001"
-
-
-def test_parse_json_iso_dates():
-    """JSON response with ISO 8601 dates is parsed correctly."""
-    from results_pack_agent.asx_fetcher import _parse_announcements_json
-
-    anns = _parse_announcements_json(_NHC_MOCK_JSON_ISO_DATES, ticker="NHC")
-    assert len(anns) == 2
-    assert anns[0].date == "18/03/2026"
-
-
-def test_parse_json_date_filter():
-    """JSON parser respects from_date/to_date window."""
-    import datetime as dt
-    from results_pack_agent.asx_fetcher import _parse_announcements_json
-
-    target = dt.date(2026, 3, 18)
-    anns = _parse_announcements_json(
-        _NHC_MOCK_JSON, ticker="NHC", from_date=target, to_date=target
-    )
-    # Only the 4 announcements on 18/03/2026 should be returned
-    assert len(anns) == 4
-    assert all(a.date == "18/03/2026" for a in anns)
-
-
-def test_parse_json_invalid_returns_empty():
-    """Non-JSON or wrong-shape responses return an empty list (HTML fallback)."""
-    from results_pack_agent.asx_fetcher import _parse_announcements_json
-
-    assert _parse_announcements_json("not json", ticker="NHC") == []
-    assert _parse_announcements_json("<html><body></body></html>", ticker="NHC") == []
-    assert _parse_announcements_json('{"other": []}', ticker="NHC") == []
-
-
-def test_nhc_end_to_end_pack_detection_json():
-    """Full scenario: parse mock JSON, detect HY pack, verify structure."""
-    from results_pack_agent.asx_fetcher import _parse_announcements_json
-
-    anns = _parse_announcements_json(_NHC_MOCK_JSON, ticker="NHC")
-    assert len(anns) == 5
-
-    pack = detect_result_pack(anns, report_type="HY")
-    assert pack is not None
-    assert pack.ticker == "NHC"
-    assert pack.result_type == "HY"
-    assert pack.result_date == "18/03/2026"
-
-    titles = {a.title for a in pack.announcements}
-    assert "NHC Half Year Results FY26" in titles
-    assert "Appendix 4D" in titles
-    assert "Quarterly Activities Report" not in titles
-
-    assert pack.folder_name == "260318-NHC-HY-Results-Pack"
-    assert pack.file_prefix == "260318-NHC-HY"
-
-
-def test_parse_asx_release_date_formats():
-    """_parse_asx_release_date handles all known date string formats."""
-    import datetime as dt
-    from results_pack_agent.asx_fetcher import _parse_asx_release_date
-
-    expected = dt.date(2026, 3, 18)
-    assert _parse_asx_release_date("18/03/2026") == expected
-    assert _parse_asx_release_date("18/03/2026 10:00 am") == expected
-    assert _parse_asx_release_date("2026-03-18") == expected
-    assert _parse_asx_release_date("2026-03-18T10:00:00.000+11:00") == expected
-    assert _parse_asx_release_date("") is None
-    assert _parse_asx_release_date("not-a-date") is None
 
 
 # ---------------------------------------------------------------------------
@@ -867,76 +737,6 @@ _NHC_17MAR_MOCK_HTML = """
 </table></body></html>
 """
 
-_NHC_17MAR_MOCK_JSON = """{
-  "data": [
-    {
-      "header": "Half Year Results Presentation",
-      "releasedDate": "17/03/2026 10:00 am",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=3001",
-      "documentKey": "3001"
-    },
-    {
-      "header": "FY26 Half Year Results",
-      "releasedDate": "17/03/2026 10:01 am",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=3002",
-      "documentKey": "3002"
-    },
-    {
-      "header": "Dividend/Distribution - NHC",
-      "releasedDate": "17/03/2026 10:02 am",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=3003",
-      "documentKey": "3003"
-    },
-    {
-      "header": "Appendix 4D and Half Year Financial Report",
-      "releasedDate": "17/03/2026 10:03 am",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=3004",
-      "documentKey": "3004"
-    },
-    {
-      "header": "Quarterly Activities Report",
-      "releasedDate": "20/01/2026 09:00 am",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=3005",
-      "documentKey": "3005"
-    }
-  ]
-}"""
-
-_NHC_17MAR_MOCK_JSON_V1 = """{
-  "data": [
-    {
-      "id": "3001",
-      "header": "Half Year Results Presentation",
-      "document_date": "2026-03-17T10:00:00+11:00",
-      "url": "https://www.asx.com.au/announcements/NHC/3001"
-    },
-    {
-      "id": "3002",
-      "header": "FY26 Half Year Results",
-      "document_date": "2026-03-17T10:01:00+11:00",
-      "url": "https://www.asx.com.au/announcements/NHC/3002"
-    },
-    {
-      "id": "3003",
-      "header": "Dividend/Distribution - NHC",
-      "document_date": "2026-03-17T10:02:00+11:00",
-      "url": "https://www.asx.com.au/announcements/NHC/3003"
-    },
-    {
-      "id": "3004",
-      "header": "Appendix 4D and Half Year Financial Report",
-      "document_date": "2026-03-17T10:03:00+11:00",
-      "url": "https://www.asx.com.au/announcements/NHC/3004"
-    },
-    {
-      "id": "3005",
-      "header": "Quarterly Activities Report",
-      "document_date": "2026-01-20T09:00:00+11:00",
-      "url": "https://www.asx.com.au/announcements/NHC/3005"
-    }
-  ]
-}"""
-
 
 def test_nhc_regression_17mar2026_html():
     """Mandatory regression: NHC HY pack on 17/03/2026 detected from HTML."""
@@ -962,119 +762,48 @@ def test_nhc_regression_17mar2026_html():
     assert pack.file_prefix == "260317-NHC-HY"
 
 
-def test_nhc_regression_17mar2026_json():
-    """Mandatory regression: NHC HY pack on 17/03/2026 detected from v2 JSON."""
-    from results_pack_agent.asx_fetcher import _parse_announcements_json
-
-    anns = _parse_announcements_json(_NHC_17MAR_MOCK_JSON, ticker="NHC")
-    assert len(anns) == 5
-
-    pack = detect_result_pack(anns, report_type="HY")
-    assert pack is not None, "NHC HY pack on 17/03/2026 must be detected"
-    assert pack.result_date == "17/03/2026"
-    assert pack.folder_name == "260317-NHC-HY-Results-Pack"
+# ---------------------------------------------------------------------------
+# 20. (Removed: v1 JSON API tests — v1 path removed in favour of Bob's
+#      HTML-only v2 code path via the shared asx_fetch module.)
+# ---------------------------------------------------------------------------
 
 
 # ---------------------------------------------------------------------------
-# 20. v1 JSON API format (_parse_announcements_json_v1)
+# 21. fetch_announcements — shared asx_fetch code path (unit test)
 # ---------------------------------------------------------------------------
 
-def test_parse_json_v1_iso_dates():
-    """v1 JSON (document_date ISO 8601) is parsed correctly."""
-    from results_pack_agent.asx_fetcher import _parse_announcements_json_v1
-
-    anns = _parse_announcements_json_v1(_NHC_17MAR_MOCK_JSON_V1, ticker="NHC")
-    assert len(anns) == 5
-    assert anns[0].title == "Half Year Results Presentation"
-    assert anns[0].date == "17/03/2026"
-    assert "asx.com.au" in anns[0].url
-
-
-def test_parse_json_v1_id_url_fallback():
-    """v1 parser constructs URL from 'id' when 'url' field is absent."""
-    from results_pack_agent.asx_fetcher import _parse_announcements_json_v1
-
-    payload = """{
-      "data": [
-        {
-          "id": "9999",
-          "header": "FY26 Half Year Results",
-          "document_date": "2026-03-17T10:00:00+11:00"
-        }
-      ]
-    }"""
-    anns = _parse_announcements_json_v1(payload, ticker="NHC")
-    assert len(anns) == 1
-    assert "NHC/9999" in anns[0].url
-
-
-def test_parse_json_v1_date_filter():
-    """v1 JSON parser respects from_date/to_date window."""
-    import datetime as dt
-    from results_pack_agent.asx_fetcher import _parse_announcements_json_v1
-
-    target = dt.date(2026, 3, 17)
-    anns = _parse_announcements_json_v1(
-        _NHC_17MAR_MOCK_JSON_V1, ticker="NHC", from_date=target, to_date=target
-    )
-    assert len(anns) == 4
-    assert all(a.date == "17/03/2026" for a in anns)
-
-
-def test_parse_json_v1_invalid_returns_empty():
-    """v1 parser returns empty list on invalid input."""
-    from results_pack_agent.asx_fetcher import _parse_announcements_json_v1
-
-    assert _parse_announcements_json_v1("not json", ticker="NHC") == []
-    assert _parse_announcements_json_v1('{"other": []}', ticker="NHC") == []
-
-
-def test_nhc_regression_17mar2026_json_v1():
-    """Mandatory regression: NHC HY pack on 17/03/2026 detected from v1 JSON."""
-    from results_pack_agent.asx_fetcher import _parse_announcements_json_v1
-
-    anns = _parse_announcements_json_v1(_NHC_17MAR_MOCK_JSON_V1, ticker="NHC")
-    assert len(anns) == 5
-
-    pack = detect_result_pack(anns, report_type="HY")
-    assert pack is not None, "NHC HY pack on 17/03/2026 must be detected from v1 JSON"
-    assert pack.result_date == "17/03/2026"
-    assert pack.folder_name == "260317-NHC-HY-Results-Pack"
-    assert pack.file_prefix == "260317-NHC-HY"
-
-    titles = {a.title for a in pack.announcements}
-    assert "Half Year Results Presentation" in titles
-    assert "FY26 Half Year Results" in titles
-    assert "Dividend/Distribution - NHC" in titles
-    assert "Appendix 4D and Half Year Financial Report" in titles
-
-
-# ---------------------------------------------------------------------------
-# 21. fetch_announcements — fallback chain (unit test with mocked HTTP)
-# ---------------------------------------------------------------------------
-
-def test_fetch_announcements_v2_json_used_when_available():
-    """fetch_announcements returns v2 JSON results when v2 succeeds."""
+def test_fetch_announcements_uses_shared_asx_fetch():
+    """fetch_announcements delegates to the shared asx_fetch HTML-only path."""
     from unittest.mock import MagicMock, patch
     from results_pack_agent.asx_fetcher import fetch_announcements
 
     mock_resp = MagicMock()
     mock_resp.status_code = 200
-    mock_resp.headers = {"Content-Type": "application/json"}
-    mock_resp.text = _NHC_17MAR_MOCK_JSON
+    mock_resp.headers = {"Content-Type": "text/html"}
+    mock_resp.text = _NHC_17MAR_MOCK_HTML
     mock_resp.raise_for_status = MagicMock()
 
     mock_session = MagicMock()
     mock_session.get.return_value = mock_resp
 
     anns = fetch_announcements("NHC", session=mock_session)
+
+    # Should parse all 5 rows from the HTML table
     assert len(anns) == 5
     assert anns[0].ticker == "NHC"
 
+    # Only ONE HTTP call (the shared v2 endpoint) — no company page fallback
+    assert mock_session.get.call_count == 1
 
-def test_fetch_announcements_falls_back_to_v2_html():
-    """fetch_announcements falls back to HTML parsing when v2 JSON has no data key."""
-    from unittest.mock import MagicMock, patch
+    # Must use the proven v2 URL, NOT any /companies/ URL
+    call_url = mock_session.get.call_args[0][0]
+    assert "asx.com.au/asx/v2/statistics/announcements.do" in call_url
+    assert "/companies/" not in call_url
+
+
+def test_fetch_announcements_html_path_parses_correctly():
+    """fetch_announcements parses HTML to Announcement objects via asx_fetch."""
+    from unittest.mock import MagicMock
     from results_pack_agent.asx_fetcher import fetch_announcements
 
     mock_resp = MagicMock()
@@ -1089,58 +818,23 @@ def test_fetch_announcements_falls_back_to_v2_html():
     anns = fetch_announcements("NHC", session=mock_session)
     assert len(anns) == 5
 
+    pack = detect_result_pack(anns, report_type="HY")
+    assert pack is not None
+    assert pack.result_date == "17/03/2026"
+    assert pack.folder_name == "260317-NHC-HY-Results-Pack"
 
-def test_fetch_announcements_falls_back_to_v1_when_v2_empty():
-    """fetch_announcements falls back to v1 JSON when v2 returns no items."""
+
+def test_fetch_announcements_network_error_returns_empty():
+    """fetch_announcements returns [] on network error (never raises)."""
     from unittest.mock import MagicMock
     from results_pack_agent.asx_fetcher import fetch_announcements
 
-    empty_resp = MagicMock()
-    empty_resp.status_code = 200
-    empty_resp.headers = {"Content-Type": "text/html"}
-    empty_resp.text = "<html><body>No table here.</body></html>"
-    empty_resp.raise_for_status = MagicMock()
-
-    v1_resp = MagicMock()
-    v1_resp.status_code = 200
-    v1_resp.headers = {"Content-Type": "application/json"}
-    v1_resp.text = _NHC_17MAR_MOCK_JSON_V1
-    v1_resp.raise_for_status = MagicMock()
-
-    # v2 gets empty HTML; v1 gets the JSON payload; company page never called
     mock_session = MagicMock()
-    mock_session.get.side_effect = [empty_resp, v1_resp]
+    mock_session.get.side_effect = ConnectionError("Network unreachable")
 
     anns = fetch_announcements("NHC", session=mock_session)
-    assert len(anns) == 5
-    # v1 URL was called (second get call)
-    assert mock_session.get.call_count == 2
+    assert anns == []
 
-
-def test_fetch_announcements_falls_back_to_company_page_when_v1_empty():
-    """fetch_announcements falls back to company page when v1 also returns nothing."""
-    from unittest.mock import MagicMock
-    from results_pack_agent.asx_fetcher import fetch_announcements
-
-    empty_resp = MagicMock()
-    empty_resp.status_code = 200
-    empty_resp.headers = {"Content-Type": "text/html"}
-    empty_resp.text = "<html><body></body></html>"
-    empty_resp.raise_for_status = MagicMock()
-
-    company_page_resp = MagicMock()
-    company_page_resp.status_code = 200
-    company_page_resp.headers = {"Content-Type": "text/html"}
-    company_page_resp.text = _NHC_17MAR_MOCK_HTML
-    company_page_resp.raise_for_status = MagicMock()
-
-    # v2 empty, v1 empty, company page has data
-    mock_session = MagicMock()
-    mock_session.get.side_effect = [empty_resp, empty_resp, company_page_resp]
-
-    anns = fetch_announcements("NHC", session=mock_session)
-    assert len(anns) == 5
-    assert mock_session.get.call_count == 3
 
 
 # ---------------------------------------------------------------------------

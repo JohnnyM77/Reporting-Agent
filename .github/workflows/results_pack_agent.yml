@@ -1,0 +1,115 @@
+name: Results Pack Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: 'ASX ticker code (e.g. NHC, BHP)'
+        required: true
+        default: ''
+      report_type:
+        description: 'Report type: HY, FY, or leave blank to auto-detect'
+        required: false
+        default: ''
+      date:
+        description: 'Target a specific result date (YYYY-MM-DD). Leave blank for latest.'
+        required: false
+        default: ''
+      upload:
+        description: 'Upload artifacts to Google Drive'
+        required: false
+        default: 'true'
+      build_valuation:
+        description: 'Build Wally value-chart spreadsheet'
+        required: false
+        default: 'false'
+      include_strawman:
+        description: 'Include a Strawman.com post draft in outputs'
+        required: false
+        default: 'false'
+      dry_run:
+        description: 'Dry run — log actions only, no HTTP requests or file writes'
+        required: false
+        default: 'false'
+      force:
+        description: 'Force re-download and reprocess even if outputs already exist'
+        required: false
+        default: 'false'
+
+jobs:
+  results-pack:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 pyyaml pypdf anthropic \
+            google-api-python-client google-auth google-auth-httplib2 \
+            google-auth-oauthlib playwright openpyxl xlsxwriter
+          playwright install chromium
+
+      - name: Run Results Pack Agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          RESULTS_PACK_GDRIVE_FOLDER_ID: ${{ secrets.RESULTS_PACK_GDRIVE_FOLDER_ID }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+        run: |
+          # Build CLI flags from workflow inputs
+          ARGS="--ticker ${{ github.event.inputs.ticker }}"
+
+          if [ -n "${{ github.event.inputs.report_type }}" ]; then
+            ARGS="$ARGS --report-type ${{ github.event.inputs.report_type }}"
+          fi
+
+          if [ -n "${{ github.event.inputs.date }}" ]; then
+            ARGS="$ARGS --date ${{ github.event.inputs.date }}"
+          fi
+
+          if [ "${{ github.event.inputs.upload }}" = "true" ]; then
+            ARGS="$ARGS --upload"
+          fi
+
+          if [ "${{ github.event.inputs.build_valuation }}" = "true" ]; then
+            ARGS="$ARGS --build-valuation"
+          fi
+
+          if [ "${{ github.event.inputs.include_strawman }}" = "true" ]; then
+            ARGS="$ARGS --include-strawman"
+          fi
+
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            ARGS="$ARGS --force"
+          fi
+
+          echo "Running: python -m results_pack_agent.main $ARGS"
+          python -m results_pack_agent.main $ARGS
+
+      - name: Commit outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Only stage outputs if the directory was produced by the agent
+          if [ -d outputs/results_pack ]; then
+            git add outputs/results_pack/
+          fi
+          git diff --staged --quiet || git commit -m "Results Pack — ${{ github.event.inputs.ticker }} [skip ci]"
+          # Pull remote changes before pushing to avoid rejection
+          git pull --rebase origin HEAD
+          git push origin HEAD

@@ -440,3 +440,141 @@ def test_nhc_end_to_end_pack_detection():
 
     assert pack.folder_name == "260318-NHC-HY-Results-Pack"
     assert pack.file_prefix == "260318-NHC-HY"
+
+
+# ---------------------------------------------------------------------------
+# 12. JSON response parsing (_parse_announcements_json)
+# ---------------------------------------------------------------------------
+
+_NHC_MOCK_JSON = """{
+  "data": [
+    {
+      "header": "NHC Half Year Results FY26",
+      "releasedDate": "18/03/2026 10:00 am",
+      "url": "/asx/v2/statistics/displayAnnouncement.do?idsId=1001",
+      "documentKey": "1001"
+    },
+    {
+      "header": "Appendix 4D",
+      "releasedDate": "18/03/2026 10:01 am",
+      "url": "/asx/v2/statistics/displayAnnouncement.do?idsId=1002",
+      "documentKey": "1002"
+    },
+    {
+      "header": "Dividend/Distribution Announcement",
+      "releasedDate": "18/03/2026 10:02 am",
+      "url": "/asx/v2/statistics/displayAnnouncement.do?idsId=1003",
+      "documentKey": "1003"
+    },
+    {
+      "header": "Investor Presentation — 1H FY26",
+      "releasedDate": "18/03/2026 10:03 am",
+      "url": "/asx/v2/statistics/displayAnnouncement.do?idsId=1004",
+      "documentKey": "1004"
+    },
+    {
+      "header": "Quarterly Activities Report",
+      "releasedDate": "20/01/2026 09:00 am",
+      "url": "/asx/v2/statistics/displayAnnouncement.do?idsId=1005",
+      "documentKey": "1005"
+    }
+  ]
+}"""
+
+_NHC_MOCK_JSON_ISO_DATES = """{
+  "data": [
+    {
+      "header": "NHC Half Year Results FY26",
+      "releasedDate": "2026-03-18T10:00:00.000+11:00",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=2001",
+      "documentKey": "2001"
+    },
+    {
+      "header": "Appendix 4D",
+      "releasedDate": "2026-03-18T10:01:00.000+11:00",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=2002",
+      "documentKey": "2002"
+    }
+  ]
+}"""
+
+
+def test_parse_json_dmy_dates():
+    """JSON response with DD/MM/YYYY dates is parsed correctly."""
+    from results_pack_agent.asx_fetcher import _parse_announcements_json
+
+    anns = _parse_announcements_json(_NHC_MOCK_JSON, ticker="NHC")
+    assert len(anns) == 5
+    assert anns[0].title == "NHC Half Year Results FY26"
+    assert anns[0].date == "18/03/2026"
+    assert anns[0].time == "10:00 am"
+    assert "asx.com.au" in anns[0].url
+    assert anns[0].url == "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=1001"
+
+
+def test_parse_json_iso_dates():
+    """JSON response with ISO 8601 dates is parsed correctly."""
+    from results_pack_agent.asx_fetcher import _parse_announcements_json
+
+    anns = _parse_announcements_json(_NHC_MOCK_JSON_ISO_DATES, ticker="NHC")
+    assert len(anns) == 2
+    assert anns[0].date == "18/03/2026"
+
+
+def test_parse_json_date_filter():
+    """JSON parser respects from_date/to_date window."""
+    import datetime as dt
+    from results_pack_agent.asx_fetcher import _parse_announcements_json
+
+    target = dt.date(2026, 3, 18)
+    anns = _parse_announcements_json(
+        _NHC_MOCK_JSON, ticker="NHC", from_date=target, to_date=target
+    )
+    # Only the 4 announcements on 18/03/2026 should be returned
+    assert len(anns) == 4
+    assert all(a.date == "18/03/2026" for a in anns)
+
+
+def test_parse_json_invalid_returns_empty():
+    """Non-JSON or wrong-shape responses return an empty list (HTML fallback)."""
+    from results_pack_agent.asx_fetcher import _parse_announcements_json
+
+    assert _parse_announcements_json("not json", ticker="NHC") == []
+    assert _parse_announcements_json("<html><body></body></html>", ticker="NHC") == []
+    assert _parse_announcements_json('{"other": []}', ticker="NHC") == []
+
+
+def test_nhc_end_to_end_pack_detection_json():
+    """Full scenario: parse mock JSON, detect HY pack, verify structure."""
+    from results_pack_agent.asx_fetcher import _parse_announcements_json
+
+    anns = _parse_announcements_json(_NHC_MOCK_JSON, ticker="NHC")
+    assert len(anns) == 5
+
+    pack = detect_result_pack(anns, report_type="HY")
+    assert pack is not None
+    assert pack.ticker == "NHC"
+    assert pack.result_type == "HY"
+    assert pack.result_date == "18/03/2026"
+
+    titles = {a.title for a in pack.announcements}
+    assert "NHC Half Year Results FY26" in titles
+    assert "Appendix 4D" in titles
+    assert "Quarterly Activities Report" not in titles
+
+    assert pack.folder_name == "260318-NHC-HY-Results-Pack"
+    assert pack.file_prefix == "260318-NHC-HY"
+
+
+def test_parse_asx_release_date_formats():
+    """_parse_asx_release_date handles all known date string formats."""
+    import datetime as dt
+    from results_pack_agent.asx_fetcher import _parse_asx_release_date
+
+    expected = dt.date(2026, 3, 18)
+    assert _parse_asx_release_date("18/03/2026") == expected
+    assert _parse_asx_release_date("18/03/2026 10:00 am") == expected
+    assert _parse_asx_release_date("2026-03-18") == expected
+    assert _parse_asx_release_date("2026-03-18T10:00:00.000+11:00") == expected
+    assert _parse_asx_release_date("") is None
+    assert _parse_asx_release_date("not-a-date") is None

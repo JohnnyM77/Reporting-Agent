@@ -180,6 +180,50 @@ def detect_result_pack(
     return pack
 
 
+def find_nearest_result_dates(
+    announcements: List[Announcement],
+    report_type: Optional[str] = None,
+    n: int = 5,
+) -> List[str]:
+    """Return up to *n* unique dates that have a result-day trigger.
+
+    If *report_type* is specified (HY or FY) only matching triggers are
+    considered.  Dates are returned in descending order (newest first) as
+    ISO YYYY-MM-DD strings.
+    """
+    seen: set = set()
+    result_dates: List[str] = []
+
+    # Sort newest-first so the most recent dates come first in results
+    def _sort_key(a: Announcement) -> dt.date:
+        try:
+            return parse_asx_date(a.date)
+        except Exception:
+            return dt.date.min
+
+    sorted_anns = sorted(announcements, key=_sort_key, reverse=True)
+
+    for ann in sorted_anns:
+        if not is_result_day_trigger(ann.title):
+            continue
+        if report_type is not None:
+            detected_type = _quick_type_from_title(ann.title)
+            if detected_type and detected_type != report_type.upper():
+                continue
+        date_key = ann.date
+        if date_key not in seen:
+            seen.add(date_key)
+            try:
+                iso = dt.datetime.strptime(date_key, "%d/%m/%Y").strftime("%Y-%m-%d")
+            except Exception:
+                iso = date_key
+            result_dates.append(iso)
+        if len(result_dates) >= n:
+            break
+
+    return result_dates
+
+
 def _quick_type_from_title(title: str) -> Optional[str]:
     """Fast HY/FY inference from a single announcement title."""
     t = title.lower()

@@ -12,7 +12,7 @@ on:
         required: false
         default: ''
       date:
-        description: 'Target a specific result date (YYYY-MM-DD). Leave blank for latest.'
+        description: 'Target a specific result date (YYYY-MM-DD). Treated as a preference — nearest valid date suggested if no exact match. Leave blank for latest.'
         required: false
         default: ''
       upload:
@@ -33,6 +33,10 @@ on:
         default: 'false'
       force:
         description: 'Force re-download and reprocess even if outputs already exist'
+        required: false
+        default: 'false'
+      list_recent_dates:
+        description: 'List recent result-day candidate dates for the ticker and exit (useful for debugging)'
         required: false
         default: 'false'
 
@@ -68,7 +72,8 @@ jobs:
           ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
         run: |
           # Build CLI flags from workflow inputs
-          ARGS="--ticker ${{ github.event.inputs.ticker }}"
+          TICKER="${{ github.event.inputs.ticker }}"
+          ARGS="--ticker $TICKER"
 
           if [ -n "${{ github.event.inputs.report_type }}" ]; then
             ARGS="$ARGS --report-type ${{ github.event.inputs.report_type }}"
@@ -98,10 +103,28 @@ jobs:
             ARGS="$ARGS --force"
           fi
 
+          # --list-recent-dates mode: print candidates and exit (no upload/commit needed)
+          if [ "${{ github.event.inputs.list_recent_dates }}" = "true" ]; then
+            echo "=== Listing recent result-day candidates for $TICKER ==="
+            python -m results_pack_agent.main --ticker "$TICKER" \
+              $( [ -n "${{ github.event.inputs.report_type }}" ] && echo "--report-type ${{ github.event.inputs.report_type }}" ) \
+              --list-recent-dates
+            exit 0
+          fi
+
+          echo "=== Running Results Pack Agent ==="
+          echo "  Ticker      : $TICKER"
+          echo "  Report type : ${{ github.event.inputs.report_type || '(auto-detect)' }}"
+          echo "  Date        : ${{ github.event.inputs.date || '(latest)' }}"
+          echo "  Upload      : ${{ github.event.inputs.upload }}"
+          echo "  Dry run     : ${{ github.event.inputs.dry_run }}"
+          echo ""
           echo "Running: python -m results_pack_agent.main $ARGS"
           python -m results_pack_agent.main $ARGS
 
       - name: Commit outputs
+        # Only commit when NOT in list-recent-dates mode or dry-run mode
+        if: github.event.inputs.list_recent_dates != 'true' && github.event.inputs.dry_run != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -113,3 +136,4 @@ jobs:
           # Pull remote changes before pushing to avoid rejection
           git pull --rebase origin HEAD
           git push origin HEAD
+

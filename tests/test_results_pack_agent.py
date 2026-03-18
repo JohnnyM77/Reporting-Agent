@@ -578,3 +578,261 @@ def test_parse_asx_release_date_formats():
     assert _parse_asx_release_date("2026-03-18T10:00:00.000+11:00") == expected
     assert _parse_asx_release_date("") is None
     assert _parse_asx_release_date("not-a-date") is None
+
+
+# ---------------------------------------------------------------------------
+# 13. find_nearest_result_dates
+# ---------------------------------------------------------------------------
+
+def test_find_nearest_result_dates_basic():
+    """find_nearest_result_dates returns ISO dates for trigger announcements."""
+    from results_pack_agent.pack_detector import find_nearest_result_dates
+
+    anns = [
+        _make_ann("NHC Half Year Results FY26", date="18/03/2026"),
+        _make_ann("Full Year Results FY2025", date="28/08/2025"),
+        _make_ann("Quarterly Activities Report", date="20/01/2026"),
+    ]
+    dates = find_nearest_result_dates(anns)
+    assert "2026-03-18" in dates
+    assert "2025-08-28" in dates
+    # Quarterly report should NOT appear
+    assert "2026-01-20" not in dates
+
+
+def test_find_nearest_result_dates_report_type_filter():
+    """find_nearest_result_dates respects report_type filter."""
+    from results_pack_agent.pack_detector import find_nearest_result_dates
+
+    anns = [
+        _make_ann("NHC Half Year Results FY26", date="18/03/2026"),
+        _make_ann("Full Year Results FY2025", date="28/08/2025"),
+        _make_ann("Appendix 4D", date="18/03/2026"),
+    ]
+    hy_dates = find_nearest_result_dates(anns, report_type="HY")
+    fy_dates = find_nearest_result_dates(anns, report_type="FY")
+
+    assert "2026-03-18" in hy_dates
+    assert "2025-08-28" in fy_dates
+    # FY-only trigger should not appear when filtering for HY
+    assert "2025-08-28" not in hy_dates
+
+
+def test_find_nearest_result_dates_empty():
+    """find_nearest_result_dates returns empty list when no triggers found."""
+    from results_pack_agent.pack_detector import find_nearest_result_dates
+
+    anns = [_make_ann("Quarterly Activities Report", date="20/01/2026")]
+    assert find_nearest_result_dates(anns) == []
+
+
+def test_find_nearest_result_dates_n_limit():
+    """find_nearest_result_dates respects the n limit."""
+    from results_pack_agent.pack_detector import find_nearest_result_dates
+
+    anns = [
+        _make_ann("Half Year Results FY26", date="18/03/2026"),
+        _make_ann("Full Year Results FY25", date="28/08/2025"),
+        _make_ann("Half Year Results FY25", date="19/03/2025"),
+    ]
+    dates = find_nearest_result_dates(anns, n=2)
+    assert len(dates) <= 2
+
+
+# ---------------------------------------------------------------------------
+# 14. RunSummary failure fields
+# ---------------------------------------------------------------------------
+
+def test_run_summary_failure_fields():
+    """RunSummary with failure_reason prints structured failure output."""
+    summary = RunSummary(
+        ticker="NHC",
+        result_date="N/A",
+        result_type="HY",
+        pdfs_downloaded=0,
+        prompts_run=[],
+        local_folder="N/A",
+        drive_folder_url=None,
+        valuation_path=None,
+        failure_reason="TICKER_VALID_BUT_NO_MATCHING_DATE",
+        failure_message="No HY result pack found for NHC on 2026-03-17.",
+        nearest_dates=["2026-03-18", "2025-09-18"],
+    )
+    assert not summary.success
+    summary_str = ""
+    import io, sys as _sys
+    captured = io.StringIO()
+    old_stdout = _sys.stdout
+    _sys.stdout = captured
+    try:
+        summary.print_summary()
+    finally:
+        _sys.stdout = old_stdout
+    out = captured.getvalue()
+    assert "TICKER_VALID_BUT_NO_MATCHING_DATE" in out
+    assert "2026-03-18" in out
+    assert "2025-09-18" in out
+
+
+def test_run_summary_success_has_no_failure_reason():
+    """RunSummary without failure_reason is considered successful."""
+    summary = RunSummary(
+        ticker="NHC",
+        result_date="18/03/2026",
+        result_type="HY",
+        pdfs_downloaded=3,
+        prompts_run=["management_report"],
+        local_folder="/tmp/test",
+        drive_folder_url=None,
+        valuation_path=None,
+    )
+    assert summary.success
+    assert summary.failure_reason is None
+
+
+# ---------------------------------------------------------------------------
+# 15. run() function — structured failure returns (no sys.exit)
+# ---------------------------------------------------------------------------
+
+def test_run_no_announcements_returns_failure(monkeypatch):
+    """run() returns a structured failure RunSummary when no announcements found."""
+    from results_pack_agent import main as rpa_main
+    from unittest.mock import patch
+
+    with patch("results_pack_agent.main.fetch_announcements", return_value=[]):
+        summary = rpa_main.run(ticker="INVALID", report_type="HY")
+
+    assert not summary.success
+    assert summary.failure_reason == "NO_ANNOUNCEMENTS_FOUND"
+
+
+def test_run_wrong_date_returns_nearest_dates(monkeypatch):
+    """run() suggests nearest dates when the requested date has no pack."""
+    from results_pack_agent import main as rpa_main
+    from unittest.mock import patch
+
+    mock_anns = [
+        _make_ann("NHC Half Year Results FY26", date="18/03/2026"),
+        _make_ann("Appendix 4D", date="18/03/2026"),
+        _make_ann("Dividend/Distribution Announcement", date="18/03/2026"),
+    ]
+
+    with patch("results_pack_agent.main.fetch_announcements", return_value=mock_anns):
+        # Request date 2026-03-17 (one day off) — should suggest 2026-03-18
+        summary = rpa_main.run(ticker="NHC", report_type="HY", target_date="2026-03-17")
+
+    assert not summary.success
+    assert summary.failure_reason == "TICKER_VALID_BUT_NO_MATCHING_DATE"
+    assert "2026-03-18" in summary.nearest_dates
+
+
+def test_run_no_date_finds_latest(monkeypatch):
+    """run() with no date finds the latest result pack automatically."""
+    from results_pack_agent import main as rpa_main
+    from unittest.mock import patch, MagicMock
+
+    mock_anns = [
+        _make_ann("NHC Half Year Results FY26", date="18/03/2026"),
+        _make_ann("Appendix 4D", date="18/03/2026"),
+        _make_ann("Dividend/Distribution Announcement", date="18/03/2026"),
+    ]
+
+    # Patch out the heavy operations so the test doesn't touch disk/network
+    with patch("results_pack_agent.main.fetch_announcements", return_value=mock_anns), \
+         patch("results_pack_agent.main.download_pack_pdfs", return_value=0), \
+         patch("results_pack_agent.main.save_pack_metadata", return_value=MagicMock()), \
+         patch("results_pack_agent.main.run_prompts", return_value={}), \
+         patch("results_pack_agent.main.make_output_folder", return_value=MagicMock()):
+
+        summary = rpa_main.run(ticker="NHC", report_type="HY")
+
+    assert summary.success
+    assert summary.result_date == "18/03/2026"
+    assert summary.result_type == "HY"
+
+
+def test_run_exact_date_match_succeeds(monkeypatch):
+    """run() with correct exact date finds the pack and succeeds."""
+    from results_pack_agent import main as rpa_main
+    from unittest.mock import patch, MagicMock
+
+    mock_anns = [
+        _make_ann("NHC Half Year Results FY26", date="18/03/2026"),
+        _make_ann("Appendix 4D", date="18/03/2026"),
+        _make_ann("Dividend/Distribution Announcement", date="18/03/2026"),
+    ]
+
+    with patch("results_pack_agent.main.fetch_announcements", return_value=mock_anns), \
+         patch("results_pack_agent.main.download_pack_pdfs", return_value=0), \
+         patch("results_pack_agent.main.save_pack_metadata", return_value=MagicMock()), \
+         patch("results_pack_agent.main.run_prompts", return_value={}), \
+         patch("results_pack_agent.main.make_output_folder", return_value=MagicMock()):
+
+        summary = rpa_main.run(ticker="NHC", report_type="HY", target_date="2026-03-18")
+
+    assert summary.success
+    assert summary.result_date == "18/03/2026"
+
+
+# ---------------------------------------------------------------------------
+# 16. Company name resolution
+# ---------------------------------------------------------------------------
+
+def test_resolve_company_name_nhc():
+    """_resolve_company_name returns 'New Hope Corporation Limited' for NHC."""
+    from results_pack_agent.main import _resolve_company_name
+
+    name = _resolve_company_name("NHC")
+    assert name == "New Hope Corporation Limited"
+
+
+def test_resolve_company_name_unknown():
+    """_resolve_company_name falls back to ticker for unknown tickers."""
+    from results_pack_agent.main import _resolve_company_name
+
+    name = _resolve_company_name("ZZUNKNOWN")
+    assert name == "ZZUNKNOWN"
+
+
+# ---------------------------------------------------------------------------
+# 17. list_recent_dates smoke test
+# ---------------------------------------------------------------------------
+
+def test_list_recent_dates(capsys, monkeypatch):
+    """list_recent_dates() prints result-day candidates for a ticker."""
+    from results_pack_agent import main as rpa_main
+    from unittest.mock import patch
+
+    mock_anns = [
+        _make_ann("NHC Half Year Results FY26", date="18/03/2026"),
+        _make_ann("Full Year Results FY25", date="28/08/2025"),
+        _make_ann("Quarterly Activities Report", date="20/01/2026"),
+    ]
+
+    with patch("results_pack_agent.main.fetch_announcements", return_value=mock_anns):
+        rpa_main.list_recent_dates("NHC")
+
+    captured = capsys.readouterr()
+    assert "NHC" in captured.out
+    assert "2026-03-18" in captured.out
+    assert "2025-08-28" in captured.out
+    # Quarterly report should not appear
+    assert "2026-01-20" not in captured.out
+
+
+# ---------------------------------------------------------------------------
+# 18. Additional trigger keyword coverage
+# ---------------------------------------------------------------------------
+
+def test_trigger_financial_results():
+    assert is_result_day_trigger("NHC Financial Results FY26") is True
+
+
+def test_trigger_preliminary_final_report():
+    assert is_result_day_trigger("Preliminary Final Report FY2026") is True
+
+
+def test_trigger_half_year_result_singular():
+    """'half year result' (singular) should trigger."""
+    assert is_result_day_trigger("NHC Half Year Result") is True
+

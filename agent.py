@@ -10,6 +10,7 @@
 # - Never hallucinates off the ASX "Access to this site" legal page
 # - Optionally emails AR9 items to your brother (BROTHER_EMAIL secret)
 
+import argparse
 import os
 import re
 import sys
@@ -728,6 +729,129 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, hours_back: 
     return out[:MAX_ANNOUNCEMENTS_PER_TICKER]
 
 
+def fetch_asx_announcements_replay(
+    session: requests.Session,
+    ticker: str,
+    from_date: dt.date,
+    to_date: dt.date,
+) -> List[Dict]:
+    """Fetch announcements for *ticker* on dates between *from_date* and *to_date* inclusive.
+
+    Unlike ``fetch_asx_announcements`` this does **not** apply a 24-hour
+    cutoff — it filters purely by calendar date so historical packs can be
+    retrieved for replay / debugging.
+    """
+    url = (
+        "https://www.asx.com.au/asx/v2/statistics/announcements.do"
+        f"?asxCode={ticker}&by=asxCode&period=M6&timeframe=D"
+    )
+    r = session.get(url, timeout=30)
+    r.raise_for_status()
+
+    soup = BeautifulSoup(r.text, "html.parser")
+    rows = soup.select("table tr")
+
+    items: List[Dict] = []
+    for row in rows:
+        cols = [c.get_text(" ", strip=True) for c in row.select("td")]
+        if len(cols) < 2:
+            continue
+        link = row.select_one("a")
+        if not link or not link.get("href"):
+            continue
+        title = link.get_text(" ", strip=True)
+        href = link["href"]
+        if href.startswith("/"):
+            href = "https://www.asx.com.au" + href
+
+        date_text = cols[0]
+        time_text = cols[1] if len(cols) > 1 else ""
+
+        try:
+            item_date = dt.datetime.strptime(date_text, "%d/%m/%Y").date()
+        except Exception:
+            continue
+
+        if not (from_date <= item_date <= to_date):
+            continue
+
+        items.append({
+            "exchange": "ASX",
+            "ticker": ticker,
+            "date": date_text,
+            "time": time_text,
+            "title": title,
+            "url": href,
+        })
+
+    seen: set = set()
+    out: List[Dict] = []
+    for it in items:
+        if it["url"] in seen:
+            continue
+        seen.add(it["url"])
+        out.append(it)
+    return out
+
+
+def fetch_asx_announcements_by_ids(
+    session: requests.Session,
+    ticker: str,
+    announcement_ids: List[str],
+) -> List[Dict]:
+    """Fetch announcements for *ticker* whose ``idsId`` appears in *announcement_ids*.
+
+    Scans the 6-month history and returns only matching items, bypassing any
+    time-window filter.
+    """
+    id_set = set(announcement_ids)
+    url = (
+        "https://www.asx.com.au/asx/v2/statistics/announcements.do"
+        f"?asxCode={ticker}&by=asxCode&period=M6&timeframe=D"
+    )
+    r = session.get(url, timeout=30)
+    r.raise_for_status()
+
+    soup = BeautifulSoup(r.text, "html.parser")
+    rows = soup.select("table tr")
+
+    items: List[Dict] = []
+    for row in rows:
+        cols = [c.get_text(" ", strip=True) for c in row.select("td")]
+        if len(cols) < 2:
+            continue
+        link = row.select_one("a")
+        if not link or not link.get("href"):
+            continue
+        title = link.get_text(" ", strip=True)
+        href = link["href"]
+        if href.startswith("/"):
+            href = "https://www.asx.com.au" + href
+
+        if not any(ids_id in href for ids_id in id_set):
+            continue
+
+        date_text = cols[0]
+        time_text = cols[1] if len(cols) > 1 else ""
+        items.append({
+            "exchange": "ASX",
+            "ticker": ticker,
+            "date": date_text,
+            "time": time_text,
+            "title": title,
+            "url": href,
+        })
+
+    seen: set = set()
+    out: List[Dict] = []
+    for it in items:
+        if it["url"] in seen:
+            continue
+        seen.add(it["url"])
+        out.append(it)
+    return out
+
+
 def asx_pdf_url_from_item_url(url: str) -> Optional[str]:
     if "displayAnnouncement.do" in url:
         return url
@@ -1068,6 +1192,7 @@ def save_result_artifacts(
     date_str: str,
     pack_items: List[Dict],
     analysis: str,
+    dir_prefix: str = "",
 ) -> Path:
     """Persist result-day analysis artifacts to disk.
 
@@ -1084,7 +1209,7 @@ def save_result_artifacts(
     except Exception:
         dir_date = date_str.replace("/", "-")
 
-    out_dir = RESULT_ARTIFACTS_DIR / ticker / dir_date
+    out_dir = RESULT_ARTIFACTS_DIR / ticker / f"{dir_prefix}{dir_date}"
     try:
         out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1250,11 +1375,301 @@ def build_email(
 
 
 # ----------------------------
+# CLI arg parsing
+# ----------------------------
+def _parse_cli_args() -> argparse.Namespace:
+    """Parse CLI arguments for Bob.
+
+    Uses ``parse_known_args`` so that unknown flags (e.g. pytest internals)
+    are silently ignored rather than raising errors when agent.py is imported
+    inside a test.
+    """
+    parser = argparse.ArgumentParser(
+        description="Bob the Bot — ASX Announcements Agent",
+        add_help=True,
+    )
+    parser.add_argument(
+        "--force", action="store_true",
+        help="Force reprocess all announcements regardless of state",
+    )
+    parser.add_argument(
+        "--replay-ticker", metavar="TICKER", default="",
+        help="Ticker symbol to replay (enables replay mode)",
+    )
+    parser.add_argument(
+        "--replay-date", metavar="YYYY-MM-DD", default="",
+        help="Single date to replay (shorthand for --from-date and --to-date)",
+    )
+    parser.add_argument(
+        "--from-date", metavar="YYYY-MM-DD", default="",
+        help="Start of replay date range (YYYY-MM-DD)",
+    )
+    parser.add_argument(
+        "--to-date", metavar="YYYY-MM-DD", default="",
+        help="End of replay date range (YYYY-MM-DD, defaults to --from-date)",
+    )
+    parser.add_argument(
+        "--announcement-ids", metavar="IDS", default="",
+        help="Comma-separated ASX announcement idsId values to replay",
+    )
+    parser.add_argument(
+        "--update-production-state", action="store_true", default=False,
+        help="Write replay results back into the production state file (default: off)",
+    )
+    args, _unknown = parser.parse_known_args()
+    return args
+
+
+# ----------------------------
+# Replay / test mode
+# ----------------------------
+def run_replay(
+    replay_ticker: str,
+    from_date: dt.date,
+    to_date: dt.date,
+    announcement_ids: Optional[List[str]] = None,
+    update_production_state: bool = False,
+) -> None:
+    """Run Bob in replay/test mode for a specific ticker and date range.
+
+    Replay mode:
+    - Bypasses the normal 24-hour production scan window
+    - Ignores COMPLETED/FAILED state by default (force-reprocesses)
+    - Uses the same HY/FY result-pack logic as production
+    - Clearly labels all log and digest output as REPLAY
+    - Does NOT update production state unless *update_production_state* is True
+    - Saves artifacts to ``outputs/results/{ticker}/replay_{date}/``
+    """
+    log("[bob] REPLAY MODE enabled")
+    log(f"[bob] replay_ticker={replay_ticker}")
+    if announcement_ids:
+        log(f"[bob] announcement_ids={','.join(announcement_ids)}")
+    else:
+        log(f"[bob] replay_from_date={from_date.isoformat()} replay_to_date={to_date.isoformat()}")
+    log(f"[bob] ignore_state=True (replay mode always force-reprocesses)")
+    log(f"[bob] update_production_state={update_production_state}")
+
+    session = http_session()
+
+    # Fetch announcements — bypass 24-hour window
+    if announcement_ids:
+        log(f"[bob] REPLAY: fetching by announcement IDs: {','.join(announcement_ids)}")
+        items = fetch_asx_announcements_by_ids(session, replay_ticker, announcement_ids)
+    else:
+        log(f"[bob] REPLAY: fetching by date range: {from_date.isoformat()} → {to_date.isoformat()}")
+        items = fetch_asx_announcements_replay(session, replay_ticker, from_date, to_date)
+
+    log(f"[bob] REPLAY: announcements found: {len(items)}")
+
+    if not items:
+        log(f"[bob] REPLAY: no announcements found for {replay_ticker} in the specified range — nothing to replay")
+        return
+
+    drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
+
+    counters: Dict = {
+        "MAX_LLM_CALLS_PER_RUN": MAX_LLM_CALLS_PER_RUN,
+        "llm_calls": 0,
+        "MAX_PDFS_PER_RUN": MAX_PDFS_PER_RUN,
+        "pdfs_downloaded": 0,
+    }
+
+    high_impact_blocks: List[str] = []
+    fyi_blocks: List[str] = []
+
+    # Tag each item with its state key (replay mode always processes them all)
+    for it in items:
+        it["seen_key"] = announcement_key(replay_ticker, it["url"])
+
+    replay_label = f"Replay/Test Run — {replay_ticker} — {from_date.isoformat()}"
+    if from_date != to_date:
+        replay_label += f" to {to_date.isoformat()}"
+    if announcement_ids:
+        replay_label += f" — IDs: {','.join(announcement_ids)}"
+
+    with tempfile.TemporaryDirectory() as tmpdir_str:
+        tmpdir = Path(tmpdir_str)
+
+        # Check for HY/FY result-day trigger
+        trigger_item = next((i for i in items if is_result_day_trigger(i["title"])), None)
+
+        if trigger_item:
+            trigger_date = trigger_item.get("date", "")
+            log(f"[bob] REPLAY: HY/FY trigger detected: '{trigger_item['title'][:60]}' (date={trigger_date})")
+
+            # Collect all same-day announcements for the pack
+            pack_candidates = (
+                group_same_day_items(items, trigger_date) if trigger_date else list(items)
+            )
+            log(f"[bob] REPLAY: PDF pack count: {len(pack_candidates)}")
+
+            drive_links: List[str] = []
+            pack_items: List[Dict] = []
+
+            for ann in pack_candidates:
+                pdf_url = asx_pdf_url_from_item_url(ann["url"])
+                pdf_bytes: Optional[bytes] = None
+                if pdf_url:
+                    pdf_bytes = download_pdf_bytes(session, pdf_url)
+                    if pdf_bytes:
+                        log(f"[bob] REPLAY: downloaded PDF ({len(pdf_bytes)//1024}KB): {ann['title'][:60]}")
+                    else:
+                        log(f"[bob] REPLAY: PDF download failed (pack continues): {ann['title'][:60]}")
+
+                    if pdf_bytes and drive_folder_id:
+                        safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{replay_ticker}_{ann['title'][:80]}")
+                        pdf_path = tmpdir / f"{safe_name}.pdf"
+                        try:
+                            pdf_path.write_bytes(pdf_bytes)
+                            drive_name = f"REPLAY_{from_date.isoformat()}_{replay_ticker}_{safe_name}.pdf"
+                            link = upload_to_drive(pdf_path, drive_folder_id, drive_name)
+                            if link:
+                                drive_links.append(link)
+                        except Exception as e:
+                            log(f"[bob] REPLAY: Drive upload failed for {replay_ticker}: {e}")
+                        finally:
+                            try:
+                                if pdf_path.exists():
+                                    pdf_path.unlink()
+                            except Exception:
+                                pass
+
+                pack_items.append({
+                    "title": ann["title"],
+                    "url": ann["url"],
+                    "pdf_url": pdf_url,
+                    "pdf_bytes": pdf_bytes,
+                })
+
+            # Send the full pack to Claude — same logic as production
+            analysis = deep_results_pack_analysis(replay_ticker, pack_items, trigger_date, counters)
+            analysis_ok = analysis not in _LLM_FAIL_MSGS
+
+            if analysis_ok:
+                log(f"[bob] REPLAY: Claude analysis succeeded for {replay_ticker}")
+                straw = strawman_post(replay_ticker, "HY/FY Results", analysis, counters)
+
+                header = f"[REPLAY] {replay_ticker} — Results (HY/FY) — {replay_label}"
+                if drive_links:
+                    header += f" — Drive PDFs: {len(drive_links)}"
+                block = f"{header}\n\n{analysis}\n\nOpen: {trigger_item['url']}\n"
+                if drive_links:
+                    block += "Drive links:\n" + "\n".join(drive_links) + "\n"
+                block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
+
+                # Save artifacts to a replay-prefixed subdirectory
+                try:
+                    art_dir = save_result_artifacts(
+                        replay_ticker,
+                        trigger_date or from_date.strftime("%d/%m/%Y"),
+                        pack_items,
+                        analysis,
+                        dir_prefix="replay_",
+                    )
+                    log(f"[bob] REPLAY: artifacts saved to {art_dir}")
+                except Exception as e:
+                    log(f"[bob] REPLAY: artifact save failed for {replay_ticker}: {e}")
+            else:
+                log(f"[bob] REPLAY: Claude analysis failed for {replay_ticker} — publishing fallback with raw links")
+                block = "[REPLAY] " + format_result_fallback_block(replay_ticker, pack_items, trigger_date)
+                if drive_links:
+                    block += "\nDrive links:\n" + "\n".join(drive_links) + "\n"
+
+            high_impact_blocks.append(block)
+
+        else:
+            # No HY/FY trigger — add all items to FYI
+            log(f"[bob] REPLAY: no HY/FY trigger found — listing {len(items)} items as FYI")
+            for it in items:
+                fyi_entry = (
+                    f"[REPLAY] {summarise_headline_two_lines(replay_ticker, it['title'])}\n"
+                    f"Open: {it['url']}\n"
+                )
+                fyi_blocks.append(fyi_entry)
+
+    # Print replay digest to stdout
+    lines: List[str] = [
+        f"{BOB_NAME} {VERSION_LABEL} — {replay_label}",
+        "=" * 60,
+        "",
+    ]
+    if high_impact_blocks:
+        lines.append("HIGH IMPACT")
+        lines.append("-" * 60)
+        lines.extend(high_impact_blocks)
+        lines.append("")
+    if fyi_blocks:
+        lines.append("FYI (ALL ANNOUNCEMENTS)")
+        lines.append("-" * 60)
+        lines.extend(fyi_blocks)
+        lines.append("")
+    if not high_impact_blocks and not fyi_blocks:
+        lines.append("No reportable announcements found for replay range.")
+
+    digest_text = "\n".join(lines)
+    print(digest_text)
+
+    # Save replay digest to file
+    replay_out_dir = RESULT_ARTIFACTS_DIR / replay_ticker
+    try:
+        replay_out_dir.mkdir(parents=True, exist_ok=True)
+        digest_file = replay_out_dir / f"replay_{from_date.isoformat()}_digest.txt"
+        digest_file.write_text(digest_text, encoding="utf-8")
+        log(f"[bob] REPLAY: output file path: {digest_file}")
+    except Exception as e:
+        log(f"[bob] REPLAY: digest save failed: {e}")
+
+    # Update production state only if explicitly requested
+    if update_production_state:
+        prod_state = prune_seen_state(load_seen_state(SEEN_STATE_PATH), SEEN_STATE_RETENTION_HOURS)
+        for it in items:
+            _k = it.get("seen_key") or announcement_key(replay_ticker, it["url"])
+            mark_state(prod_state, _k, replay_ticker, it["title"], STATUS_COMPLETED)
+        save_seen_state(SEEN_STATE_PATH, prod_state)
+        log("[bob] REPLAY: production state updated (--update-production-state was set)")
+    else:
+        log("[bob] REPLAY: production state NOT updated (replay mode default — use --update-production-state to override)")
+
+
+# ----------------------------
 # MAIN
 # ----------------------------
 def main():
-    # Allow --force CLI flag to force reprocess all announcements regardless of state.
-    _force = FORCE or "--force" in sys.argv
+    args = _parse_cli_args()
+
+    # Dispatch to replay mode when --replay-ticker is provided
+    if args.replay_ticker:
+        # Resolve dates: --replay-date takes priority, then --from-date; fallback to today
+        from_date_str = args.replay_date or args.from_date
+        to_date_str = args.to_date or from_date_str
+
+        try:
+            from_date = dt.date.fromisoformat(from_date_str) if from_date_str else today_sgt_date()
+        except ValueError:
+            log(f"[bob] ERROR: invalid --from-date / --replay-date: {from_date_str!r} (expected YYYY-MM-DD)")
+            sys.exit(1)
+        try:
+            to_date = dt.date.fromisoformat(to_date_str) if to_date_str else from_date
+        except ValueError:
+            log(f"[bob] ERROR: invalid --to-date: {to_date_str!r} (expected YYYY-MM-DD)")
+            sys.exit(1)
+
+        ann_ids: Optional[List[str]] = (
+            [x.strip() for x in args.announcement_ids.split(",") if x.strip()]
+            if args.announcement_ids else None
+        )
+
+        run_replay(
+            replay_ticker=args.replay_ticker.upper(),
+            from_date=from_date,
+            to_date=to_date,
+            announcement_ids=ann_ids,
+            update_production_state=args.update_production_state,
+        )
+        return
+
+    # --- Normal production mode ---
+    _force = FORCE or args.force
 
     subject = f"{BOB_NAME} {VERSION_LABEL} — Daily Announcements Digest — {today_sgt_date().isoformat()} (SGT)"
 

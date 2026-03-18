@@ -15,6 +15,7 @@ import re
 import sys
 import json
 import ssl
+import base64
 import hashlib
 import smtplib
 import tempfile
@@ -38,6 +39,7 @@ from prompts import (
     ACQUISITION_PROMPT,
     CAPITAL_OR_DEBT_RAISE_PROMPT,
     RESULTS_HYFY_PROMPT,
+    RESULTS_HYFY_PACK_PROMPT,
     STRAWMAN_500W_PROMPT,
 )
 
@@ -71,6 +73,10 @@ STATUS_NEW = "NEW"
 STATUS_PROCESSING = "PROCESSING"
 STATUS_COMPLETED = "COMPLETED"
 STATUS_FAILED = "FAILED"
+# Result-day pack statuses (used for HY/FY multi-PDF processing)
+STATUS_PACK_COLLECTED = "PACK_COLLECTED"
+STATUS_SENT_TO_CLAUDE = "SENT_TO_CLAUDE"
+STATUS_ANALYZED = "ANALYZED"
 
 MAX_RETRIES = 3
 
@@ -91,6 +97,11 @@ MODEL_DEFAULT = "claude-haiku-4-5-20251001"
 # Hard time caps (keep runs reasonable)
 REQUESTS_PDF_TIMEOUT_SECS = 20
 HTML_TIMEOUT_SECS = 30
+
+# Result-day pack settings
+RESULT_ARTIFACTS_DIR = Path(os.environ.get("RESULT_ARTIFACTS_DIR", "outputs/results"))
+# Max size per individual PDF sent to Claude (bytes); larger PDFs are skipped but pack still proceeds
+MAX_RESULT_PDF_BYTES = 10 * 1024 * 1024  # 10 MB
 
 # Sentinel strings returned by deep-analysis helpers when the LLM fails or
 # cannot run.  Used to detect analysis failure and mark the announcement FAILED.
@@ -428,6 +439,7 @@ def looks_like_results_title(title: str) -> bool:
         "half year",
         "half-year",
         "h1",
+        "hy results",
         "1h fy",
         "1hfy",
         "interim results",
@@ -435,9 +447,14 @@ def looks_like_results_title(title: str) -> bool:
         "annual report",
         "full year results",
         "full-year results",
+        "fy results",
         "financial report",
         "results announcement",
         "results presentation",
+        "investor presentation",
+        "dividend",
+        "distribution",
+        "fy ",
     ]
 
     hard_no = [
@@ -449,7 +466,55 @@ def looks_like_results_title(title: str) -> bool:
 
     if any(x in t for x in hard_no):
         return False
-    return any(x in t for x in hard_yes)
+    if any(x in t for x in hard_yes):
+        return True
+    # Match 'fyNN' or 'fy20NN' patterns (e.g. fy26, fy2026) without hard-coding years
+    if re.search(r"\bfy\d{2,4}\b", t):
+        return True
+    return False
+
+
+# HY/FY trigger keywords — a subset of looks_like_results_title that specifically
+# identifies the *primary* results announcement (as opposed to a supplementary
+# document like a dividend notice or presentation that may appear on the same day).
+_RESULT_DAY_TRIGGER_KEYWORDS: List[str] = [
+    "half year results",
+    "half-year results",
+    "full year results",
+    "full-year results",
+    "fy results",
+    "hy results",
+    "h1 results",
+    "interim results",
+    "appendix 4d",
+    "appendix 4e",
+    "results announcement",
+    "1h fy",
+    "1hfy",
+]
+
+
+def is_result_day_trigger(title: str) -> bool:
+    """Return True when a title is a primary HY/FY result-day trigger.
+
+    A trigger is the announcement that kicks off result-day pack collection.
+    It must contain one of the specific results keywords rather than just any
+    reference to a dividend, presentation, or annual report (which may appear
+    on non-results days).
+    """
+    t = title.lower()
+    hard_no = ["transcript", "webcast", "conference call"]
+    if any(x in t for x in hard_no):
+        return False
+    return any(x in t for x in _RESULT_DAY_TRIGGER_KEYWORDS)
+
+
+def group_same_day_items(items_for_ticker: List[Dict], trigger_date: str) -> List[Dict]:
+    """Return all announcements for a ticker published on *trigger_date*.
+
+    ``trigger_date`` is in the ASX date format ``DD/MM/YYYY``.
+    """
+    return [it for it in items_for_ticker if it.get("date", "") == trigger_date]
 
 
 def classify_from_title_only(title: str) -> str:
@@ -872,6 +937,213 @@ def fetch_announcement_text(
 
 
 # ----------------------------
+# Result-day pack helpers
+# ----------------------------
+
+def download_pdf_bytes(session: requests.Session, url: str) -> Optional[bytes]:
+    """Download a PDF and return its raw bytes, or None on any failure.
+
+    Unlike ``download_pdf_requests`` this does NOT write a file; the bytes
+    are returned directly so they can be base64-encoded and sent to Claude.
+    """
+    try:
+        r = session.get(url, timeout=REQUESTS_PDF_TIMEOUT_SECS, allow_redirects=True)
+        r.raise_for_status()
+        if r.content[:4] != b"%PDF":
+            return None
+        return r.content
+    except Exception:
+        return None
+
+
+def llm_chat_with_pdfs(
+    system_prompt: str,
+    text_context: str,
+    pdf_items: List[Dict],
+    counters: Dict,
+) -> str:
+    """Send a prompt plus one or more PDFs (as base64 documents) to Claude.
+
+    Each entry in ``pdf_items`` must have keys:
+      - ``title`` (str): document title shown to Claude
+      - ``pdf_bytes`` (bytes): raw PDF content
+
+    Items without ``pdf_bytes`` are silently skipped; they are still
+    represented in ``text_context``.
+
+    Returns the LLM response text, or a sentinel from ``_LLM_FAIL_MSGS``.
+    """
+    if counters["llm_calls"] >= counters["MAX_LLM_CALLS_PER_RUN"]:
+        return "__LLM_SKIPPED__"
+
+    counters["llm_calls"] += 1
+    model = os.environ.get("MODEL_NAME", MODEL_DEFAULT)
+
+    content: List[Dict] = []
+
+    # Add each PDF as a base64 document block
+    for item in pdf_items:
+        raw = item.get("pdf_bytes")
+        if not raw:
+            continue
+        if len(raw) > MAX_RESULT_PDF_BYTES:
+            log(f"[bob] skipping oversized PDF ({len(raw)//1024}KB): {item.get('title','?')[:60]}")
+            continue
+        content.append({
+            "type": "document",
+            "source": {
+                "type": "base64",
+                "media_type": "application/pdf",
+                "data": base64.standard_b64encode(raw).decode("utf-8"),
+            },
+            "title": item.get("title", "Document"),
+        })
+
+    # Add the text context as the final user message
+    content.append({
+        "type": "text",
+        "text": text_context[:30_000],
+    })
+
+    if len(content) == 1:
+        # Only the text block — no PDFs were attached; treat as LLM failure
+        # so the caller can fall back gracefully.
+        log("[bob] llm_chat_with_pdfs: no PDF documents could be attached")
+        return "__LLM_FAILED__"
+
+    try:
+        client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        resp = client.messages.create(
+            model=model,
+            max_tokens=4096,
+            system=system_prompt,
+            messages=[{"role": "user", "content": content}],
+        )
+        return (resp.content[0].text or "").strip()
+    except Exception as e:
+        log(f"[bob] LLM (with PDFs) failed: {e}")
+        return "__LLM_FAILED__"
+
+
+def deep_results_pack_analysis(
+    ticker: str,
+    pack_items: List[Dict],
+    date_str: str,
+    counters: Dict,
+) -> str:
+    """Analyse a full HY/FY result-day PDF pack by sending it directly to Claude.
+
+    ``pack_items`` is a list of dicts with keys:
+      - ``title``   (str): announcement title
+      - ``url``     (str): ASX announcement URL
+      - ``pdf_url`` (Optional[str]): direct PDF URL
+      - ``pdf_bytes`` (Optional[bytes]): downloaded PDF bytes
+
+    Returns the Claude analysis string, or a sentinel from ``_LLM_FAIL_MSGS``.
+    """
+    titles_text = "\n".join(f"  - {it['title']}" for it in pack_items)
+    urls_text = "\n".join(
+        f"  - {it['title'][:80]}: {it.get('pdf_url') or it['url']}"
+        for it in pack_items
+    )
+    attached = sum(1 for it in pack_items if it.get("pdf_bytes"))
+    text_context = (
+        f"Ticker: {ticker}\n"
+        f"Announcement date: {date_str}\n"
+        f"Number of documents in pack: {len(pack_items)} ({attached} PDFs attached)\n\n"
+        f"Document titles:\n{titles_text}\n\n"
+        f"Document URLs:\n{urls_text}\n"
+    )
+
+    log(f"[bob] sending result-day pack to Claude — ticker={ticker}, docs={len(pack_items)}, pdfs_attached={attached}")
+    result = llm_chat_with_pdfs(RESULTS_HYFY_PACK_PROMPT, text_context, pack_items, counters)
+
+    if result in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
+        return "LLM could not run (limit/billing)."
+    return result
+
+
+def save_result_artifacts(
+    ticker: str,
+    date_str: str,
+    pack_items: List[Dict],
+    analysis: str,
+) -> Path:
+    """Persist result-day analysis artifacts to disk.
+
+    Saves:
+      - ``pack_metadata.json``  : titles, URLs, PDF availability
+      - ``claude_analysis.txt`` : raw Claude response
+      - ``summary.md``          : Markdown-formatted summary
+
+    Returns the directory path where artifacts were saved.
+    """
+    # Normalise date for filesystem (DD/MM/YYYY -> YYYY-MM-DD)
+    try:
+        dir_date = dt.datetime.strptime(date_str, "%d/%m/%Y").strftime("%Y-%m-%d")
+    except Exception:
+        dir_date = date_str.replace("/", "-")
+
+    out_dir = RESULT_ARTIFACTS_DIR / ticker / dir_date
+    try:
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        # Metadata (exclude raw PDF bytes — not serialisable)
+        metadata = {
+            "ticker": ticker,
+            "date": date_str,
+            "documents": [
+                {
+                    "title": it["title"],
+                    "url": it["url"],
+                    "pdf_url": it.get("pdf_url"),
+                    "pdf_bytes_size": len(it["pdf_bytes"]) if it.get("pdf_bytes") else None,
+                }
+                for it in pack_items
+            ],
+        }
+        (out_dir / "pack_metadata.json").write_text(
+            json.dumps(metadata, indent=2), encoding="utf-8"
+        )
+
+        (out_dir / "claude_analysis.txt").write_text(analysis, encoding="utf-8")
+
+        titles_md = "\n".join(f"- [{it['title']}]({it['url']})" for it in pack_items)
+        md = (
+            f"# {ticker} — Result-Day Analysis\n\n"
+            f"**Date:** {date_str}\n\n"
+            f"## Documents\n\n{titles_md}\n\n"
+            f"## Analysis\n\n{analysis}\n"
+        )
+        (out_dir / "summary.md").write_text(md, encoding="utf-8")
+
+    except Exception as e:
+        log(f"[bob] save_result_artifacts failed for {ticker}: {e}")
+
+    return out_dir
+
+
+def format_result_fallback_block(
+    ticker: str,
+    pack_items: List[Dict],
+    date_str: str,
+) -> str:
+    """Build a fallback output block when Claude analysis cannot be completed."""
+    lines = [
+        f"{ticker} reported today ({date_str}). Full automated pack analysis failed, "
+        f"but the following result-day PDFs were identified:",
+        "",
+    ]
+    for it in pack_items:
+        url = it.get("pdf_url") or it["url"]
+        lines.append(f"  - {it['title']}")
+        lines.append(f"    {url}")
+    lines.append("")
+    lines.append("Open the links above to review the result-day documents manually.")
+    return "\n".join(lines)
+
+
+# ----------------------------
 # Email formatting helpers
 # ----------------------------
 def _linkify_urls(text: str) -> str:
@@ -1068,107 +1340,119 @@ def main():
                     brother_blocks.append(fyi_entry)
 
             # ----------------------------
-            # RESULTS bundle (per ticker)
+            # RESULTS bundle (per ticker) — HY/FY pack analysis
             # ----------------------------
-            if any(looks_like_results_title(i["title"]) for i in items) and ticker not in processed_results:
+            trigger_item = next(
+                (i for i in items if is_result_day_trigger(i["title"])), None
+            )
+            if trigger_item and ticker not in processed_results:
                 processed_results.add(ticker)
+                trigger_date = trigger_item.get("date", "")
+                log(f"[bob] HY/FY trigger detected for {ticker}: '{trigger_item['title'][:60]}' (date={trigger_date})")
 
-                bundle = likely_results_bundle_items(items)
-                bundle_keys = {announcement_key(ticker, b["url"]) for b in bundle}
-                non_bundle_items = [i for i in items if announcement_key(ticker, i["url"]) not in bundle_keys]
+                # Collect ALL same-day announcements for the triggered ticker.
+                # Use the full by_ticker set (not just the filtered fresh_items) so
+                # we pick up any same-day item that may have been skipped by the
+                # dedup filter but still represents a results-day document.
+                all_same_day = group_same_day_items(
+                    by_ticker.get(ticker, []), trigger_date
+                ) if trigger_date else list(items)
+                log(f"[bob] collected {len(all_same_day)} same-day announcements for {ticker}")
 
-                # Non-bundle items for this results ticker: FYI-only → mark COMPLETED immediately
-                for it in non_bundle_items:
-                    _k = it.get("seen_key") or announcement_key(ticker, it["url"])
-                    mark_state(seen_state_updated, _k, ticker, it["title"], STATUS_COMPLETED)
-                    run_completed_count += 1
-
-                downloaded_texts: List[Tuple[str, str]] = []
+                any_results_link = trigger_item["url"]
                 drive_links: List[str] = []
-                any_results_link = bundle[0]["url"] if bundle else items[0]["url"]
 
-                for b in bundle:
-                    title = b["title"]
-                    url = b["url"]
-                    pdf_url = asx_pdf_url_from_item_url(url)
+                # Build result-day pack: download PDF bytes for each same-day item
+                pack_items: List[Dict] = []
+                for ann in all_same_day:
+                    pdf_url = asx_pdf_url_from_item_url(ann["url"])
+                    pdf_bytes: Optional[bytes] = None
+                    if pdf_url:
+                        pdf_bytes = download_pdf_bytes(session, pdf_url)
+                        if pdf_bytes:
+                            log(f"[bob] {ticker} | downloaded PDF ({len(pdf_bytes)//1024}KB): {ann['title'][:60]}")
+                        else:
+                            log(f"[bob] {ticker} | PDF download failed (pack continues): {ann['title'][:60]}")
 
-                    safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
-                    pdf_path = tmpdir / f"{safe_name}.pdf"
+                        # Optional: upload PDF to Drive when available
+                        if pdf_bytes and drive_folder_id:
+                            safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{ann['title'][:80]}")
+                            pdf_path = tmpdir / f"{safe_name}.pdf"
+                            try:
+                                pdf_path.write_bytes(pdf_bytes)
+                                drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
+                                link = upload_to_drive(pdf_path, drive_folder_id, drive_name)
+                                if link:
+                                    drive_links.append(link)
+                            except Exception as e:
+                                log(f"[bob] Drive upload failed for {ticker}: {e}")
+                            finally:
+                                try:
+                                    if pdf_path.exists():
+                                        pdf_path.unlink()
+                                except Exception:
+                                    pass
 
-                    text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
-                    downloaded_texts.append((title, text))
+                    pack_items.append({
+                        "title": ann["title"],
+                        "url": ann["url"],
+                        "pdf_url": pdf_url,
+                        "pdf_bytes": pdf_bytes,
+                    })
 
-                    # Upload PDFs for results items (Drive configured)
-                    if got_pdf and drive_folder_id:
-                        try:
-                            drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
-                            link = upload_to_drive(pdf_path, drive_folder_id, drive_name)
-                            if link:
-                                drive_links.append(link)
-                        except Exception as e:
-                            log(f"Drive upload failed for {ticker}: {e}")
+                # Send the full pack to Claude — do NOT gate on local text extraction
+                analysis = deep_results_pack_analysis(ticker, pack_items, trigger_date, counters)
+                analysis_ok = analysis not in _LLM_FAIL_MSGS
 
-                    # delete local pdf after processing
-                    if pdf_path.exists():
-                        try:
-                            pdf_path.unlink()
-                        except Exception:
-                            pass
+                if analysis_ok:
+                    log(f"[bob] Claude analysis succeeded for {ticker}")
+                    straw = strawman_post(ticker, "HY/FY Results", analysis, counters)
 
-                report_text, deck_text = pick_report_and_deck_text(downloaded_texts)
-                report_text = (report_text or "")[:120_000]
-                deck_text = (deck_text or "")[:120_000]
-
-                # Strict gate: only deep analyse if we have real content
-                if not (is_meaningful_text(report_text, min_chars=MIN_RESULTS_TEXT_CHARS) or is_meaningful_text(deck_text, min_chars=MIN_RESULTS_TEXT_CHARS)):
-                    block = (
-                        f"{ticker} — Results detected, but Bob couldn't extract meaningful report/deck text automatically.\n"
-                        f"Open manually: {any_results_link}\n"
-                    )
+                    header = f"{ticker} — Results (HY/FY)"
+                    if drive_links:
+                        header += f" — Drive PDFs: {len(drive_links)}"
+                    block = f"{header}\n\n{analysis}\n\nOpen: {any_results_link}\n"
                     if drive_links:
                         block += "Drive links:\n" + "\n".join(drive_links) + "\n"
-                    high_impact_blocks.append(block)
-                    _hi_items.append({"ticker": ticker, "title": "Results (HY/FY) — text unavailable", "url": any_results_link, "type": "results"})
-                    if ticker == "AR9":
-                        brother_blocks.append(block)
-                    # Text extraction failed: mark bundle items FAILED so they retry next run
-                    for b in bundle:
-                        _k = b.get("seen_key") or announcement_key(ticker, b["url"])
-                        log(f"[bob] {ticker} | '{b['title'][:60]}' | FAILED → text extraction failed, will retry")
-                        mark_state(seen_state_updated, _k, ticker, b["title"], STATUS_FAILED, "text extraction failed")
-                    continue
+                    block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
 
-                log(f"[bob] {ticker} | processing earnings/results analysis")
-                analysis = deep_results_analysis(ticker, report_text, deck_text, counters)
-                analysis_ok = analysis not in _LLM_FAIL_MSGS
-                straw = strawman_post(ticker, "HY/FY Results", analysis, counters)
-
-                header = f"{ticker} — Results (HY/FY)"
-                if drive_links:
-                    header += f" — Drive PDFs: {len(drive_links)}"
-
-                block = f"{header}\n\n{analysis}\n\nOpen: {any_results_link}\n"
-                if drive_links:
-                    block += "Drive links:\n" + "\n".join(drive_links) + "\n"
-                block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
+                    # Save analysis artifacts
+                    try:
+                        art_dir = save_result_artifacts(ticker, trigger_date, pack_items, analysis)
+                        log(f"[bob] digest section published — artifacts saved to {art_dir}")
+                    except Exception as e:
+                        log(f"[bob] artifact save failed for {ticker}: {e}")
+                else:
+                    log(f"[bob] Claude analysis failed for {ticker} — publishing fallback with raw links")
+                    block = format_result_fallback_block(ticker, pack_items, trigger_date)
+                    if drive_links:
+                        block += "\nDrive links:\n" + "\n".join(drive_links) + "\n"
 
                 high_impact_blocks.append(block)
                 _hi_items.append({"ticker": ticker, "title": "Results (HY/FY)", "url": any_results_link, "type": "results"})
                 if ticker == "AR9":
                     brother_blocks.append(block)
 
-                # Mark bundle items based on analysis outcome
-                for b in bundle:
-                    _k = b.get("seen_key") or announcement_key(ticker, b["url"])
+                # Mark all same-day items based on outcome
+                for ann in all_same_day:
+                    _k = ann.get("seen_key") or announcement_key(ticker, ann["url"])
                     if analysis_ok:
-                        log(f"[bob] {ticker} | '{b['title'][:60]}' | SUCCESS → marked COMPLETED")
-                        mark_state(seen_state_updated, _k, ticker, b["title"], STATUS_COMPLETED)
+                        log(f"[bob] {ticker} | '{ann['title'][:60]}' | SUCCESS → marked COMPLETED")
+                        mark_state(seen_state_updated, _k, ticker, ann["title"], STATUS_COMPLETED)
                         run_completed_count += 1
                     else:
-                        log(f"[bob] {ticker} | '{b['title'][:60]}' | FAILED → LLM analysis failed, will retry")
-                        mark_state(seen_state_updated, _k, ticker, b["title"], STATUS_FAILED, "LLM analysis failed")
+                        log(f"[bob] {ticker} | '{ann['title'][:60]}' | FAILED → Claude analysis failed, will retry")
+                        mark_state(seen_state_updated, _k, ticker, ann["title"], STATUS_FAILED, "Claude analysis failed")
 
-                # Continue; results bundle handled as high impact
+                # Non-same-day items for this ticker: FYI-only → mark COMPLETED
+                same_day_urls = {a["url"] for a in all_same_day}
+                for it in items:
+                    if it["url"] not in same_day_urls:
+                        _k = it.get("seen_key") or announcement_key(ticker, it["url"])
+                        mark_state(seen_state_updated, _k, ticker, it["title"], STATUS_COMPLETED)
+                        run_completed_count += 1
+
+                # Results bundle handled — continue to next ticker
                 continue
 
             # ----------------------------

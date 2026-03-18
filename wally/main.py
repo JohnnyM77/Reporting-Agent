@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from .charts import render_range_chart, render_value_vs_price_chart
-from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, LOW_THRESHOLD_PCT, build_run_context, load_email_settings, should_run_tii75
+from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, LOW_THRESHOLD_PCT, WALLY_EXCLUDED_TICKERS, build_run_context, load_email_settings, should_run_tii75
 from .data_fetch import fetch_price_snapshot, fetch_valuation_snapshot
 from .drive_upload import upload_or_replace_xlsx
 from .email_report import build_html, build_combined_html, send_email
@@ -80,6 +80,9 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
     inline_images: list[tuple[str, Path]] = []  # (content-id, png_path)
 
     for ticker in wl.tickers:
+        if ticker in WALLY_EXCLUDED_TICKERS:
+            print(f"[wally] skipping excluded passive ETF: {ticker}", flush=True)
+            continue
         try:
             snap = fetch_price_snapshot(ticker)
             if not snap:

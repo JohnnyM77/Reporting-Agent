@@ -5,7 +5,32 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
+import yaml
+
 LOW_THRESHOLD_PCT = float(os.environ.get("WALLY_LOW_THRESHOLD_PCT", "5.0"))
+
+
+def _load_excluded_etfs() -> frozenset[str]:
+    """Load the shared passive-ETF exclusion list from config/excluded_passive_etfs.yaml.
+
+    The path is resolved relative to the repository root (two levels above this
+    file: wally/ → repo root).  Returns an empty frozenset if the file is
+    missing so that Wally degrades gracefully in test environments.
+    """
+    candidate = Path(__file__).resolve().parents[1] / "config" / "excluded_passive_etfs.yaml"
+    if not candidate.exists():
+        return frozenset()
+    try:
+        data = yaml.safe_load(candidate.read_text(encoding="utf-8")) or {}
+        raw = data.get("excluded_tickers", [])
+        return frozenset(str(t).strip().upper() for t in raw if t)
+    except Exception:  # noqa: BLE001
+        return frozenset()
+
+
+# Passive ETFs that Wally must never screen or value.
+# Bob (announcements agent) does NOT use this exclusion set.
+WALLY_EXCLUDED_TICKERS: frozenset[str] = _load_excluded_etfs()
 
 STANDARD_WATCHLISTS = [
     "watchlists/tii_watchlist.yaml",

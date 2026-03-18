@@ -124,6 +124,31 @@ COLOR_BG = "#0B1220"           # dark navy
 COLOR_PANEL = "#111B2E"        # panel
 COLOR_TEXT = "#E5E7EB"         # light text
 
+# ----------------------------
+# Daily joke (silence mode only)
+# ----------------------------
+_JOKES_FILE = Path(__file__).parent / "config" / "daily_jokes.txt"
+
+
+def _get_daily_joke() -> str:
+    """Return a deterministic daily joke from a local file.
+
+    The joke rotates once per calendar day using today's ordinal so no
+    network access is required.  Any error returns an empty string so
+    Bob never crashes because of the joke feature.
+    """
+    try:
+        jokes = [
+            line.strip()
+            for line in _JOKES_FILE.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        if not jokes:
+            return ""
+        return jokes[dt.date.today().toordinal() % len(jokes)]
+    except Exception:  # noqa: BLE001
+        return ""
+
 
 # ----------------------------
 # Minimal logging
@@ -1339,7 +1364,10 @@ def build_email(
         lines.append("")
 
     if not high_impact and not material and not fyi:
+        joke = _get_daily_joke()
         lines.append(no_announcements_msg)
+        if joke:
+            lines.append(f"Joke of the day: {joke}")
 
     body_text = "\n".join(lines)
 
@@ -1361,10 +1389,16 @@ def build_email(
     sections_html += _html_section("FYI (ALL ANNOUNCEMENTS)", COLOR_FYI, fyi)
 
     if not high_impact and not material and not fyi:
+        joke = _get_daily_joke()
+        joke_html = (
+            f'<div style="margin-top:8px; opacity:0.75; font-size:13px;">'
+            f'Joke of the day: {htmlmod.escape(joke)}</div>'
+            if joke else ""
+        )
         sections_html += f"""
         <div style="margin:18px 0;">
           <div style="margin-top:10px; padding:12px; background:{COLOR_PANEL}; border-radius:10px; color:{COLOR_TEXT};">
-            {htmlmod.escape(no_announcements_msg)}
+            {htmlmod.escape(no_announcements_msg)}{joke_html}
           </div>
         </div>
         """
@@ -1994,7 +2028,11 @@ def main():
     reportable_count = len(high_impact_blocks) + len(material_blocks) + len(fyi_blocks)
     log(f"[bob] reportable_announcements={reportable_count}")
     if reportable_count == 0:
-        log("[bob] emitting plain no-announcements message")
+        log("[bob] silence_mode=True")
+        log("[bob] joke_of_the_day_selected=True")
+    else:
+        log("[bob] silence_mode=False")
+        log("[bob] joke skipped because announcements exist")
     body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks)
 
     send_email(subject, body_text, body_html)

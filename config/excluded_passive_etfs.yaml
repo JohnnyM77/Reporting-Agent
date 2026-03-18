@@ -1,0 +1,7 @@
+# Passive ETFs excluded from Wally screening and Sally deep analysis.
+# Bob (the announcements agent) does NOT use this exclusion list —
+# Bob still monitors all tickers for ASX announcements.
+excluded_tickers:
+  - VAS.AX
+  - VHY.AX
+  - VEU.AX

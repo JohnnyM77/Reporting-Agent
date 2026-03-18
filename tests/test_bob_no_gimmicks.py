@@ -45,16 +45,26 @@ class TestNoAnnouncements:
         assert "No reportable announcements found in the last" in body_text
         assert "No reportable announcements found in the last" in body_html
 
-    def test_build_email_no_announcements_no_joke_or_cartoon(self):
-        """No-announcements output must not contain joke or cartoon text."""
+    def test_build_email_no_announcements_no_cartoon(self):
+        """No-announcements output must not contain cartoon or political-content text."""
         body_text, body_html = agent.build_email([], [], [])
-        for banned in ("joke", "cartoon", "cagle", "ladder", "political cartoon"):
+        for banned in ("cartoon", "cagle", "ladder", "political cartoon"):
             assert banned.lower() not in body_text.lower(), (
                 f"banned term '{banned}' found in plain-text output"
             )
             assert banned.lower() not in body_html.lower(), (
                 f"banned term '{banned}' found in HTML output"
             )
+
+    def test_build_email_no_announcements_includes_joke(self):
+        """No-announcements output must contain a joke-of-the-day line."""
+        body_text, body_html = agent.build_email([], [], [])
+        assert "joke of the day" in body_text.lower(), (
+            "expected 'Joke of the day:' in plain-text output for silence mode"
+        )
+        assert "joke of the day" in body_html.lower(), (
+            "expected 'Joke of the day:' in HTML output for silence mode"
+        )
 
     def test_build_email_no_announcements_no_network_required(self):
         """build_email must not raise even when no network is available."""
@@ -162,3 +172,68 @@ class TestNHCRerun:
             "silence_line parameter should have been removed from build_email"
         )
         assert params == ["high_impact", "material", "fyi"]
+
+
+# ---------------------------------------------------------------------------
+# D. Joke behaviour
+# ---------------------------------------------------------------------------
+
+class TestBobJokeBehaviour:
+    def test_no_announcements_shows_joke(self):
+        """When there are zero reportable announcements, a joke must appear."""
+        body_text, body_html = agent.build_email([], [], [])
+        assert "joke of the day" in body_text.lower(), (
+            "Expected 'Joke of the day:' in plain text for silence mode"
+        )
+        assert "joke of the day" in body_html.lower(), (
+            "Expected 'Joke of the day:' in HTML for silence mode"
+        )
+
+    def test_announcements_present_no_joke(self):
+        """When there are reportable announcements, NO joke must appear."""
+        blocks = ["BHP: Quarterly update.\nOpen: https://asx.com.au/bhp\n"]
+        body_text, body_html = agent.build_email([], blocks, [])
+        assert "joke of the day" not in body_text.lower(), (
+            "Joke must not appear when announcements are present"
+        )
+        assert "joke of the day" not in body_html.lower(), (
+            "Joke must not appear in HTML when announcements are present"
+        )
+
+    def test_get_daily_joke_is_non_empty(self):
+        """_get_daily_joke must return a non-empty string when the jokes file exists."""
+        joke = agent._get_daily_joke()
+        assert isinstance(joke, str)
+        assert len(joke) > 0, "_get_daily_joke returned an empty string"
+
+    def test_get_daily_joke_fallback_on_missing_file(self, monkeypatch):
+        """_get_daily_joke must return empty string (not crash) if jokes file is missing."""
+        monkeypatch.setattr(agent, "_JOKES_FILE", agent._JOKES_FILE.parent / "__nonexistent__.txt")
+        result = agent._get_daily_joke()
+        assert result == "", (
+            "_get_daily_joke should fall back to '' when jokes file is missing"
+        )
+
+    def test_get_daily_joke_fallback_on_empty_file(self, tmp_path, monkeypatch):
+        """_get_daily_joke must return empty string when the jokes file is empty."""
+        empty_file = tmp_path / "empty_jokes.txt"
+        empty_file.write_text("", encoding="utf-8")
+        monkeypatch.setattr(agent, "_JOKES_FILE", empty_file)
+        result = agent._get_daily_joke()
+        assert result == ""
+
+    def test_get_daily_joke_deterministic_by_date(self):
+        """Same date always returns the same joke (deterministic rotation)."""
+        import datetime as dt
+        joke_a = agent._get_daily_joke()
+        joke_b = agent._get_daily_joke()
+        assert joke_a == joke_b, "Same day must always return the same joke"
+
+    def test_silence_mode_with_broken_joke_still_shows_no_announcements_msg(
+        self, monkeypatch
+    ):
+        """Even if joke selection fails, the no-announcements message still appears."""
+        monkeypatch.setattr(agent, "_JOKES_FILE", agent._JOKES_FILE.parent / "__nonexistent__.txt")
+        body_text, body_html = agent.build_email([], [], [])
+        assert "No reportable announcements found in the last" in body_text
+        assert "No reportable announcements found in the last" in body_html

@@ -74,6 +74,4 @@ def load_email_settings() -> EmailSettings:
 
 
 def should_run_tii75(today: dt.date, force: bool = False) -> bool:
-    if force:
-        return True
     return True

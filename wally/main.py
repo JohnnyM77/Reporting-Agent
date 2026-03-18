@@ -68,6 +68,8 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
         WatchlistProcessResult with all processed data
     """
     wl = load_watchlist(watchlist_path, validate_tii75=is_tii75)
+    if is_tii75:
+        print(f"[wally] TII75 watchlist loaded: {watchlist_path}", flush=True)
     ctx = build_run_context()
     ctx.output_root.mkdir(parents=True, exist_ok=True)
 
@@ -230,6 +232,10 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                 )
             )
 
+    if is_tii75:
+        print(f"[wally] TII75 tickers screened={len(results)}", flush=True)
+        print(f"[wally] TII75 flagged={len(flagged)}", flush=True)
+
     payload = {
         "watchlist_name": wl.name,
         "watchlist_file": str(wl.source_path),
@@ -372,13 +378,12 @@ def _run_standard(force: bool = False, combined_email: bool = False) -> None:
 
 def _run_tii75(force: bool = False, combined_email: bool = False) -> None:
     today = dt.datetime.now(dt.timezone.utc).date()
-    if force:
-        print("[wally] TII75 forced run enabled: bypassing schedule gate", flush=True)
+    print(f"[wally] TII75 requested=True force={force}", flush=True)
     gate_result = should_run_tii75(today, force=force)
     if gate_result:
         _process_watchlist(TII75_WATCHLIST, force=force, send_individual_email=not combined_email, is_tii75=True)
     else:
-        print("[wally] TII75 skipped: fortnightly gate not satisfied (use --force to override)", flush=True)
+        print("[wally] TII75 skipped: should_run_tii75 returned False (use --force to override)", flush=True)
 
 
 def _run_all_combined(force: bool = False) -> None:
@@ -386,12 +391,11 @@ def _run_all_combined(force: bool = False) -> None:
     today = dt.datetime.now(dt.timezone.utc).date()
     watchlists_to_run = list(STANDARD_WATCHLISTS)
 
-    if force:
-        print("[wally] TII75 forced run enabled: bypassing schedule gate", flush=True)
+    print(f"[wally] TII75 requested=True force={force}", flush=True)
     if should_run_tii75(today, force=force):
         watchlists_to_run.append(TII75_WATCHLIST)
     else:
-        print("[wally] TII75 skipped: fortnightly gate not satisfied (use --force to include it)", flush=True)
+        print("[wally] TII75 skipped: should_run_tii75 returned False (use --force to include it)", flush=True)
 
     _process_watchlists_combined(watchlists_to_run, force=force)
 

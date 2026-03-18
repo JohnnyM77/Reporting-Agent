@@ -366,7 +366,8 @@ def test_run_summary_print(capsys):
     assert "HY" in captured.out
     assert "260318" in captured.out or "18/03/2026" in captured.out
     assert "3" in captured.out                    # pdfs_downloaded
-    assert "drive.google.com" in captured.out
+    # Verify the exact Drive URL (set on the RunSummary above) appears in output
+    assert "https://drive.google.com/drive/folders/abc123" in captured.out
 
 
 # ---------------------------------------------------------------------------

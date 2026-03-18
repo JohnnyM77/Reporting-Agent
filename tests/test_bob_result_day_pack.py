@@ -193,6 +193,13 @@ def test_looks_like_results_fy_with_year():
     assert looks_like_results_title("FY26 Half Year Results") is True
 
 
+def test_looks_like_results_fy_year_regex():
+    """fyNN pattern (e.g. fy26, fy2026) matches without hard-coded years."""
+    assert looks_like_results_title("FY2026 Results Pack") is True
+    assert looks_like_results_title("FY26 Earnings") is True
+    assert looks_like_results_title("FY30 Annual Results") is True
+
+
 # ---------------------------------------------------------------------------
 # 4. download_pdf_bytes — mocked HTTP
 # ---------------------------------------------------------------------------
@@ -360,14 +367,14 @@ def test_save_result_artifacts_pdf_bytes_excluded_from_metadata(tmp_path):
         out_dir = save_result_artifacts("NHC", "26/02/2026", pack, "analysis")
         meta_raw = (out_dir / "pack_metadata.json").read_text()
 
-        # Must be valid JSON (would fail if bytes were serialised)
+        # Must be valid JSON (would fail if raw bytes were serialised)
         meta = json.loads(meta_raw)
-        assert meta["documents"][0]["pdf_bytes_size"] is not None  # size stored as int
-        # Raw byte content (e.g. b"%PDF-1.4 fake") must NOT appear in the file
-        assert b"%PDF".decode() not in meta_raw or "pdf_bytes_size" in meta_raw
-        # No raw bytes value — only the integer size field
+        # Size is stored as an integer, not raw bytes
+        assert meta["documents"][0]["pdf_bytes_size"] is not None
         for doc in meta["documents"]:
             assert isinstance(doc.get("pdf_bytes_size"), (int, type(None)))
+        # The literal PDF header bytes must not appear verbatim in the JSON
+        assert "%PDF" not in meta_raw
     finally:
         agent_module.RESULT_ARTIFACTS_DIR = original_dir
 

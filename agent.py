@@ -448,9 +448,6 @@ def looks_like_results_title(title: str) -> bool:
         "full year results",
         "full-year results",
         "fy results",
-        "fy26",
-        "fy25",
-        "fy24",
         "financial report",
         "results announcement",
         "results presentation",
@@ -469,7 +466,12 @@ def looks_like_results_title(title: str) -> bool:
 
     if any(x in t for x in hard_no):
         return False
-    return any(x in t for x in hard_yes)
+    if any(x in t for x in hard_yes):
+        return True
+    # Match 'fyNN' or 'fy20NN' patterns (e.g. fy26, fy2026) without hard-coding years
+    if re.search(r"\bfy\d{2,4}\b", t):
+        return True
+    return False
 
 
 # HY/FY trigger keywords — a subset of looks_like_results_title that specifically
@@ -513,6 +515,9 @@ def group_same_day_items(items_for_ticker: List[Dict], trigger_date: str) -> Lis
     ``trigger_date`` is in the ASX date format ``DD/MM/YYYY``.
     """
     return [it for it in items_for_ticker if it.get("date", "") == trigger_date]
+
+
+def classify_from_title_only(title: str) -> str:
     t = title.lower()
 
     if looks_like_results_title(title):
@@ -1136,6 +1141,11 @@ def format_result_fallback_block(
     lines.append("")
     lines.append("Open the links above to review the result-day documents manually.")
     return "\n".join(lines)
+
+
+# ----------------------------
+# Email formatting helpers
+# ----------------------------
 def _linkify_urls(text: str) -> str:
     escaped = htmlmod.escape(text)
     return re.sub(

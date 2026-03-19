@@ -53,7 +53,7 @@ VERSION_LABEL = "V2"
 # ----------------------------
 HOURS_BACK = 24
 SEEN_STATE_PATH = Path(os.environ.get("SEEN_STATE_PATH", "state_seen.json"))
-SEEN_STATE_RETENTION_HOURS = 72
+SEEN_STATE_RETENTION_HOURS = 30
 
 # Comma-separated list of ASX tickers that should bypass the 24 hr dedup
 # check on this run (e.g. "NHC" or "NHC,BHP").  Set via the FORCE_RERUN_TICKERS
@@ -286,9 +286,11 @@ def should_process_item(
     status = entry.get("status", STATUS_COMPLETED)
 
     if status == STATUS_COMPLETED:
-        if high_pri:
-            return True, "high-priority: reprocessing despite COMPLETED"
-        return False, "already COMPLETED"
+        # Bob is a daily digest. If an item is still inside the reporting window,
+        # it should still be included in the digest even if it was marked COMPLETED
+        # by a prior run. This restores expected behaviour for portfolio notices
+        # like buy-backs and other non-high-priority but still relevant items.
+        return True, "within reporting window: include despite COMPLETED"
 
     if status == STATUS_FAILED:
         retry_count = entry.get("retry_count", 0)

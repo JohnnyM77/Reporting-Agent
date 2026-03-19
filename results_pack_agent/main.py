@@ -20,7 +20,7 @@ from .claude_runner import run_prompts
 from .config import GDRIVE_FOLDER_ID, OUTPUT_ROOT
 from .gdrive_uploader import upload_results_pack
 from .models import RunSummary
-from .pack_detector import detect_result_pack, find_nearest_result_dates
+from .pack_builder import build_result_pack as detect_result_pack, find_nearest_result_dates
 from .pdf_downloader import download_pack_pdfs, save_pack_metadata
 from .utils import iso_to_asx_date, log, make_output_folder
 from .valuation_runner import build_valuation
@@ -283,9 +283,9 @@ def run(
 
     if not announcements:
         msg = (
-            f"ASX fetch failed — zero announcements returned from shared fetch for {ticker}. "
-            "This likely indicates a fetch/parsing issue or unexpected ASX response format. "
-            "Check the [asx_fetcher] log lines above to diagnose the root cause."
+            f"ASX fetch returned zero announcements for {ticker}. "
+            "This likely indicates a fetch or parsing issue with the ASX v2 endpoint. "
+            "Check the [fetch] log lines above to diagnose the root cause."
         )
         log(f"[main] {msg}")
         summary = _make_failure(ticker, "NO_ANNOUNCEMENTS_FOUND", msg, report_type=report_type or "AUTO")

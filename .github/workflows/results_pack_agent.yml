@@ -22,11 +22,11 @@ on:
       build_valuation:
         description: 'Build Wally value-chart spreadsheet'
         required: false
-        default: 'false'
+        default: 'true'
       include_strawman:
         description: 'Include a Strawman.com post draft in outputs'
         required: false
-        default: 'false'
+        default: 'true'
       dry_run:
         description: 'Dry run — log actions only, no HTTP requests or file writes'
         required: false

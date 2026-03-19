@@ -279,12 +279,13 @@ def run(
     log(f"[main] Fetching announcement history for {ticker} (last 6 months) …")
     announcements = fetch_announcements(ticker=ticker)
 
+    print(f"[results_pack] announcements_found={len(announcements)} for {ticker}")
+
     if not announcements:
         msg = (
-            f"No announcements were extracted for {ticker} from the ASX fetch response. "
+            f"ASX fetch failed — zero announcements returned from shared fetch for {ticker}. "
             "This likely indicates a fetch/parsing issue or unexpected ASX response format. "
-            "Check the [asx_fetcher] log lines above for the HTTP status, content-type, "
-            "and body preview to diagnose the root cause."
+            "Check the [asx_fetcher] log lines above to diagnose the root cause."
         )
         log(f"[main] {msg}")
         summary = _make_failure(ticker, "NO_ANNOUNCEMENTS_FOUND", msg, report_type=report_type or "AUTO")

@@ -907,3 +907,134 @@ def test_no_announcements_error_message_does_not_blame_ticker():
     assert "not listed on asx" not in msg.lower()
     # Must give a useful diagnostic direction
     assert "fetch" in msg.lower() or "parsing" in msg.lower()
+
+
+# ---------------------------------------------------------------------------
+# 24. shared/asx_announcements module tests
+# ---------------------------------------------------------------------------
+
+_NHC_SHARED_MOCK_HTML = """
+<html><body><table>
+<tr>
+  <td>17/03/2026</td><td>10:00 am</td>
+  <td><a href="/asx/v2/announcements/NHC?idsId=001">FY26 Half Year Results</a></td>
+</tr>
+<tr>
+  <td>17/03/2026</td><td>10:01 am</td>
+  <td><a href="/asx/v2/announcements/NHC?idsId=002">Appendix 4D and Half Year Financial Report</a></td>
+</tr>
+<tr>
+  <td>20/01/2026</td><td>09:00 am</td>
+  <td><a href="/asx/v2/announcements/NHC?idsId=003">Quarterly Activities Report</a></td>
+</tr>
+</table></body></html>
+"""
+
+
+def test_shared_announcement_model():
+    """shared.asx_announcements.Announcement has required fields."""
+    from shared.asx_announcements import Announcement as SharedAnnouncement
+    a = SharedAnnouncement(
+        ticker="NHC",
+        title="FY26 Half Year Results",
+        date="17/03/2026",
+        time="10:00 am",
+        url="https://www.asx.com.au/asx/v2/announcements/NHC?idsId=001",
+        company_name="New Hope Corporation",
+        pdf_url=None,
+        asx_ids_id="001",
+        file_size=None,
+    )
+    assert a.ticker == "NHC"
+    assert a.company_name == "New Hope Corporation"
+    assert a.asx_ids_id == "001"
+
+
+def test_shared_fetch_ticker_announcements_parses_html():
+    """fetch_ticker_announcements returns Announcement objects from mock HTML."""
+    from unittest.mock import MagicMock
+    from shared.asx_announcements import fetch_ticker_announcements
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.text = _NHC_SHARED_MOCK_HTML
+    mock_resp.raise_for_status = MagicMock()
+
+    mock_session = MagicMock()
+    mock_session.get.return_value = mock_resp
+
+    anns = fetch_ticker_announcements("NHC", session=mock_session)
+    assert len(anns) == 3
+    assert all(a.ticker == "NHC" for a in anns)
+    titles = [a.title for a in anns]
+    assert "FY26 Half Year Results" in titles
+
+
+def test_shared_fetch_by_date_filters_correctly():
+    """fetch_ticker_announcements_by_date returns only announcements near target_date."""
+    import datetime as dt
+    from unittest.mock import MagicMock
+    from shared.asx_announcements import fetch_ticker_announcements_by_date
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.text = _NHC_SHARED_MOCK_HTML
+    mock_resp.raise_for_status = MagicMock()
+
+    mock_session = MagicMock()
+    mock_session.get.return_value = mock_resp
+
+    target = dt.date(2026, 3, 17)
+    anns = fetch_ticker_announcements_by_date("NHC", target_date=target, tolerance_days=1, session=mock_session)
+    # Only 17/03/2026 announcements should be returned; 20/01/2026 is out of range
+    assert len(anns) == 2
+    assert all(a.date == "17/03/2026" for a in anns)
+
+
+def test_shared_fetch_replay_filters_by_range():
+    """fetch_ticker_announcements_replay passes date range to asx_fetch."""
+    import datetime as dt
+    from unittest.mock import MagicMock, patch
+    from shared.asx_announcements import fetch_ticker_announcements_replay
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.text = _NHC_SHARED_MOCK_HTML
+    mock_resp.raise_for_status = MagicMock()
+
+    mock_session = MagicMock()
+    mock_session.get.return_value = mock_resp
+
+    from_d = dt.date(2026, 3, 1)
+    to_d = dt.date(2026, 3, 31)
+    anns = fetch_ticker_announcements_replay("NHC", from_date=from_d, to_date=to_d, session=mock_session)
+    # Only 17/03/2026 falls in the March window
+    assert all(a.date == "17/03/2026" for a in anns)
+
+
+def test_shared_asx_ids_id_extracted():
+    """_extract_asx_ids_id correctly extracts the idsId query parameter."""
+    from shared.asx_announcements import _extract_asx_ids_id
+    assert _extract_asx_ids_id("https://www.asx.com.au/asx/v2/announcements/NHC?idsId=02934567") == "02934567"
+    assert _extract_asx_ids_id("https://example.com/doc?documentKey=ABC123") == "ABC123"
+    assert _extract_asx_ids_id("https://example.com/no-id-here") is None
+
+
+def test_shared_build_result_pack_returns_pack():
+    """build_result_pack returns a ResultPack when a trigger is present."""
+    from unittest.mock import MagicMock, patch
+    from shared.asx_announcements import build_result_pack
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.text = _NHC_SHARED_MOCK_HTML
+    mock_resp.raise_for_status = MagicMock()
+
+    mock_session = MagicMock()
+    mock_session.get.return_value = mock_resp
+
+    pack = build_result_pack("NHC", report_type="HY", session=mock_session)
+    assert pack is not None
+    assert pack.ticker == "NHC"
+    assert pack.result_type == "HY"
+    assert pack.result_date == "17/03/2026"

@@ -1,14 +1,8 @@
 # results_pack_agent/asx_fetcher.py
 # ASX announcement fetcher for the Results Pack Agent.
 #
-# Delegates entirely to the shared asx_fetch module — the same code path used
-# by Bob (agent.py).  Both agents call fetch_asx_announcements_html() from
-# asx_fetch so they share exactly the same endpoint and parse logic.
-#
-#   - Single endpoint: ASX v2 statistics HTML endpoint
-#   - HTML-only parsing (BeautifulSoup table rows)
-#   - No company-page fallback (/companies/ URL — was broken/404)
-#   - No v1 JSON API fallback
+# Thin wrapper around the shared asx_fetch module — the same code path used
+# by Bob (agent.py).  All fetch logic (including fallbacks) lives in asx_fetch.
 
 from __future__ import annotations
 
@@ -26,11 +20,12 @@ def fetch_announcements(
     ticker: str,
     session: Optional[requests.Session] = None,
 ) -> List[Announcement]:
-    """Fetch ASX announcements for *ticker* using Bob's shared code path.
+    """Fetch ASX announcements for *ticker* using the shared asx_fetch code path.
 
-    Delegates to the shared ``asx_fetch`` module so both agents hit the exact
-    same endpoint and parse logic.  Never raises — network errors are logged
-    and an empty list is returned.
+    Delegates entirely to ``asx_fetch.fetch_asx_announcements_html`` which
+    tries the legacy v2 endpoint first, then falls back to company-page scraping
+    (requests then Playwright) if needed.  Never raises — all errors are handled
+    internally by asx_fetch and an empty list is returned on total failure.
 
     Args:
         ticker: ASX ticker code (e.g. ``"NHC"``).
@@ -41,19 +36,9 @@ def fetch_announcements(
         List of ``Announcement`` objects (may be empty on error or no data).
     """
     s = session or http_session()
-    ticker = ticker.upper().strip()
+    raw = fetch_asx_announcements_html(s, ticker)
 
-    try:
-        raw = fetch_asx_announcements_html(s, ticker)
-    except Exception as exc:
-        log(f"[asx_fetcher] Fetch failed for {ticker}: {exc}")
-        return []
-
-    if not raw:
-        print(f"[asx_fetcher] No announcements returned for {ticker} using shared Bob path")
-    else:
-        print(f"[asx_fetcher] Retrieved {len(raw)} announcements for {ticker}")
-        print(f"[asx_fetcher] Sample titles: {[a['title'] for a in raw[:3]]}")
+    log(f"[asx_fetcher] announcements_found={len(raw)} for {ticker}")
 
     return [
         Announcement(

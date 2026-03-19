@@ -1,33 +1,33 @@
 {
-  "last_run": "2026-03-18",
-  "portfolio_size": 23,
+  "last_run": "2026-03-19",
+  "portfolio_size": 20,
   "flagged_count": 2,
   "flagged": [
     {
-      "ticker": "VHY",
-      "company_name": "Vanguard Australian Shares High Yield ETF",
-      "current_price": 82.63999938964844,
-      "high_52w": 85.1500015258789,
-      "distance_to_high_pct": 2.95,
-      "trailing_pe": 20.270342,
-      "forward_pe": null,
-      "dividend_yield": 7.28,
-      "valuation_percentile": null,
-      "alert_tier": "Tier 1: Watch",
-      "sally_verdict": "Watch only"
+      "ticker": "NHC",
+      "company_name": "New Hope Corporation Limited",
+      "current_price": 5.434999942779541,
+      "high_52w": 5.434999942779541,
+      "distance_to_high_pct": 0.0,
+      "trailing_pe": 10.87,
+      "forward_pe": 15.261281,
+      "dividend_yield": 3.81,
+      "valuation_percentile": 0.925,
+      "alert_tier": "Tier 3: Deep Review",
+      "sally_verdict": "Trim candidate"
     },
     {
       "ticker": "WDS",
       "company_name": "Woodside Energy Group Ltd",
-      "current_price": 31.420000076293945,
-      "high_52w": 31.6299991607666,
-      "distance_to_high_pct": 0.66,
-      "trailing_pe": 15.477833,
-      "forward_pe": 19.212996,
+      "current_price": 33.38999938964844,
+      "high_52w": 33.38999938964844,
+      "distance_to_high_pct": 0.0,
+      "trailing_pe": 16.61194,
+      "forward_pe": 20.772974,
       "dividend_yield": 5.26,
-      "valuation_percentile": 0.6333333333333333,
-      "alert_tier": "Tier 1: Watch",
-      "sally_verdict": "Watch only"
+      "valuation_percentile": 0.7666666666666667,
+      "alert_tier": "Tier 2: Review",
+      "sally_verdict": "Hold but stop adding"
     }
   ]
 }

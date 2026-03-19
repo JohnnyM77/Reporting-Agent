@@ -157,24 +157,24 @@ def test_process_new_announcement():
 
 
 def test_skip_completed_normal():
-    """COMPLETED non-high-priority announcements must be skipped."""
+    """COMPLETED non-high-priority announcements are still included in the daily digest."""
     state = _make_completed_entry(NHC_TICKER, NHC_URL, headline="Company Secretary Change")
     key = announcement_key(NHC_TICKER, NHC_URL)
     ok, reason = should_process_item(
         key, NHC_TICKER, "Company Secretary Change", state, False, frozenset()
     )
-    assert ok is False
+    assert ok is True
     assert "completed" in reason.lower()
 
 
 def test_reprocess_completed_high_priority():
-    """COMPLETED high-priority items must be reprocessed so they are never silenced."""
+    """COMPLETED high-priority items are included in the daily digest."""
     state = _make_completed_entry(NHC_TICKER, NHC_URL, headline=NHC_TITLE)
     ok, reason = should_process_item(
         NHC_KEY, NHC_TICKER, NHC_TITLE, state, False, frozenset()
     )
     assert ok is True
-    assert "high-priority" in reason.lower()
+    assert "completed" in reason.lower()
 
 
 def test_retry_failed_within_24h():
@@ -427,10 +427,10 @@ def test_nhc_h1_results_retry_scenario():
     entry = state[key]
     assert entry["status"] == STATUS_COMPLETED, "Second run: should be COMPLETED after success"
 
-    # --- THIRD CHECK: now COMPLETED + high-priority → still reprocessable ---
-    # (High-priority items should never be permanently silenced)
+    # --- THIRD CHECK: now COMPLETED → still included in digest (daily digest behaviour) ---
     ok, reason = should_process_item(key, ticker, title, state, False, frozenset())
-    assert ok is True, "High-priority completed items should still be reprocessable"
+    assert ok is True, "COMPLETED items within the reporting window should still be included"
+    assert "completed" in reason.lower()
 
 
 def test_nhc_h1_results_max_retries_stops():
@@ -457,3 +457,41 @@ def test_nhc_h1_results_max_retries_stops():
     # But --force must still override even at max retries
     ok, reason = should_process_item(key, ticker, title, state, True, frozenset())
     assert ok is True, "--force must override even max-retries state"
+
+
+# ---------------------------------------------------------------------------
+# 7. Portfolio notices (WDS/BXB buy-backs) with status=COMPLETED must still
+#    appear in the daily digest when they are within the fetch window.
+# ---------------------------------------------------------------------------
+
+def test_wds_buyback_completed_still_included():
+    """
+    WDS buy-back notice marked COMPLETED on a prior run must still be included
+    when it is still within the last-24-hour fetch window.
+    """
+    url = "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=09900001"
+    ticker = "WDS"
+    title = "Update - Notification of buy-back - WDS 6"
+    key = announcement_key(ticker, url)
+    state = _make_completed_entry(ticker, url, headline=title)
+
+    ok, reason = should_process_item(key, ticker, title, state, False, frozenset())
+    assert ok is True, "WDS buy-back COMPLETED within window must be included in digest"
+    assert "completed" in reason.lower()
+
+
+def test_bxb_notice_completed_still_included():
+    """
+    BXB notice marked COMPLETED on a prior run must still be included
+    when it is still within the last-24-hour fetch window.
+    """
+    url = "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?idsId=09900002"
+    ticker = "BXB"
+    title = "BXB Appendix 3C - Notification of buy-back"
+    key = announcement_key(ticker, url)
+    state = _make_completed_entry(ticker, url, headline=title)
+
+    ok, reason = should_process_item(key, ticker, title, state, False, frozenset())
+    assert ok is True, "BXB notice COMPLETED within window must be included in digest"
+    assert "completed" in reason.lower()
+

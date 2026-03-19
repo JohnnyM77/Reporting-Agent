@@ -83,16 +83,20 @@ jobs:
             ARGS="$ARGS --date ${{ github.event.inputs.date }}"
           fi
 
-          if [ "${{ github.event.inputs.upload }}" = "true" ]; then
-            ARGS="$ARGS --upload"
+          # Upload, valuation, and Strawman default ON in main.py.
+          # Only add the opt-out flag when the user explicitly sets the input
+          # to "false" — omitting the flag (or setting it to "true") keeps
+          # the feature enabled.
+          if [ "${{ github.event.inputs.upload }}" = "false" ]; then
+            ARGS="$ARGS --no-upload"
           fi
 
-          if [ "${{ github.event.inputs.build_valuation }}" = "true" ]; then
-            ARGS="$ARGS --build-valuation"
+          if [ "${{ github.event.inputs.build_valuation }}" = "false" ]; then
+            ARGS="$ARGS --skip-valuation"
           fi
 
-          if [ "${{ github.event.inputs.include_strawman }}" = "true" ]; then
-            ARGS="$ARGS --include-strawman"
+          if [ "${{ github.event.inputs.include_strawman }}" = "false" ]; then
+            ARGS="$ARGS --skip-strawman"
           fi
 
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then

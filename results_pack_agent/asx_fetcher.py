@@ -1,8 +1,9 @@
 # results_pack_agent/asx_fetcher.py
 # ASX announcement fetcher for the Results Pack Agent.
 #
-# Thin wrapper around the shared asx_fetch module — the same code path used
-# by Bob (agent.py).  All fetch logic (including fallbacks) lives in asx_fetch.
+# Thin wrapper around the shared/asx_announcements module — the single source
+# of truth for ASX announcement retrieval shared with Bob (agent.py).
+# All fetch logic (including the 3-stage fallback) lives in shared/asx_announcements.py.
 
 from __future__ import annotations
 
@@ -11,7 +12,13 @@ from typing import List, Optional
 
 import requests
 
-from asx_fetch import fetch_asx_announcements_html, parse_asx_html_announcements
+# Import from the canonical shared module.  The shared module in turn wraps
+# asx_fetch.py so both Bob and the Results Pack Agent share exactly one
+# retrieval and parsing code path.
+from shared.asx_announcements import (
+    fetch_ticker_announcements as _fetch_shared,
+    parse_asx_html_announcements,   # re-exported for backward-compatible imports
+)
 from .models import Announcement
 from .utils import http_session, log
 
@@ -20,35 +27,35 @@ def fetch_announcements(
     ticker: str,
     session: Optional[requests.Session] = None,
 ) -> List[Announcement]:
-    """Fetch ASX announcements for *ticker* using the shared asx_fetch code path.
+    """Fetch ASX announcements for *ticker* via the shared asx_announcements module.
 
-    Delegates entirely to ``asx_fetch.fetch_asx_announcements_html`` which
-    tries the legacy v2 endpoint first, then falls back to company-page scraping
-    (requests then Playwright) if needed.  Never raises — all errors are handled
-    internally by asx_fetch and an empty list is returned on total failure.
+    Delegates to ``shared.asx_announcements.fetch_ticker_announcements`` which
+    applies the proven 3-stage fallback (legacy v2 endpoint → requests scrape →
+    Playwright render).  Never raises — all errors are handled internally and
+    an empty list is returned on total failure.
 
     Args:
-        ticker: ASX ticker code (e.g. ``"NHC"``).
+        ticker:  ASX ticker code (e.g. ``"NHC"``).
         session: Optional requests session.  A new browser-like session is
-            created if not supplied.
+                 created if not supplied.
 
     Returns:
         List of ``Announcement`` objects (may be empty on error or no data).
     """
-    s = session or http_session()
-    raw = fetch_asx_announcements_html(s, ticker)
+    shared_anns = _fetch_shared(ticker, session=session)
 
-    log(f"[asx_fetcher] announcements_found={len(raw)} for {ticker}")
+    log(f"[asx_fetcher] shared_module=shared.asx_announcements announcements_found={len(shared_anns)} for {ticker}")
 
     return [
         Announcement(
-            ticker=i["ticker"],
-            title=i["title"],
-            date=i["date"],
-            time=i["time"],
-            url=i["url"],
+            ticker=a.ticker,
+            title=a.title,
+            date=a.date,
+            time=a.time,
+            url=a.url,
+            pdf_url=a.pdf_url,
         )
-        for i in raw
+        for a in shared_anns
     ]
 
 
@@ -62,11 +69,11 @@ def _parse_announcements_html(
     from_date: Optional[dt.date] = None,
     to_date: Optional[dt.date] = None,
 ) -> List[Announcement]:
-    """Parse ASX HTML using the shared asx_fetch parse path.
+    """Parse ASX HTML using the shared parse path.
 
-    Returns ``Announcement`` objects.  This is a thin wrapper around
-    ``asx_fetch.parse_asx_html_announcements`` kept for backwards-compatible
-    imports.
+    Returns ``Announcement`` objects.  Thin wrapper around
+    ``shared.asx_announcements.parse_asx_html_announcements`` kept for
+    backwards-compatible imports.
     """
     return [
         Announcement(

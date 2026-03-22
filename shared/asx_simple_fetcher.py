@@ -14,7 +14,6 @@
 
 from __future__ import annotations
 
-import datetime as dt
 import re
 from typing import Dict, List, Optional
 
@@ -67,6 +66,28 @@ def _build_pdf_url(ids_id: Optional[str]) -> Optional[str]:
     )
 
 
+_DATE_RE = re.compile(r"\b(\d{2}/\d{2}/\d{4})\b")
+_TIME_RE = re.compile(r"\b(\d{1,2}:\d{2}(?:\s*[ap]m)?)\b", re.IGNORECASE)
+
+
+def _extract_date_time(cell_text: str) -> Optional[tuple]:
+    """Extract (date_str, time_str) from raw cell text.
+
+    Handles formats where date and time appear in the same cell, e.g.:
+        "17/03/2026"
+        "17/03/2026 05:21 AM"
+        "17/03/2026\n05:21 AM"
+    Returns ``None`` if no DD/MM/YYYY date is found.
+    """
+    m_date = _DATE_RE.search(cell_text)
+    if not m_date:
+        return None
+    date_str = m_date.group(1)
+    m_time = _TIME_RE.search(cell_text)
+    time_str = m_time.group(1) if m_time else ""
+    return date_str, time_str
+
+
 def parse_announcements_html(html: str, ticker: str) -> List[Dict]:
     """Parse the ASX v2 statistics HTML page and return a list of announcement dicts.
 
@@ -78,8 +99,10 @@ def parse_announcements_html(html: str, ticker: str) -> List[Dict]:
         url      – full absolute URL to the announcement page
         pdf_url  – direct PDF URL derived from the idsId parameter (may be None)
 
-    Rows without a parseable DD/MM/YYYY date in the first ``<td>`` are skipped.
+    Rows without a parseable DD/MM/YYYY date are skipped.
     Duplicate URLs are deduplicated.
+    The date may appear in a single cell combined with the time
+    (e.g. "17/03/2026 05:21 AM") or in separate cells.
     """
     soup = BeautifulSoup(html, "html.parser")
     rows = soup.select("table tr")
@@ -98,13 +121,21 @@ def parse_announcements_html(html: str, ticker: str) -> List[Dict]:
 
         title = link.get_text(" ", strip=True)
         href = _normalise_href(str(link["href"]))
-        date_text = cols[0].get_text(" ", strip=True)
-        time_text = cols[1].get_text(" ", strip=True) if len(cols) > 1 else ""
 
-        try:
-            dt.datetime.strptime(date_text, "%d/%m/%Y")
-        except Exception:
+        # Extract date (and optionally time) from the first column.
+        # The real ASX page often places date and time in the same cell.
+        first_col_text = cols[0].get_text(" ", strip=True)
+        dt_pair = _extract_date_time(first_col_text)
+        if not dt_pair:
             continue
+        date_text, time_text = dt_pair
+
+        # If time was not found in col[0], try col[1] (separate-cell layout).
+        if not time_text and len(cols) > 1:
+            second_col_text = cols[1].get_text(" ", strip=True)
+            m_time = _TIME_RE.search(second_col_text)
+            if m_time:
+                time_text = m_time.group(1)
 
         if href in seen:
             continue

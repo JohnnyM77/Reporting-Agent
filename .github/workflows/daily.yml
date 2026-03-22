@@ -2,29 +2,16 @@ name: Daily Announcement Digest
 
 on:
   workflow_dispatch:
-    inputs:
-      force_rerun_tickers:
-        description: 'Comma-separated ASX tickers to force re-run (bypass 24 hr dedup), e.g. NHC or NHC,BHP'
-        required: false
-        default: ''
   schedule:
     - cron: "13 23 * * *"
 
 jobs:
   run-agent:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
-
-      - name: Debug - show files
-        run: |
-          pwd
-          ls -la
-          python --version
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -50,30 +37,13 @@ jobs:
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
-          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
-          GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
+          CLAUDE_MODEL: claude-sonnet-4-6
+          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
           BROTHER_EMAIL: ${{ secrets.BROTHER_EMAIL }}
           SEEN_STATE_PATH: state_seen.json
-          FORCE_RERUN_TICKERS: ${{ github.event.inputs.force_rerun_tickers }}
         run: |
           python agent.py
-
-      - name: Commit dashboard update
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Commit only Bob's data JSON — no conflict possible with other agents
-          git add docs/data/bob.json
-          git diff --staged --quiet || git commit -m "Bob data [skip ci]"
-          # Pull other agents' latest JSON files
-          git pull --rebase origin HEAD
-          # Rebuild HTML with all agents' combined data, then push
-          python scripts/build_dashboard.py
-          git add docs/index.html
-          git diff --staged --quiet || git commit -m "Dashboard update — Bob [skip ci]"
-          git push origin HEAD
 
       - name: Save seen announcements state
         if: always()

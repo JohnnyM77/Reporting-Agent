@@ -1,9 +1,9 @@
 # results_pack_agent/asx_fetcher.py
 # ASX announcement fetcher for the Results Pack Agent.
 #
-# Thin wrapper around the shared/asx_announcements module — the single source
-# of truth for ASX announcement retrieval shared with Bob (agent.py).
-# All fetch logic (including the 3-stage fallback) lives in shared/asx_announcements.py.
+# Thin wrapper around shared/asx_simple_fetcher — the single, no-fallback
+# HTML fetch path for the Results Pack Agent.  One HTTP call, one parse,
+# done.
 
 from __future__ import annotations
 
@@ -12,27 +12,23 @@ from typing import List, Optional
 
 import requests
 
-# Import from the canonical shared module.  The shared module in turn wraps
-# asx_fetch.py so both Bob and the Results Pack Agent share exactly one
-# retrieval and parsing code path.
-from shared.asx_announcements import (
-    fetch_ticker_announcements as _fetch_shared,
-    parse_asx_html_announcements,   # re-exported for backward-compatible imports
+from shared.asx_simple_fetcher import (
+    fetch_announcements as _simple_fetch,
+    parse_announcements_html as _parse_html,
 )
 from .models import Announcement
-from .utils import http_session, log
+from .utils import log
 
 
 def fetch_announcements(
     ticker: str,
     session: Optional[requests.Session] = None,
 ) -> List[Announcement]:
-    """Fetch ASX announcements for *ticker* via the shared asx_announcements module.
+    """Fetch ASX announcements for *ticker* via the simple HTML fetcher.
 
-    Delegates to ``shared.asx_announcements.fetch_ticker_announcements`` which
-    applies the proven 3-stage fallback (legacy v2 endpoint → requests scrape →
-    Playwright render).  Never raises — all errors are handled internally and
-    an empty list is returned on total failure.
+    Makes a single HTTP GET to the ASX v2 statistics endpoint and parses the
+    HTML response with BeautifulSoup.  No fallback stages, no retries.
+    Returns an empty list on any error — never raises.
 
     Args:
         ticker:  ASX ticker code (e.g. ``"NHC"``).
@@ -42,20 +38,18 @@ def fetch_announcements(
     Returns:
         List of ``Announcement`` objects (may be empty on error or no data).
     """
-    shared_anns = _fetch_shared(ticker, session=session)
-
-    log(f"[asx_fetcher] shared_module=shared.asx_announcements announcements_found={len(shared_anns)} for {ticker}")
-
+    raw = _simple_fetch(ticker, session=session)
+    log(f"[fetch] ticker={ticker} announcements_found={len(raw)}")
     return [
         Announcement(
-            ticker=a.ticker,
-            title=a.title,
-            date=a.date,
-            time=a.time,
-            url=a.url,
-            pdf_url=a.pdf_url,
+            ticker=d["ticker"],
+            title=d["title"],
+            date=d["date"],
+            time=d["time"],
+            url=d["url"],
+            pdf_url=d.get("pdf_url"),
         )
-        for a in shared_anns
+        for d in raw
     ]
 
 
@@ -69,19 +63,29 @@ def _parse_announcements_html(
     from_date: Optional[dt.date] = None,
     to_date: Optional[dt.date] = None,
 ) -> List[Announcement]:
-    """Parse ASX HTML using the shared parse path.
+    """Parse ASX v2 statistics HTML.
 
-    Returns ``Announcement`` objects.  Thin wrapper around
-    ``shared.asx_announcements.parse_asx_html_announcements`` kept for
-    backwards-compatible imports.
+    Returns ``Announcement`` objects.  Kept for backwards-compatible imports.
+    Date filtering is applied when *from_date* or *to_date* are provided.
     """
-    return [
-        Announcement(
+    items = _parse_html(html, ticker)
+    result = []
+    for i in items:
+        if from_date is not None or to_date is not None:
+            try:
+                item_date = dt.datetime.strptime(i["date"], "%d/%m/%Y").date()
+                if from_date is not None and item_date < from_date:
+                    continue
+                if to_date is not None and item_date > to_date:
+                    continue
+            except Exception:
+                pass
+        result.append(Announcement(
             ticker=i["ticker"],
             title=i["title"],
             date=i["date"],
             time=i["time"],
             url=i["url"],
-        )
-        for i in parse_asx_html_announcements(html, ticker, from_date=from_date, to_date=to_date)
-    ]
+            pdf_url=i.get("pdf_url"),
+        ))
+    return result

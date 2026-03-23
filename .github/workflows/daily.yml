@@ -51,5 +51,3 @@ jobs:
         with:
           path: state_seen.json
           key: seen-state-${{ github.ref_name }}-${{ github.run_id }}
-
- 

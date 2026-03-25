@@ -136,8 +136,15 @@ def parse_asx_html_announcements(
             continue
         title = link.get_text(" ", strip=True)
         href = _normalise_href(str(link["href"]))
-        date_text = cols[0]
-        time_text = cols[1] if len(cols) > 1 else ""
+        # ASX combines date and time in the first column, e.g. "25/03/2026 08:30 AM"
+        # Use a regex to extract the date rather than a strict strptime.
+        first_col = cols[0]
+        m_date = re.search(r"\b(\d{2}/\d{2}/\d{4})\b", first_col)
+        if not m_date:
+            continue
+        date_text = m_date.group(1)
+        m_time = re.search(r"\b(\d{1,2}:\d{2}(?:\s*[ap]m)?)\b", first_col, re.IGNORECASE)
+        time_text = m_time.group(1) if m_time else (cols[1] if len(cols) > 1 else "")
 
         try:
             item_date = dt.datetime.strptime(date_text, "%d/%m/%Y").date()

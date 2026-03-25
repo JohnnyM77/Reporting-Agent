@@ -1,17 +1,3 @@
-Bob Fix — 2 minutes on your phone
-
-The problem: The ASX v2 endpoint now returns JSON but asx_fetch.py tries to parse it as HTML — so it always gets zero results. Fix is to add JSON parsing as the first attempt.
-Steps:
-
-Go to: github.com/JohnnyM77/Reporting-Agent/blob/main/asx_fetch.py
-Tap the pencil (Edit) icon
-Select ALL the text and delete it
-Paste the entire file below
-Commit message: fix: parse JSON from ASX v2 endpoint
-Press Commit changes
-Go to Actions → Daily Announcement Digest → Run workflow
-Complete asx_fetch.py — select all and paste:
-
 # asx_fetch.py
 #
 # Shared ASX announcement fetching module.

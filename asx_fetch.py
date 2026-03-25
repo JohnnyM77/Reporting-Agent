@@ -2,20 +2,20 @@
 #
 # Shared ASX announcement fetching module.
 #
-# 3-stage fallback:
-#   1. ASX v2 statistics endpoint — JSON parse first, HTML parse fallback
-#   2. Requests scrape of live company page (cheap, usually zero for JS-rendered)
-#   3. Playwright scrape of live company page (reliable JS render)
+# 2-stage fetch strategy:
+#   1. Direct HTTP request to ASX v2 endpoint — JSON parse first, HTML fallback
+#   2. Playwright browser fetch of same v2 endpoint — handles consent gates,
+#      JS rendering, and any IP-based blocking of raw HTTP clients
 #
 # Public API
 # ----------
 # fetch_asx_announcements_html(session, ticker, from_date, to_date) -> List[Dict]
 # parse_asx_html_announcements(html, ticker, from_date, to_date) -> List[Dict]
-# parse_company_page_html(html, ticker, from_date, to_date) -> List[Dict]
 
 from __future__ import annotations
 
 import datetime as dt
+import json
 import re
 from typing import Dict, List, Optional
 
@@ -34,7 +34,6 @@ PLAYWRIGHT_USER_AGENT = (
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/124.0.0.0 Safari/537.36"
 )
-_PARENT_TRAVERSE_DEPTH = 5
 
 
 def _normalise_href(href: str) -> str:
@@ -49,14 +48,7 @@ def _parse_json_rows(
     from_date: Optional[dt.date] = None,
     to_date: Optional[dt.date] = None,
 ) -> List[Dict]:
-    """Parse the JSON rows returned by the ASX v2 endpoint.
-
-    The endpoint switched from returning an HTML table to returning a JSON
-    payload with a top-level 'data' array. Each row has keys like:
-      header / headline  — announcement title
-      documentKey        — relative path to the PDF
-      releasedDate       — epoch milliseconds (UTC)
-    """
+    """Parse the JSON rows returned by the ASX v2 endpoint."""
     items: List[Dict] = []
     seen: set = set()
 
@@ -68,7 +60,6 @@ def _parse_json_rows(
         if not title:
             continue
 
-        # Build absolute URL from documentKey or url field
         doc_url = (row.get("url") or "").strip()
         if not doc_url:
             doc_key = (row.get("documentKey") or "").strip()
@@ -80,7 +71,6 @@ def _parse_json_rows(
         if doc_url.startswith("/"):
             doc_url = "https://www.asx.com.au" + doc_url
 
-        # Parse releasedDate — usually epoch ms (UTC), convert to SGT (UTC+8)
         released = row.get("releasedDate") or row.get("issueDate") or row.get("date")
         item_date = None
         time_str = ""
@@ -115,7 +105,7 @@ def _parse_json_rows(
 
         items.append({
             "exchange": "ASX",
-            "ticker": ticker,
+            "ticker": ticker.upper(),
             "date": item_date.strftime("%d/%m/%Y"),
             "time": time_str,
             "title": title,
@@ -131,7 +121,7 @@ def parse_asx_html_announcements(
     from_date: Optional[dt.date] = None,
     to_date: Optional[dt.date] = None,
 ) -> List[Dict]:
-    """Parse the ASX announcements HTML table and return a list of dicts."""
+    """Parse the ASX v2 endpoint HTML table."""
     soup = BeautifulSoup(html, "html.parser")
     rows = soup.select("table tr")
     items: List[Dict] = []
@@ -146,7 +136,6 @@ def parse_asx_html_announcements(
             continue
         title = link.get_text(" ", strip=True)
         href = _normalise_href(str(link["href"]))
-
         date_text = cols[0]
         time_text = cols[1] if len(cols) > 1 else ""
 
@@ -175,80 +164,42 @@ def parse_asx_html_announcements(
     return items
 
 
-def parse_company_page_html(
-    html: str,
+def _parse_response_body(
+    body: str,
+    ticker: str,
+    from_date: Optional[dt.date],
+    to_date: Optional[dt.date],
+) -> List[Dict]:
+    """Try JSON parse first, fall back to HTML parse."""
+    # JSON first
+    try:
+        payload = json.loads(body)
+        rows = (
+            payload.get("data", [])
+            if isinstance(payload, dict)
+            else (payload if isinstance(payload, list) else [])
+        )
+        if rows:
+            items = _parse_json_rows(rows, ticker, from_date=from_date, to_date=to_date)
+            if items:
+                return items
+    except Exception:
+        pass
+
+    # HTML fallback
+    return parse_asx_html_announcements(body, ticker, from_date=from_date, to_date=to_date)
+
+
+def _playwright_fetch_v2(
     ticker: str,
     from_date: Optional[dt.date] = None,
     to_date: Optional[dt.date] = None,
 ) -> List[Dict]:
-    """Parse rendered company page HTML for announcement links."""
-    soup = BeautifulSoup(html, "html.parser")
-    items: List[Dict] = []
-    seen: set = set()
+    """Use Playwright to fetch the ASX v2 endpoint directly.
 
-    for a in soup.select("a[href*='displayAnnouncement']"):
-        href = _normalise_href(str(a.get("href", "")))
-        title = a.get_text(" ", strip=True)
-        if not href or not title:
-            continue
-        if href in seen:
-            continue
-
-        container = a
-        for _ in range(_PARENT_TRAVERSE_DEPTH):
-            if container.parent is None:
-                break
-            container = container.parent
-
-        blob = container.get_text(" ", strip=True)
-        m = re.search(r"(\d{2}/\d{2}/\d{4})\s+(\d{1,2}:\d{2}\s*[ap]m)", blob, re.I)
-        if not m:
-            continue
-
-        date_text = m.group(1)
-        time_text = m.group(2)
-
-        try:
-            item_date = dt.datetime.strptime(date_text, "%d/%m/%Y").date()
-        except Exception:
-            continue
-
-        if from_date is not None and item_date < from_date:
-            continue
-        if to_date is not None and item_date > to_date:
-            continue
-
-        seen.add(href)
-        items.append({
-            "exchange": "ASX",
-            "ticker": ticker.upper(),
-            "date": date_text,
-            "time": time_text,
-            "title": title,
-            "url": href,
-        })
-
-    return items
-
-
-def _scrape_company_page_with_requests(
-    session: requests.Session,
-    ticker: str,
-    from_date: Optional[dt.date] = None,
-    to_date: Optional[dt.date] = None,
-) -> List[Dict]:
-    url = f"https://www.asx.com.au/markets/company/{ticker.upper()}"
-    r = session.get(url, timeout=HTTP_TIMEOUT_SECS)
-    r.raise_for_status()
-    return parse_company_page_html(r.text, ticker, from_date=from_date, to_date=to_date)
-
-
-def _scrape_company_page_with_playwright(
-    ticker: str,
-    from_date: Optional[dt.date] = None,
-    to_date: Optional[dt.date] = None,
-) -> List[Dict]:
-    """Reliable fallback: render the live company page with Playwright."""
+    This handles consent gates, JS redirects, and any blocking that prevents
+    raw HTTP clients from getting a response.
+    """
     try:
         import asyncio
         from playwright.async_api import async_playwright
@@ -256,43 +207,59 @@ def _scrape_company_page_with_playwright(
         return []
 
     async def _run() -> List[Dict]:
-        url = f"https://www.asx.com.au/markets/company/{ticker.upper()}"
+        url = ASX_V2_URL.format(ticker=ticker)
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
             context = await browser.new_context(user_agent=PLAYWRIGHT_USER_AGENT)
             page = await context.new_page()
-            await page.goto(url, wait_until="networkidle", timeout=PLAYWRIGHT_TIMEOUT_MS)
 
-            # Click "SEE ALL ANNOUNCEMENTS" if present
             try:
-                btn = page.get_by_text("SEE ALL ANNOUNCEMENTS")
-                if await btn.count() > 0:
-                    await btn.first.click()
-                    await page.wait_for_load_state("networkidle")
-            except Exception:
-                pass
+                resp = await page.goto(url, wait_until="domcontentloaded", timeout=PLAYWRIGHT_TIMEOUT_MS)
 
-            # Handle consent gate if present
-            try:
-                content = await page.content()
-                if "agree and proceed" in content.lower():
-                    await page.get_by_role("button", name="Agree and proceed").click(
-                        timeout=5_000
-                    )
-                    await page.wait_for_timeout(2_000)
-            except Exception:
-                pass
+                # Handle ASX consent gate if present
+                try:
+                    content = await page.content()
+                    if "agree and proceed" in content.lower():
+                        try:
+                            await page.get_by_role("button", name="Agree and proceed").click(timeout=5_000)
+                        except Exception:
+                            try:
+                                await page.locator("text=Agree and proceed").first.click(timeout=5_000)
+                            except Exception:
+                                pass
+                        await page.wait_for_load_state("domcontentloaded", timeout=10_000)
+                except Exception:
+                    pass
 
-            html = await page.content()
-            await context.close()
-            await browser.close()
-            return parse_company_page_html(
-                html, ticker, from_date=from_date, to_date=to_date
-            )
+                # Try to get the raw response body (JSON or HTML)
+                body = None
+                if resp is not None:
+                    try:
+                        body_bytes = await resp.body()
+                        body = body_bytes.decode("utf-8", errors="replace")
+                    except Exception:
+                        pass
+
+                # Fall back to page content if body not available
+                if not body:
+                    body = await page.content()
+
+                return _parse_response_body(body, ticker, from_date, to_date)
+
+            finally:
+                try:
+                    await context.close()
+                except Exception:
+                    pass
+                try:
+                    await browser.close()
+                except Exception:
+                    pass
 
     try:
         return asyncio.run(_run())
-    except Exception:
+    except Exception as exc:
+        print(f"[asx_fetch] Playwright fetch failed for {ticker}: {exc}")
         return []
 
 
@@ -302,87 +269,32 @@ def fetch_asx_announcements_html(
     from_date: Optional[dt.date] = None,
     to_date: Optional[dt.date] = None,
 ) -> List[Dict]:
-    """Fetch ASX announcements for *ticker* with a 3-stage fallback.
+    """Fetch ASX announcements for *ticker* with a 2-stage fallback.
 
-    Stage 1 — ASX v2 statistics endpoint.
-               Tries JSON parse first (endpoint now returns JSON),
-               falls back to HTML table parse of same response.
-    Stage 2 — Requests scrape of the live company page (cheap, usually
-               zero for JS-rendered pages).
-    Stage 3 — Playwright render of the live company page (reliable, slower,
-               handles consent gates).
+    Stage 1 — Direct HTTP request to the ASX v2 endpoint.
+               JSON parse first, HTML table parse fallback.
+    Stage 2 — Playwright browser fetch of the same v2 endpoint.
+               Handles consent gates, JS rendering, and IP-based blocking.
     """
     ticker = ticker.upper().strip()
 
-    # ------------------------------------------------------------------ #
-    # Stage 1: v2 statistics endpoint — JSON first, HTML fallback         #
-    # ------------------------------------------------------------------ #
+    # Stage 1: Direct HTTP request
     try:
         url = ASX_V2_URL.format(ticker=ticker)
         r = session.get(url, timeout=HTTP_TIMEOUT_SECS)
         r.raise_for_status()
-
-        # 1a: JSON parse
-        try:
-            payload = r.json()
-            rows = (
-                payload.get("data", [])
-                if isinstance(payload, dict)
-                else (payload if isinstance(payload, list) else [])
-            )
-            if rows:
-                items = _parse_json_rows(
-                    rows, ticker, from_date=from_date, to_date=to_date
-                )
-                if items:
-                    print(
-                        f"[asx_fetch] v2 JSON returned {len(items)} items for {ticker}"
-                    )
-                    return items
-        except Exception:
-            pass
-
-        # 1b: HTML table parse (legacy fallback)
-        items = parse_asx_html_announcements(
-            r.text, ticker, from_date=from_date, to_date=to_date
-        )
+        items = _parse_response_body(r.text, ticker, from_date=from_date, to_date=to_date)
         if items:
-            print(
-                f"[asx_fetch] v2 HTML parse returned {len(items)} items for {ticker}"
-            )
+            print(f"[asx_fetch] direct HTTP returned {len(items)} items for {ticker}")
             return items
-
-        print(f"[asx_fetch] v2 endpoint returned zero for {ticker}")
-
+        print(f"[asx_fetch] direct HTTP returned zero for {ticker} — trying Playwright")
     except Exception as exc:
-        print(f"[asx_fetch] v2 endpoint failed for {ticker}: {exc}")
+        print(f"[asx_fetch] direct HTTP failed for {ticker}: {exc} — trying Playwright")
 
-    # ------------------------------------------------------------------ #
-    # Stage 2: Cheap requests scrape of company page                      #
-    # ------------------------------------------------------------------ #
-    try:
-        items = _scrape_company_page_with_requests(
-            session, ticker, from_date=from_date, to_date=to_date
-        )
-        if items:
-            print(
-                f"[asx_fetch] requests company-page returned {len(items)} items for {ticker}"
-            )
-            return items
-        print(f"[asx_fetch] requests company-page returned zero for {ticker}")
-    except Exception as exc:
-        print(f"[asx_fetch] requests company-page failed for {ticker}: {exc}")
-
-    # ------------------------------------------------------------------ #
-    # Stage 3: Playwright render of company page                          #
-    # ------------------------------------------------------------------ #
-    items = _scrape_company_page_with_playwright(
-        ticker, from_date=from_date, to_date=to_date
-    )
+    # Stage 2: Playwright browser fetch of the v2 endpoint
+    items = _playwright_fetch_v2(ticker, from_date=from_date, to_date=to_date)
     if items:
-        print(
-            f"[asx_fetch] Playwright returned {len(items)} items for {ticker}"
-        )
+        print(f"[asx_fetch] Playwright returned {len(items)} items for {ticker}")
         return items
 
     print(f"[asx_fetch] all fetch paths returned zero for {ticker}")

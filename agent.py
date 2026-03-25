@@ -997,6 +997,24 @@ def main():
                     brother_blocks.append(block)
 
     silence_line = build_silence_line(session)
+
+    # If everything is empty, fetch the raw ASX response for BHP and include it in
+    # the email so we can see exactly what the API is returning.
+    if not high_impact_blocks and not material_blocks and not fyi_blocks:
+        try:
+            diag_url = (
+                "https://www.asx.com.au/asx/v2/statistics/announcements.do"
+                "?asxCode=BHP&by=asxCode&period=M6&timeframe=D"
+            )
+            r = session.get(diag_url, timeout=15)
+            raw = r.text[:1500]
+            silence_line += (
+                f"\n\n[BOB DIAGNOSTIC — raw ASX response for BHP (HTTP {r.status_code})]:\n{raw}"
+            )
+            log(f"Diagnostic fetch HTTP {r.status_code}, body[:200]: {r.text[:200]}")
+        except Exception as e:
+            silence_line += f"\n\n[BOB DIAGNOSTIC — fetch failed: {e}]"
+
     body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks, silence_line)
     send_email(subject, body_text, body_html)
 

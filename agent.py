@@ -33,6 +33,7 @@ import anthropic
 
 import asyncio
 from playwright_fetch import fetch_pdf_with_playwright
+from asx_fetch import fetch_asx_announcements_html
 
 from prompts import (
     DEFAULT_2LINE_PROMPT,
@@ -798,10 +799,11 @@ def main():
     fyi_blocks: List[str] = []
     brother_blocks: List[str] = []
 
+    from_date = cutoff_dt_sgt(HOURS_BACK).date()
     by_ticker: Dict[str, List[Dict]] = {}
     for t in asx_tickers:
         try:
-            by_ticker[t] = fetch_asx_announcements(session, t, hours_back=HOURS_BACK)
+            by_ticker[t] = fetch_asx_announcements_html(session, t, from_date=from_date)
         except Exception as e:
             log(f"Fetch failed for {t}: {e}")
             by_ticker[t] = []

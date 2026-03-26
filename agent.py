@@ -41,6 +41,7 @@ from prompts import (
     CAPITAL_OR_DEBT_RAISE_PROMPT,
     RESULTS_HYFY_PROMPT,
     STRAWMAN_500W_PROMPT,
+    TRADING_UPDATE_PROMPT,
 )
 
 BOB_NAME = "Bob the Bot"
@@ -269,7 +270,13 @@ def classify_from_title_only(title: str) -> str:
         "convertible", "notes", "debt facility", "refinance", "term loan", "bond",
     ]):
         return "CAPITAL_OR_DEBT_RAISE"
-    if any(k in t for k in ["contract", "award", "termination", "trading update", "guidance"]):
+    if any(k in t for k in [
+        "trading update", "guidance", "profit warning", "earnings revision",
+        "outlook", "forecast update", "revenue update", "downgrade", "upgrade",
+        "earnings guidance", "sales update",
+    ]):
+        return "TRADING_UPDATE"
+    if any(k in t for k in ["contract", "award", "termination"]):
         return "CONTRACT_MATERIAL"
     return "OTHER"
 
@@ -677,6 +684,22 @@ def deep_capital_memo(
     return out
 
 
+def deep_trading_update_memo(
+    ticker: str, title: str, text: str, counters: Dict, pdf_path: Optional[Path] = None,
+) -> str:
+    if pdf_path and pdf_path.exists():
+        user = f"Ticker: {ticker}\nTitle: {title}\n\nPlease analyse the attached trading update / guidance announcement PDF."
+        out = llm_chat(TRADING_UPDATE_PROMPT, user, counters, pdf_path=pdf_path)
+    elif is_meaningful_text(text, min_chars=600):
+        user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
+        out = llm_chat(TRADING_UPDATE_PROMPT, user, counters)
+    else:
+        return "Could not extract meaningful announcement text automatically. Open the link and review manually."
+    if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
+        return "LLM could not run (limit/billing)."
+    return out
+
+
 def deep_results_analysis(
     ticker: str,
     report_text: str,
@@ -921,7 +944,7 @@ def main():
                 if not is_price:
                     continue
 
-                if cls_title in ("ACQUISITION", "CAPITAL_OR_DEBT_RAISE"):
+                if cls_title in ("ACQUISITION", "CAPITAL_OR_DEBT_RAISE", "TRADING_UPDATE"):
                     pdf_url = asx_pdf_url_from_item_url(url)
                     safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
                     pdf_path = tmpdir / f"{safe_name}.pdf"
@@ -954,6 +977,10 @@ def main():
                         memo = deep_acquisition_memo(ticker, title, text, counters, pdf_path=current_pdf)
                         straw = strawman_post(ticker, "Acquisition", memo, counters)
                         block = f"{ticker} — Acquisition"
+                    elif cls_title == "TRADING_UPDATE":
+                        memo = deep_trading_update_memo(ticker, title, text, counters, pdf_path=current_pdf)
+                        straw = strawman_post(ticker, "Trading Update / Guidance", memo, counters)
+                        block = f"{ticker} — Trading Update / Guidance"
                     else:
                         memo = deep_capital_memo(ticker, title, text, counters, pdf_path=current_pdf)
                         straw = strawman_post(ticker, "Capital/Debt Raise", memo, counters)

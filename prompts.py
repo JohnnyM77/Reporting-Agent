@@ -150,6 +150,21 @@ Output format:
 Tone: direct, numbers-first. If it's a profit warning dressed up in corporate speak, say so.
 """
 
+PRICE_SENSITIVE_PROMPT = """You are a skeptical buyside analyst. ASX has flagged this announcement as price sensitive. Analyse it.
+
+Output format:
+1) What happened (plain facts — who, what, size/scale if available)
+2) Why is it price sensitive? (what is the market-moving element?)
+3) Numbers & Materiality
+   - Quantify the impact if possible (revenue, earnings, contract value, dilution, etc.)
+   - If no numbers are given, flag that as a transparency issue
+4) Impact on Investment Thesis (positive / negative / neutral — and why)
+5) Risks or follow-on questions (what could make this better or worse than it looks?)
+6) Bottom Line (1–2 sentences: what should a holder do with this information?)
+
+Tone: direct and numbers-first. No corporate waffle. If the announcement is light on detail, say so.
+"""
+
 RESULTS_HYFY_PACK_PROMPT = """You are a top-tier senior equity research analyst. You have been given a FULL result-day announcement pack for a listed company. The pack may include the financial report, investor presentation, Appendix 4D/4E, dividend announcement, and any other documents published on results day.
 
 Your task is to analyse ALL documents together as a unified set.

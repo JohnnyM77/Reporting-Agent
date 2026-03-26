@@ -159,6 +159,25 @@ def parse_asx_html_announcements(
             continue
         seen.add(href)
 
+        # Detect the ASX price-sensitive flag.
+        # The v2 HTML table has a dedicated column that contains "Y" (or an image
+        # with alt="Y") when ASX has classified the announcement as price sensitive.
+        # Scan every cell in the row rather than relying on a fixed column index.
+        td_elements = row.select("td")
+        price_sensitive = False
+        for td in td_elements:
+            cell_text = td.get_text(" ", strip=True).strip().upper()
+            if cell_text == "Y":
+                price_sensitive = True
+                break
+            for img in td.select("img"):
+                alt = (img.get("alt") or "").strip().upper()
+                if alt in ("Y", "YES") or "PRICE" in alt or "SENSITIVE" in alt:
+                    price_sensitive = True
+                    break
+            if price_sensitive:
+                break
+
         items.append({
             "exchange": "ASX",
             "ticker": ticker.upper(),
@@ -166,6 +185,7 @@ def parse_asx_html_announcements(
             "time": time_text,
             "title": title,
             "url": href,
+            "price_sensitive": price_sensitive,
         })
 
     return items

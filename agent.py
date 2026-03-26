@@ -42,6 +42,7 @@ from prompts import (
     RESULTS_HYFY_PROMPT,
     STRAWMAN_500W_PROMPT,
     TRADING_UPDATE_PROMPT,
+    PRICE_SENSITIVE_PROMPT,
 )
 
 BOB_NAME = "Bob the Bot"
@@ -700,6 +701,22 @@ def deep_trading_update_memo(
     return out
 
 
+def deep_price_sensitive_memo(
+    ticker: str, title: str, text: str, counters: Dict, pdf_path: Optional[Path] = None,
+) -> str:
+    if pdf_path and pdf_path.exists():
+        user = f"Ticker: {ticker}\nTitle: {title}\n\nPlease analyse the attached ASX price-sensitive announcement PDF."
+        out = llm_chat(PRICE_SENSITIVE_PROMPT, user, counters, pdf_path=pdf_path)
+    elif is_meaningful_text(text, min_chars=600):
+        user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
+        out = llm_chat(PRICE_SENSITIVE_PROMPT, user, counters)
+    else:
+        return "Could not extract meaningful announcement text automatically. Open the link and review manually."
+    if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
+        return "LLM could not run (limit/billing)."
+    return out
+
+
 def deep_results_analysis(
     ticker: str,
     report_text: str,
@@ -938,7 +955,8 @@ def main():
             for it in fresh_items:
                 title = it["title"]
                 url = it["url"]
-                is_price = is_price_sensitive_title(title)
+                asx_flagged = it.get("price_sensitive", False)
+                is_price = is_price_sensitive_title(title) or asx_flagged
                 cls_title = classify_from_title_only(title)
 
                 if not is_price:
@@ -990,6 +1008,44 @@ def main():
                     block += f"\n{memo}\nOpen: {url}\n"
                     if drive_links_item:
                         block += "Drive link(s):\n" + "\n".join(drive_links_item) + "\n"
+                    block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
+                    if pdf_path.exists():
+                        try:
+                            pdf_path.unlink()
+                        except Exception:
+                            pass
+                    high_impact_blocks.append(block)
+                    if ticker == "AR9":
+                        brother_blocks.append(block)
+                    continue
+
+                # ASX-flagged price sensitive items that aren't already handled by a
+                # specific deep-analysis category get the full HIGH IMPACT treatment.
+                if asx_flagged and cls_title not in ("ACQUISITION", "CAPITAL_OR_DEBT_RAISE", "TRADING_UPDATE"):
+                    pdf_url = asx_pdf_url_from_item_url(url)
+                    safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
+                    pdf_path = tmpdir / f"{safe_name}.pdf"
+                    text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
+
+                    if looks_like_asx_access_gate(text):
+                        block = f"{ticker}: {title[:160]}\nSo what: could not fetch PDF automatically. Open: {url}\n"
+                        material_blocks.append(block)
+                        if ticker == "AR9":
+                            brother_blocks.append(block)
+                        if pdf_path.exists():
+                            try:
+                                pdf_path.unlink()
+                            except Exception:
+                                pass
+                        continue
+
+                    current_pdf = pdf_path if got_pdf else None
+                    memo = deep_price_sensitive_memo(ticker, title, text, counters, pdf_path=current_pdf)
+                    straw = strawman_post(ticker, "Price Sensitive Announcement", memo, counters)
+                    block = f"{ticker} — ASX Price Sensitive"
+                    if got_pdf:
+                        block += " — analysed via native PDF"
+                    block += f"\n{memo}\nOpen: {url}\n"
                     block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
                     if pdf_path.exists():
                         try:

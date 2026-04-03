@@ -1,130 +1,130 @@
 {
-  "last_run": "2026-03-31T23:00:01.678481+00:00",
+  "last_run": "2026-04-03T23:01:39.542771+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-03-31T22:59:38.487942+00:00",
+      "run_timestamp": "2026-04-03T23:01:29.794340+00:00",
       "total": 3,
       "flagged_count": 1,
       "flagged": [
         {
           "ticker": "CSL.AX",
           "company_name": "CSL Limited",
-          "current_price": 140.77999877929688,
+          "current_price": 138.92999267578125,
           "low_52w": 134.6199951171875,
           "high_52w": 272.0,
-          "distance_to_low_pct": 4.575846000252084,
-          "below_high_pct": 48.242647507611444
+          "distance_to_low_pct": 3.201602818988273,
+          "below_high_pct": 48.92279681037454
         }
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-03-31T22:59:42.272092+00:00",
+      "run_timestamp": "2026-04-03T23:01:32.683738+00:00",
       "total": 3,
-      "flagged_count": 2,
+      "flagged_count": 1,
       "flagged": [
         {
           "ticker": "ARB.AX",
           "company_name": "ARB Corporation Limited",
-          "current_price": 20.8700008392334,
-          "low_52w": 20.440000534057617,
+          "current_price": 20.079999923706055,
+          "low_52w": 20.079999923706055,
           "high_52w": 40.81999969482422,
-          "distance_to_low_pct": 2.103719637674688,
-          "below_high_pct": 48.87309898270378
-        },
-        {
-          "ticker": "QOR.AX",
-          "company_name": "Qoria Limited",
-          "current_price": 0.2800000011920929,
-          "low_52w": 0.27000001072883606,
-          "high_52w": 0.8999999761581421,
-          "distance_to_low_pct": 3.70370002440479,
-          "below_high_pct": 68.8888879322711
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 50.80842706068882
         }
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-03-31T22:59:47.036074+00:00",
+      "run_timestamp": "2026-04-03T23:01:35.214430+00:00",
       "total": 3,
       "flagged_count": 2,
       "flagged": [
         {
           "ticker": "WTC.AX",
           "company_name": "WiseTech Global Limited",
-          "current_price": 38.02000045776367,
+          "current_price": 37.880001068115234,
           "low_52w": 36.529998779296875,
           "high_52w": 120.5,
-          "distance_to_low_pct": 4.078844041219199,
-          "below_high_pct": 68.44813240019613
+          "distance_to_low_pct": 3.695599052643451,
+          "below_high_pct": 68.5643144662944
         },
         {
           "ticker": "SEK.AX",
           "company_name": "SEEK Limited",
-          "current_price": 13.949999809265137,
+          "current_price": 13.84000015258789,
           "low_52w": 13.369999885559082,
           "high_52w": 29.18000030517578,
-          "distance_to_low_pct": 4.33806977315319,
-          "below_high_pct": 52.19328422422681
+          "distance_to_low_pct": 3.5153348620178764,
+          "below_high_pct": 52.570253571474325
         }
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-03-31T23:00:01.678481+00:00",
+      "run_timestamp": "2026-04-03T23:01:39.542771+00:00",
       "total": 30,
-      "flagged_count": 6,
+      "flagged_count": 7,
       "flagged": [
         {
           "ticker": "CPRT",
           "company_name": "Copart, Inc.",
-          "current_price": 33.20000076293945,
+          "current_price": 33.400001525878906,
           "low_52w": 32.43000030517578,
           "high_52w": 63.84000015258789,
-          "distance_to_low_pct": 2.374346131722919,
-          "below_high_pct": 47.994986397891445
+          "distance_to_low_pct": 2.9910613986282146,
+          "below_high_pct": 47.6817019955396
         },
         {
-          "ticker": "MSFT",
-          "company_name": "Microsoft Corporation",
-          "current_price": 370.1700134277344,
-          "low_52w": 354.55999755859375,
-          "high_52w": 542.0700073242188,
-          "distance_to_low_pct": 4.4026443977400325,
-          "below_high_pct": 31.711769987980333
+          "ticker": "ORLY",
+          "company_name": "O'Reilly Automotive, Inc.",
+          "current_price": 91.41999816894531,
+          "low_52w": 87.30000305175781,
+          "high_52w": 107.81999969482422,
+          "distance_to_low_pct": 4.719352775675009,
+          "below_high_pct": 15.210537536911318
         },
         {
           "ticker": "ADBE",
           "company_name": "Adobe Inc.",
-          "current_price": 243.0800018310547,
+          "current_price": 242.9199981689453,
           "low_52w": 234.83999633789062,
           "high_52w": 420.67999267578125,
-          "distance_to_low_pct": 3.5087743236498112,
-          "below_high_pct": 42.21736092441248
+          "distance_to_low_pct": 3.440641269398201,
+          "below_high_pct": 42.25539545538498
         },
         {
           "ticker": "NVR",
           "company_name": "NVR, Inc.",
-          "current_price": 6589.830078125,
+          "current_price": 6663.14013671875,
           "low_52w": 6369.3798828125,
           "high_52w": 8543.0,
-          "distance_to_low_pct": 3.4610935345115066,
-          "below_high_pct": 22.862810744176517
+          "distance_to_low_pct": 4.612069923776246,
+          "below_high_pct": 22.004680595589956
         },
         {
           "ticker": "POOL",
           "company_name": "Pool Corporation",
-          "current_price": 202.3300018310547,
+          "current_price": 202.92999267578125,
           "low_52w": 198.74000549316406,
           "high_52w": 333.6199951171875,
-          "distance_to_low_pct": 1.8063783026382718,
-          "below_high_pct": 39.35315484913182
+          "distance_to_low_pct": 2.1082756701248595,
+          "below_high_pct": 39.17331225770806
+        },
+        {
+          "ticker": "AXON",
+          "company_name": "Axon Enterprise, Inc.",
+          "current_price": 412.80999755859375,
+          "low_52w": 399.6499938964844,
+          "high_52w": 870.969970703125,
+          "distance_to_low_pct": 3.2928822377307534,
+          "below_high_pct": 52.60341786234759
         },
         {
           "ticker": "CTSH",
           "company_name": "Cognizant Technology Solutions Corporation",
-          "current_price": 61.349998474121094,
+          "current_price": 62.540000915527344,
           "low_52w": 59.72999954223633,
           "high_52w": 86.69999694824219,
-          "distance_to_low_pct": 2.712203154696545,
-          "below_high_pct": 29.238753594483324
+          "distance_to_low_pct": 4.704505934750602,
+          "below_high_pct": 27.866201710638787
         }
       ]
     },

@@ -1,94 +1,66 @@
 {
-  "last_run": "2026-04-14T23:12:08.003888+00:00",
+  "last_run": "2026-04-17T23:08:28.967665+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-04-14T23:11:58.832136+00:00",
+      "run_timestamp": "2026-04-17T23:08:19.821111+00:00",
       "total": 3,
       "flagged_count": 1,
       "flagged": [
         {
           "ticker": "CSL.AX",
           "company_name": "CSL Limited",
-          "current_price": 138.0800018310547,
+          "current_price": 137.1300048828125,
           "low_52w": 134.6199951171875,
           "high_52w": 272.0,
-          "distance_to_low_pct": 2.5702026737226005,
-          "below_high_pct": 49.23529344446519
+          "distance_to_low_pct": 1.864514824443443,
+          "below_high_pct": 49.58455702837776
         }
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-04-14T23:12:02.346115+00:00",
+      "run_timestamp": "2026-04-17T23:08:23.979242+00:00",
       "total": 3,
       "flagged_count": 1,
       "flagged": [
         {
           "ticker": "ARB.AX",
           "company_name": "ARB Corporation Limited",
-          "current_price": 20.389999389648438,
+          "current_price": 20.690000534057617,
           "low_52w": 20.079999923706055,
           "high_52w": 40.81999969482422,
-          "distance_to_low_pct": 1.5438220474114819,
-          "below_high_pct": 50.04899671218324
+          "distance_to_low_pct": 3.037851656719419,
+          "below_high_pct": 49.31406004718562
         }
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-04-14T23:12:05.333534+00:00",
+      "run_timestamp": "2026-04-17T23:08:27.299309+00:00",
       "total": 3,
-      "flagged_count": 1,
-      "flagged": [
-        {
-          "ticker": "XRO.AX",
-          "company_name": "Xero Limited",
-          "current_price": 73.18000030517578,
-          "low_52w": 70.41999816894531,
-          "high_52w": 194.2100067138672,
-          "distance_to_low_pct": 3.9193442317463862,
-          "below_high_pct": 62.31914022175331
-        }
-      ]
+      "flagged_count": 0,
+      "flagged": []
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-04-14T23:12:08.003888+00:00",
+      "run_timestamp": "2026-04-17T23:08:28.967665+00:00",
       "total": 30,
-      "flagged_count": 4,
+      "flagged_count": 2,
       "flagged": [
         {
           "ticker": "CPRT",
           "company_name": "Copart, Inc.",
-          "current_price": 33.290000915527344,
+          "current_price": 33.45000076293945,
           "low_52w": 32.43000030517578,
           "high_52w": 63.84000015258789,
-          "distance_to_low_pct": 2.6518674136870346,
-          "below_high_pct": 47.854008715603264
+          "distance_to_low_pct": 3.145237274638204,
+          "below_high_pct": 47.60338238880239
         },
         {
-          "ticker": "ADBE",
-          "company_name": "Adobe Inc.",
-          "current_price": 235.72000122070312,
-          "low_52w": 225.35000610351562,
-          "high_52w": 420.67999267578125,
-          "distance_to_low_pct": 4.601728349820409,
-          "below_high_pct": 43.96690945024977
-        },
-        {
-          "ticker": "INTU",
-          "company_name": "Intuit Inc.",
-          "current_price": 366.79998779296875,
-          "low_52w": 350.94000244140625,
-          "high_52w": 807.3900146484375,
-          "distance_to_low_pct": 4.519286841405467,
-          "below_high_pct": 54.5696650765882
-        },
-        {
-          "ticker": "CTSH",
-          "company_name": "Cognizant Technology Solutions Corporation",
-          "current_price": 60.040000915527344,
-          "low_52w": 57.91999816894531,
-          "high_52w": 86.69999694824219,
-          "distance_to_low_pct": 3.660225852214724,
-          "below_high_pct": 30.749708155849444
+          "ticker": "BMI",
+          "company_name": "Badger Meter, Inc.",
+          "current_price": 115.54000091552734,
+          "low_52w": 115.54000091552734,
+          "high_52w": 254.1699981689453,
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 54.54223482398242
         }
       ]
     },

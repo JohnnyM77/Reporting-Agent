@@ -6,7 +6,6 @@
 # - Runs deep analysis only for HY/FY results, acquisitions, and capital/debt raises
 # - Produces clean email: HIGH IMPACT + MATERIAL + FYI or SILENCE
 # - Uploads PDFs to Google Drive for big announcements and includes Drive view links
-# - Generates a separate Strawman-ready post (<= ~500 words) for big announcements
 # - Never hallucinates off the ASX "Access to this site" legal page
 # - Optionally emails AR9 items to your brother (BROTHER_EMAIL secret)
 # - Uses Anthropic Claude API for all AI analysis (native PDF support)
@@ -20,6 +19,7 @@ import hashlib
 import smtplib
 import tempfile
 import datetime as dt
+import textwrap
 import html as htmlmod
 from pathlib import Path
 from email.message import EmailMessage
@@ -40,7 +40,6 @@ from prompts import (
     ACQUISITION_PROMPT,
     CAPITAL_OR_DEBT_RAISE_PROMPT,
     RESULTS_HYFY_PROMPT,
-    STRAWMAN_500W_PROMPT,
     TRADING_UPDATE_PROMPT,
     PRICE_SENSITIVE_PROMPT,
 )
@@ -242,6 +241,7 @@ def is_price_sensitive_title(title: str) -> bool:
         "contract", "award", "termination", "litigation", "regulatory",
         "material", "strategic", "halt", "suspension",
         "ceo", "cfo", "resignation", "retirement",
+        "quarterly", "quarterly activities", "quarterly report", "appendix 4c", "appendix 5b",
     ]
     return any(k in t for k in keywords)
 
@@ -274,7 +274,8 @@ def classify_from_title_only(title: str) -> str:
     if any(k in t for k in [
         "trading update", "guidance", "profit warning", "earnings revision",
         "outlook", "forecast update", "revenue update", "downgrade", "upgrade",
-        "earnings guidance", "sales update",
+        "earnings guidance", "sales update", "quarterly", "quarterly activities",
+        "quarterly report", "appendix 4c", "appendix 5b", "quarterly cashflow",
     ]):
         return "TRADING_UPDATE"
     if any(k in t for k in ["contract", "award", "termination"]):
@@ -391,6 +392,12 @@ def asx_pdf_url_from_item_url(url: str) -> Optional[str]:
     if not url:
         return None
     low = url.lower()
+    m = re.search(r"[?&]idsid=([^&]+)", url, re.IGNORECASE)
+    if m:
+        return (
+            "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do"
+            f"?display=pdf&idsId={m.group(1)}"
+        )
     if "displayannouncement.do" in low:
         return url
     if low.endswith(".pdf"):
@@ -548,7 +555,7 @@ def _html_block(b: str) -> str:
     return (
         "<div style='margin:12px 0; padding:12px; background:"
         + COLOR_PANEL
-        + "; border-radius:10px; white-space:pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:13px; color:"
+        + "; border-radius:10px; white-space:pre-wrap; line-height:1.5; font-size:14px; color:"
         + COLOR_TEXT
         + ";'>"
         + _linkify_urls(b)
@@ -653,6 +660,37 @@ def summarise_two_lines_llm(ticker: str, title: str, text: str, counters: Dict) 
     return None
 
 
+def _prettify_analysis_text(text: str, width: int = 140) -> str:
+    if not text:
+        return ""
+    blocks = [b.strip() for b in re.split(r"\n\s*\n", text) if b.strip()]
+    wrapped: List[str] = []
+    for block in blocks:
+        raw = re.sub(r"\s+", " ", block).strip()
+        if raw:
+            wrapped.append(textwrap.fill(raw, width=width))
+    return "\n\n".join(wrapped)
+
+
+def build_high_impact_block(
+    ticker: str,
+    heading: str,
+    memo: str,
+    url: str,
+    analysed_via_pdf: bool = False,
+    drive_links: Optional[List[str]] = None,
+) -> str:
+    lines: List[str] = [f"{ticker} — {heading}"]
+    if analysed_via_pdf:
+        lines[-1] += " (analysed via PDF)"
+    lines.extend(["", "Key analysis:", _prettify_analysis_text(memo), "", f"Open: {url}"])
+    if drive_links:
+        lines.append("Drive links:")
+        lines.extend(drive_links)
+    lines.append("")
+    return "\n".join(lines)
+
+
 def deep_acquisition_memo(
     ticker: str, title: str, text: str, counters: Dict, pdf_path: Optional[Path] = None,
 ) -> str:
@@ -747,15 +785,8 @@ def deep_results_analysis(
 
 
 def strawman_post(ticker: str, kind: str, analysis_text: str, counters: Dict) -> str:
-    user = (
-        f"Ticker: {ticker}\n"
-        f"Announcement type: {kind}\n\n"
-        f"Notes / analysis:\n{analysis_text}\n"
-    )
-    out = llm_chat(STRAWMAN_500W_PROMPT, user, counters)
-    if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return "Could not generate Strawman draft (LLM limit/billing)."
-    return out
+    # Legacy compatibility shim. Strawman output has been removed from Bob digest.
+    return ""
 
 
 def drive_service():
@@ -936,16 +967,14 @@ def main():
                     ticker, report_text, deck_text, counters,
                     report_pdf=report_pdf, deck_pdf=deck_pdf,
                 )
-                straw = strawman_post(ticker, "HY/FY Results", analysis, counters)
-                header = f"{ticker} — Results (HY/FY)"
-                if drive_links:
-                    header += f" — Drive PDFs: {len(drive_links)}"
-                if has_pdf:
-                    header += " — analysed via native PDF"
-                block = f"{header}\n\n{analysis}\n\nOpen: {any_results_link}\n"
-                if drive_links:
-                    block += "Drive links:\n" + "\n".join(drive_links) + "\n"
-                block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
+                block = build_high_impact_block(
+                    ticker=ticker,
+                    heading="Results (HY/FY)",
+                    memo=analysis,
+                    url=any_results_link,
+                    analysed_via_pdf=bool(has_pdf),
+                    drive_links=drive_links,
+                )
                 high_impact_blocks.append(block)
                 if ticker == "AR9":
                     brother_blocks.append(block)
@@ -993,22 +1022,21 @@ def main():
                     current_pdf = pdf_path if got_pdf else None
                     if cls_title == "ACQUISITION":
                         memo = deep_acquisition_memo(ticker, title, text, counters, pdf_path=current_pdf)
-                        straw = strawman_post(ticker, "Acquisition", memo, counters)
-                        block = f"{ticker} — Acquisition"
+                        heading = "Acquisition"
                     elif cls_title == "TRADING_UPDATE":
                         memo = deep_trading_update_memo(ticker, title, text, counters, pdf_path=current_pdf)
-                        straw = strawman_post(ticker, "Trading Update / Guidance", memo, counters)
-                        block = f"{ticker} — Trading Update / Guidance"
+                        heading = "Trading Update / Guidance"
                     else:
                         memo = deep_capital_memo(ticker, title, text, counters, pdf_path=current_pdf)
-                        straw = strawman_post(ticker, "Capital/Debt Raise", memo, counters)
-                        block = f"{ticker} — Capital/Debt Raise"
-                    if got_pdf:
-                        block += " — analysed via native PDF"
-                    block += f"\n{memo}\nOpen: {url}\n"
-                    if drive_links_item:
-                        block += "Drive link(s):\n" + "\n".join(drive_links_item) + "\n"
-                    block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
+                        heading = "Capital/Debt Raise"
+                    block = build_high_impact_block(
+                        ticker=ticker,
+                        heading=heading,
+                        memo=memo,
+                        url=url,
+                        analysed_via_pdf=got_pdf,
+                        drive_links=drive_links_item,
+                    )
                     if pdf_path.exists():
                         try:
                             pdf_path.unlink()
@@ -1041,12 +1069,23 @@ def main():
 
                     current_pdf = pdf_path if got_pdf else None
                     memo = deep_price_sensitive_memo(ticker, title, text, counters, pdf_path=current_pdf)
-                    straw = strawman_post(ticker, "Price Sensitive Announcement", memo, counters)
-                    block = f"{ticker} — ASX Price Sensitive"
-                    if got_pdf:
-                        block += " — analysed via native PDF"
-                    block += f"\n{memo}\nOpen: {url}\n"
-                    block += "\nSTRAWMAN DRAFT (paste-ready, ~500w max)\n" + "-" * 45 + "\n" + straw + "\n"
+                    drive_links_item: List[str] = []
+                    if got_pdf and drive_folder_id:
+                        try:
+                            drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
+                            link = upload_to_drive(pdf_path, drive_folder_id, drive_name)
+                            if link:
+                                drive_links_item.append(link)
+                        except Exception as e:
+                            log(f"Drive upload failed for {ticker}: {e}")
+                    block = build_high_impact_block(
+                        ticker=ticker,
+                        heading="ASX Price Sensitive",
+                        memo=memo,
+                        url=url,
+                        analysed_via_pdf=got_pdf,
+                        drive_links=drive_links_item,
+                    )
                     if pdf_path.exists():
                         try:
                             pdf_path.unlink()

@@ -1,93 +1,102 @@
 {
-  "last_run": "2026-04-21T23:07:43.676452+00:00",
+  "last_run": "2026-04-24T23:07:47.373634+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-04-21T23:07:35.967898+00:00",
+      "run_timestamp": "2026-04-24T23:07:38.523120+00:00",
       "total": 3,
       "flagged_count": 1,
       "flagged": [
         {
           "ticker": "CSL.AX",
           "company_name": "CSL Limited",
-          "current_price": 137.0,
-          "low_52w": 134.6199951171875,
+          "current_price": 130.0,
+          "low_52w": 129.0,
           "high_52w": 272.0,
-          "distance_to_low_pct": 1.7679430761683594,
-          "below_high_pct": 49.63235294117647
+          "distance_to_low_pct": 0.7751937984496124,
+          "below_high_pct": 52.20588235294118
         }
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-04-21T23:07:39.390797+00:00",
+      "run_timestamp": "2026-04-24T23:07:41.742050+00:00",
       "total": 3,
-      "flagged_count": 1,
+      "flagged_count": 2,
       "flagged": [
         {
           "ticker": "ARB.AX",
           "company_name": "ARB Corporation Limited",
-          "current_price": 20.290000915527344,
-          "low_52w": 20.010000228881836,
+          "current_price": 19.540000915527344,
+          "low_52w": 19.540000915527344,
           "high_52w": 40.81999969482422,
-          "distance_to_low_pct": 1.3993037653311127,
-          "below_high_pct": 50.29397092793213
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 52.13130558155069
+        },
+        {
+          "ticker": "QOR.AX",
+          "company_name": "Qoria Limited",
+          "current_price": 0.25999999046325684,
+          "low_52w": 0.25999999046325684,
+          "high_52w": 0.8999999761581421,
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 71.11111140545503
         }
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-04-21T23:07:42.559931+00:00",
+      "run_timestamp": "2026-04-24T23:07:46.459631+00:00",
       "total": 3,
       "flagged_count": 0,
       "flagged": []
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-04-21T23:07:43.676452+00:00",
+      "run_timestamp": "2026-04-24T23:07:47.373634+00:00",
       "total": 30,
       "flagged_count": 5,
       "flagged": [
         {
           "ticker": "CPRT",
           "company_name": "Copart, Inc.",
-          "current_price": 33.7400016784668,
+          "current_price": 33.06999969482422,
           "low_52w": 32.43000030517578,
           "high_52w": 63.84000015258789,
-          "distance_to_low_pct": 4.039473823507616,
-          "below_high_pct": 47.14912030416235
+          "distance_to_low_pct": 1.9734794438046752,
+          "below_high_pct": 48.19862215573059
         },
         {
           "ticker": "RMD",
           "company_name": "ResMed Inc.",
-          "current_price": 221.22000122070312,
-          "low_52w": 214.0800018310547,
+          "current_price": 219.85000610351562,
+          "low_52w": 219.50999450683594,
           "high_52w": 293.7300109863281,
-          "distance_to_low_pct": 3.3352014800911225,
-          "below_high_pct": 24.685938465102915
+          "distance_to_low_pct": 0.15489572465416782,
+          "below_high_pct": 25.152351519930765
         },
         {
-          "ticker": "FIZZ",
-          "company_name": "National Beverage Corp.",
-          "current_price": 32.93000030517578,
-          "low_52w": 31.65999984741211,
-          "high_52w": 47.689998626708984,
-          "distance_to_low_pct": 4.011372280115415,
-          "below_high_pct": 30.949882043541944
+          "ticker": "NVR",
+          "company_name": "NVR, Inc.",
+          "current_price": 6503.9501953125,
+          "low_52w": 6369.3798828125,
+          "high_52w": 8543.0,
+          "distance_to_low_pct": 2.1127694528494407,
+          "below_high_pct": 23.868076842883063
         },
         {
           "ticker": "CTSH",
           "company_name": "Cognizant Technology Solutions Corporation",
-          "current_price": 60.45000076293945,
-          "low_52w": 57.91999816894531,
+          "current_price": 55.11000061035156,
+          "low_52w": 55.099998474121094,
           "high_52w": 86.69999694824219,
-          "distance_to_low_pct": 4.368098539323919,
-          "below_high_pct": 30.27681327483016
+          "distance_to_low_pct": 0.01815269783567502,
+          "below_high_pct": 36.435983217795375
         },
         {
           "ticker": "COO",
           "company_name": "The Cooper Companies, Inc.",
-          "current_price": 67.30000305175781,
+          "current_price": 64.41999816894531,
           "low_52w": 64.31999969482422,
           "high_52w": 84.44000244140625,
-          "distance_to_low_pct": 4.633089818209984,
-          "below_high_pct": 20.298435450119808
+          "distance_to_low_pct": 0.15547026522940197,
+          "below_high_pct": 23.70914696071097
         }
       ]
     },

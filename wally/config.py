@@ -33,11 +33,11 @@ def _load_excluded_etfs() -> frozenset[str]:
 WALLY_EXCLUDED_TICKERS: frozenset[str] = _load_excluded_etfs()
 
 STANDARD_WATCHLISTS = [
-    "watchlists/tii_watchlist.yaml",
-    "watchlists/jm_watchlist.yaml",
-    "watchlists/aussie_tech_watchlist.yaml",
+    ".github/Watchlist/tii_watchlist.yaml",
+    ".github/Watchlist/jm_watchlist",
+    ".github/Watchlist/aussie_tech_watchlist",
 ]
-TII75_WATCHLIST = "watchlists/tii75_watchlist.yaml"
+TII75_WATCHLIST = ".github/Watchlist/tii75_watchlist"
 
 TII75_ANCHOR_ISO_WEEK = int(os.environ.get("TII75_ANCHOR_ISO_WEEK", "1"))
 

@@ -10,6 +10,17 @@ import yaml
 _TII75_CANONICAL_COUNT = 30
 _TII75_REQUIRED_TICKERS = {"POOL", "FICO", "CPRT", "2914.T"}
 
+# Map exchange names to Yahoo Finance ticker suffixes.
+_EXCHANGE_SUFFIX: dict[str, str] = {
+    "ASX": ".AX",
+    "LSE": ".L",
+    "TSX": ".TO",
+    "NASDAQ": "",
+    "NYSE": "",
+    "EURONEXT": ".AS",
+    "NZX": ".NZ",
+}
+
 
 @dataclass
 class Watchlist:
@@ -18,19 +29,31 @@ class Watchlist:
     source_path: Path
 
 
+def _normalize_ticker_entry(entry) -> str | None:
+    """Handle plain strings, legacy dict {ticker/name}, and new dict {symbol, exchange}."""
+    if isinstance(entry, str):
+        t = entry.strip().upper()
+        return t if t else None
+    if isinstance(entry, dict):
+        # Support both 'symbol' (new format) and 'ticker' (legacy TII75 format).
+        symbol = str(entry.get("symbol") or entry.get("ticker") or "").strip().upper()
+        if not symbol:
+            return None
+        exchange = str(entry.get("exchange") or "").strip().upper()
+        suffix = _EXCHANGE_SUFFIX.get(exchange, "")
+        # Only append suffix if the symbol doesn't already have one.
+        if suffix and not symbol.endswith(suffix):
+            return f"{symbol}{suffix}"
+        return symbol
+    return None
+
+
 def _normalize_tickers(values: Iterable) -> list[str]:
-    """Extract and normalise ticker strings from a list that may contain plain
-    strings or dicts with a ``ticker`` key (e.g. ``{ticker: POOL, name: ...}``)."""
     out = []
     for val in values:
-        if isinstance(val, dict):
-            raw = val.get("ticker") or val.get("symbol") or ""
-        else:
-            raw = val
-        ticker = str(raw).strip().upper()
-        if ticker:
-            out.append(ticker)
-    # Preserve insertion order (de-duplicate only) so the YAML order is kept.
+        t = _normalize_ticker_entry(val)
+        if t:
+            out.append(t)
     seen: set[str] = set()
     deduped: list[str] = []
     for t in out:
@@ -72,8 +95,7 @@ def load_watchlist(path: str | Path, validate_tii75: bool = False) -> Watchlist:
         name = p.stem.replace("_", " ").title()
         tickers = _normalize_tickers(data)
     elif isinstance(data, dict):
-        raw_tickers = data.get("tickers", [])
-        tickers = _normalize_tickers(raw_tickers)
+        tickers = _normalize_tickers(data.get("tickers", []))
         name = str(data.get("name") or p.stem.replace("_", " ").title())
     else:
         raise ValueError(f"Invalid watchlist format in {p}")

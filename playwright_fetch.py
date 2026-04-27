@@ -1,23 +1,25 @@
 # playwright_fetch.py
 #
 # Robust PDF fetcher for ASX "consent gate" pages.
-# - Uses Playwright Chromium (headless)
-# - Clicks "Agree and proceed" if present
-# - Downloads the PDF (or captures direct response body if possible)
+# - Intercepts all network responses to capture PDF bytes directly
+# - Handles the consent gate by clicking "Agree and proceed" then waiting
+#   for the resulting PDF response (server sets cookie → redirect → CDN PDF)
+# - Also captures browser download events as a secondary signal
+# - Handles popups / new tabs opened by the consent page
 # - Hard timeouts so Bob doesn't hang forever
 
 import asyncio
 from pathlib import Path
-from typing import Optional
 
 from playwright.async_api import async_playwright
 
 
-ASX_GATE_PHRASES = [
-    "Access to this site",
-    "Agree and proceed",
-    "General Conditions",
-]
+_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/122.0.0.0 Safari/537.36"
+)
+_WAIT_MS = 500
 
 
 def _looks_like_gate_html(html: str) -> bool:
@@ -33,7 +35,7 @@ async def fetch_pdf_with_playwright(
     url: str,
     out_path: Path,
     *,
-    overall_timeout_s: int = 45,
+    overall_timeout_s: int = 60,
     nav_timeout_ms: int = 25_000,
 ) -> bool:
     """
@@ -46,95 +48,133 @@ async def fetch_pdf_with_playwright(
             browser = await p.chromium.launch(headless=True)
             context = await browser.new_context(
                 accept_downloads=True,
-                user_agent=(
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/122.0.0.0 Safari/537.36"
-                ),
+                user_agent=_USER_AGENT,
             )
             context.set_default_timeout(nav_timeout_ms)
 
-            page = await context.new_page()
+            # Accumulate PDF bytes from any network response and downloads.
+            pdf_bytes: list = []
+            downloads: list = []
 
-            try:
-                # 1) Navigate
-                resp = await page.goto(url, wait_until="domcontentloaded", timeout=nav_timeout_ms)
-
-                # 2) If we landed on the ASX consent page, click Agree
-                #    (Button text varies; we match by visible name)
-                content = await page.content()
-                if _looks_like_gate_html(content):
-                    # Try common selectors
-                    # Button text: "Agree and proceed"
+            async def _on_response(response):
+                if pdf_bytes:
+                    return
+                ct = (response.headers.get("content-type") or "").lower()
+                rurl = response.url.lower()
+                if (
+                    "application/pdf" in ct
+                    or rurl.endswith(".pdf")
+                    or rurl.endswith(".ashx")
+                ):
                     try:
-                        await page.get_by_role("button", name="Agree and proceed").click(timeout=5_000)
-                    except Exception:
-                        # fallback: find any element containing the phrase
-                        try:
-                            await page.locator("text=Agree and proceed").first.click(timeout=5_000)
-                        except Exception:
-                            pass
-
-                    # Give it a moment to redirect
-                    await page.wait_for_timeout(1_000)
-
-                # 3) Attempt to download.
-                # Some ASX links trigger a direct PDF response, others trigger a download.
-                # We listen for downloads and also inspect network response.
-
-                # If it’s already a PDF response, try to read body
-                if resp is not None:
-                    try:
-                        ct = (resp.headers.get("content-type") or "").lower()
-                        if "application/pdf" in ct:
-                            body = await resp.body()
-                            if body[:4] == b"%PDF":
-                                out_path.write_bytes(body)
-                                await context.close()
-                                await browser.close()
-                                return True
+                        body = await response.body()
+                        if body[:4] == b"%PDF":
+                            pdf_bytes.append(body)
                     except Exception:
                         pass
 
-                # Otherwise, click/trigger a download by reloading and waiting for download event
-                try:
-                    async with page.expect_download(timeout=nav_timeout_ms) as dl_info:
-                        # reload can trigger the download flow
-                        await page.goto(url, wait_until="domcontentloaded", timeout=nav_timeout_ms)
-                    download = await dl_info.value
-                    tmp_file = await download.path()
-                    if tmp_file:
-                        data = Path(tmp_file).read_bytes()
-                        if data[:4] == b"%PDF":
-                            out_path.write_bytes(data)
-                            await context.close()
-                            await browser.close()
+            page = await context.new_page()
+            page.on("response", _on_response)
+            page.on("download", lambda d: downloads.append(d))
+
+            # Wire up listeners on any popup / new-tab pages too.
+            def _wire_page(pg):
+                pg.on("response", _on_response)
+                pg.on("download", lambda d: downloads.append(d))
+
+            context.on("page", _wire_page)
+
+            async def _save_from_downloads() -> bool:
+                for dl in list(downloads):
+                    try:
+                        tmp = await dl.path()
+                        if tmp:
+                            data = Path(tmp).read_bytes()
+                            if data[:4] == b"%PDF":
+                                out_path.write_bytes(data)
+                                return True
+                    except Exception:
+                        pass
+                return False
+
+            try:
+                # ── Stage 1: navigate and wait for immediate PDF response ──
+                await page.goto(url, wait_until="domcontentloaded", timeout=nav_timeout_ms)
+                await page.wait_for_timeout(_WAIT_MS)
+
+                if pdf_bytes:
+                    out_path.write_bytes(pdf_bytes[0])
+                    return True
+                if await _save_from_downloads():
+                    return True
+
+                # ── Stage 2: handle consent gate ──────────────────────────
+                content = await page.content()
+                if _looks_like_gate_html(content):
+                    clicked = False
+                    for _attempt in [
+                        lambda: page.get_by_role("button", name="Agree and proceed"),
+                        lambda: page.get_by_role("button", name="Agree"),
+                        lambda: page.locator("text=Agree and proceed"),
+                        lambda: page.locator("input[value='Agree and proceed']"),
+                        lambda: page.locator("input[type=submit]"),
+                    ]:
+                        try:
+                            loc = _attempt()
+                            if await loc.count() > 0:
+                                await loc.first.click(timeout=5_000)
+                                clicked = True
+                                break
+                        except Exception:
+                            pass
+
+                    if clicked:
+                        # Wait up to 6 s for the PDF response / download to arrive.
+                        for _ in range(12):
+                            await page.wait_for_timeout(_WAIT_MS)
+                            if pdf_bytes or downloads:
+                                break
+
+                        if pdf_bytes:
+                            out_path.write_bytes(pdf_bytes[-1])
                             return True
-                except Exception:
-                    # No download event occurred
-                    pass
+                        if await _save_from_downloads():
+                            return True
 
-                # Final attempt: sometimes PDF is embedded as <iframe src="...pdf...">
+                    # Last resort: re-navigate now that the consent cookie
+                    # should be set, and wait again.
+                    await page.goto(url, wait_until="domcontentloaded", timeout=nav_timeout_ms)
+                    for _ in range(8):
+                        await page.wait_for_timeout(_WAIT_MS)
+                        if pdf_bytes or downloads:
+                            break
+
+                    if pdf_bytes:
+                        out_path.write_bytes(pdf_bytes[-1])
+                        return True
+                    if await _save_from_downloads():
+                        return True
+
+                # ── Stage 3: iframe fallback ──────────────────────────────
                 try:
-                    frame = page.frame_locator("iframe").first
-                    src = await frame.locator("xpath=..").get_attribute("src")
-                    if src:
-                        # try to navigate to iframe src
-                        r2 = await page.goto(src, wait_until="domcontentloaded", timeout=nav_timeout_ms)
-                        if r2 is not None:
-                            ct = (r2.headers.get("content-type") or "").lower()
-                            if "application/pdf" in ct:
-                                body = await r2.body()
-                                if body[:4] == b"%PDF":
-                                    out_path.write_bytes(body)
-                                    await context.close()
-                                    await browser.close()
-                                    return True
+                    for iframe_el in await page.query_selector_all("iframe"):
+                        src = await iframe_el.get_attribute("src") or ""
+                        if "pdf" in src.lower() or "announcement" in src.lower():
+                            await page.goto(
+                                src, wait_until="domcontentloaded", timeout=nav_timeout_ms
+                            )
+                            for _ in range(6):
+                                await page.wait_for_timeout(_WAIT_MS)
+                                if pdf_bytes or downloads:
+                                    break
+                            if pdf_bytes:
+                                out_path.write_bytes(pdf_bytes[-1])
+                                return True
+                            if await _save_from_downloads():
+                                return True
                 except Exception:
                     pass
 
-                await context.close()
-                await browser.close()
                 return False
 
             finally:

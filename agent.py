@@ -522,6 +522,8 @@ def fetch_announcement_text(
         return text, True
     try:
         html_text = fetch_html_text(session, url)
+        if looks_like_asx_access_gate(html_text):
+            return "", False
         return html_text, False
     except Exception:
         return "", False

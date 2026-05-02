@@ -535,8 +535,11 @@ def fetch_announcement_text(
         counters["pdfs_downloaded"] += 1
         text = extract_pdf_text(pdf_path) or ""
         return text, True
+    log(f"PDF fetch failed for {url} — falling back to HTML text")
     try:
         html_text = fetch_html_text(session, url)
+        if looks_like_asx_access_gate(html_text):
+            return "", False
         return html_text, False
     except Exception:
         return "", False

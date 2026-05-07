@@ -1492,16 +1492,11 @@ def build_value_chart(
         build_chart_png(cfg, price_df, png_path)
 
     if drive_folder_id:
-        try:
-            from wally.drive_upload import upload_or_replace_xlsx
-            url = upload_or_replace_xlsx(
-                out,
-                drive_name=cfg["ticker"].split(".")[0],
-                folder_id=drive_folder_id,
-            )
-            print(f"[vcb] Uploaded to Drive: {url}")
-            return url
-        except Exception as e:
-            print(f"[vcb] Drive upload failed: {e}")
+        from wally.drive_upload import upload_to_drive
+        result = upload_to_drive(out, cfg["ticker"], drive_folder_id)
+        if result["ok"]:
+            print(f"[vcb] Drive upload complete: {result['url']}")
+        else:
+            print(f"[vcb] Drive upload failed: {result['error']}")
 
     return str(out)

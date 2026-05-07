@@ -11,7 +11,7 @@ from typing import Optional
 from .charts import render_range_chart, render_value_vs_price_chart
 from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, LOW_THRESHOLD_PCT, WALLY_EXCLUDED_TICKERS, build_run_context, load_email_settings, should_run_tii75
 from .data_fetch import fetch_price_snapshot, fetch_valuation_snapshot
-from .drive_upload import upload_or_replace_xlsx
+from .drive_upload import upload_to_drive
 from .email_report import build_html, build_combined_html, send_email
 from .screening import TickerScreenResult, screen_snapshot
 from .utils import safe_slug, write_json
@@ -128,17 +128,19 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                         if png_path.exists():
                             cid = f"chart_{ticker.lower().replace('.', '_')}"
                             inline_images.append((cid, png_path))
-                        # Upload to Drive: YYMMDD-TICKER.xlsx naming convention
+                        # Upload to Drive
                         drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
-                        if drive_folder_id:
-                            drive_name = f"{ctx.run_dt.strftime('%y%m%d')}-{ticker.split('.')[0]}.xlsx"
+                        if not drive_folder_id:
+                            print(f"[wally] GDRIVE_FOLDER_ID not set — skipping Drive upload", flush=True)
+                        else:
                             try:
-                                url = upload_or_replace_xlsx(
-                                    Path(xlsx_path), drive_name, folder_id=drive_folder_id
-                                )
-                                print(f"[wally] Drive → {drive_name}: {url}", flush=True)
-                            except Exception as drive_err:
-                                print(f"[wally] Drive upload failed for {ticker}: {drive_err}", flush=True)
+                                result = upload_to_drive(Path(xlsx_path), ticker, drive_folder_id)
+                                if result["ok"]:
+                                    print(f"[wally] Drive upload complete: {result['url']}", flush=True)
+                                else:
+                                    print(f"[wally] Drive upload failed for {ticker}: {result['error']}", flush=True)
+                            except Exception as e:
+                                print(f"[wally] Drive upload exception for {ticker}: {e}", flush=True)
                     except Exception as xlsx_err:
                         # Full value-chart build failed — log exact reason, then fallback.
                         print(f"[wally] ERROR building full workbook for {ticker}: {xlsx_err}", flush=True)
@@ -208,15 +210,17 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                                 inline_images.append((cid, range_png))
                                 # Upload to Drive
                                 drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
-                                if drive_folder_id:
-                                    drive_name = f"{ctx.run_dt.strftime('%y%m%d')}-{ticker.split('.')[0]}_fallback.xlsx"
+                                if not drive_folder_id:
+                                    print(f"[wally] GDRIVE_FOLDER_ID not set — skipping Drive upload", flush=True)
+                                else:
                                     try:
-                                        url = upload_or_replace_xlsx(
-                                            fallback_out, drive_name, folder_id=drive_folder_id
-                                        )
-                                        print(f"[wally] Drive → {drive_name}: {url}", flush=True)
-                                    except Exception as drive_err:
-                                        print(f"[wally] Drive upload failed for {ticker}: {drive_err}", flush=True)
+                                        result = upload_to_drive(fallback_out, ticker, drive_folder_id)
+                                        if result["ok"]:
+                                            print(f"[wally] Drive upload complete: {result['url']}", flush=True)
+                                        else:
+                                            print(f"[wally] Drive upload failed for {ticker}: {result['error']}", flush=True)
+                                    except Exception as e:
+                                        print(f"[wally] Drive upload exception for {ticker}: {e}", flush=True)
                             except Exception as fallback_err:
                                 print(f"[wally] Fallback workbook build failed for {ticker}: {fallback_err}", flush=True)
         except Exception as e:

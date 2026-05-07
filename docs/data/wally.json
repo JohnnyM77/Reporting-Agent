@@ -1,10 +1,10 @@
 {
-  "last_run": "2026-05-07T03:08:32.838961+00:00",
+  "last_run": "2026-05-07T04:21:57.492592+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-05-07T03:04:52.890133+00:00",
+      "run_timestamp": "2026-05-07T04:18:04.480686+00:00",
       "total": 74,
-      "flagged_count": 15,
+      "flagged_count": 16,
       "flagged": [
         {
           "ticker": "EDV.AX",
@@ -25,49 +25,58 @@
           "below_high_pct": 15.590836054363614
         },
         {
+          "ticker": "AIA.AX",
+          "company_name": "Auckland International Airport Limited",
+          "current_price": 6.914999961853027,
+          "low_52w": 6.599999904632568,
+          "high_52w": 7.679999828338623,
+          "distance_to_low_pct": 4.772728208667989,
+          "below_high_pct": 9.960935984175464
+        },
+        {
           "ticker": "SHL.AX",
           "company_name": "Sonic Healthcare Limited",
-          "current_price": 18.829999923706055,
-          "low_52w": 18.829999923706055,
+          "current_price": 18.7450008392334,
+          "low_52w": 18.7450008392334,
           "high_52w": 28.93000030517578,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 34.911857154950546
+          "below_high_pct": 35.20566663844872
         },
         {
           "ticker": "ANN.AX",
           "company_name": "Ansell Limited",
-          "current_price": 26.065000534057617,
+          "current_price": 25.979999542236328,
           "low_52w": 25.709999084472656,
           "high_52w": 37.4900016784668,
-          "distance_to_low_pct": 1.3807913738875284,
-          "below_high_pct": 30.47479496639068
+          "distance_to_low_pct": 1.0501768470568964,
+          "below_high_pct": 30.701524729035928
         },
         {
           "ticker": "SEK.AX",
           "company_name": "SEEK Limited",
-          "current_price": 13.949999809265137,
+          "current_price": 13.84000015258789,
           "low_52w": 13.369999885559082,
           "high_52w": 29.18000030517578,
-          "distance_to_low_pct": 4.33806977315319,
-          "below_high_pct": 52.19328422422681
+          "distance_to_low_pct": 3.5153348620178764,
+          "below_high_pct": 52.570253571474325
         },
         {
           "ticker": "CSL.AX",
           "company_name": "CSL Limited",
-          "current_price": 124.3499984741211,
-          "low_52w": 124.3499984741211,
+          "current_price": 124.05000305175781,
+          "low_52w": 124.05000305175781,
           "high_52w": 272.0,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 54.28308879627901
+          "below_high_pct": 54.39338123097139
         },
         {
           "ticker": "PMV.AX",
           "company_name": "Premier Investments Limited",
-          "current_price": 12.399999618530273,
+          "current_price": 12.319999694824219,
           "low_52w": 11.9399995803833,
           "high_52w": 22.899999618530273,
-          "distance_to_low_pct": 3.852596769791558,
-          "below_high_pct": 45.851529148077304
+          "distance_to_low_pct": 3.1825806348036667,
+          "below_high_pct": 46.20087379890131
         },
         {
           "ticker": "MA",
@@ -81,38 +90,38 @@
         {
           "ticker": "RMD.AX",
           "company_name": "ResMed Inc.",
-          "current_price": 28.899999618530273,
+          "current_price": 28.889999389648438,
           "low_52w": 28.729999542236328,
           "high_52w": 45.13999938964844,
-          "distance_to_low_pct": 0.5917162513143311,
-          "below_high_pct": 35.976960546531025
+          "distance_to_low_pct": 0.5569086319576567,
+          "below_high_pct": 35.999114354721215
         },
         {
           "ticker": "RMV.L",
           "company_name": "Rightmove plc",
-          "current_price": 430.6000061035156,
+          "current_price": 432.6000061035156,
           "low_52w": 412.1000061035156,
           "high_52w": 823.7999877929688,
-          "distance_to_low_pct": 4.489201583596428,
-          "below_high_pct": 47.73003004562671
+          "distance_to_low_pct": 4.97452067371496,
+          "below_high_pct": 47.48725266888042
         },
         {
           "ticker": "FPH.AX",
           "company_name": "Fisher & Paykel Healthcare Corporation Limited",
-          "current_price": 29.5,
+          "current_price": 29.350000381469727,
           "low_52w": 29.149999618530273,
           "high_52w": 34.84000015258789,
-          "distance_to_low_pct": 1.2006874307032096,
-          "below_high_pct": 15.32721047416884
+          "distance_to_low_pct": 0.6861089727504327,
+          "below_high_pct": 15.75774898700846
         },
         {
           "ticker": "JBH.AX",
           "company_name": "JB Hi-Fi Limited",
-          "current_price": 73.87999725341797,
+          "current_price": 73.56999969482422,
           "low_52w": 71.69999694824219,
           "high_52w": 121.0,
-          "distance_to_low_pct": 3.040446859083481,
-          "below_high_pct": 38.942151030233084
+          "distance_to_low_pct": 2.6080932024752013,
+          "below_high_pct": 39.198347359649404
         },
         {
           "ticker": "CDW",
@@ -126,36 +135,45 @@
         {
           "ticker": "EVT.AX",
           "company_name": "EVT Limited",
-          "current_price": 11.880000114440918,
+          "current_price": 11.920000076293945,
           "low_52w": 11.829999923706055,
           "high_52w": 17.75,
-          "distance_to_low_pct": 0.42265588383198754,
-          "below_high_pct": 33.0704218904737
+          "distance_to_low_pct": 0.7607789785994837,
+          "below_high_pct": 32.845069992710165
         },
         {
           "ticker": "JIN.AX",
           "company_name": "Jumbo Interactive Limited",
-          "current_price": 7.695000171661377,
+          "current_price": 7.670000076293945,
           "low_52w": 7.400000095367432,
           "high_52w": 13.079999923706055,
-          "distance_to_low_pct": 3.9864874661099274,
-          "below_high_pct": 41.16972311509697
+          "distance_to_low_pct": 3.648648343876912,
+          "below_high_pct": 41.36085534379158
         }
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-05-07T03:07:20.071138+00:00",
+      "run_timestamp": "2026-05-07T04:20:43.581941+00:00",
       "total": 34,
-      "flagged_count": 4,
+      "flagged_count": 5,
       "flagged": [
+        {
+          "ticker": "ARB.AX",
+          "company_name": "ARB Corporation Limited",
+          "current_price": 18.3799991607666,
+          "low_52w": 17.610000610351562,
+          "high_52w": 40.81999969482422,
+          "distance_to_low_pct": 4.372507232977699,
+          "below_high_pct": 54.973054144591046
+        },
         {
           "ticker": "AD8.AX",
           "company_name": "Audinate Group Limited",
-          "current_price": 2.430000066757202,
+          "current_price": 2.3949999809265137,
           "low_52w": 2.319999933242798,
           "high_52w": 7.949999809265137,
-          "distance_to_low_pct": 4.741385201707776,
-          "below_high_pct": 69.43396069110321
+          "distance_to_low_pct": 3.2327607690438134,
+          "below_high_pct": 69.874213353624
         },
         {
           "ticker": "RMD.AX",
@@ -169,68 +187,68 @@
         {
           "ticker": "MFT.NZ",
           "company_name": "Mainfreight Limited",
-          "current_price": 58.65999984741211,
+          "current_price": 58.91999816894531,
           "low_52w": 57.099998474121094,
           "high_52w": 70.55000305175781,
-          "distance_to_low_pct": 2.73205151484906,
-          "below_high_pct": 16.853299348013927
+          "distance_to_low_pct": 3.1873900936251,
+          "below_high_pct": 16.484768787721162
         },
         {
           "ticker": "WES.AX",
           "company_name": "Wesfarmers Limited",
-          "current_price": 74.16000366210938,
+          "current_price": 74.08999633789062,
           "low_52w": 72.22000122070312,
           "high_52w": 94.76000213623047,
-          "distance_to_low_pct": 2.686239834692933,
-          "below_high_pct": 21.739128334448303
+          "distance_to_low_pct": 2.5893036355300327,
+          "below_high_pct": 21.81300689358774
         }
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-05-07T03:07:52.085075+00:00",
+      "run_timestamp": "2026-05-07T04:21:17.262340+00:00",
       "total": 35,
       "flagged_count": 4,
       "flagged": [
         {
           "ticker": "AD8.AX",
           "company_name": "Audinate Group Limited",
-          "current_price": 2.430000066757202,
+          "current_price": 2.3949999809265137,
           "low_52w": 2.319999933242798,
           "high_52w": 7.949999809265137,
-          "distance_to_low_pct": 4.741385201707776,
-          "below_high_pct": 69.43396069110321
+          "distance_to_low_pct": 3.2327607690438134,
+          "below_high_pct": 69.874213353624
         },
         {
           "ticker": "SEK.AX",
           "company_name": "SEEK Limited",
-          "current_price": 13.930000305175781,
+          "current_price": 13.84000015258789,
           "low_52w": 13.369999885559082,
           "high_52w": 29.18000030517578,
-          "distance_to_low_pct": 4.188484849738517,
-          "below_high_pct": 52.261822619977984
+          "distance_to_low_pct": 3.5153348620178764,
+          "below_high_pct": 52.570253571474325
         },
         {
           "ticker": "OCL.AX",
           "company_name": "Objective Corporation Limited",
-          "current_price": 11.260000228881836,
+          "current_price": 11.109999656677246,
           "low_52w": 10.899999618530273,
           "high_52w": 22.899999618530273,
-          "distance_to_low_pct": 3.302758008720958,
-          "below_high_pct": 50.82969250457785
+          "distance_to_low_pct": 1.9266059219852385,
+          "below_high_pct": 51.48471684826041
         },
         {
           "ticker": "IRE.AX",
           "company_name": "Iress Limited",
-          "current_price": 6.619999885559082,
+          "current_price": 6.570000171661377,
           "low_52w": 6.550000190734863,
           "high_52w": 9.680000305175781,
-          "distance_to_low_pct": 1.0686975997838144,
-          "below_high_pct": 31.61157358621728
+          "distance_to_low_pct": 0.3053432113605758,
+          "below_high_pct": 32.128099539950675
         }
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-05-07T03:08:32.838961+00:00",
+      "run_timestamp": "2026-05-07T04:21:57.492592+00:00",
       "total": 30,
       "flagged_count": 6,
       "flagged": [

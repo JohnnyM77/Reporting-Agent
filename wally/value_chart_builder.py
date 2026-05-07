@@ -31,6 +31,7 @@ Called by:
 from __future__ import annotations
 
 import io
+import math
 import zipfile
 from datetime import date, datetime
 from pathlib import Path
@@ -950,6 +951,57 @@ def _build_chart(wb: Workbook, cfg: dict, ws3) -> None:
     last_row = ws3.max_row
     cats     = Reference(ws3, min_col=1, min_row=3, max_row=last_row)
 
+    # ── Dynamic axis bounds from actual data ──────────────────────────────────
+    _has_sell_b  = bool(smult)
+    _vbuy_col    = 4
+    _drror_col   = 7 if _has_sell_b else 6
+    _pe_col      = 9 if _has_sell_b else 8
+
+    price_series       = []
+    value_eps_series   = []
+    value_div_series   = []
+    pe_smoothed_series = []
+    for _r in range(3, last_row + 1):
+        _v = ws3.cell(_r, 2).value
+        if _v is not None:
+            price_series.append(float(_v))
+        _v = ws3.cell(_r, _vbuy_col).value
+        if _v is not None:
+            value_eps_series.append(float(_v))
+        _v = ws3.cell(_r, _drror_col).value
+        if _v is not None:
+            value_div_series.append(float(_v))
+        _v = ws3.cell(_r, _pe_col).value
+        if _v is not None:
+            pe_smoothed_series.append(float(_v))
+
+    primary_values = (
+        [v for v in price_series]
+        + [v for v in value_eps_series]
+        + [v for v in value_div_series]
+    )
+    if primary_values:
+        y_min = math.floor(min(primary_values) * 0.90)
+        y_max = math.ceil(max(primary_values)  * 1.10)
+    else:
+        y_min = 0
+        y_max = 100
+
+    pe_values = [v for v in pe_smoothed_series]
+    if pe_values:
+        pe_min = math.floor(min(pe_values) * 0.90)
+        pe_max = math.ceil(max(pe_values)  * 1.15)
+    else:
+        pe_min = 0
+        pe_max = 60
+
+    print(
+        f"[ValueChart] {cfg['ticker']} — Y-axis: {y_min}–{y_max}, "
+        f"P/E axis: {pe_min}–{pe_max}, "
+        f"price points: {len(price_series)}, "
+        f"value_eps points: {len(value_eps_series)}"
+    )
+
     # ── Primary chart (Price → left axis) ────────────────────────────────────
     ch = LineChart()
     # Assign explicit axis IDs to avoid collision with secondary chart.
@@ -959,8 +1011,8 @@ def _build_chart(wb: Workbook, cfg: dict, ws3) -> None:
     # secondary value axis (right).
     ch.y_axis.axId   = 100   # primary value axis — LEFT
     ch.x_axis.axId   = 10    # category axis — shared with secondary chart
-    ch.width  = int(_get(cfg, "chart", "dimensions", "width",  default=34))
-    ch.height = int(_get(cfg, "chart", "dimensions", "height", default=20))
+    ch.width  = 28   # fills a standard landscape sheet
+    ch.height = 16
     ch.add_data(Reference(ws3, min_col=2, min_row=2, max_row=last_row),
                 titles_from_data=True)
     ch.set_categories(cats)
@@ -987,8 +1039,8 @@ def _build_chart(wb: Workbook, cfg: dict, ws3) -> None:
     ch.y_axis.title         = la.get("label",      "Price (AUD $)")
     ch.y_axis.number_format = la.get("num_fmt",    '"$"#,##0.00')
     ch.y_axis.majorUnit     = float(la.get("major_unit", 1.0))
-    ch.y_axis.scaling.min   = float(la.get("min",  0.0))
-    ch.y_axis.scaling.max   = float(la.get("max",  10.0))
+    ch.y_axis.scaling.min   = float(y_min)
+    ch.y_axis.scaling.max   = float(y_max)
     ch.y_axis.majorGridlines = None
     ch.y_axis.crossAx        = 10    # primary valAx crosses catAx (id=10)
     ch.x_axis.crossAx        = 100   # catAx crosses primary valAx (id=100)
@@ -1048,8 +1100,8 @@ def _build_chart(wb: Workbook, cfg: dict, ws3) -> None:
     sec.y_axis.crossAx       = 10    # secondary valAx crosses shared catAx (id=10)
     sec.y_axis.number_format = ra.get("num_fmt",    "0.0")
     sec.y_axis.majorUnit     = float(ra.get("major_unit", 2.0))
-    sec.y_axis.scaling.min   = float(ra.get("min",  0.0))
-    sec.y_axis.scaling.max   = float(ra.get("max",  20.0))
+    sec.y_axis.scaling.min   = float(pe_min)
+    sec.y_axis.scaling.max   = float(pe_max)
     sec.y_axis.majorGridlines = None
     sec.x_axis.axId           = 10    # shares the primary chart's catAx (id=10)
     sec.x_axis.crosses        = "autoZero"

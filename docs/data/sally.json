@@ -1,18 +1,18 @@
 {
-  "last_run": "2026-05-07",
+  "last_run": "2026-05-10",
   "portfolio_size": 20,
   "flagged_count": 1,
   "flagged": [
     {
       "ticker": "BHP",
       "company_name": "BHP Group Limited",
-      "current_price": 58.13999938964844,
+      "current_price": 57.95000076293945,
       "high_52w": 59.25,
-      "distance_to_high_pct": 1.87,
-      "trailing_pe": 20.690392,
-      "forward_pe": 16.20858,
-      "dividend_yield": 3.47,
-      "valuation_percentile": 0.9916666666666667,
+      "distance_to_high_pct": 2.19,
+      "trailing_pe": 20.845324,
+      "forward_pe": 16.294426,
+      "dividend_yield": 3.38,
+      "valuation_percentile": 0.9833333333333333,
       "alert_tier": "Tier 3: Deep Review",
       "sally_verdict": "Trim candidate"
     }

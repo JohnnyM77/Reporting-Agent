@@ -60,6 +60,190 @@ def _tier_badge(tier: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Bob section — analysis card helpers
+# ---------------------------------------------------------------------------
+
+_BADGE_COLOURS = {
+    "results":        "#f59e0b",
+    "acquisition":    "#8b5cf6",
+    "capital":        "#3b82f6",
+    "trading_update": "#06b6d4",
+    "price_sensitive":"#ef4444",
+}
+
+def _esc(s: str) -> str:
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def _section_cell(label: str, value) -> str:
+    if not value:
+        return ""
+    if isinstance(value, list):
+        items = "".join(f"<li style='margin:2px 0'>{_esc(str(v))}</li>" for v in value if v)
+        body = f"<ul style='margin:4px 0 0 14px;padding:0'>{items}</ul>"
+    elif isinstance(value, dict):
+        row_parts = []
+        for k, v in value.items():
+            if not v:
+                continue
+            label = _esc(k.replace("_", " ").title())
+            if isinstance(v, list):
+                items_html = "".join(f"<li style='margin:1px 0'>{_esc(str(i))}</li>" for i in v if i)
+                row_parts.append(
+                    f"<div style='margin:2px 0'><span style='color:#64748b'>{label}:</span>"
+                    f"<ul style='margin:2px 0 0 14px;padding:0'>{items_html}</ul></div>"
+                )
+            else:
+                row_parts.append(
+                    f"<div style='margin:2px 0'><span style='color:#64748b'>{label}:</span> {_esc(str(v))}</div>"
+                )
+        body = f"<div style='margin-top:4px'>{''.join(row_parts)}</div>"
+    else:
+        body = f"<div style='margin-top:4px'>{_esc(str(value))}</div>"
+    return (
+        f"<div style='background:#0f172a;border-radius:6px;padding:10px 12px;min-width:0'>"
+        f"<div style='color:#64748b;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px'>{_esc(label)}</div>"
+        f"<div style='color:#e2e8f0;font-size:12px;line-height:1.5'>{body}</div>"
+        f"</div>"
+    )
+
+
+_RESULTS_FIELDS = [
+    ("executive_summary", "Executive Summary"),
+    ("key_numbers",       "Key Numbers"),
+    ("quality_of_earnings","Quality of Earnings"),
+    ("management_framing","Management Framing"),
+    ("positives",         "Positives"),
+    ("negatives",         "Negatives / Red Flags"),
+    ("bottom_line",       "Bottom Line"),
+]
+_ACQUISITION_FIELDS = [
+    ("deal_summary",        "Deal Summary"),
+    ("what_they_bought",    "What They Bought"),
+    ("price_check",         "Price Check"),
+    ("strategic_fit",       "Strategic Fit"),
+    ("integration_risk",    "Integration Risk"),
+    ("balance_sheet_impact","Balance Sheet"),
+    ("red_flags",           "Red Flags"),
+    ("bottom_line",         "Bottom Line"),
+]
+_CAPITAL_FIELDS = [
+    ("what_happened",       "What Happened"),
+    ("fairness_signaling",  "Fairness & Signaling"),
+    ("balance_sheet_impact","Balance Sheet Impact"),
+    ("why_now",             "Why Now"),
+    ("dilution_math",       "Dilution Math"),
+    ("disclosure_quality",  "Disclosure Quality"),
+    ("bottom_line",         "Bottom Line"),
+    ("key_questions",       "Key Questions"),
+]
+_TRADING_FIELDS = [
+    ("what_they_said",    "What They Said"),
+    ("vs_prior_guidance", "vs Prior Guidance"),
+    ("the_numbers",       "The Numbers"),
+    ("why_happening",     "Why Happening"),
+    ("balance_sheet",     "Balance Sheet"),
+    ("red_flags",         "Red Flags"),
+    ("bottom_line",       "Bottom Line"),
+    ("key_questions",     "Key Questions"),
+]
+_PRICE_SENSITIVE_FIELDS = [
+    ("what_happened",       "What Happened"),
+    ("why_price_sensitive", "Why Price Sensitive"),
+    ("numbers_materiality", "Numbers & Materiality"),
+    ("impact_on_thesis",    "Impact on Thesis"),
+    ("risks_questions",     "Risks / Questions"),
+    ("bottom_line",         "Bottom Line"),
+]
+_DEFAULT_FIELDS = [
+    ("what_happened", "What Happened"),
+    ("so_what",       "So What"),
+]
+
+_FIELD_MAP = {
+    "results":        _RESULTS_FIELDS,
+    "acquisition":    _ACQUISITION_FIELDS,
+    "capital":        _CAPITAL_FIELDS,
+    "trading_update": _TRADING_FIELDS,
+    "price_sensitive":_PRICE_SENSITIVE_FIELDS,
+}
+
+
+def _render_analysis_sections(analysis: dict, kind: str) -> str:
+    fields = _FIELD_MAP.get(kind, _DEFAULT_FIELDS)
+    cells = "".join(_section_cell(label, analysis.get(key)) for key, label in fields)
+    return (
+        f"<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));"
+        f"gap:8px;padding:12px 14px 14px'>{cells}</div>"
+    )
+
+
+def _hi_item_card(item: dict) -> str:
+    ticker = _esc(item.get("ticker", ""))
+    title  = _esc(item.get("title", "")[:120])
+    url    = item.get("url", "")
+    itype  = item.get("type", "")
+    badge_bg = _BADGE_COLOURS.get(itype, "#64748b")
+    type_label = itype.replace("_", " ").upper() if itype else "HIGH IMPACT"
+    analysis = item.get("analysis")
+
+    header = (
+        f"<div style='background:#1a2540;padding:10px 14px;display:flex;"
+        f"justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px'>"
+        f"<div style='display:flex;align-items:center;gap:8px;flex-wrap:wrap'>"
+        f"<strong style='color:#fbbf24;font-size:14px'>{ticker}</strong>"
+        f"<span style='background:{badge_bg};color:#fff;padding:1px 7px;border-radius:3px;"
+        f"font-size:10px;white-space:nowrap'>{type_label}</span>"
+        f"<span style='color:#cbd5e1;font-size:12px'>{title}</span>"
+        f"</div>"
+        f"<a href='{url}' target='_blank' style='color:#60a5fa;font-size:12px;"
+        f"white-space:nowrap'>Open ↗</a>"
+        f"</div>"
+    )
+
+    if analysis:
+        sections_html = _render_analysis_sections(analysis, itype)
+        body = (
+            f"<details open style='border-top:1px solid #334155'>"
+            f"<summary style='cursor:pointer;padding:7px 14px;color:#94a3b8;font-size:11px;"
+            f"list-style:none;user-select:none'>▸ Analysis</summary>"
+            f"{sections_html}"
+            f"</details>"
+        )
+    else:
+        body = ""
+
+    return (
+        f"<div style='border:1px solid #334155;border-radius:8px;overflow:hidden;margin:10px 0'>"
+        f"{header}{body}"
+        f"</div>"
+    )
+
+
+def _mat_item_row(item: dict) -> str:
+    ticker = _esc(item.get("ticker", ""))
+    title  = _esc(item.get("title", "")[:120])
+    url    = item.get("url", "")
+    analysis = item.get("analysis", {})
+    what = _esc(str(analysis.get("what_happened", title)))
+    so_what = _esc(str(analysis.get("so_what", "")))
+    detail = (
+        f"<div style='color:#e2e8f0'>{what}</div>"
+        f"<div style='color:#94a3b8;font-size:11px;margin-top:3px'>→ {so_what}</div>"
+        if so_what else f"<div style='color:#e2e8f0'>{what}</div>"
+    )
+    return (
+        f"<tr>"
+        f"<td style='white-space:nowrap'><strong style='color:#60a5fa'>{ticker}</strong></td>"
+        f"<td>{detail}</td>"
+        f"<td style='white-space:nowrap'>"
+        f"<a href='{url}' target='_blank' style='color:#60a5fa;font-size:11px'>Open ↗</a>"
+        f"</td>"
+        f"</tr>"
+    )
+
+
+# ---------------------------------------------------------------------------
 # Bob section
 # ---------------------------------------------------------------------------
 
@@ -73,54 +257,51 @@ def _bob_section(data: dict) -> str:
     status_dot = "#ef4444" if hi else "#22c55e"
     status_text = f"{len(hi)} HIGH IMPACT" if hi else ("SILENCE" if silence else "All clear")
 
-    hi_rows = ""
-    for item in hi:
-        itype = item.get("type", "")
-        badge_colours = {"results": "#f59e0b", "acquisition": "#8b5cf6", "capital": "#3b82f6"}
-        badge_bg = badge_colours.get(itype, "#64748b")
-        type_label = itype.upper() if itype else "HIGH"
-        hi_rows += (
-            f"<tr><td><strong style='color:#fbbf24'>{item.get('ticker','')}</strong></td>"
-            f"<td><span style='background:{badge_bg};color:#fff;padding:1px 5px;border-radius:3px;font-size:10px'>{type_label}</span></td>"
-            f"<td style='color:#cbd5e1'>{item.get('title','')[:90]}</td>"
-            f"<td><a href='{item.get('url','')}' target='_blank' style='color:#60a5fa;font-size:11px'>Open</a></td></tr>"
-        )
+    hi_cards = "".join(_hi_item_card(item) for item in hi)
 
-    mat_rows = ""
-    for item in mat[:10]:
+    mat_rows = "".join(_mat_item_row(item) for item in mat[:10])
+    if len(mat) > 10:
         mat_rows += (
-            f"<tr><td><strong style='color:#60a5fa'>{item.get('ticker','')}</strong></td>"
-            f"<td style='color:#cbd5e1'>{item.get('title','')[:100]}</td>"
-            f"<td><a href='{item.get('url','')}' target='_blank' style='color:#60a5fa;font-size:11px'>Open</a></td></tr>"
+            f"<tr><td colspan='3' style='color:#64748b;font-size:11px;padding:6px 0'>"
+            f"… and {len(mat)-10} more material items</td></tr>"
         )
 
-    fyi_rows = ""
-    for item in fyi[:15]:
-        fyi_rows += (
-            f"<tr><td><strong style='color:#94a3b8'>{item.get('ticker','')}</strong></td>"
-            f"<td style='color:#94a3b8;font-size:12px'>{item.get('title','')[:100]}</td>"
-            f"<td><a href='{item.get('url','')}' target='_blank' style='color:#60a5fa;font-size:11px'>Open</a></td></tr>"
-        )
+    fyi_rows = "".join(
+        f"<tr>"
+        f"<td><strong style='color:#94a3b8'>{_esc(item.get('ticker',''))}</strong></td>"
+        f"<td style='color:#94a3b8;font-size:12px'>{_esc(item.get('title','')[:100])}</td>"
+        f"<td><a href='{item.get('url','')}' target='_blank' style='color:#60a5fa;font-size:11px'>Open</a></td>"
+        f"</tr>"
+        for item in fyi[:15]
+    )
     if len(fyi) > 15:
-        fyi_rows += f"<tr><td colspan='3' style='color:#64748b;font-size:11px'>… and {len(fyi)-15} more FYI items</td></tr>"
+        fyi_rows += (
+            f"<tr><td colspan='3' style='color:#64748b;font-size:11px'>"
+            f"… and {len(fyi)-15} more FYI items</td></tr>"
+        )
 
-    hi_block = f"""
-    <h4 style='color:#fbbf24;margin:16px 0 6px'>⚡ HIGH IMPACT ({len(hi)})</h4>
-    <table style='width:100%;border-collapse:collapse;font-size:13px'>
-    {hi_rows if hi_rows else "<tr><td style='color:#64748b;padding:6px 0'>No high-impact announcements</td></tr>"}
-    </table>""" if hi else ""
+    _no_hi   = "<p style='color:#64748b;font-size:13px'>No high-impact announcements</p>"
+    _no_mat  = "<tr><td style='color:#64748b;padding:6px 0'>No material announcements</td></tr>"
+    _no_fyi  = "<tr><td style='color:#64748b;padding:6px 0'>No announcements today</td></tr>"
 
-    mat_block = f"""
-    <h4 style='color:#3b82f6;margin:16px 0 6px'>📌 MATERIAL ({len(mat)})</h4>
-    <table style='width:100%;border-collapse:collapse;font-size:13px'>
-    {mat_rows if mat_rows else "<tr><td style='color:#64748b;padding:6px 0'>No material announcements</td></tr>"}
-    </table>""" if mat else ""
+    hi_block = (
+        f"<h4 style='color:#fbbf24;margin:16px 0 6px'>⚡ HIGH IMPACT ({len(hi)})</h4>"
+        + (hi_cards if hi_cards else _no_hi)
+    ) if hi else ""
 
-    fyi_block = f"""
-    <h4 style='color:#10b981;margin:16px 0 6px'>📋 FYI — ALL ANNOUNCEMENTS ({len(fyi)})</h4>
-    <table style='width:100%;border-collapse:collapse;font-size:13px'>
-    {fyi_rows if fyi_rows else "<tr><td style='color:#64748b;padding:6px 0'>No announcements today</td></tr>"}
-    </table>""" if True else ""
+    mat_block = (
+        f"<h4 style='color:#3b82f6;margin:16px 0 6px'>📌 MATERIAL ({len(mat)})</h4>"
+        f"<table style='width:100%;border-collapse:collapse;font-size:13px'>"
+        + (mat_rows if mat_rows else _no_mat)
+        + "</table>"
+    ) if mat else ""
+
+    fyi_block = (
+        f"<h4 style='color:#10b981;margin:16px 0 6px'>📋 FYI — ALL ANNOUNCEMENTS ({len(fyi)})</h4>"
+        f"<table style='width:100%;border-collapse:collapse;font-size:13px'>"
+        + (fyi_rows if fyi_rows else _no_fyi)
+        + "</table>"
+    )
 
     return f"""
     <div class="agent-card">

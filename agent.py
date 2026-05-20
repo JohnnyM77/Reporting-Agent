@@ -648,18 +648,24 @@ def summarise_headline_two_lines(ticker: str, title: str) -> str:
     return line1 + "\n" + line2
 
 
-def summarise_two_lines_llm(ticker: str, title: str, text: str, counters: Dict) -> Optional[str]:
+def summarise_two_lines_llm(ticker: str, title: str, text: str, counters: Dict) -> Optional[dict]:
     if not is_meaningful_text(text, min_chars=600):
         return None
     user = f"Ticker: {ticker}\nTitle: {title}\n\nText:\n{text}"
     out = llm_chat(DEFAULT_2LINE_PROMPT, user, counters)
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return f"{ticker}: {title[:160]}\nSo what: price-sensitive headline; open link for details."
+        return {
+            "what_happened": f"{ticker}: {title[:160]}",
+            "so_what": "Price-sensitive headline; open link for details.",
+        }
+    parsed = _parse_analysis_json(out)
+    if parsed and "what_happened" in parsed:
+        return parsed
     lines = [ln.strip() for ln in out.splitlines() if ln.strip()]
     if len(lines) >= 2:
-        return lines[0] + "\n" + lines[1]
+        return {"what_happened": lines[0], "so_what": lines[1]}
     if len(lines) == 1:
-        return lines[0] + "\nSo what: open link for details."
+        return {"what_happened": lines[0], "so_what": "Open link for details."}
     return None
 
 
@@ -675,18 +681,145 @@ def _prettify_analysis_text(text: str, width: int = 140) -> str:
     return "\n\n".join(wrapped)
 
 
+def _parse_analysis_json(text: str) -> Optional[dict]:
+    """Parse structured JSON from LLM output, stripping any markdown code fences."""
+    if not text or text in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
+        return None
+    cleaned = re.sub(r"^```(?:json)?\s*", "", text.strip(), flags=re.MULTILINE)
+    cleaned = re.sub(r"\s*```\s*$", "", cleaned.strip(), flags=re.MULTILINE)
+    cleaned = cleaned.strip()
+    try:
+        result = json.loads(cleaned)
+        if isinstance(result, dict):
+            return result
+    except json.JSONDecodeError:
+        pass
+    m = re.search(r"\{.*\}", cleaned, re.DOTALL)
+    if m:
+        try:
+            result = json.loads(m.group())
+            if isinstance(result, dict):
+                return result
+        except json.JSONDecodeError:
+            pass
+    return None
+
+
+def _analysis_to_email_text(analysis: dict, kind: str) -> str:
+    """Render a structured analysis dict as readable plain text for the email."""
+    if not analysis:
+        return "No analysis available."
+
+    lines: List[str] = []
+
+    if kind == "results":
+        if "executive_summary" in analysis:
+            lines.append("EXECUTIVE SUMMARY:")
+            for b in analysis.get("executive_summary", []):
+                lines.append(f"  • {b}")
+        if "key_numbers" in analysis:
+            lines.append("\nKEY NUMBERS:")
+            labels = {
+                "revenue": "Revenue", "ebitda_margin": "EBITDA margin",
+                "npat_statutory": "NPAT (statutory)", "npat_underlying": "NPAT (underlying)",
+                "eps": "EPS", "operating_cashflow": "Op. cash flow",
+                "free_cashflow": "Free cash flow", "net_debt_cash": "Net debt/cash",
+            }
+            for k, v in analysis["key_numbers"].items():
+                lines.append(f"  {labels.get(k, k)}: {v}")
+        if analysis.get("quality_of_earnings"):
+            lines.append(f"\nQUALITY OF EARNINGS:\n{analysis['quality_of_earnings']}")
+        if analysis.get("management_framing"):
+            lines.append(f"\nMANAGEMENT FRAMING:\n{analysis['management_framing']}")
+        if analysis.get("positives"):
+            lines.append("\nPOSITIVES:")
+            for p in analysis["positives"]:
+                lines.append(f"  ✓ {p}")
+        if analysis.get("negatives"):
+            lines.append("\nNEGATIVES / RED FLAGS:")
+            for n in analysis["negatives"]:
+                lines.append(f"  ✗ {n}")
+        bl = analysis.get("bottom_line", {})
+        if isinstance(bl, dict):
+            lines.append("\nBOTTOM LINE:")
+            if bl.get("bull"):
+                lines.append(f"  Bull: {bl['bull']}")
+            if bl.get("bear"):
+                lines.append(f"  Bear: {bl['bear']}")
+            if bl.get("what_changes_mind"):
+                lines.append(f"  Watch: {bl['what_changes_mind']}")
+        elif bl:
+            lines.append(f"\nBOTTOM LINE: {bl}")
+
+    elif kind == "acquisition":
+        for key, label in [
+            ("deal_summary", "DEAL SUMMARY"), ("what_they_bought", "WHAT THEY BOUGHT"),
+            ("price_check", "PRICE CHECK"), ("strategic_fit", "STRATEGIC FIT"),
+            ("integration_risk", "INTEGRATION RISK"), ("balance_sheet_impact", "BALANCE SHEET"),
+        ]:
+            if analysis.get(key):
+                lines.append(f"\n{label}:\n{analysis[key]}")
+        if analysis.get("red_flags"):
+            lines.append("\nRED FLAGS:")
+            for f in analysis["red_flags"]:
+                lines.append(f"  ⚠ {f}")
+        bl = analysis.get("bottom_line", {})
+        if isinstance(bl, dict):
+            lines.append("\nBOTTOM LINE:")
+            if bl.get("bull"):
+                lines.append(f"  Bull: {bl['bull']}")
+            if bl.get("bear"):
+                lines.append(f"  Bear: {bl['bear']}")
+            if bl.get("key_questions"):
+                lines.append("  Key questions:")
+                for q in bl["key_questions"]:
+                    lines.append(f"    → {q}")
+        elif bl:
+            lines.append(f"\nBOTTOM LINE: {bl}")
+
+    elif kind in ("capital", "trading_update", "price_sensitive"):
+        list_keys = {"key_questions", "risks_questions", "red_flags"}
+        for key, value in analysis.items():
+            if not value:
+                continue
+            label = key.replace("_", " ").upper()
+            if key in list_keys:
+                lines.append(f"\n{label}:")
+                for item in (value if isinstance(value, list) else [value]):
+                    lines.append(f"  → {item}")
+            elif isinstance(value, dict):
+                lines.append(f"\n{label}:")
+                for k, v in value.items():
+                    lines.append(f"  {k.title()}: {v}")
+            else:
+                lines.append(f"\n{label}:\n{value}")
+
+    else:
+        if analysis.get("what_happened"):
+            lines.append(analysis["what_happened"])
+        if analysis.get("so_what"):
+            lines.append(f"So what: {analysis['so_what']}")
+
+    return "\n".join(lines).strip() if lines else str(analysis)
+
+
 def build_high_impact_block(
     ticker: str,
     heading: str,
-    memo: str,
+    memo,
     url: str,
     analysed_via_pdf: bool = False,
     drive_links: Optional[List[str]] = None,
+    kind: Optional[str] = None,
 ) -> str:
     lines: List[str] = [f"{ticker} — {heading}"]
     if analysed_via_pdf:
         lines[-1] += " (analysed via PDF)"
-    lines.extend(["", "Key analysis:", _prettify_analysis_text(memo), "", f"Open: {url}"])
+    if isinstance(memo, dict):
+        memo_text = _analysis_to_email_text(memo, kind or "generic")
+    else:
+        memo_text = memo or ""
+    lines.extend(["", "Key analysis:", _prettify_analysis_text(memo_text), "", f"Open: {url}"])
     if drive_links:
         lines.append("Drive links:")
         lines.extend(drive_links)
@@ -696,7 +829,7 @@ def build_high_impact_block(
 
 def deep_acquisition_memo(
     ticker: str, title: str, text: str, counters: Dict, pdf_path: Optional[Path] = None,
-) -> str:
+) -> dict:
     if pdf_path and pdf_path.exists():
         user = f"Ticker: {ticker}\nTitle: {title}\n\nPlease analyse the attached acquisition announcement PDF."
         out = llm_chat(ACQUISITION_PROMPT, user, counters, pdf_path=pdf_path)
@@ -704,15 +837,16 @@ def deep_acquisition_memo(
         user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
         out = llm_chat(ACQUISITION_PROMPT, user, counters)
     else:
-        return "Could not extract meaningful announcement text automatically. Open the link and review manually."
+        return {"deal_summary": "Could not extract meaningful announcement text. Open the link and review manually."}
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return "LLM could not run (limit/billing)."
-    return out
+        return {"deal_summary": "LLM could not run (limit/billing)."}
+    parsed = _parse_analysis_json(out)
+    return parsed if parsed else {"deal_summary": out}
 
 
 def deep_capital_memo(
     ticker: str, title: str, text: str, counters: Dict, pdf_path: Optional[Path] = None,
-) -> str:
+) -> dict:
     if pdf_path and pdf_path.exists():
         user = f"Ticker: {ticker}\nTitle: {title}\n\nPlease analyse the attached capital/debt raise announcement PDF."
         out = llm_chat(CAPITAL_OR_DEBT_RAISE_PROMPT, user, counters, pdf_path=pdf_path)
@@ -720,15 +854,16 @@ def deep_capital_memo(
         user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
         out = llm_chat(CAPITAL_OR_DEBT_RAISE_PROMPT, user, counters)
     else:
-        return "Could not extract meaningful announcement text automatically. Open the link and review manually."
+        return {"what_happened": "Could not extract meaningful announcement text. Open the link and review manually."}
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return "LLM could not run (limit/billing)."
-    return out
+        return {"what_happened": "LLM could not run (limit/billing)."}
+    parsed = _parse_analysis_json(out)
+    return parsed if parsed else {"what_happened": out}
 
 
 def deep_trading_update_memo(
     ticker: str, title: str, text: str, counters: Dict, pdf_path: Optional[Path] = None,
-) -> str:
+) -> dict:
     if pdf_path and pdf_path.exists():
         user = f"Ticker: {ticker}\nTitle: {title}\n\nPlease analyse the attached trading update / guidance announcement PDF."
         out = llm_chat(TRADING_UPDATE_PROMPT, user, counters, pdf_path=pdf_path)
@@ -736,15 +871,16 @@ def deep_trading_update_memo(
         user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
         out = llm_chat(TRADING_UPDATE_PROMPT, user, counters)
     else:
-        return "Could not extract meaningful announcement text automatically. Open the link and review manually."
+        return {"what_they_said": "Could not extract meaningful announcement text. Open the link and review manually."}
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return "LLM could not run (limit/billing)."
-    return out
+        return {"what_they_said": "LLM could not run (limit/billing)."}
+    parsed = _parse_analysis_json(out)
+    return parsed if parsed else {"what_they_said": out}
 
 
 def deep_price_sensitive_memo(
     ticker: str, title: str, text: str, counters: Dict, pdf_path: Optional[Path] = None,
-) -> str:
+) -> dict:
     if pdf_path and pdf_path.exists():
         user = f"Ticker: {ticker}\nTitle: {title}\n\nPlease analyse the attached ASX price-sensitive announcement PDF."
         out = llm_chat(PRICE_SENSITIVE_PROMPT, user, counters, pdf_path=pdf_path)
@@ -752,10 +888,11 @@ def deep_price_sensitive_memo(
         user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
         out = llm_chat(PRICE_SENSITIVE_PROMPT, user, counters)
     else:
-        return "Could not extract meaningful announcement text automatically. Open the link and review manually."
+        return {"what_happened": "Could not extract meaningful announcement text. Open the link and review manually."}
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return "LLM could not run (limit/billing)."
-    return out
+        return {"what_happened": "LLM could not run (limit/billing)."}
+    parsed = _parse_analysis_json(out)
+    return parsed if parsed else {"what_happened": out}
 
 
 def deep_results_analysis(
@@ -765,7 +902,7 @@ def deep_results_analysis(
     counters: Dict,
     report_pdf: Optional[Path] = None,
     deck_pdf: Optional[Path] = None,
-) -> str:
+) -> dict:
     if report_pdf and report_pdf.exists():
         deck_context = f"\n\n=== INVESTOR DECK TEXT (extracted) ===\n{deck_text[:30_000]}" if deck_text else ""
         user = (
@@ -781,10 +918,11 @@ def deep_results_analysis(
         )
         out = llm_chat(RESULTS_HYFY_PROMPT, user, counters)
     else:
-        return "No meaningful report text or PDF available for analysis."
+        return {"executive_summary": ["No meaningful report text or PDF available for analysis."]}
     if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return "LLM could not run (limit/billing)."
-    return out
+        return {"executive_summary": ["LLM could not run (limit/billing)."]}
+    parsed = _parse_analysis_json(out)
+    return parsed if parsed else {"executive_summary": [out]}
 
 
 def strawman_post(ticker: str, kind: str, analysis_text: str, counters: Dict) -> str:
@@ -851,6 +989,25 @@ def pick_report_and_deck_pdfs(
     return report_pdf, deck_pdf
 
 
+def _emit_bob_dashboard_json(
+    high_impact: List[dict],
+    material: List[dict],
+    fyi: List[dict],
+    silence: bool,
+) -> None:
+    out_path = Path(__file__).resolve().parent / "docs" / "data" / "bob.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    data = {
+        "last_run": today_sgt_date().isoformat(),
+        "silence": silence,
+        "high_impact": high_impact,
+        "material": material,
+        "fyi": fyi,
+    }
+    out_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    log(f"[bob] Dashboard JSON written → {out_path}")
+
+
 def main():
     subject = f"{BOB_NAME} {VERSION_LABEL} — Daily Announcements Digest — {today_sgt_date().isoformat()} (SGT)"
     session = http_session()
@@ -872,6 +1029,11 @@ def main():
     material_blocks: List[str] = []
     fyi_blocks: List[str] = []
     brother_blocks: List[str] = []
+
+    # Structured items for docs/data/bob.json dashboard
+    high_impact_items: List[dict] = []
+    material_items: List[dict] = []
+    fyi_items: List[dict] = []
 
     from_date = cutoff_dt_sgt(HOURS_BACK).date()
     by_ticker: Dict[str, List[Dict]] = {}
@@ -908,6 +1070,7 @@ def main():
                 url = it["url"]
                 fyi_entry = f"{summarise_headline_two_lines(ticker, title)}\nOpen: {url}\n"
                 fyi_blocks.append(fyi_entry)
+                fyi_items.append({"ticker": ticker, "title": title[:200], "url": url})
                 if ticker == "AR9":
                     brother_blocks.append(fyi_entry)
                 key = it.get("seen_key")
@@ -962,6 +1125,9 @@ def main():
                     if drive_links:
                         block += "Drive links:\n" + "\n".join(drive_links) + "\n"
                     high_impact_blocks.append(block)
+                    high_impact_items.append({
+                        "ticker": ticker, "title": "Results (HY/FY)", "url": any_results_link, "type": "results",
+                    })
                     if ticker == "AR9":
                         brother_blocks.append(block)
                     continue
@@ -977,8 +1143,14 @@ def main():
                     url=any_results_link,
                     analysed_via_pdf=bool(has_pdf),
                     drive_links=drive_links,
+                    kind="results",
                 )
                 high_impact_blocks.append(block)
+                high_impact_items.append({
+                    "ticker": ticker, "title": bundle[0]["title"] if bundle else "Results (HY/FY)",
+                    "url": any_results_link, "type": "results", "analysis": analysis,
+                    "drive_links": drive_links or [],
+                })
                 if ticker == "AR9":
                     brother_blocks.append(block)
                 continue
@@ -1003,6 +1175,7 @@ def main():
                     if looks_like_asx_access_gate(text):
                         block = f"{ticker}: {title[:160]}\nSo what: could not fetch PDF automatically. Open: {url}\n"
                         material_blocks.append(block)
+                        material_items.append({"ticker": ticker, "title": title[:200], "url": url})
                         if ticker == "AR9":
                             brother_blocks.append(block)
                         if pdf_path.exists():
@@ -1026,12 +1199,18 @@ def main():
                     if cls_title == "ACQUISITION":
                         memo = deep_acquisition_memo(ticker, title, text, counters, pdf_path=current_pdf)
                         heading = "Acquisition"
+                        item_type = "acquisition"
+                        item_kind = "acquisition"
                     elif cls_title == "TRADING_UPDATE":
                         memo = deep_trading_update_memo(ticker, title, text, counters, pdf_path=current_pdf)
                         heading = "Trading Update / Guidance"
+                        item_type = "trading_update"
+                        item_kind = "trading_update"
                     else:
                         memo = deep_capital_memo(ticker, title, text, counters, pdf_path=current_pdf)
                         heading = "Capital/Debt Raise"
+                        item_type = "capital"
+                        item_kind = "capital"
                     block = build_high_impact_block(
                         ticker=ticker,
                         heading=heading,
@@ -1039,6 +1218,7 @@ def main():
                         url=url,
                         analysed_via_pdf=got_pdf,
                         drive_links=drive_links_item,
+                        kind=item_kind,
                     )
                     if pdf_path.exists():
                         try:
@@ -1046,6 +1226,10 @@ def main():
                         except Exception:
                             pass
                     high_impact_blocks.append(block)
+                    high_impact_items.append({
+                        "ticker": ticker, "title": title[:200], "url": url,
+                        "type": item_type, "analysis": memo, "drive_links": drive_links_item,
+                    })
                     if ticker == "AR9":
                         brother_blocks.append(block)
                     continue
@@ -1061,6 +1245,7 @@ def main():
                     if looks_like_asx_access_gate(text):
                         block = f"{ticker}: {title[:160]}\nSo what: could not fetch PDF automatically. Open: {url}\n"
                         material_blocks.append(block)
+                        material_items.append({"ticker": ticker, "title": title[:200], "url": url})
                         if ticker == "AR9":
                             brother_blocks.append(block)
                         if pdf_path.exists():
@@ -1088,6 +1273,7 @@ def main():
                         url=url,
                         analysed_via_pdf=got_pdf,
                         drive_links=drive_links_item,
+                        kind="price_sensitive",
                     )
                     if pdf_path.exists():
                         try:
@@ -1095,6 +1281,10 @@ def main():
                         except Exception:
                             pass
                     high_impact_blocks.append(block)
+                    high_impact_items.append({
+                        "ticker": ticker, "title": title[:200], "url": url,
+                        "type": "price_sensitive", "analysis": memo, "drive_links": drive_links_item,
+                    })
                     if ticker == "AR9":
                         brother_blocks.append(block)
                     continue
@@ -1111,13 +1301,22 @@ def main():
                         except Exception:
                             pass
 
-                summary = None
+                analysis_2l: Optional[dict] = None
                 if text and is_meaningful_text(text, min_chars=600):
-                    summary = summarise_two_lines_llm(ticker, title, text, counters)
-                if not summary:
-                    summary = f"{ticker}: {title[:160]}\nSo what: price-sensitive headline — open link for details."
-                block = f"{summary}\nOpen: {url}\n"
+                    analysis_2l = summarise_two_lines_llm(ticker, title, text, counters)
+                if analysis_2l:
+                    summary_text = _analysis_to_email_text(analysis_2l, "default")
+                else:
+                    summary_text = f"{ticker}: {title[:160]}\nSo what: price-sensitive headline — open link for details."
+                    analysis_2l = {
+                        "what_happened": f"{ticker}: {title[:160]}",
+                        "so_what": "Price-sensitive headline — open link for details.",
+                    }
+                block = f"{summary_text}\nOpen: {url}\n"
                 material_blocks.append(block)
+                material_items.append({
+                    "ticker": ticker, "title": title[:200], "url": url, "analysis": analysis_2l,
+                })
                 if ticker == "AR9":
                     brother_blocks.append(block)
 
@@ -1152,6 +1351,13 @@ def main():
         bro_html += _html_section("AR9 ONLY", COLOR_MATERIAL, brother_blocks)
         bro_html += "</div>"
         send_email(bro_subject, bro_text, bro_html, to_addr=brother_email)
+
+    _emit_bob_dashboard_json(
+        high_impact=high_impact_items,
+        material=material_items,
+        fyi=fyi_items,
+        silence=not (high_impact_blocks or material_blocks or fyi_blocks),
+    )
 
     save_seen_state(SEEN_STATE_PATH, prune_seen_state(seen_state_updated, SEEN_STATE_RETENTION_HOURS))
     log(f"Seen-state updated with {run_seen_count} new announcement(s).")

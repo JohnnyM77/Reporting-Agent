@@ -1,38 +1,7 @@
 {
-  "last_run": "2026-05-23",
-  "silence": false,
+  "last_run": "2026-05-24",
+  "silence": true,
   "high_impact": [],
-  "material": [
-    {
-      "ticker": "CAT",
-      "title": "FY26 Results CEO & MD, CFO Addresses 10\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 154.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03096691",
-      "analysis": {
-        "what_happened": "CAT: FY26 Results CEO & MD, CFO Addresses 10\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 154.3KB",
-        "so_what": "Price-sensitive headline — open link for details."
-      }
-    }
-  ],
-  "fyi": [
-    {
-      "ticker": "BXB",
-      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03096655"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03096654"
-    },
-    {
-      "ticker": "CAT",
-      "title": "FY26 Results CEO & MD, CFO Addresses 10\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 154.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03096691"
-    },
-    {
-      "ticker": "PWH",
-      "title": "Ceasing to be a substantial holder 13\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.1MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03096872"
-    }
-  ]
+  "material": [],
+  "fyi": []
 }

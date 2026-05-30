@@ -1,52 +1,33 @@
 {
-  "last_run": "2026-05-29",
+  "last_run": "2026-05-30",
   "silence": false,
   "high_impact": [],
   "material": [
     {
       "ticker": "DRO",
-      "title": "CEO 2026 AGM Presentation 20\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.2MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03098961",
+      "title": "Results of Meeting 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 194.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099205",
       "analysis": {
-        "what_happened": "DRO: CEO 2026 AGM Presentation 20\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.2MB",
-        "so_what": "Price-sensitive headline — open link for details."
-      }
-    },
-    {
-      "ticker": "IAG",
-      "title": "Greensill Litigation Update 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 765.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03098844",
-      "analysis": {
-        "what_happened": "IAG: Greensill Litigation Update 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                             ",
+        "what_happened": "DRO: Results of Meeting 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 194.5KB",
         "so_what": "Price-sensitive headline — open link for details."
       }
     }
   ],
   "fyi": [
     {
-      "ticker": "CSL",
-      "title": "Amended Appendix 3Y - Gordon Naylor 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 317.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03098565"
+      "ticker": "DRO",
+      "title": "Final Director's Interest Notice - P James 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 211.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099257"
     },
     {
       "ticker": "DRO",
-      "title": "CEO 2026 AGM Presentation 20\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.2MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03098961"
+      "title": "Results of Meeting 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 194.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099205"
     },
     {
-      "ticker": "DRO",
-      "title": "Chairman's Address to Shareholders 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 267.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03098954"
-    },
-    {
-      "ticker": "DRO",
-      "title": "Ceasing to be a substantial holder 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 229.1KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03098639"
-    },
-    {
-      "ticker": "IAG",
-      "title": "Greensill Litigation Update 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 765.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03098844"
+      "ticker": "NHC",
+      "title": "Change in Economic Interest 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 241.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099227"
     }
   ]
 }

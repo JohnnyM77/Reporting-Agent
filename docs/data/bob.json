@@ -1,7 +1,48 @@
 {
-  "last_run": "2026-05-31",
-  "silence": true,
-  "high_impact": [],
+  "last_run": "2026-06-01",
+  "silence": false,
+  "high_impact": [
+    {
+      "ticker": "AHC",
+      "title": "FY26 Trading Update 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 142.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099546",
+      "type": "trading_update",
+      "analysis": {
+        "what_they_said": "FY26 (year ending 30 June 2026) trading update: Revenue $90-95m (up 11-17% on FY25 $81.4m); Gross profit $47.5-50.1m at ~52.8% margin (FY25: 52.0%); EBITDA $14.0-14.6m (up 7-12%, margin ~15.5% vs 16.0% prior year); NPBT $11.0-11.6m (up 37-44%); NPAT $9.0-9.4m (up 52-58% on FY25 $5.9m). NPAT uplift partially supported by a one-off ~$1.0m benefit from reduction of G&S contingent consideration. Major US Pulse Mobile rollout across 180 hospitals contracted. New contract wins in NZ (~NZ$1.1m), Australia (~A$1.1m), Canada (~A$0.9m). Figures are unaudited management forecasts.",
+        "vs_prior_guidance": "No prior formal quantitative guidance was publicly available in this document to compare against directly. This appears to be the first formal FY26 guidance/trading update. Framing is modestly optimistic — management explicitly flags 'tougher trading conditions in H2' and deferred revenue/pipeline conversion, which suggests the result could be at or toward the lower end of the range. The EBITDA margin compression (16.0% to ~15.5%) is being spun positively as 'investment in people and performance' rather than flagged as a concern.",
+        "the_numbers": "Revenue: $90-95m; Gross profit: $47.5-50.1m; Gross margin: ~52.8%; EBITDA: $14.0-14.6m; EBITDA margin: ~15.5%; NPBT: $11.0-11.6m; NPAT: $9.0-9.4m. One-off benefit: ~$1.0m. Underlying NPAT (ex one-off) therefore ~$8.0-8.4m, implying underlying NPAT growth of only ~36-42% rather than the headline 52-58% — management buries this. Forecast ranges are wide ($5m on revenue, $0.6m on EBITDA) with 4 weeks of the year still to run. Vague language used: 'broadly in line', 'healthy sales pipeline', 'continued momentum', 'tougher trading conditions in H2' — no quantification of H2 vs H1 split or pipeline size.",
+        "why_happening": "Revenue growth driven by ANZ services business contribution and multi-region contract wins. Gross margin improvement reflects favorable software/recurring revenue mix via Tacera platform rollout. EBITDA margin compression due to headcount/capability investment. H2 headwinds include: (1) geopolitical disruption to Middle East shipping routes causing freight cost inflation and longer transit times; (2) component lead time extensions due to AI-sector semiconductor demand; (3) slower construction programs in unspecified regions deferring installation, revenue recognition and pipeline conversion. Management characterises deferrals as timing not losses — unverifiable at this stage.",
+        "balance_sheet": "No balance sheet data provided. No mention of debt, cash position, capex, or working capital. The one-off $1.0m contingent consideration reduction is a non-cash P&L benefit. No indication of changed funding needs, though deferred project revenues may have working capital implications not disclosed.",
+        "red_flags": [
+          "EBITDA margin contracting 50bps (16.0% to ~15.5%) despite strong revenue growth — operating leverage is not materialising, framed as 'investment' with no detail on headcount additions or expected payback",
+          "Headline NPAT growth of 52-58% is materially flattered by a one-off ~$1.0m contingent consideration benefit; underlying NPAT growth is ~36-42% — this is buried in a footnote",
+          "H2 trading explicitly described as 'tougher' with deferred installations and pipeline conversion — raises risk the final result prints at the bottom of or below the guided range",
+          "Pulse Mobile 180-hospital US rollout carries no revenue figures, no timeline specificity beyond '2026 calendar year', and no disclosure of contract value — material omission for what is flagged as the most significant development",
+          "Wide forecast range ($5m on revenue, $0.6m on EBITDA) with 4 weeks remaining suggests management itself has low visibility into close-of-year timing",
+          "Component lead time and logistics cost pressures not quantified — impossible to assess margin impact",
+          "No FY27 guidance or quantitative pipeline size provided despite multiple qualitative references to 'healthy pipeline'"
+        ],
+        "bottom_line": "This is a solid but not exceptional update — underlying earnings growth (ex the one-off) is respectable but EBITDA margin is quietly declining and the headline NPAT number is being inflated by an accounting adjustment management chose to lead with. The H2 softness, deferred revenues, and wide guidance range suggest some execution risk in the final weeks; investors should anchor to the lower end of the range until audited numbers confirm.",
+        "key_questions": [
+          "What is the contracted revenue value of the 180-hospital Pulse Mobile rollout, and how much of it is expected to be recognised in FY26 vs FY27 — why was this omitted?",
+          "What is the H1/H2 revenue and EBITDA split, and what is the quantified impact of freight cost inflation and component delays on FY26 EBITDA margin?",
+          "Stripping out the G&S contingent consideration one-off and any ANZ acquisition contribution, what is organic constant-currency revenue and EBITDA growth — and what does the headcount investment imply for FY27 cost base and margin trajectory?"
+        ]
+      },
+      "drive_links": []
+    }
+  ],
   "material": [],
-  "fyi": []
+  "fyi": [
+    {
+      "ticker": "AHC",
+      "title": "FY26 Trading Update 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 142.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099546"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification regarding unquoted securities - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099647"
+    }
+  ]
 }

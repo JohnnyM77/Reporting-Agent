@@ -1,53 +1,33 @@
 {
-  "last_run": "2026-06-02",
+  "last_run": "2026-06-03",
   "silence": false,
   "high_impact": [],
-  "material": [
-    {
-      "ticker": "DRO",
-      "title": "US Joint Interagency Task Force 401 Contract 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 344.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100083",
-      "analysis": {
-        "what_happened": "DroneShield secured a $24.9M contract (A$19.3M initial value + A$5.6M options) with the US Department of War's Joint Interagency Task Force 401 to supply mobile and fixed-site counter-drone hardware, subscriptions, and services.",
-        "so_what": "At least A$10M is expected as committed FY2026 revenue with the balance in FY2027, providing near-term revenue visibility; the contract also requires DroneShield to procure third-party components, which will compress margins on this deal."
-      }
-    }
-  ],
+  "material": [],
   "fyi": [
     {
-      "ticker": "BHP",
-      "title": "Initial Director's Interest Notice 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 203.8KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099693"
+      "ticker": "AR9",
+      "title": "Response to ASX Price Query 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 505.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100579"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100534"
     },
     {
       "ticker": "BXB",
       "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099931"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 417.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099669"
-    },
-    {
-      "ticker": "CAT",
-      "title": "Release of Shares from Voluntary Escrow 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 32.7",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100111"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100404"
     },
     {
       "ticker": "DRO",
-      "title": "US Joint Interagency Task Force 401 Contract 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 344.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100083"
+      "title": "Becoming a substantial holder 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 273.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100260"
     },
     {
-      "ticker": "LAU",
-      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 732.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099659"
-    },
-    {
-      "ticker": "PWH",
-      "title": "Change of Directors Interest Notice 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 158.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100074"
+      "ticker": "MVP",
+      "title": "Change in substantial holding 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 389.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100167"
     }
   ]
 }

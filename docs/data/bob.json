@@ -1,33 +1,38 @@
 {
-  "last_run": "2026-06-03",
+  "last_run": "2026-06-04",
   "silence": false,
   "high_impact": [],
   "material": [],
   "fyi": [
     {
-      "ticker": "AR9",
-      "title": "Response to ASX Price Query 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 505.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100579"
-    },
-    {
       "ticker": "BXB",
       "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100534"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100973"
     },
     {
       "ticker": "BXB",
       "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100404"
-    },
-    {
-      "ticker": "DRO",
-      "title": "Becoming a substantial holder 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 273.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100260"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100909"
     },
     {
       "ticker": "MVP",
-      "title": "Change in substantial holding 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 389.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100167"
+      "title": "Becoming a substantial holder 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 221.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100714"
+    },
+    {
+      "ticker": "RMD",
+      "title": "Statement of CDIs on issue - RMD 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 12.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100886"
+    },
+    {
+      "ticker": "RMD",
+      "title": "Statement of changes in beneficial ownership 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 12.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100883"
+    },
+    {
+      "ticker": "TWE",
+      "title": "TWE 2026 Investor Day 111\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 12.7MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100900"
     }
   ]
 }

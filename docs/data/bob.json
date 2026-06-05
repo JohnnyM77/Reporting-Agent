@@ -1,38 +1,53 @@
 {
-  "last_run": "2026-06-04",
+  "last_run": "2026-06-05",
   "silence": false,
   "high_impact": [],
   "material": [],
   "fyi": [
     {
+      "ticker": "ABB",
+      "title": "Change of Director's Interest Notice - Michael Omeros 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 328.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101219"
+    },
+    {
+      "ticker": "ATP",
+      "title": "Update - Kobe Auction June 2026 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 185.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101462"
+    },
+    {
       "ticker": "BXB",
       "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100973"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101490"
     },
     {
       "ticker": "BXB",
       "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100909"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101390"
     },
     {
-      "ticker": "MVP",
-      "title": "Becoming a substantial holder 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 221.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100714"
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101139"
     },
     {
-      "ticker": "RMD",
-      "title": "Statement of CDIs on issue - RMD 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 12.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100886"
+      "ticker": "CAT",
+      "title": "Application for quotation of securities - CAT 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 17.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101203"
     },
     {
-      "ticker": "RMD",
-      "title": "Statement of changes in beneficial ownership 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 12.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100883"
+      "ticker": "CSL",
+      "title": "Appendix 3Y - Carolyn Hewson AO 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 232.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101382"
     },
     {
-      "ticker": "TWE",
-      "title": "TWE 2026 Investor Day 111\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 12.7MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100900"
+      "ticker": "DRO",
+      "title": "Ceasing to be a substantial holder 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 219.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101210"
+    },
+    {
+      "ticker": "VEU",
+      "title": "Outstanding ETF Securities and Fund Flows Announcement 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 145.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101523"
     }
   ]
 }

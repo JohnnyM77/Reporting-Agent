@@ -1,53 +1,43 @@
 {
-  "last_run": "2026-06-05",
+  "last_run": "2026-06-06",
   "silence": false,
   "high_impact": [],
   "material": [],
   "fyi": [
     {
-      "ticker": "ABB",
-      "title": "Change of Director's Interest Notice - Michael Omeros 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 328.9KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101219"
-    },
-    {
-      "ticker": "ATP",
-      "title": "Update - Kobe Auction June 2026 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 185.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101462"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101490"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101390"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101139"
+      "ticker": "AR9",
+      "title": "Notification of cessation of securities - AR9 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101629"
     },
     {
       "ticker": "CAT",
-      "title": "Application for quotation of securities - CAT 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 17.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101203"
+      "title": "Notification of cessation of securities - CAT 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 17.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101839"
     },
     {
-      "ticker": "CSL",
-      "title": "Appendix 3Y - Carolyn Hewson AO 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 232.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101382"
+      "ticker": "CAT",
+      "title": "Notification regarding unquoted securities - CAT 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 21.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101838"
     },
     {
-      "ticker": "DRO",
-      "title": "Ceasing to be a substantial holder 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 219.1KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101210"
+      "ticker": "CAT",
+      "title": "Notification regarding unquoted securities - CAT 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 22.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101837"
     },
     {
-      "ticker": "VEU",
-      "title": "Outstanding ETF Securities and Fund Flows Announcement 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 145.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101523"
+      "ticker": "IAG",
+      "title": "Notification regarding unquoted securities - IAG 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101784"
+    },
+    {
+      "ticker": "VAS",
+      "title": "Outstanding ETF Securities and Fund Flows Announcement 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 267.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101587"
+    },
+    {
+      "ticker": "VHY",
+      "title": "Outstanding ETF Securities and Fund Flows Announcement 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 267.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101587"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-06-11",
+  "last_run": "2026-06-12",
   "silence": false,
   "high_impact": [],
   "material": [],
@@ -7,17 +7,17 @@
     {
       "ticker": "BXB",
       "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03103002"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03103412"
     },
     {
       "ticker": "BXB",
       "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03102935"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03103383"
     },
     {
-      "ticker": "LAU",
-      "title": "Becoming a substantial holder 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 439.1KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03102769"
+      "ticker": "WDS",
+      "title": "Woodside exercises Browse pre-emption right 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page ",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03103492"
     }
   ]
 }

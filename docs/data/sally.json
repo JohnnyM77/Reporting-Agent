@@ -1,17 +1,30 @@
 {
-  "last_run": "2026-06-07",
+  "last_run": "2026-06-14",
   "portfolio_size": 20,
-  "flagged_count": 1,
+  "flagged_count": 2,
   "flagged": [
+    {
+      "ticker": "BHP",
+      "company_name": "BHP Group Limited",
+      "current_price": 62.93000030517578,
+      "high_52w": 64.91000366210938,
+      "distance_to_high_pct": 3.05,
+      "trailing_pe": 21.850693,
+      "forward_pe": 16.741835,
+      "dividend_yield": 3.11,
+      "valuation_percentile": 0.9916666666666667,
+      "alert_tier": "Tier 3: Deep Review",
+      "sally_verdict": "Trim candidate"
+    },
     {
       "ticker": "NHC",
       "company_name": "New Hope Corporation Limited",
-      "current_price": 6.079999923706055,
+      "current_price": 6.039999961853027,
       "high_52w": 6.170000076293945,
-      "distance_to_high_pct": 1.46,
-      "trailing_pe": 33.777775,
-      "forward_pe": 13.285552,
-      "dividend_yield": 3.29,
+      "distance_to_high_pct": 2.11,
+      "trailing_pe": 33.555553,
+      "forward_pe": 13.198147,
+      "dividend_yield": 3.31,
       "valuation_percentile": 0.9666666666666667,
       "alert_tier": "Tier 3: Deep Review",
       "sally_verdict": "Trim candidate"

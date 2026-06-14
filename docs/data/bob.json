@@ -1,13 +1,7 @@
 {
-  "last_run": "2026-06-13",
-  "silence": false,
+  "last_run": "2026-06-14",
+  "silence": true,
   "high_impact": [],
   "material": [],
-  "fyi": [
-    {
-      "ticker": "PWH",
-      "title": "Change in substantial holding 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 766.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03103631"
-    }
-  ]
+  "fyi": []
 }

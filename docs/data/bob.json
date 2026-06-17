@@ -1,43 +1,28 @@
 {
-  "last_run": "2026-06-16",
+  "last_run": "2026-06-17",
   "silence": false,
   "high_impact": [],
   "material": [],
   "fyi": [
     {
-      "ticker": "ABB",
-      "title": "Notice of Initial Substantial Holder from AGL 29\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 983.8KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104229"
-    },
-    {
-      "ticker": "ABB",
-      "title": "Becoming a substantial holder 45\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.1MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104143"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104549"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104547"
-    },
-    {
       "ticker": "BXB",
       "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104407"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104918"
     },
     {
       "ticker": "BXB",
       "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104364"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104820"
+    },
+    {
+      "ticker": "DRO",
+      "title": "Application for quotation of securities - DRO 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104706"
     },
     {
       "ticker": "LAU",
-      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 294.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104132"
+      "title": "Change of Director's Interest Notice 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 308.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104633"
     }
   ]
 }

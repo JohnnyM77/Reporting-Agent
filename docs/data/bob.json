@@ -1,68 +1,28 @@
 {
-  "last_run": "2026-06-18",
+  "last_run": "2026-06-19",
   "silence": false,
   "high_impact": [],
-  "material": [
-    {
-      "ticker": "MSV",
-      "title": "Director Resignations 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 300.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105251",
-      "analysis": {
-        "what_happened": "MSV: Director Resignations 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                   ",
-        "so_what": "Price-sensitive headline — open link for details."
-      }
-    }
-  ],
+  "material": [],
   "fyi": [
     {
-      "ticker": "ABB",
-      "title": "Ceasing to be a substantial holder 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 482.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105232"
-    },
-    {
-      "ticker": "ABB",
-      "title": "Change in substantial holding 49\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.1MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105151"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105427"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105426"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105425"
+      "ticker": "BHP",
+      "title": "Jansen Project Update 31\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.0MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105549"
     },
     {
       "ticker": "BXB",
       "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105295"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105715"
     },
     {
       "ticker": "BXB",
       "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105247"
-    },
-    {
-      "ticker": "MSV",
-      "title": "Director Resignations 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 300.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105251"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105656"
     },
     {
       "ticker": "NHC",
-      "title": "Becoming a substantial holder 39\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.4MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105231"
-    },
-    {
-      "ticker": "VEU",
-      "title": "Final Distribution Announcement 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 156.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105037"
+      "title": "Ceasing to be a substantial holder 26\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.3MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105629"
     }
   ]
 }

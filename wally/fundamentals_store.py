@@ -18,6 +18,8 @@ from typing import Optional
 import requests
 import yaml
 
+_fmp_verified = False  # module-level flag for one-time connectivity check
+
 
 def _slug(ticker: str) -> str:
     return ticker.lower().replace(".", "_")
@@ -79,7 +81,13 @@ def _fetch_alphavantage(ticker: str) -> tuple[dict, dict]:
     AV free tier doesn't include dividends in EARNINGS endpoint so div={}.
     Sleeps 12s after call to respect 5 req/min free tier limit.
     Returns ({}, {}) on any failure.
+
+    NOTE: AV EARNINGS endpoint does not support ASX tickers (.AX suffix)
+    on the free tier — skip them entirely and rely on FMP instead.
     """
+    if ".AX" in ticker.upper():
+        print(f"[fundamentals] Skipping AV for ASX ticker {ticker} — using FMP instead")
+        return {}, {}
     api_key = os.environ.get("ALPHAVANTAGE_API_KEY", "").strip()
     if not api_key:
         print(f"[fundamentals] ALPHAVANTAGE_API_KEY not set, skipping AV for {ticker}")
@@ -207,7 +215,7 @@ def _apply_yaml_overrides(ticker: str, eps: dict, div: dict) -> tuple[dict, dict
 
 def get_fundamentals(ticker: str) -> dict:
     """
-    Main entry point called by spreadsheet.py.
+    Main entry point called by value_chart_builder.py and spreadsheet.py.
 
     Returns dict:
       {
@@ -216,14 +224,24 @@ def get_fundamentals(ticker: str) -> dict:
       }
 
     Logic:
-      1. Load local JSON cache
-      2. If not stale → apply YAML overrides → return
-      3. If stale → try Alpha Vantage → try FMP for gaps/divs
-      4. Merge with existing cached data (preserve old years)
-      5. Apply YAML overrides (always win)
-      6. Save updated cache
-      7. Return
+      1. One-time FMP connectivity check (first call only)
+      2. Load local JSON cache
+      3. If not stale -> apply YAML overrides -> return
+      4. If stale -> try Alpha Vantage (US only) -> try FMP (always for .AX)
+      5. Merge with existing cached data (preserve old years)
+      6. Apply YAML overrides (always win)
+      7. Save updated cache
+      8. Return
     """
+    global _fmp_verified
+    if not _fmp_verified:
+        _fmp_verified = True
+        test_eps, _ = _fetch_fmp("RMD.AX")
+        if test_eps:
+            print(f"[fundamentals] FMP connectivity OK — RMD.AX returned {len(test_eps)} EPS years")
+        else:
+            print(f"[fundamentals] WARNING: FMP returned nothing for RMD.AX — check FMP_API_KEY secret")
+
     stored = load(ticker)
 
     if not is_stale(stored):
@@ -247,8 +265,9 @@ def get_fundamentals(ticker: str) -> dict:
                 eps[yr] = val
                 sources[yr] = "alphavantage"
 
-    # Try FMP — fills dividend gaps AND any EPS gaps AV missed
-    needs_fmp = (not av_eps) or (not div)
+    # Try FMP — always for ASX tickers (.AX), otherwise only to fill gaps
+    is_asx = ".AX" in ticker.upper()
+    needs_fmp = is_asx or (not av_eps) or (not div)
     if needs_fmp:
         fmp_eps, fmp_div = _fetch_fmp(ticker)
         if fmp_eps:

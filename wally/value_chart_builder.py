@@ -1499,16 +1499,58 @@ def build_value_chart(
     cfg = load_config(ticker_or_config_path)
 
     # Auto-fetch live fundamentals when earnings history is absent from config.
-    # This populates cfg["earnings"] from Alpha Vantage (EPS) + yfinance (dividends)
-    # so that TII75 US stocks build with real value lines instead of blank DATA REQUIRED.
+    # Uses fundamentals_store waterfall: local JSON cache → AV (US only) → FMP (all markets).
+    # Falls back to PRICE_ONLY build if all sources return empty.
     if not cfg.get("earnings"):
-        live_earnings, _, _, price_only_warning = _fetch_live_fundamentals(
-            cfg["ticker"], cfg
-        )
-        if live_earnings:
-            cfg["earnings"] = live_earnings
-        elif price_only_warning:
-            cfg["_price_only_warning"] = price_only_warning
+        _ticker = cfg["ticker"]
+        _eps_by_year: dict = {}
+        _div_by_year: dict = {}
+        try:
+            from wally.fundamentals_store import get_fundamentals as _get_fundamentals
+            _fundamentals = _get_fundamentals(_ticker)
+            _eps_by_year = _fundamentals.get("annual_eps_cents", {})
+            _div_by_year = _fundamentals.get("annual_div_cents", {})
+        except Exception as _fs_err:
+            print(f"[wally] {_ticker} fundamentals_store error: {_fs_err}", flush=True)
+
+        if _eps_by_year:
+            _sorted_years = sorted(_eps_by_year.keys())
+            cfg["earnings"] = [
+                {
+                    "date": f"{yr}-12-31",
+                    "period": f"FY{yr}",
+                    "ttm_eps": _eps_by_year[yr],
+                    "ttm_div": _div_by_year.get(yr, 0.0) or 0.0,
+                    "notes": "auto: fundamentals_store",
+                }
+                for yr in _sorted_years
+            ]
+            _div_records = sum(1 for yr in _sorted_years if _div_by_year.get(yr))
+            print(
+                f"[wally] {_ticker} price_source=yfinance"
+                f" earnings_source=fundamentals_store"
+                f" dividends_source=fundamentals_store",
+                flush=True,
+            )
+            print(
+                f"[wally] {_ticker} earnings_records={len(cfg['earnings'])}"
+                f" dividend_records={_div_records}",
+                flush=True,
+            )
+            print(f"[wally] {_ticker} build_status=FULL_BUILD", flush=True)
+        else:
+            _reason = "fundamentals_store returned no EPS (AV/FMP unavailable or ticker not covered)"
+            cfg["_price_only_warning"] = (
+                "WARNING: Price data loaded, but live earnings/dividend data could not "
+                f"be fetched. Reason: {_reason}"
+            )
+            print(
+                f"[wally] {_ticker} price_source=yfinance"
+                f" earnings_source=none dividends_source=none",
+                flush=True,
+            )
+            print(f"[wally] {_ticker} earnings_records=0 dividend_records=0", flush=True)
+            print(f"[wally] {_ticker} build_status=PRICE_ONLY_BUILD", flush=True)
 
     if output_path is None:
         out_dir = Path("outputs")
@@ -1544,11 +1586,14 @@ def build_value_chart(
         build_chart_png(cfg, price_df, png_path)
 
     if drive_folder_id:
-        from wally.drive_upload import upload_to_drive
-        result = upload_to_drive(out, cfg["ticker"], drive_folder_id)
-        if result["ok"]:
-            print(f"[vcb] Drive upload complete: {result['url']}")
-        else:
-            print(f"[vcb] Drive upload failed: {result['error']}")
+        try:
+            from wally.drive_upload import upload_to_drive
+            result = upload_to_drive(out, cfg["ticker"], drive_folder_id)
+            if result["ok"]:
+                print(f"[vcb] Drive upload complete: {result['url']}")
+            else:
+                print(f"[vcb] Drive upload failed (non-fatal): {result['error']}")
+        except Exception as _drive_err:
+            print(f"[vcb] Drive upload failed (non-fatal): {_drive_err}")
 
     return str(out)

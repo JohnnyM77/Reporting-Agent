@@ -43,20 +43,16 @@ def _drive_service():
             creds.refresh(Request())
             return build("drive", "v3", credentials=creds)
         except Exception as e:
-            print(f"[drive] OAuth refresh token failed ({e}), falling back to service account", flush=True)
+            raise RuntimeError(
+                f"OAuth refresh token failed: {e}. "
+                "The GDRIVE_REFRESH_TOKEN has likely expired. "
+                "Regenerate it via Google OAuth consent screen and update the GitHub secret."
+            ) from e
 
-    sa_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
-    if not sa_json:
-        raise RuntimeError(
-            "No Drive credentials found. Set GDRIVE_CLIENT_ID + GDRIVE_CLIENT_SECRET + "
-            "GDRIVE_REFRESH_TOKEN (recommended) or GDRIVE_SERVICE_ACCOUNT_JSON."
-        )
-    from google.oauth2.service_account import Credentials as SACredentials
-    info = json.loads(sa_json)
-    creds = SACredentials.from_service_account_info(
-        info, scopes=["https://www.googleapis.com/auth/drive"]
+    raise RuntimeError(
+        "No Drive credentials found. Set GDRIVE_CLIENT_ID + GDRIVE_CLIENT_SECRET + "
+        "GDRIVE_REFRESH_TOKEN. (Service account cannot upload to personal Gmail Drive.)"
     )
-    return build("drive", "v3", credentials=creds)
 
 
 def upload_to_drive(local_path: Path, ticker: str, folder_id: str) -> dict:

@@ -314,6 +314,7 @@ def fetch_asx_announcements_html(
         if items:
             print(f"[asx_fetch] direct HTTP returned {len(items)} items for {ticker}")
             return items
+        print(f"[asx_fetch] Unexpected response for {ticker} — first 200 chars: {r.text[:200]!r}")
         print(f"[asx_fetch] direct HTTP returned zero for {ticker} — trying Playwright")
     except Exception as exc:
         print(f"[asx_fetch] direct HTTP failed for {ticker}: {exc} — trying Playwright")

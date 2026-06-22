@@ -36,6 +36,7 @@ jobs:
           GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
           ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -45,6 +46,17 @@ jobs:
             # Scheduled run (Tue or Fri): run all watchlists including TII75
             python -m wally.main --all-combined
           fi
+
+      - name: Commit fundamentals cache
+        if: always()
+        run: |
+          git config user.name "Wally Bot"
+          git config user.email "wally-bot@reporting-agent.local"
+          git add fundamentals/ || true
+          git diff --staged --quiet || git commit -m "chore(fundamentals): update cache [$(date -u +%Y-%m-%d)]"
+          git push || echo "Nothing to push"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit dashboard update
         run: |

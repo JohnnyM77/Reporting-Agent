@@ -217,9 +217,30 @@ def generate_asx_value_spreadsheet(config: dict, price_data_path: str, output_pa
     if df.empty:
         raise RuntimeError("No usable share price data available for spreadsheet generation")
 
-    earn_dates = [pd.Timestamp(e[0]) for e in earnings]
-    earn_eps = [float(e[1]) for e in earnings]
-    earn_div = [float(e[2]) for e in earnings]
+    # Try fundamentals store first (auto-populated from AV/FMP)
+    try:
+        from wally.fundamentals_store import get_fundamentals
+        fundamentals = get_fundamentals(ticker)
+        eps_by_year = fundamentals.get("annual_eps_cents", {})
+        div_by_year = fundamentals.get("annual_div_cents", {})
+    except Exception as _fs_err:
+        print(f"[wally/spreadsheet] fundamentals_store error for {ticker}: {_fs_err}", flush=True)
+        eps_by_year = {}
+        div_by_year = {}
+
+    if eps_by_year:
+        # Build earn_dates/earn_eps from fundamentals store
+        sorted_years = sorted(eps_by_year.keys())
+        earn_dates = [pd.Timestamp(dt.date(int(y), 12, 31)) for y in sorted_years]
+        earn_eps   = [eps_by_year[y] for y in sorted_years]
+        earn_div   = [div_by_year.get(y) for y in sorted_years]
+        # Replace None div values with 0.0 for downstream arithmetic
+        earn_div = [v if v is not None else 0.0 for v in earn_div]
+    else:
+        # Fall back to YAML-derived earnings list passed in via config
+        earn_dates = [pd.Timestamp(e[0]) for e in earnings]
+        earn_eps = [float(e[1]) for e in earnings]
+        earn_div = [float(e[2]) for e in earnings]
 
     rows = []
     for _, row in df.iterrows():

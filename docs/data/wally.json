@@ -1,213 +1,222 @@
 {
-  "last_run": "2026-06-19T23:40:23.402651+00:00",
+  "last_run": "2026-06-22T14:05:48.221077+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-06-19T23:35:34.647082+00:00",
+      "run_timestamp": "2026-06-22T14:00:45.493416+00:00",
       "total": 74,
       "flagged_count": 10,
       "flagged": [
         {
           "ticker": "HSN.AX",
           "company_name": "Hansen Technologies Limited",
-          "current_price": 4.400000095367432,
-          "low_52w": 4.400000095367432,
+          "current_price": 4.230000019073486,
+          "low_52w": 4.230000019073486,
           "high_52w": 6.489999771118164,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 32.20338597008372
+          "below_high_pct": 34.82280172184508
         },
         {
           "ticker": "REA.AX",
           "company_name": "REA Group Limited",
-          "current_price": 140.0800018310547,
-          "low_52w": 140.0800018310547,
+          "current_price": 135.77000427246094,
+          "low_52w": 135.77000427246094,
           "high_52w": 263.1600036621094,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 46.77002588474129
+          "below_high_pct": 48.40781183192788
         },
         {
           "ticker": "MA",
           "company_name": "Mastercard Incorporated",
-          "current_price": 492.989990234375,
+          "current_price": 493.1199951171875,
           "low_52w": 471.54998779296875,
           "high_52w": 598.9600219726562,
-          "distance_to_low_pct": 4.54670830164868,
-          "below_high_pct": 17.69233802771548
+          "distance_to_low_pct": 4.574277994401928,
+          "below_high_pct": 17.670632925865053
         },
         {
           "ticker": "RMD.AX",
           "company_name": "ResMed Inc.",
-          "current_price": 26.68000030517578,
+          "current_price": 26.950000762939453,
           "low_52w": 25.84000015258789,
           "high_52w": 45.13999938964844,
-          "distance_to_low_pct": 3.2507745651223,
-          "below_high_pct": 40.894991878768
+          "distance_to_low_pct": 4.295667971350206,
+          "below_high_pct": 40.29685173385345
         },
         {
           "ticker": "KAR.AX",
           "company_name": "Karoon Energy Ltd",
-          "current_price": 1.440000057220459,
-          "low_52w": 1.4149999618530273,
+          "current_price": 1.3949999809265137,
+          "low_52w": 1.3949999809265137,
           "high_52w": 2.240000009536743,
-          "distance_to_low_pct": 1.7667912396755487,
-          "below_high_pct": 35.714283433495744
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 37.72321540235104
         },
         {
-          "ticker": "RMV.L",
-          "company_name": "Rightmove plc",
-          "current_price": 423.6000061035156,
-          "low_52w": 404.0,
-          "high_52w": 823.7999877929688,
-          "distance_to_low_pct": 4.851486659286046,
-          "below_high_pct": 48.579750864238704
+          "ticker": "GTK.AX",
+          "company_name": "Gentrack Group Limited",
+          "current_price": 3.0299999713897705,
+          "low_52w": 2.990000009536743,
+          "high_52w": 11.970000267028809,
+          "distance_to_low_pct": 1.3377913620550372,
+          "below_high_pct": 74.6867175956891
         },
         {
           "ticker": "CME",
           "company_name": "CME Group Inc.",
-          "current_price": 252.5399932861328,
-          "low_52w": 250.52999877929688,
+          "current_price": 246.9409942626953,
+          "low_52w": 246.3800048828125,
           "high_52w": 326.4599914550781,
-          "distance_to_low_pct": 0.8022969371450929,
-          "below_high_pct": 22.642896558158164
+          "distance_to_low_pct": 0.2276927383574166,
+          "below_high_pct": 24.35796093663896
         },
         {
           "ticker": "HUB.AX",
           "company_name": "HUB24 Limited",
-          "current_price": 73.55000305175781,
-          "low_52w": 73.55000305175781,
+          "current_price": 73.43000030517578,
+          "low_52w": 73.43000030517578,
           "high_52w": 118.58999633789062,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 37.97958906905043
+          "below_high_pct": 38.08078035860922
         },
         {
           "ticker": "NWL.AX",
           "company_name": "Netwealth Group Limited",
-          "current_price": 21.25,
+          "current_price": 21.299999237060547,
           "low_52w": 20.59000015258789,
           "high_52w": 37.72999954223633,
-          "distance_to_low_pct": 3.205438768921797,
-          "below_high_pct": 43.67876952605849
+          "distance_to_low_pct": 3.4482713900486237,
+          "below_high_pct": 43.54625100586986
         },
         {
           "ticker": "ORG.AX",
           "company_name": "Origin Energy Limited",
-          "current_price": 10.75,
+          "current_price": 10.789999961853027,
           "low_52w": 10.640000343322754,
           "high_52w": 13.069999694824219,
-          "distance_to_low_pct": 1.033831326389736,
-          "below_high_pct": 17.750571912736536
+          "distance_to_low_pct": 1.4097708053591116,
+          "below_high_pct": 17.44452782102269
         }
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-06-19T23:37:25.910778+00:00",
+      "run_timestamp": "2026-06-22T14:02:38.277866+00:00",
       "total": 34,
-      "flagged_count": 7,
+      "flagged_count": 8,
       "flagged": [
         {
           "ticker": "QOR.AX",
           "company_name": "Qoria Limited",
-          "current_price": 0.23999999463558197,
-          "low_52w": 0.23499999940395355,
+          "current_price": 0.23000000417232513,
+          "low_52w": 0.23000000417232513,
           "high_52w": 0.8999999761581421,
-          "distance_to_low_pct": 2.127657550770317,
-          "below_high_pct": 73.33333322295435
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 74.4444433038617
         },
         {
           "ticker": "WTC.AX",
           "company_name": "WiseTech Global Limited",
-          "current_price": 36.880001068115234,
-          "low_52w": 36.0099983215332,
+          "current_price": 30.079999923706055,
+          "low_52w": 30.079999923706055,
           "high_52w": 120.5,
-          "distance_to_low_pct": 2.4160032966782685,
-          "below_high_pct": 69.39418998496662
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 75.03734446165473
         },
         {
           "ticker": "XRO.AX",
           "company_name": "Xero Limited",
-          "current_price": 71.87999725341797,
-          "low_52w": 70.41999816894531,
+          "current_price": 68.62000274658203,
+          "low_52w": 68.62000274658203,
           "high_52w": 194.2100067138672,
-          "distance_to_low_pct": 2.073273391700406,
-          "below_high_pct": 62.98852027778364
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 64.66711272623506
+        },
+        {
+          "ticker": "CAT.AX",
+          "company_name": "Catapult Sports Ltd",
+          "current_price": 2.950000047683716,
+          "low_52w": 2.880000114440918,
+          "high_52w": 7.480000019073486,
+          "distance_to_low_pct": 2.4305531410156433,
+          "below_high_pct": 60.561496789285854
         },
         {
           "ticker": "AVA.AX",
           "company_name": "AVA Risk Group Limited",
-          "current_price": 0.03700000047683716,
-          "low_52w": 0.03700000047683716,
+          "current_price": 0.03400000184774399,
+          "low_52w": 0.03400000184774399,
           "high_52w": 0.10999999940395355,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 66.3636357478859
+          "below_high_pct": 69.0909072436577
         },
         {
           "ticker": "REA.AX",
           "company_name": "REA Group Limited",
-          "current_price": 140.0800018310547,
-          "low_52w": 140.0800018310547,
+          "current_price": 135.77000427246094,
+          "low_52w": 135.77000427246094,
           "high_52w": 263.1600036621094,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 46.77002588474129
+          "below_high_pct": 48.40781183192788
         },
         {
           "ticker": "RMD.AX",
           "company_name": "ResMed Inc.",
-          "current_price": 26.68000030517578,
+          "current_price": 26.950000762939453,
           "low_52w": 25.84000015258789,
           "high_52w": 45.13999938964844,
-          "distance_to_low_pct": 3.2507745651223,
-          "below_high_pct": 40.894991878768
+          "distance_to_low_pct": 4.295667971350206,
+          "below_high_pct": 40.29685173385345
         },
         {
           "ticker": "SPZ.AX",
           "company_name": "Smart Parking Limited",
-          "current_price": 0.7900000214576721,
+          "current_price": 0.800000011920929,
           "low_52w": 0.7749999761581421,
           "high_52w": 1.4199999570846558,
-          "distance_to_low_pct": 1.9354897756111937,
-          "below_high_pct": 44.36619399062595
+          "distance_to_low_pct": 3.225811165403894,
+          "below_high_pct": 43.66196928883178
         }
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-06-19T23:38:42.161143+00:00",
+      "run_timestamp": "2026-06-22T14:04:06.621644+00:00",
       "total": 35,
       "flagged_count": 8,
       "flagged": [
         {
-          "ticker": "KYP.AX",
-          "company_name": "Kinatico Ltd",
-          "current_price": 0.12999999523162842,
-          "low_52w": 0.125,
-          "high_52w": 0.38499999046325684,
-          "distance_to_low_pct": 3.9999961853027344,
-          "below_high_pct": 66.233766635889
-        },
-        {
           "ticker": "QOR.AX",
           "company_name": "Qoria Limited",
-          "current_price": 0.23999999463558197,
-          "low_52w": 0.23499999940395355,
+          "current_price": 0.23000000417232513,
+          "low_52w": 0.23000000417232513,
           "high_52w": 0.8999999761581421,
-          "distance_to_low_pct": 2.127657550770317,
-          "below_high_pct": 73.33333322295435
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 74.4444433038617
         },
         {
           "ticker": "WTC.AX",
           "company_name": "WiseTech Global Limited",
-          "current_price": 36.880001068115234,
-          "low_52w": 36.0099983215332,
+          "current_price": 30.079999923706055,
+          "low_52w": 30.079999923706055,
           "high_52w": 120.5,
-          "distance_to_low_pct": 2.4160032966782685,
-          "below_high_pct": 69.39418998496662
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 75.03734446165473
         },
         {
           "ticker": "XRO.AX",
           "company_name": "Xero Limited",
-          "current_price": 71.87999725341797,
-          "low_52w": 70.41999816894531,
+          "current_price": 68.62000274658203,
+          "low_52w": 68.62000274658203,
           "high_52w": 194.2100067138672,
-          "distance_to_low_pct": 2.073273391700406,
-          "below_high_pct": 62.98852027778364
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 64.66711272623506
+        },
+        {
+          "ticker": "CAT.AX",
+          "company_name": "Catapult Sports Ltd",
+          "current_price": 2.950000047683716,
+          "low_52w": 2.880000114440918,
+          "high_52w": 7.480000019073486,
+          "distance_to_low_pct": 2.4305531410156433,
+          "below_high_pct": 60.561496789285854
         },
         {
           "ticker": "OCL.AX",
@@ -221,99 +230,99 @@
         {
           "ticker": "REA.AX",
           "company_name": "REA Group Limited",
-          "current_price": 140.0800018310547,
-          "low_52w": 140.0800018310547,
+          "current_price": 135.77000427246094,
+          "low_52w": 135.77000427246094,
           "high_52w": 263.1600036621094,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 46.77002588474129
+          "below_high_pct": 48.40781183192788
         },
         {
           "ticker": "EOL.AX",
           "company_name": "Energy One Limited",
-          "current_price": 12.210000038146973,
+          "current_price": 12.199999809265137,
           "low_52w": 11.630000114440918,
           "high_52w": 19.829999923706055,
-          "distance_to_low_pct": 4.9871016164984505,
-          "below_high_pct": 38.426625894484474
+          "distance_to_low_pct": 4.901115126529128,
+          "below_high_pct": 38.47705569236804
         },
         {
           "ticker": "SHJ.AX",
           "company_name": "Shine Justice Ltd",
-          "current_price": 0.6000000238418579,
+          "current_price": 0.6200000047683716,
           "low_52w": 0.6000000238418579,
           "high_52w": 0.7549999952316284,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 20.529797664729475
+          "distance_to_low_pct": 3.3333300219643105,
+          "below_high_pct": 17.88079355177212
         }
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-06-19T23:40:23.402651+00:00",
+      "run_timestamp": "2026-06-22T14:05:48.221077+00:00",
       "total": 30,
       "flagged_count": 7,
       "flagged": [
         {
           "ticker": "CPRT",
           "company_name": "Copart, Inc.",
-          "current_price": 29.520000457763672,
+          "current_price": 29.645000457763672,
           "low_52w": 29.520000457763672,
           "high_52w": 49.970001220703125,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 40.924555259900195
+          "distance_to_low_pct": 0.42344172785107587,
+          "below_high_pct": 40.67440517595701
         },
         {
           "ticker": "RMD",
           "company_name": "ResMed Inc.",
-          "current_price": 186.2899932861328,
+          "current_price": 189.64999389648438,
           "low_52w": 182.82000732421875,
           "high_52w": 293.7300109863281,
-          "distance_to_low_pct": 1.8980340350606595,
-          "below_high_pct": 36.5778142108864
+          "distance_to_low_pct": 3.735907613302472,
+          "below_high_pct": 35.4339063755689
         },
         {
           "ticker": "ORLY",
           "company_name": "O'Reilly Automotive, Inc.",
-          "current_price": 86.83999633789062,
-          "low_52w": 86.2300033569336,
+          "current_price": 85.5199966430664,
+          "low_52w": 85.5199966430664,
           "high_52w": 107.81999969482422,
-          "distance_to_low_pct": 0.7074022465615304,
-          "below_high_pct": 19.458359688662398
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 20.682622069074537
         },
         {
           "ticker": "ADBE",
           "company_name": "Adobe Inc.",
-          "current_price": 195.16000366210938,
+          "current_price": 198.61000061035156,
           "low_52w": 195.16000366210938,
           "high_52w": 392.1000061035156,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 50.22698275332683
+          "distance_to_low_pct": 1.767778685952141,
+          "below_high_pct": 49.34710596308486
         },
         {
           "ticker": "INTU",
           "company_name": "Intuit Inc.",
-          "current_price": 267.0,
-          "low_52w": 267.0,
+          "current_price": 264.25,
+          "low_52w": 264.25,
           "high_52w": 807.3900146484375,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 66.93048029380695
+          "below_high_pct": 67.27108396119283
         },
         {
           "ticker": "NFLX",
           "company_name": "Netflix, Inc.",
-          "current_price": 77.37999725341797,
+          "current_price": 75.9800033569336,
           "low_52w": 75.86000061035156,
           "high_52w": 133.91299438476562,
-          "distance_to_low_pct": 2.00368656846411,
-          "below_high_pct": 42.21621463329703
+          "distance_to_low_pct": 0.15818975166954605,
+          "below_high_pct": 43.26166500420117
         },
         {
           "ticker": "CTSH",
           "company_name": "Cognizant Technology Solutions Corporation",
-          "current_price": 43.70000076293945,
+          "current_price": 44.040000915527344,
           "low_52w": 43.70000076293945,
           "high_52w": 86.69999694824219,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 49.59630645774151
+          "distance_to_low_pct": 0.7780323722013152,
+          "below_high_pct": 49.2041494051976
         }
       ]
     },

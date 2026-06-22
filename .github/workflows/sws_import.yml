@@ -1,0 +1,94 @@
+name: SWS Database Import
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force re-import even if files already imported"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-investing.txt
+          pip install google-api-python-client google-auth
+
+      - name: Import SWS CSVs
+        run: |
+          FORCE_FLAG=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            FORCE_FLAG="--force"
+          fi
+          python -m investing.import_sws_csv \
+            --db /tmp/jm_investing_sws.sqlite \
+            $FORCE_FLAG \
+            investing/tests/fixtures/
+
+      - name: Upload SQLite to Google Drive
+        env:
+          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: |
+          python - <<'EOF'
+          import json, os
+          from pathlib import Path
+
+          sa_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
+          folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
+
+          if not sa_json or not folder_id:
+              print("GDrive secrets not configured — skipping upload.")
+              exit(0)
+
+          from google.oauth2.service_account import Credentials
+          from googleapiclient.discovery import build
+          from googleapiclient.http import MediaFileUpload
+
+          info = json.loads(sa_json)
+          creds = Credentials.from_service_account_info(
+              info, scopes=["https://www.googleapis.com/auth/drive.file"]
+          )
+          service = build("drive", "v3", credentials=creds)
+
+          db_path = Path("/tmp/jm_investing_sws.sqlite")
+          file_metadata = {"name": "jm_investing_sws.sqlite", "parents": [folder_id]}
+          media = MediaFileUpload(str(db_path), mimetype="application/x-sqlite3", resumable=False)
+
+          # Check if file already exists (created by this service account)
+          results = service.files().list(
+              q=f"name='jm_investing_sws.sqlite' and '{folder_id}' in parents and trashed=false",
+              fields="files(id,name)"
+          ).execute()
+          existing = results.get("files", [])
+
+          if existing:
+              file_id = existing[0]["id"]
+              service.files().update(
+                  fileId=file_id,
+                  media_body=media
+              ).execute()
+              print(f"Updated: https://drive.google.com/file/d/{file_id}/view")
+          else:
+              created = service.files().create(
+                  body=file_metadata,
+                  media_body=media,
+                  fields="id"
+              ).execute()
+              file_id = created["id"]
+              print(f"Created: https://drive.google.com/file/d/{file_id}/view")
+          EOF

@@ -1,0 +1,4 @@
+# Requirements for investing/import_sws_csv.py and sws_reader.py
+# No third-party deps required — stdlib only (csv, sqlite3, hashlib, pathlib)
+# pytest is only needed for tests
+pytest>=7.0

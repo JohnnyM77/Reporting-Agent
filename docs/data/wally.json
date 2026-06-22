@@ -1,10 +1,10 @@
 {
-  "last_run": "2026-06-22T14:05:48.221077+00:00",
+  "last_run": "2026-06-22T17:13:41.356397+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-06-22T14:00:45.493416+00:00",
+      "run_timestamp": "2026-06-22T17:10:57.166014+00:00",
       "total": 74,
-      "flagged_count": 10,
+      "flagged_count": 12,
       "flagged": [
         {
           "ticker": "HSN.AX",
@@ -27,11 +27,11 @@
         {
           "ticker": "MA",
           "company_name": "Mastercard Incorporated",
-          "current_price": 493.1199951171875,
+          "current_price": 485.8900146484375,
           "low_52w": 471.54998779296875,
           "high_52w": 598.9600219726562,
-          "distance_to_low_pct": 4.574277994401928,
-          "below_high_pct": 17.670632925865053
+          "distance_to_low_pct": 3.041040658825052,
+          "below_high_pct": 18.87772191403129
         },
         {
           "ticker": "RMD.AX",
@@ -52,6 +52,15 @@
           "below_high_pct": 37.72321540235104
         },
         {
+          "ticker": "RMV.L",
+          "company_name": "Rightmove plc",
+          "current_price": 423.20001220703125,
+          "low_52w": 404.0,
+          "high_52w": 823.7999877929688,
+          "distance_to_low_pct": 4.752478269067141,
+          "below_high_pct": 48.62830559869021
+        },
+        {
           "ticker": "GTK.AX",
           "company_name": "Gentrack Group Limited",
           "current_price": 3.0299999713897705,
@@ -61,13 +70,22 @@
           "below_high_pct": 74.6867175956891
         },
         {
+          "ticker": "MSFT",
+          "company_name": "Microsoft Corporation",
+          "current_price": 368.7799987792969,
+          "low_52w": 356.7699890136719,
+          "high_52w": 542.0700073242188,
+          "distance_to_low_pct": 3.366317273161886,
+          "below_high_pct": 31.96819713385747
+        },
+        {
           "ticker": "CME",
           "company_name": "CME Group Inc.",
-          "current_price": 246.9409942626953,
-          "low_52w": 246.3800048828125,
+          "current_price": 246.3699951171875,
+          "low_52w": 246.3699951171875,
           "high_52w": 326.4599914550781,
-          "distance_to_low_pct": 0.2276927383574166,
-          "below_high_pct": 24.35796093663896
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 24.532867253018736
         },
         {
           "ticker": "HUB.AX",
@@ -99,7 +117,7 @@
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-06-22T14:02:38.277866+00:00",
+      "run_timestamp": "2026-06-22T17:12:43.716600+00:00",
       "total": 34,
       "flagged_count": 8,
       "flagged": [
@@ -178,7 +196,7 @@
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-06-22T14:04:06.621644+00:00",
+      "run_timestamp": "2026-06-22T17:13:14.881409+00:00",
       "total": 35,
       "flagged_count": 8,
       "flagged": [
@@ -257,72 +275,81 @@
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-06-22T14:05:48.221077+00:00",
+      "run_timestamp": "2026-06-22T17:13:41.356397+00:00",
       "total": 30,
-      "flagged_count": 7,
+      "flagged_count": 8,
       "flagged": [
         {
           "ticker": "CPRT",
           "company_name": "Copart, Inc.",
-          "current_price": 29.645000457763672,
+          "current_price": 29.549999237060547,
           "low_52w": 29.520000457763672,
           "high_52w": 49.970001220703125,
-          "distance_to_low_pct": 0.42344172785107587,
-          "below_high_pct": 40.67440517595701
+          "distance_to_low_pct": 0.10162187951113467,
+          "below_high_pct": 40.86452168262574
         },
         {
           "ticker": "RMD",
           "company_name": "ResMed Inc.",
-          "current_price": 189.64999389648438,
+          "current_price": 189.21499633789062,
           "low_52w": 182.82000732421875,
           "high_52w": 293.7300109863281,
-          "distance_to_low_pct": 3.735907613302472,
-          "below_high_pct": 35.4339063755689
+          "distance_to_low_pct": 3.497970001899628,
+          "below_high_pct": 35.58200072831585
         },
         {
           "ticker": "ORLY",
           "company_name": "O'Reilly Automotive, Inc.",
-          "current_price": 85.5199966430664,
-          "low_52w": 85.5199966430664,
+          "current_price": 85.22000122070312,
+          "low_52w": 85.22000122070312,
           "high_52w": 107.81999969482422,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 20.682622069074537
+          "below_high_pct": 20.960859337867337
+        },
+        {
+          "ticker": "MSFT",
+          "company_name": "Microsoft Corporation",
+          "current_price": 368.69500732421875,
+          "low_52w": 356.7699890136719,
+          "high_52w": 542.0700073242188,
+          "distance_to_low_pct": 3.3424947943393,
+          "below_high_pct": 31.983876188948095
         },
         {
           "ticker": "ADBE",
           "company_name": "Adobe Inc.",
-          "current_price": 198.61000061035156,
-          "low_52w": 195.16000366210938,
+          "current_price": 193.0500030517578,
+          "low_52w": 193.0500030517578,
           "high_52w": 392.1000061035156,
-          "distance_to_low_pct": 1.767778685952141,
-          "below_high_pct": 49.34710596308486
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 50.76511092917657
         },
         {
           "ticker": "INTU",
           "company_name": "Intuit Inc.",
-          "current_price": 264.25,
-          "low_52w": 264.25,
+          "current_price": 255.28500366210938,
+          "low_52w": 255.28500366210938,
           "high_52w": 807.3900146484375,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 67.27108396119283
+          "below_high_pct": 68.38145146329704
         },
         {
           "ticker": "NFLX",
           "company_name": "Netflix, Inc.",
-          "current_price": 75.9800033569336,
-          "low_52w": 75.86000061035156,
+          "current_price": 72.61499786376953,
+          "low_52w": 72.61499786376953,
           "high_52w": 133.91299438476562,
-          "distance_to_low_pct": 0.15818975166954605,
-          "below_high_pct": 43.26166500420117
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 45.77449470278558
         },
         {
           "ticker": "CTSH",
           "company_name": "Cognizant Technology Solutions Corporation",
-          "current_price": 44.040000915527344,
-          "low_52w": 43.70000076293945,
+          "current_price": 41.755001068115234,
+          "low_52w": 41.755001068115234,
           "high_52w": 86.69999694824219,
-          "distance_to_low_pct": 0.7780323722013152,
-          "below_high_pct": 49.2041494051976
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 51.83967412012487
         }
       ]
     },

@@ -1505,13 +1505,32 @@ def build_value_chart(
         _ticker = cfg["ticker"]
         _eps_by_year: dict = {}
         _div_by_year: dict = {}
+        _quarterly_eps: dict = {}
         try:
             from wally.fundamentals_store import get_fundamentals as _get_fundamentals
             _fundamentals = _get_fundamentals(_ticker)
             _eps_by_year = _fundamentals.get("annual_eps_cents", {})
             _div_by_year = _fundamentals.get("annual_div_cents", {})
+            _quarterly_eps = _fundamentals.get("quarterly_eps_cents", {})
         except Exception as _fs_err:
             print(f"[wally] {_ticker} fundamentals_store error: {_fs_err}", flush=True)
+
+        # For US tickers with quarterly EPS, synthesise TTM earnings per year
+        # from the 4 most recent quarters that fall within each calendar year.
+        _is_asx = ".AX" in _ticker.upper()
+        if _quarterly_eps and not _is_asx:
+            _ttm_by_year: dict = {}
+            import re as _re
+            for _q_key, _q_val in _quarterly_eps.items():
+                _m = _re.match(r"(\d{4})-Q(\d)", _q_key)
+                if _m:
+                    _ttm_by_year.setdefault(_m.group(1), []).append(_q_val)
+            for _yr, _vals in _ttm_by_year.items():
+                # Use sum of available quarters as TTM proxy (typically 4 per year)
+                _ttm_by_year[_yr] = round(sum(_vals), 2)
+            # Merge quarterly-derived TTM into annual, preferring quarterly data
+            for _yr, _ttm in _ttm_by_year.items():
+                _eps_by_year[_yr] = _ttm
 
         if _eps_by_year:
             _sorted_years = sorted(_eps_by_year.keys())
@@ -1526,10 +1545,11 @@ def build_value_chart(
                 for yr in _sorted_years
             ]
             _div_records = sum(1 for yr in _sorted_years if _div_by_year.get(yr))
+            _q_label = f" quarterly_eps_records={len(_quarterly_eps)}" if _quarterly_eps else ""
             print(
                 f"[wally] {_ticker} price_source=yfinance"
                 f" earnings_source=fundamentals_store"
-                f" dividends_source=fundamentals_store",
+                f" dividends_source=fundamentals_store{_q_label}",
                 flush=True,
             )
             print(
@@ -1539,7 +1559,7 @@ def build_value_chart(
             )
             print(f"[wally] {_ticker} build_status=FULL_BUILD", flush=True)
         else:
-            _reason = "fundamentals_store returned no EPS (AV/FMP unavailable or ticker not covered)"
+            _reason = "fundamentals_store returned no EPS (yfinance/AV/FMP unavailable or ticker not covered)"
             cfg["_price_only_warning"] = (
                 "WARNING: Price data loaded, but live earnings/dividend data could not "
                 f"be fetched. Reason: {_reason}"

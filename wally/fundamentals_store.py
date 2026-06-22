@@ -3,7 +3,15 @@ wally/fundamentals_store.py
 
 Persistent EPS + dividend cache for Wally.
 Store: fundamentals/{ticker_slug}.json  e.g. fundamentals/rmd_ax.json
-Waterfall: local JSON → Alpha Vantage → FMP → (blank, log warning)
+
+Waterfall per market:
+  ASX (.AX)  → yfinance only (FMP free tier does not cover ASX)
+  US / other → Alpha Vantage annual EPS → FMP (fill gaps + dividends)
+
+Alpha Vantage also supplies:
+  - quarterly EPS  (quarterlyEarnings from EARNINGS endpoint)
+  - annual dividend (DividendPerShare from OVERVIEW endpoint, US only)
+
 YAML overrides in valuations/ always win over any API data.
 """
 
@@ -17,8 +25,6 @@ from typing import Optional
 
 import requests
 import yaml
-
-_fmp_verified = False  # module-level flag for one-time connectivity check
 
 
 def _slug(ticker: str) -> str:
@@ -74,19 +80,85 @@ def is_stale(data: dict) -> bool:
     return False
 
 
+def _fetch_yfinance(ticker: str) -> tuple[dict, dict]:
+    """
+    Fetch annual EPS and dividends via yfinance (works for ASX and US).
+    Returns (eps_by_year, div_by_year) as {str_year: float_cents}.
+    Returns ({}, {}) on any failure.
+    """
+    try:
+        import yfinance as yf
+        import pandas as pd
+
+        tk = yf.Ticker(ticker)
+
+        eps: dict = {}
+        div: dict = {}
+
+        # Annual EPS from income statement
+        try:
+            stmt = tk.income_stmt
+            if stmt is not None and not stmt.empty:
+                for label in ("Diluted EPS", "Basic EPS", "EPS Diluted", "EPS Basic"):
+                    if label in stmt.index:
+                        row = stmt.loc[label]
+                        for col in row.index:
+                            try:
+                                yr = str(pd.Timestamp(col).year)
+                                val = row[col]
+                                if val is not None and not pd.isna(val):
+                                    eps[yr] = round(float(val) * 100, 2)
+                            except Exception:
+                                continue
+                        if eps:
+                            break
+        except Exception as e:
+            print(f"[fundamentals] yfinance income_stmt failed for {ticker}: {e}")
+
+        # Fallback: trailing EPS from info
+        if not eps:
+            try:
+                info = tk.info or {}
+                trailing = info.get("trailingEps")
+                if trailing is not None:
+                    yr = str(datetime.date.today().year - 1)
+                    eps[yr] = round(float(trailing) * 100, 2)
+                    print(f"[fundamentals] yfinance using trailingEps fallback for {ticker}")
+            except Exception as e:
+                print(f"[fundamentals] yfinance info fallback failed for {ticker}: {e}")
+
+        # Annual dividends — aggregate by calendar year
+        try:
+            divs = tk.dividends
+            if divs is not None and not divs.empty:
+                yearly: dict = defaultdict(float)
+                for ts, amount in divs.items():
+                    try:
+                        import pandas as pd
+                        yr = str(pd.Timestamp(ts).year)
+                        yearly[yr] += float(amount) * 100
+                    except Exception:
+                        continue
+                div = {yr: round(total, 2) for yr, total in yearly.items()}
+        except Exception as e:
+            print(f"[fundamentals] yfinance dividends failed for {ticker}: {e}")
+
+        print(f"[fundamentals] yfinance returned {len(eps)} annual EPS years, {len(div)} div years for {ticker}")
+        return eps, div
+
+    except Exception as e:
+        print(f"[fundamentals] yfinance fetch failed for {ticker}: {e}")
+        return {}, {}
+
+
 def _fetch_alphavantage(ticker: str) -> tuple[dict, dict]:
     """
     Fetch annual EPS from Alpha Vantage EARNINGS endpoint.
-    Returns (eps_by_year, div_by_year) as {str_year: float_cents}.
-    AV free tier doesn't include dividends in EARNINGS endpoint so div={}.
+    Returns (eps_by_year, {}) — AV free tier excludes dividends from EARNINGS.
     Sleeps 12s after call to respect 5 req/min free tier limit.
-    Returns ({}, {}) on any failure.
-
-    NOTE: AV EARNINGS endpoint does not support ASX tickers (.AX suffix)
-    on the free tier — skip them entirely and rely on FMP instead.
+    Returns ({}, {}) on any failure or for ASX tickers.
     """
     if ".AX" in ticker.upper():
-        print(f"[fundamentals] Skipping AV for ASX ticker {ticker} — using FMP instead")
         return {}, {}
     api_key = os.environ.get("ALPHAVANTAGE_API_KEY", "").strip()
     if not api_key:
@@ -101,7 +173,6 @@ def _fetch_alphavantage(ticker: str) -> tuple[dict, dict]:
         r.raise_for_status()
         payload = r.json()
 
-        # Detect rate limit / error responses
         if "Note" in payload or "Information" in payload:
             print(f"[fundamentals] AV rate limit or error for {ticker}: "
                   f"{payload.get('Note') or payload.get('Information')}")
@@ -126,13 +197,103 @@ def _fetch_alphavantage(ticker: str) -> tuple[dict, dict]:
         return {}, {}
 
 
+def _fetch_alphavantage_quarterly(ticker: str) -> dict:
+    """
+    Fetch quarterly EPS from Alpha Vantage EARNINGS endpoint.
+    Returns {str_quarter: float_cents} e.g. {"2024-Q1": 45.2, ...}.
+    Returns {} on any failure or for ASX tickers.
+    Note: reuses the same API call as _fetch_alphavantage — call together to avoid double rate-limit sleep.
+    """
+    if ".AX" in ticker.upper():
+        return {}
+    api_key = os.environ.get("ALPHAVANTAGE_API_KEY", "").strip()
+    if not api_key:
+        return {}
+    try:
+        url = (
+            f"https://www.alphavantage.co/query"
+            f"?function=EARNINGS&symbol={ticker}&apikey={api_key}"
+        )
+        r = requests.get(url, timeout=20)
+        r.raise_for_status()
+        payload = r.json()
+
+        if "Note" in payload or "Information" in payload:
+            time.sleep(12)
+            return {}
+
+        quarterly = {}
+        for entry in payload.get("quarterlyEarnings", []):
+            try:
+                date_str = str(entry.get("fiscalDateEnding", ""))
+                val = entry.get("reportedEPS")
+                if not date_str or not val or val in ("None", "null", ""):
+                    continue
+                import datetime as _dt
+                d = _dt.date.fromisoformat(date_str)
+                quarter = f"{d.year}-Q{(d.month - 1) // 3 + 1}"
+                quarterly[quarter] = round(float(val) * 100, 2)
+            except Exception:
+                continue
+
+        print(f"[fundamentals] AV returned {len(quarterly)} quarterly EPS entries for {ticker}")
+        time.sleep(12)
+        return quarterly
+    except Exception as e:
+        print(f"[fundamentals] AV quarterly fetch failed for {ticker}: {e}")
+        return {}
+
+
+def _fetch_alphavantage_dividends(ticker: str) -> dict:
+    """
+    Fetch trailing annual dividend from AV OVERVIEW endpoint (DividendPerShare).
+    Returns {str_year: float_cents} with the current year's trailing figure.
+    Only used for US tickers when no dividend data exists yet.
+    Returns {} on any failure or for ASX tickers.
+    """
+    if ".AX" in ticker.upper():
+        return {}
+    api_key = os.environ.get("ALPHAVANTAGE_API_KEY", "").strip()
+    if not api_key:
+        return {}
+    try:
+        url = (
+            f"https://www.alphavantage.co/query"
+            f"?function=OVERVIEW&symbol={ticker}&apikey={api_key}"
+        )
+        r = requests.get(url, timeout=20)
+        r.raise_for_status()
+        payload = r.json()
+
+        if "Note" in payload or "Information" in payload:
+            time.sleep(12)
+            return {}
+
+        val = payload.get("DividendPerShare")
+        if val and val not in ("None", "null", "", "0", "0.0"):
+            yr = str(datetime.date.today().year)
+            cents = round(float(val) * 100, 2)
+            print(f"[fundamentals] AV OVERVIEW DividendPerShare={val} for {ticker}")
+            time.sleep(12)
+            return {yr: cents}
+
+        time.sleep(12)
+        return {}
+    except Exception as e:
+        print(f"[fundamentals] AV dividend fetch failed for {ticker}: {e}")
+        return {}
+
+
 def _fetch_fmp(ticker: str) -> tuple[dict, dict]:
     """
     Fetch annual EPS from FMP income-statement endpoint.
     Fetch annual dividends from FMP historical dividend endpoint.
     Returns (eps_by_year, div_by_year) as {str_year: float_cents}.
-    Returns ({}, {}) on any failure.
+    Returns ({}, {}) on any failure or for ASX tickers (free tier doesn't cover ASX).
     """
+    if ".AX" in ticker.upper():
+        return {}, {}
+
     api_key = os.environ.get("FMP_API_KEY", "").strip()
     if not api_key:
         print(f"[fundamentals] FMP_API_KEY not set, skipping FMP for {ticker}")
@@ -142,7 +303,6 @@ def _fetch_fmp(ticker: str) -> tuple[dict, dict]:
     div = {}
 
     try:
-        # EPS from income statement (diluted EPS, annual, up to 15 years)
         url = (
             f"https://financialmodelingprep.com/api/v3/income-statement/"
             f"{ticker}?limit=15&apikey={api_key}"
@@ -163,7 +323,6 @@ def _fetch_fmp(ticker: str) -> tuple[dict, dict]:
 
         time.sleep(0.5)
 
-        # Dividends — aggregate all payments within each calendar year
         url2 = (
             f"https://financialmodelingprep.com/api/v3/historical-price-full/"
             f"stock_dividend/{ticker}?apikey={api_key}"
@@ -171,7 +330,7 @@ def _fetch_fmp(ticker: str) -> tuple[dict, dict]:
         r2 = requests.get(url2, timeout=20)
         r2.raise_for_status()
         data2 = r2.json()
-        yearly_div = defaultdict(float)
+        yearly_div: dict = defaultdict(float)
         for entry in data2.get("historical", []):
             try:
                 year = str(entry.get("date", ""))[:4]
@@ -219,78 +378,92 @@ def get_fundamentals(ticker: str) -> dict:
 
     Returns dict:
       {
-        "annual_eps_cents": {"2016": 32.1, "2017": 38.4, ...},
-        "annual_div_cents": {"2016": 5.8, ...}
+        "annual_eps_cents":   {"2016": 32.1, "2017": 38.4, ...},
+        "annual_div_cents":   {"2016": 5.8, ...},
+        "quarterly_eps_cents": {"2024-Q1": 45.2, ...}   # US tickers only
       }
 
-    Logic:
-      1. One-time FMP connectivity check (first call only)
-      2. Load local JSON cache
-      3. If not stale -> apply YAML overrides -> return
-      4. If stale -> try Alpha Vantage (US only) -> try FMP (always for .AX)
-      5. Merge with existing cached data (preserve old years)
-      6. Apply YAML overrides (always win)
-      7. Save updated cache
-      8. Return
-    """
-    global _fmp_verified
-    if not _fmp_verified:
-        _fmp_verified = True
-        test_eps, _ = _fetch_fmp("RMD.AX")
-        if test_eps:
-            print(f"[fundamentals] FMP connectivity OK — RMD.AX returned {len(test_eps)} EPS years")
-        else:
-            print(f"[fundamentals] WARNING: FMP returned nothing for RMD.AX — check FMP_API_KEY secret")
+    Waterfall:
+      ASX (.AX) → yfinance (annual EPS + dividends)
+      US / other → Alpha Vantage annual EPS + quarterly EPS → FMP (fill gaps + divs)
+                   → AV OVERVIEW for dividends if still empty
 
+    YAML series overrides always win.
+    """
     stored = load(ticker)
 
     if not is_stale(stored):
         eps = dict(stored.get("annual_eps_cents", {}))
         div = dict(stored.get("annual_div_cents", {}))
+        quarterly = dict(stored.get("quarterly_eps_cents", {}))
         eps, div = _apply_yaml_overrides(ticker, eps, div)
-        return {"annual_eps_cents": eps, "annual_div_cents": div}
+        return {"annual_eps_cents": eps, "annual_div_cents": div, "quarterly_eps_cents": quarterly}
 
     print(f"[fundamentals] Cache stale for {ticker} — fetching from APIs...")
 
-    # Start with whatever we already have cached (preserve history)
     eps = dict(stored.get("annual_eps_cents", {}))
     div = dict(stored.get("annual_div_cents", {}))
+    quarterly = dict(stored.get("quarterly_eps_cents", {}))
     sources = dict(stored.get("sources", {}))
 
-    # Try Alpha Vantage first (EPS only, free tier)
-    av_eps, _ = _fetch_alphavantage(ticker)
-    if av_eps:
-        for yr, val in av_eps.items():
-            if yr not in eps:  # Only fill gaps, preserve existing values
-                eps[yr] = val
-                sources[yr] = "alphavantage"
-
-    # Try FMP — always for ASX tickers (.AX), otherwise only to fill gaps
     is_asx = ".AX" in ticker.upper()
-    needs_fmp = is_asx or (not av_eps) or (not div)
-    if needs_fmp:
-        fmp_eps, fmp_div = _fetch_fmp(ticker)
-        if fmp_eps:
-            for yr, val in fmp_eps.items():
+
+    if is_asx:
+        # ASX: yfinance only (FMP free tier does not cover ASX)
+        yf_eps, yf_div = _fetch_yfinance(ticker)
+        for yr, val in yf_eps.items():
+            if yr not in eps:
+                eps[yr] = val
+                sources[yr] = "yfinance"
+        for yr, val in yf_div.items():
+            if yr not in div:
+                div[yr] = val
+    else:
+        # US / other: AV annual first (also grabs quarterly in same call)
+        av_eps, _ = _fetch_alphavantage(ticker)
+        if av_eps:
+            for yr, val in av_eps.items():
                 if yr not in eps:
                     eps[yr] = val
-                    sources[yr] = "fmp"
-        if fmp_div:
-            for yr, val in fmp_div.items():
+                    sources[yr] = "alphavantage"
+
+        # AV quarterly EPS (separate call — rate limit handled inside)
+        av_quarterly = _fetch_alphavantage_quarterly(ticker)
+        for q, val in av_quarterly.items():
+            if q not in quarterly:
+                quarterly[q] = val
+
+        # FMP to fill annual EPS gaps and fetch dividends
+        if not av_eps or not div:
+            fmp_eps, fmp_div = _fetch_fmp(ticker)
+            if fmp_eps:
+                for yr, val in fmp_eps.items():
+                    if yr not in eps:
+                        eps[yr] = val
+                        sources[yr] = "fmp"
+            if fmp_div:
+                for yr, val in fmp_div.items():
+                    if yr not in div:
+                        div[yr] = val
+
+        # AV OVERVIEW for dividends if still empty
+        if not div:
+            av_div = _fetch_alphavantage_dividends(ticker)
+            for yr, val in av_div.items():
                 if yr not in div:
                     div[yr] = val
 
-    # YAML overrides always win (adjusted/underlying EPS)
+    # YAML overrides always win
     eps, div = _apply_yaml_overrides(ticker, eps, div)
 
-    # Save updated cache
     new_data = {
         "ticker": ticker,
         "last_updated": str(datetime.date.today()),
         "annual_eps_cents": eps,
         "annual_div_cents": div,
+        "quarterly_eps_cents": quarterly,
         "sources": sources,
     }
     save(ticker, new_data)
 
-    return {"annual_eps_cents": eps, "annual_div_cents": div}
+    return {"annual_eps_cents": eps, "annual_div_cents": div, "quarterly_eps_cents": quarterly}

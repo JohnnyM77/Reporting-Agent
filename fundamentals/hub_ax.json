@@ -1,7 +1,28 @@
 {
-  "annual_div_cents": {},
-  "annual_eps_cents": {},
-  "last_updated": "2026-06-22",
-  "sources": {},
+  "annual_div_cents": {
+    "2018": 3.5,
+    "2019": 4.6,
+    "2020": 7.0,
+    "2021": 10.0,
+    "2022": 20.0,
+    "2023": 32.5,
+    "2024": 38.0,
+    "2025": 56.0,
+    "2026": 36.0
+  },
+  "annual_eps_cents": {
+    "2022": 19.53,
+    "2023": 46.06,
+    "2024": 56.38,
+    "2025": 95.73
+  },
+  "last_updated": "2026-06-23",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2022": "yfinance",
+    "2023": "yfinance",
+    "2024": "yfinance",
+    "2025": "yfinance"
+  },
   "ticker": "HUB.AX"
 }

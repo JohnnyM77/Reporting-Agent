@@ -1,7 +1,28 @@
 {
-  "annual_div_cents": {},
-  "annual_eps_cents": {},
-  "last_updated": "2026-06-22",
-  "sources": {},
+  "annual_div_cents": {
+    "2018": 10.56,
+    "2019": 12.1,
+    "2020": 14.7,
+    "2021": 18.56,
+    "2022": 20.0,
+    "2023": 24.0,
+    "2024": 28.0,
+    "2025": 38.5,
+    "2026": 21.0
+  },
+  "annual_eps_cents": {
+    "2022": 22.78,
+    "2023": 27.5,
+    "2024": 34.1,
+    "2025": 47.5
+  },
+  "last_updated": "2026-06-23",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2022": "yfinance",
+    "2023": "yfinance",
+    "2024": "yfinance",
+    "2025": "yfinance"
+  },
   "ticker": "NWL.AX"
 }

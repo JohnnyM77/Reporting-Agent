@@ -1,7 +1,20 @@
 {
   "annual_div_cents": {},
-  "annual_eps_cents": {},
-  "last_updated": "2026-06-22",
-  "sources": {},
+  "annual_eps_cents": {
+    "2017": -50.27,
+    "2018": -21.16,
+    "2019": 9.96,
+    "2020": 56.54,
+    "2021": 94.96
+  },
+  "last_updated": "2026-06-23",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2017": "sws",
+    "2018": "sws",
+    "2019": "sws",
+    "2020": "sws",
+    "2021": "sws"
+  },
   "ticker": "XRO.AX"
 }

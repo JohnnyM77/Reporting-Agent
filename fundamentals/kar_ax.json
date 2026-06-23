@@ -1,7 +1,20 @@
 {
-  "annual_div_cents": {},
-  "annual_eps_cents": {},
-  "last_updated": "2026-06-22",
-  "sources": {},
+  "annual_div_cents": {
+    "2024": 6.09,
+    "2025": 5.96,
+    "2026": 7.53
+  },
+  "annual_eps_cents": {
+    "2017": -33.27,
+    "2018": -8.89,
+    "2019": -9.75
+  },
+  "last_updated": "2026-06-23",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2017": "sws",
+    "2018": "sws",
+    "2019": "sws"
+  },
   "ticker": "KAR.AX"
 }

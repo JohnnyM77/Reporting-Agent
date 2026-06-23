@@ -1,7 +1,22 @@
 {
   "annual_div_cents": {},
-  "annual_eps_cents": {},
-  "last_updated": "2026-06-22",
-  "sources": {},
+  "annual_eps_cents": {
+    "2017": -8.63,
+    "2018": -5.12,
+    "2019": 0.9,
+    "2020": 4.3,
+    "2021": 11.8,
+    "2022": 19.8
+  },
+  "last_updated": "2026-06-23",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2017": "sws",
+    "2018": "sws",
+    "2019": "sws",
+    "2020": "sws",
+    "2021": "sws",
+    "2022": "sws"
+  },
   "ticker": "CAT.AX"
 }

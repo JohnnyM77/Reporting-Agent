@@ -1,7 +1,12 @@
 {
   "annual_div_cents": {},
-  "annual_eps_cents": {},
-  "last_updated": "2026-06-22",
-  "sources": {},
+  "annual_eps_cents": {
+    "2017": -14.7
+  },
+  "last_updated": "2026-06-23",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2017": "sws"
+  },
   "ticker": "QOR.AX"
 }

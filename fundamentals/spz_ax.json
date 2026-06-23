@@ -1,7 +1,18 @@
 {
   "annual_div_cents": {},
-  "annual_eps_cents": {},
-  "last_updated": "2026-06-22",
-  "sources": {},
+  "annual_eps_cents": {
+    "2017": -0.42,
+    "2018": 1.2,
+    "2019": 2.1,
+    "2020": 2.7
+  },
+  "last_updated": "2026-06-23",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2017": "sws",
+    "2018": "sws",
+    "2019": "sws",
+    "2020": "sws"
+  },
   "ticker": "SPZ.AX"
 }

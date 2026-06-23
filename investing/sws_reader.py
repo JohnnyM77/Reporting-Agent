@@ -99,10 +99,51 @@ class SWSReader:
     def get_eps_history(self, ticker: str) -> dict[str, float]:
         """
         Return historical annual EPS as {year: eps_dollars}.
-        Source: value_merged_future_earnings_per_share timeseries.
+        Source: past_earnings_per_share_ltm_history (offset-based, up to 10 years).
         """
-        rows = self.get_timeseries(ticker, "value_merged_future_earnings_per_share")
-        return {r["date_utc"][:4]: r["value"] for r in rows if r["value"] is not None}
+        con = self._connect()
+        rows = con.execute(
+            "SELECT report_year, eps FROM v_eps_history WHERE ticker = ? ORDER BY report_year",
+            (ticker,),
+        ).fetchall()
+        return {str(r["report_year"]): r["eps"] for r in rows if r["eps"] is not None}
+
+    def get_revenue_history(self, ticker: str) -> dict[str, float]:
+        """Return historical annual revenue as {year: value}."""
+        con = self._connect()
+        rows = con.execute(
+            "SELECT report_year, revenue FROM v_revenue_history WHERE ticker = ? ORDER BY report_year",
+            (ticker,),
+        ).fetchall()
+        return {str(r["report_year"]): r["revenue"] for r in rows if r["revenue"] is not None}
+
+    def get_net_income_history(self, ticker: str) -> dict[str, float]:
+        """Return historical annual net income as {year: value}."""
+        con = self._connect()
+        rows = con.execute(
+            "SELECT report_year, net_income FROM v_net_income_history WHERE ticker = ? ORDER BY report_year",
+            (ticker,),
+        ).fetchall()
+        return {str(r["report_year"]): r["net_income"] for r in rows if r["net_income"] is not None}
+
+    def get_fundamentals_10y(self, ticker: str) -> list[dict]:
+        """Return up to 10 years of revenue, net_income, eps as list of dicts."""
+        con = self._connect()
+        rows = con.execute(
+            """SELECT report_year, revenue, net_income, eps
+               FROM v_company_fundamentals_10y WHERE ticker = ? ORDER BY report_year""",
+            (ticker,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+    def get_latest_snapshot(self, ticker: str) -> dict:
+        """Return the latest company snapshot (revenue, net_income, eps, dividend, roe, d/e)."""
+        con = self._connect()
+        row = con.execute(
+            "SELECT * FROM v_latest_company_snapshot WHERE ticker = ?",
+            (ticker,),
+        ).fetchone()
+        return dict(row) if row else {}
 
     def get_eps_forecasts(self, ticker: str) -> dict[str, dict[str, Optional[float]]]:
         """

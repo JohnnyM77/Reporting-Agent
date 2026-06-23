@@ -135,12 +135,6 @@ WHERE metric_name IN (
     'health_total_assets','health_cash_st_investments','health_levered_free_cash_flow'
 );
 
-CREATE VIEW IF NOT EXISTS v_eps_history AS
-SELECT ticker, date_utc, value AS eps
-FROM sws_timeseries
-WHERE metric_name = 'value_merged_future_earnings_per_share'
-ORDER BY ticker, date_utc;
-
 CREATE VIEW IF NOT EXISTS v_eps_forecasts AS
 SELECT ticker, metric_name, date_utc, value AS eps
 FROM sws_timeseries
@@ -156,6 +150,70 @@ SELECT ticker, date_utc, value AS dividend_per_share
 FROM sws_timeseries
 WHERE metric_name = 'dividend_historical_dividend_payments'
 ORDER BY ticker, date_utc;
+
+CREATE VIEW IF NOT EXISTS v_revenue_history AS
+SELECT ticker,
+       CAST(substr(date_utc, 1, 4) AS INTEGER) AS report_year,
+       value AS revenue
+FROM sws_timeseries
+WHERE metric_name = 'past_revenue_ltm_history'
+  AND value IS NOT NULL
+ORDER BY ticker, report_year;
+
+CREATE VIEW IF NOT EXISTS v_net_income_history AS
+SELECT ticker,
+       CAST(substr(date_utc, 1, 4) AS INTEGER) AS report_year,
+       value AS net_income
+FROM sws_timeseries
+WHERE metric_name = 'past_net_income_ltm_history'
+  AND value IS NOT NULL
+ORDER BY ticker, report_year;
+
+CREATE VIEW IF NOT EXISTS v_eps_history AS
+SELECT ticker,
+       CAST(substr(date_utc, 1, 4) AS INTEGER) AS report_year,
+       value AS eps
+FROM sws_timeseries
+WHERE metric_name = 'past_earnings_per_share_ltm_history'
+  AND value IS NOT NULL
+ORDER BY ticker, report_year;
+
+CREATE VIEW IF NOT EXISTS v_company_fundamentals_10y AS
+SELECT
+    r.ticker,
+    r.report_year,
+    r.revenue,
+    ni.net_income,
+    e.eps
+FROM v_revenue_history r
+LEFT JOIN v_net_income_history ni ON ni.ticker = r.ticker AND ni.report_year = r.report_year
+LEFT JOIN v_eps_history e ON e.ticker = r.ticker AND e.report_year = r.report_year
+ORDER BY r.ticker, r.report_year;
+
+CREATE VIEW IF NOT EXISTS v_latest_company_snapshot AS
+SELECT
+    e.ticker,
+    r.revenue   AS latest_revenue,
+    ni.net_income AS latest_net_income,
+    e.eps       AS latest_eps,
+    (SELECT SUM(value)
+     FROM sws_timeseries dh
+     WHERE dh.ticker = e.ticker
+       AND dh.metric_name = 'dividend_historical_dividend_payments'
+       AND substr(dh.date_utc, 1, 4) = CAST(e.report_year AS TEXT)
+    ) AS latest_dividend,
+    (SELECT value FROM sws_scalar_metrics sm
+     WHERE sm.ticker = e.ticker AND sm.metric_name = 'past_return_on_equity') AS latest_roe,
+    (SELECT value FROM sws_scalar_metrics sm
+     WHERE sm.ticker = e.ticker AND sm.metric_name = 'health_debt_to_equity_ratio') AS latest_debt_equity
+FROM (
+    SELECT ticker, MAX(report_year) AS report_year
+    FROM v_eps_history
+    GROUP BY ticker
+) latest
+JOIN v_eps_history e ON e.ticker = latest.ticker AND e.report_year = latest.report_year
+LEFT JOIN v_revenue_history r ON r.ticker = latest.ticker AND r.report_year = latest.report_year
+LEFT JOIN v_net_income_history ni ON ni.ticker = latest.ticker AND ni.report_year = latest.report_year;
 """
 
 
@@ -240,12 +298,27 @@ def parse_sws_csv(path: Path) -> dict:
         for idx, val in enumerate(values):
             raw_rows.append((metric_name, idx, val if val else None))
 
+    # Extract base fiscal year for offset-based metrics (offset 0 = this year)
+    _base_year_raw = rows_by_metric.get("past_latest_fiscal_year", [])
+    _base_year_str = next((v.strip() for v in _base_year_raw if v.strip()), None)
+    try:
+        base_fiscal_year = int(_base_year_str) if _base_year_str else None
+    except (ValueError, TypeError):
+        base_fiscal_year = None
+
     # Identify _date rows and pair them with value rows
     date_metrics: dict[str, list[str]] = {}
     for metric_name, values in rows_by_metric.items():
         if metric_name.endswith("_date"):
             base = metric_name[: -len("_date")]
             date_metrics[base] = values
+
+    # Identify _offset rows (e.g. past_revenue_ltm_history_offset) and pair with value rows
+    offset_metrics: dict[str, list[str]] = {}
+    for metric_name, values in rows_by_metric.items():
+        if metric_name.endswith("_offset"):
+            base = metric_name[: -len("_offset")]
+            offset_metrics[base] = values
 
     scalar_metrics: list[tuple[str, Optional[float], str]] = []
     timeseries: list[tuple[str, int, str, Optional[float], str, int]] = []
@@ -278,6 +351,31 @@ def parse_sws_csv(path: Path) -> dict:
                 warnings.append(f"Non-numeric date '{d_str}' in {base_metric}_date[{idx}] — skipped")
                 continue
             date_utc = _unix_to_utc(ts)
+            value = _to_float(v_str)
+            timeseries.append((base_metric, ts, date_utc, value, v_str.strip() if v_str else None, idx))
+
+    # Process _offset paired rows → timeseries using fiscal year anchor
+    for base_metric, offset_values in offset_metrics.items():
+        value_row = rows_by_metric.get(base_metric)
+        if value_row is None or base_fiscal_year is None:
+            continue
+
+        paired_bases.add(base_metric)
+        paired_bases.add(f"{base_metric}_offset")
+
+        for idx, (o_str, v_str) in enumerate(zip(offset_values, value_row)):
+            o_str = o_str.strip()
+            if not o_str:
+                continue
+            try:
+                offset = int(float(o_str))
+            except (ValueError, TypeError):
+                continue
+            report_year = base_fiscal_year + offset
+            # Use June 30 as the synthetic fiscal year-end date; encode as unix timestamp
+            date_utc = f"{report_year}-06-30"
+            import calendar
+            ts = int(calendar.timegm((report_year, 6, 30, 0, 0, 0, 0, 0, 0)))
             value = _to_float(v_str)
             timeseries.append((base_metric, ts, date_utc, value, v_str.strip() if v_str else None, idx))
 
@@ -314,13 +412,22 @@ def open_db(db_path: Path) -> sqlite3.Connection:
     con = sqlite3.connect(db_path)
     con.execute("PRAGMA journal_mode=WAL")
     con.execute("PRAGMA foreign_keys=ON")
+    # Drop and recreate views so schema changes take effect on re-runs
+    _views = [
+        "v_company_import_summary", "v_key_scalar_metrics",
+        "v_eps_forecasts", "v_dividend_history",
+        "v_revenue_history", "v_net_income_history", "v_eps_history",
+        "v_company_fundamentals_10y", "v_latest_company_snapshot",
+    ]
+    for v in _views:
+        con.execute(f"DROP VIEW IF EXISTS {v}")
     for stmt in _SCHEMA_SQL.strip().split(";"):
         stmt = stmt.strip()
         if stmt:
             try:
                 con.execute(stmt)
             except sqlite3.OperationalError:
-                pass  # view already exists etc.
+                pass  # table already exists etc.
     con.commit()
     return con
 

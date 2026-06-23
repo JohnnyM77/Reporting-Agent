@@ -11,6 +11,7 @@ import sqlite3
 from pathlib import Path
 
 from .sws_ingest import ingest_csv
+from .sws_queue import mark_attempt
 
 
 def sync_local_csvs(db_path: Path, csv_dir: Path | None = None) -> dict:
@@ -67,12 +68,22 @@ def sync_local_csvs(db_path: Path, csv_dir: Path | None = None) -> dict:
             for p in imported_paths
         ):
             results["already_imported"] += 1
+            # Ensure queue row reflects downloaded state (handles upgrade path where
+            # previous --sync-local runs predated queue-update logic)
+            mark_attempt(db_path, csv_file.stem.split("_", 1)[-1], success=True, csv_path=str(csv_file))
             continue
 
         try:
             result = ingest_csv(csv_file, db_path)
             if result["success"]:
                 results["newly_imported"] += 1
+                # Keep the queue in sync so this ticker isn't re-downloaded by Playwright
+                mark_attempt(
+                    db_path,
+                    result["ticker"],
+                    success=True,
+                    csv_path=str(csv_file),
+                )
             else:
                 results["failures"].append(
                     (csv_file.name, result.get("error") or "Ingest returned success=False")

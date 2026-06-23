@@ -216,7 +216,7 @@ def mark_attempt(
     con.close()
 
 
-def mark_stale(db_path: Path, days_threshold: int = 90) -> int:
+def mark_stale(db_path: Path, days_threshold: int = 180) -> int:
     """
     Bulk-mark 'downloaded' rows as 'stale' if last_downloaded_at is older than
     days_threshold days. Returns the number of rows updated.

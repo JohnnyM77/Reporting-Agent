@@ -252,7 +252,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--rebuild-queue", action="store_true", help="Rebuild queue from watchlists")
     parser.add_argument("--dry-run", action="store_true", help="Print next tickers without downloading")
     parser.add_argument("--mark-stale", action="store_true", help="Mark old downloads as stale")
-    parser.add_argument("--stale-days", type=int, default=90, help="Days before marking stale (default 90)")
+    parser.add_argument("--stale-days", type=int, default=180, help="Days before marking stale (default 180 — twice yearly after ASX reporting seasons)")
     parser.add_argument("--local", action="store_true", help="Use local storage_state.json (not env var)")
     parser.add_argument("--limit", type=int, default=2, help="Number of CSVs to download (default 2)")
     parser.add_argument(

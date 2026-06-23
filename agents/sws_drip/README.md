@@ -97,8 +97,8 @@ python -m agents.sws_drip.run_drip [--limit 4]
 # Local run — uses storage_state.json file
 python -m agents.sws_drip.run_drip --local [--limit 1]
 
-# Mark old downloads as stale (for periodic refresh)
-python -m agents.sws_drip.run_drip --mark-stale [--stale-days 90]
+# Mark old downloads as stale (for periodic refresh — twice yearly after ASX reporting seasons)
+python -m agents.sws_drip.run_drip --mark-stale [--stale-days 180]
 ```
 
 ---

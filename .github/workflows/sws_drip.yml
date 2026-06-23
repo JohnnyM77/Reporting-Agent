@@ -48,6 +48,11 @@ jobs:
           # Always ensure DB + queue are initialised; idempotent if already done
           python -m agents.sws_drip.run_drip --rebuild-queue
 
+      - name: Mark stale CSVs for re-download
+        # Runs daily but only acts on tickers not refreshed in 180+ days.
+        # ASX companies report twice a year (Feb/Aug), so 180 days keeps data current.
+        run: python -m agents.sws_drip.run_drip --mark-stale --stale-days 180
+
       - name: Run SWS drip
         env:
           SWS_STORAGE_STATE: ${{ secrets.SWS_STORAGE_STATE }}

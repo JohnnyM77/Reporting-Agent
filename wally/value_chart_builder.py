@@ -125,6 +125,65 @@ def _infer_currency(exchange: str) -> str:
     return _CURRENCY_BY_EXCHANGE.get(exchange.upper(), "USD")
 
 
+def _infer_pe_multiple(ticker: str) -> tuple[int, str]:
+    """
+    Auto-detect a sensible buy PE multiple from SWS revenue history.
+
+    Growth tiers (3-year revenue CAGR):
+      < 0%        → 10  cyclical / declining
+      0–5%        → 12  value/industrial
+      5–12%       → 20  quality/steady
+      12–25%      → 30  growth
+      25%+        → 45  high growth
+      pre-profit  → 25  all EPS negative — growth assumed, use mid-tier
+
+    Falls back to 15 if SWS data unavailable.
+    Returns (multiple, tier_label).
+    """
+    try:
+        import os, sys
+        repo_root = str(Path(__file__).resolve().parents[1])
+        if repo_root not in sys.path:
+            sys.path.insert(0, repo_root)
+        from investing.sws_reader import SWSReader
+        db_path = os.environ.get("SWS_DB_PATH", str(Path(repo_root) / "jm_investing_sws.sqlite"))
+        reader = SWSReader(db_path)
+        if not reader.is_available():
+            return 15, "default (no SWS DB)"
+        bare = ticker.upper().replace(".AX", "").replace(".ax", "")
+        if bare not in reader.tickers():
+            return 15, "default (not in SWS)"
+
+        rev = reader.get_revenue_history(bare)
+        eps = reader.get_eps_history(bare)
+
+        # Check pre-profit: if all EPS values are negative
+        if eps and all(v <= 0 for v in eps.values()):
+            return 25, "pre-profit (25×)"
+
+        # Calculate 3-year revenue CAGR using the 3 most recent years
+        years = sorted(int(y) for y in rev.keys())
+        if len(years) >= 4:
+            y_end, y_start = years[-1], years[-4]
+            r_end, r_start = rev[str(y_end)], rev[str(y_start)]
+            if r_start and r_start > 0:
+                cagr = (r_end / r_start) ** (1 / 3) - 1
+                if cagr < 0:
+                    return 10, f"cyclical/declining ({cagr:.0%} CAGR → 10×)"
+                elif cagr < 0.05:
+                    return 12, f"value/industrial ({cagr:.0%} CAGR → 12×)"
+                elif cagr < 0.12:
+                    return 20, f"quality ({cagr:.0%} CAGR → 20×)"
+                elif cagr < 0.25:
+                    return 30, f"growth ({cagr:.0%} CAGR → 30×)"
+                else:
+                    return 45, f"high growth ({cagr:.0%} CAGR → 45×)"
+
+        return 15, "default (insufficient history)"
+    except Exception as e:
+        return 15, f"default (error: {e})"
+
+
 def _auto_create_starter_config(ticker: str, path: Path) -> dict[str, Any]:
     """Auto-create a minimal starter config when none exists.
 
@@ -134,6 +193,8 @@ def _auto_create_starter_config(ticker: str, path: Path) -> dict[str, Any]:
     """
     exchange = _infer_exchange(ticker)
     currency = _infer_currency(exchange)
+    buy_multiple, tier_label = _infer_pe_multiple(ticker)
+    print(f"[wally] PE inference for {ticker}: {tier_label}", flush=True)
     cfg: dict[str, Any] = {
         "ticker":       ticker,
         "company_name": ticker.split(".")[0],
@@ -141,7 +202,8 @@ def _auto_create_starter_config(ticker: str, path: Path) -> dict[str, Any]:
         "exchange":     exchange,
         "currency":     currency,
         "stock_type":   "quality",
-        "buy_multiple": 15,
+        "buy_multiple": buy_multiple,
+        "buy_multiple_auto": True,   # set to false once you've manually confirmed
         "sell_multiple": None,
         "rror":         0.04,
         "norm_eps":     None,
@@ -151,6 +213,8 @@ def _auto_create_starter_config(ticker: str, path: Path) -> dict[str, Any]:
     header = (
         f"# {ticker} — Value Chart Config (auto-generated starter)\n"
         f"# Exchange: {exchange} | Currency: {currency}\n"
+        f"# PE tier auto-detected: {tier_label}\n"
+        f"# Set buy_multiple_auto: false once you've reviewed and confirmed buy_multiple.\n"
         f"# TODO: Update company_name, business, buy_multiple, rror, and earnings.\n"
         f"# Run: python scripts/build_value_chart.py {ticker}\n\n"
     )
@@ -181,6 +245,22 @@ def load_config(ticker_or_path: str) -> dict[str, Any]:
         cfg = _auto_create_starter_config(ticker_or_path, p)
     else:
         cfg = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+        # If this was an auto-generated config, refresh the PE multiple from SWS data
+        if cfg.get("buy_multiple_auto"):
+            ticker_key = cfg.get("ticker", ticker_or_path)
+            new_multiple, tier_label = _infer_pe_multiple(ticker_key)
+            old_multiple = cfg.get("buy_multiple", 15)
+            if new_multiple != old_multiple:
+                print(f"[wally] PE re-inferred for {ticker_key}: {tier_label}", flush=True)
+                cfg["buy_multiple"] = new_multiple
+                p.write_text(
+                    p.read_text(encoding="utf-8").replace(
+                        f"buy_multiple: {old_multiple}\n",
+                        f"buy_multiple: {new_multiple}\n",
+                        1,
+                    ),
+                    encoding="utf-8",
+                )
     _validate_config(cfg)
     return cfg
 

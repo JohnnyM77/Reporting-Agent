@@ -68,6 +68,9 @@ def sync_local_csvs(db_path: Path, csv_dir: Path | None = None) -> dict:
             for p in imported_paths
         ):
             results["already_imported"] += 1
+            # Ensure queue row reflects downloaded state (handles upgrade path where
+            # previous --sync-local runs predated queue-update logic)
+            mark_attempt(db_path, csv_file.stem.split("_", 1)[-1], success=True, csv_path=str(csv_file))
             continue
 
         try:

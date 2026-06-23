@@ -210,6 +210,19 @@ def _validate_config(cfg: dict) -> None:
         cfg["currency"] = _infer_currency(cfg["exchange"])
 
 
+def _nice_unit(axis_range: float) -> float:
+    """Return a round tick interval for the given axis range (e.g. 50 → 5, 200 → 20)."""
+    if axis_range <= 0:
+        return 1.0
+    raw = axis_range / 8          # aim for ~8 ticks
+    magnitude = 10 ** math.floor(math.log10(raw))
+    for step in (1, 2, 2.5, 5, 10):
+        candidate = step * magnitude
+        if axis_range / candidate <= 10:
+            return candidate
+    return magnitude * 10
+
+
 def _get(cfg: dict, *keys, default=None):
     """Safe nested dict getter: _get(cfg, 'chart', 'left_axis', 'max', default=8.0)"""
     v = cfg
@@ -1038,7 +1051,7 @@ def _build_chart(wb: Workbook, cfg: dict, ws3) -> None:
     la = _get(cfg, "chart", "left_axis") or {}
     ch.y_axis.title         = la.get("label",      "Price (AUD $)")
     ch.y_axis.number_format = la.get("num_fmt",    '"$"#,##0.00')
-    ch.y_axis.majorUnit     = float(la.get("major_unit", 1.0))
+    ch.y_axis.majorUnit     = float(la["major_unit"]) if "major_unit" in la else _nice_unit(y_max - y_min)
     ch.y_axis.scaling.min   = float(y_min)
     ch.y_axis.scaling.max   = float(y_max)
     ch.y_axis.majorGridlines = None
@@ -1099,7 +1112,7 @@ def _build_chart(wb: Workbook, cfg: dict, ws3) -> None:
     sec.y_axis.crosses       = "max"
     sec.y_axis.crossAx       = 10    # secondary valAx crosses shared catAx (id=10)
     sec.y_axis.number_format = ra.get("num_fmt",    "0.0")
-    sec.y_axis.majorUnit     = float(ra.get("major_unit", 2.0))
+    sec.y_axis.majorUnit     = float(ra["major_unit"]) if "major_unit" in ra else _nice_unit(pe_max - pe_min)
     sec.y_axis.scaling.min   = float(pe_min)
     sec.y_axis.scaling.max   = float(pe_max)
     sec.y_axis.majorGridlines = None

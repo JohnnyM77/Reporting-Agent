@@ -38,6 +38,22 @@ jobs:
             --db /tmp/jm_investing_sws.sqlite \
             $FORCE_FLAG \
             investing/tests/fixtures/
+          # Verify only the consolidated .sqlite exists (no WAL/SHM sidecars)
+          python -c "
+          import sqlite3
+          from pathlib import Path
+          db = Path('/tmp/jm_investing_sws.sqlite')
+          con = sqlite3.connect(db)
+          con.execute('PRAGMA wal_checkpoint(TRUNCATE)')
+          con.close()
+          for sidecar in [db.with_suffix('.sqlite-wal'), db.with_suffix('.sqlite-shm')]:
+              if sidecar.exists():
+                  sidecar.unlink()
+                  print(f'Removed sidecar: {sidecar.name}')
+          print(f'DB size: {db.stat().st_size:,} bytes')
+          assert not db.with_suffix('.sqlite-wal').exists(), 'WAL file still present!'
+          print('Clean single-file SQLite confirmed.')
+          "
 
       - name: Upload SQLite to Google Drive
         continue-on-error: true

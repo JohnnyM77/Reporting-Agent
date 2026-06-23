@@ -513,6 +513,7 @@ def main(argv: list[str] | None = None) -> int:
         if result.get("warning"):
             print(f"  ! {result['warning']}")
 
+    con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     con.close()
 
     # Summary

@@ -100,9 +100,17 @@ async def download_csv(
 
         step = "navigate"
         try:
-            # 1. Navigate to SWS
-            await page.goto("https://simplywall.st", wait_until="domcontentloaded", timeout=30000)
+            # 1. Navigate to dashboard (has search box; homepage may be marketing page)
+            await page.goto("https://simplywall.st/dashboard", wait_until="domcontentloaded", timeout=30000)
             await _random_delay(2, 4)
+
+            # 1a. Session check — if redirected to login/home, session has expired
+            current_url = page.url
+            if any(p in current_url for p in ["/login", "/register", "simplywall.st/?", "simplywall.st/#"]):
+                await _save_debug(page, debug_dir, ticker, "session_expired")
+                raise SWSDownloadError(
+                    "SWS session has expired — re-run --setup locally and update SWS_STORAGE_STATE secret"
+                )
 
             # 2. Find and click search box
             step = "search_box"
@@ -112,6 +120,9 @@ async def download_csv(
                 '[data-testid*="search" i]',
                 'input[type="search"]',
                 'input[name*="search" i]',
+                'button[aria-label*="search" i]',
+                '[class*="search" i] input',
+                '[class*="Search" i] input',
             ]
             search_box = None
             for sel in search_selectors:
@@ -122,6 +133,24 @@ async def download_csv(
                     break
                 except Exception:
                     continue
+
+            # Fallback: navigate to the stocks search page and try again
+            if search_box is None:
+                await page.goto(
+                    f"https://simplywall.st/stocks/search?q=ASX%3A{ticker}",
+                    wait_until="domcontentloaded",
+                    timeout=30000,
+                )
+                await _random_delay(2, 4)
+                for sel in search_selectors:
+                    try:
+                        loc = page.locator(sel).first
+                        await loc.wait_for(state="visible", timeout=5000)
+                        search_box = loc
+                        break
+                    except Exception:
+                        continue
+
             if search_box is None:
                 await _save_debug(page, debug_dir, ticker, step)
                 raise SWSDownloadError(f"Could not find search box at step '{step}'")

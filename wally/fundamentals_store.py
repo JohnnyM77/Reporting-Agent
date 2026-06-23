@@ -80,6 +80,35 @@ def is_stale(data: dict) -> bool:
     return False
 
 
+def _fetch_sws(ticker: str) -> tuple[dict, dict]:
+    """
+    Fetch EPS + dividends from the local SWS SQLite database.
+    DB path: SWS_DB_PATH env var, or default jm_investing_sws.sqlite.
+    Ticker is looked up as bare symbol (BHP, not BHP.AX).
+    Returns ({}, {}) if DB not available or ticker not found.
+    """
+    db_path = os.environ.get("SWS_DB_PATH", "jm_investing_sws.sqlite")
+    try:
+        import sys
+        repo_root = str(Path(__file__).resolve().parents[1])
+        if repo_root not in sys.path:
+            sys.path.insert(0, repo_root)
+        from investing.sws_reader import SWSReader
+        reader = SWSReader(db_path)
+        if not reader.is_available():
+            return {}, {}
+        bare = ticker.upper().replace(".AX", "").replace(".ax", "")
+        if bare not in reader.tickers():
+            print(f"[fundamentals] SWS: {bare} not in database", flush=True)
+            return {}, {}
+        eps_cents, div_cents = reader.get_eps_cents_for_fundamentals(bare)
+        print(f"[fundamentals] SWS: {bare} → {len(eps_cents)} EPS years, {len(div_cents)} div years", flush=True)
+        return eps_cents, div_cents
+    except Exception as e:
+        print(f"[fundamentals] SWS fetch failed for {ticker}: {e}", flush=True)
+        return {}, {}
+
+
 def _fetch_yfinance(ticker: str) -> tuple[dict, dict]:
     """
     Fetch annual EPS and dividends via yfinance (works for ASX and US).
@@ -409,15 +438,24 @@ def get_fundamentals(ticker: str) -> dict:
     is_asx = ".AX" in ticker.upper()
 
     if is_asx:
-        # ASX: yfinance only (FMP free tier does not cover ASX)
-        yf_eps, yf_div = _fetch_yfinance(ticker)
-        for yr, val in yf_eps.items():
-            if yr not in eps:
+        # ASX: SWS database first (richer data), fall back to yfinance
+        sws_eps, sws_div = _fetch_sws(ticker)
+        if sws_eps:
+            for yr, val in sws_eps.items():
                 eps[yr] = val
-                sources[yr] = "yfinance"
-        for yr, val in yf_div.items():
-            if yr not in div:
+                sources[yr] = "sws"
+            for yr, val in sws_div.items():
                 div[yr] = val
+        else:
+            # SWS not available or ticker not in DB — fall back to yfinance
+            yf_eps, yf_div = _fetch_yfinance(ticker)
+            for yr, val in yf_eps.items():
+                if yr not in eps:
+                    eps[yr] = val
+                    sources[yr] = "yfinance"
+            for yr, val in yf_div.items():
+                if yr not in div:
+                    div[yr] = val
     else:
         # US / other: AV annual first (also grabs quarterly in same call)
         av_eps, _ = _fetch_alphavantage(ticker)

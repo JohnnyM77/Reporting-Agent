@@ -1415,9 +1415,35 @@ def build_chart_png(
     ax2.plot(dates, pe_smooth, color=_hex("pe_smooth", "B8860B"),
              linewidth=1.5, linestyle="-", label="P/E (12wk avg)", zorder=2)
 
-    # Axis limits
-    ax1.set_ylim(float(la.get("min", 0.0)), float(la.get("max", 10.0)))
-    ax2.set_ylim(float(ra.get("min", 0.0)), float(ra.get("max", 20.0)))
+    # Axis limits — derive from data; YAML overrides win if explicitly set
+    primary_vals = (
+        [p for p in prices if p is not None]
+        + [v for v in v_buys  if v is not None]
+        + [v for v in v_sells if v is not None]
+        + [v for v in drrors  if v is not None]
+    )
+    if primary_vals:
+        _data_min = min(primary_vals)
+        _data_max = max(primary_vals)
+        _pad = (_data_max - _data_min) * 0.10 or _data_max * 0.10 or 1.0
+        _auto_ymin = max(0.0, math.floor(_data_min - _pad))
+        _auto_ymax = math.ceil(_data_max + _pad)
+    else:
+        _auto_ymin, _auto_ymax = 0.0, 10.0
+
+    _pe_vals = [v for v in pe_smooth if v is not None and not np.isnan(v)]
+    if _pe_vals:
+        _auto_pe_max = math.ceil(max(_pe_vals) * 1.15)
+    else:
+        _auto_pe_max = 60
+
+    _ymin  = float(la["min"]) if "min" in la else _auto_ymin
+    _ymax  = float(la["max"]) if "max" in la else _auto_ymax
+    _pemin = float(ra.get("min", 0.0))
+    _pemax = float(ra["max"]) if "max" in ra else _auto_pe_max
+
+    ax1.set_ylim(_ymin, _ymax)
+    ax2.set_ylim(_pemin, _pemax)
 
     # Axis labels — yellow box style matching the Excel chart
     _label_kw = dict(fontsize=10, fontweight="bold",

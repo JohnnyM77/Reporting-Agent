@@ -21,6 +21,9 @@ Usage:
 
   # Local mode (reads storage_state.json from disk instead of env var)
   python -m agents.sws_drip.run_drip --local --limit 1
+
+  # Sync manually-downloaded CSVs from data/sws_csv/ into SQLite
+  python -m agents.sws_drip.run_drip --sync-local
 """
 
 from __future__ import annotations
@@ -48,6 +51,7 @@ from .sws_queue import (
 )
 from .sws_telegram import notify
 from .sws_downloader import SWSDownloadError, download_csv, setup_session
+from .sws_sync_local import sync_local_csvs
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -172,6 +176,37 @@ async def _run_downloads(tickers: list[dict], storage_state: dict | str) -> tupl
     return success_count, fail_count
 
 
+def cmd_sync_local() -> None:
+    """Scan data/sws_csv/ for new CSVs and ingest them into SQLite."""
+    if not _DB_PATH.exists():
+        print(
+            "[sws_drip] Database not found. Run --rebuild-queue first, or "
+            "drop a CSV in data/sws_csv/ and re-run.",
+            flush=True,
+        )
+        return
+
+    print(f"[sws_drip] Syncing local CSVs from {_CSV_DIR} ...", flush=True)
+    results = sync_local_csvs(db_path=_DB_PATH, csv_dir=_CSV_DIR)
+
+    print(f"[sws_drip] Total CSVs found:   {results['total_csvs']}", flush=True)
+    print(f"[sws_drip] Already imported:   {results['already_imported']}", flush=True)
+    print(f"[sws_drip] Newly imported:     {results['newly_imported']}", flush=True)
+
+    if results["failures"]:
+        print(f"[sws_drip] Failures: {len(results['failures'])}", flush=True)
+        for filename, error in results["failures"]:
+            print(f"  - {filename}: {error}", flush=True)
+    else:
+        print("[sws_drip] No failures.", flush=True)
+
+    notify(
+        f"SWS Sync: Imported {results['newly_imported']} new CSVs. "
+        f"({results['already_imported']} already in DB, "
+        f"{len(results['failures'])} failures)"
+    )
+
+
 def cmd_run(limit: int, local: bool) -> None:
     """Normal run: load session, download N CSVs, ingest, report."""
     storage_state = _load_storage_state(local)
@@ -220,6 +255,14 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--stale-days", type=int, default=90, help="Days before marking stale (default 90)")
     parser.add_argument("--local", action="store_true", help="Use local storage_state.json (not env var)")
     parser.add_argument("--limit", type=int, default=2, help="Number of CSVs to download (default 2)")
+    parser.add_argument(
+        "--sync-local",
+        action="store_true",
+        help=(
+            "Scan data/sws_csv/ for new CSVs and import them into SQLite. "
+            "Use this after manually downloading files from SWS or when syncing to a new machine."
+        ),
+    )
     args = parser.parse_args(argv)
 
     if args.setup:
@@ -230,6 +273,8 @@ def main(argv: list[str] | None = None) -> None:
         cmd_dry_run(args.limit)
     elif args.mark_stale:
         mark_stale(_DB_PATH, days_threshold=args.stale_days)
+    elif args.sync_local:
+        cmd_sync_local()
     else:
         cmd_run(limit=args.limit, local=args.local)
 

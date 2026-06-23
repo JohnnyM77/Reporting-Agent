@@ -46,3 +46,9 @@ Thumbs.db
 
 # Master Investor Alert — generated digests and runtime outputs
 outputs/
+
+# SWS Drip Bot
+data/sws.db
+data/sws_debug/*
+!data/sws_debug/.gitkeep
+storage_state.json

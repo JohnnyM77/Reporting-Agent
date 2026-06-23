@@ -80,10 +80,11 @@ jobs:
             git push
           fi
 
-      - name: Upload debug artifacts on failure
-        if: failure()
+      - name: Upload debug artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sws-debug-${{ github.run_id }}
           path: data/sws_debug/
+          if-no-files-found: ignore
           retention-days: 7

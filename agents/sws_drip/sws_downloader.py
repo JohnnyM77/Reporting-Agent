@@ -114,27 +114,63 @@ async def download_csv(
 
             # 2. Find and click search box
             step = "search_box"
-            search_selectors = [
+
+            # SWS uses a search icon that reveals an input when clicked.
+            # Try visible inputs first; if none, click the search icon trigger.
+            search_input_selectors = [
                 'input[placeholder*="Search" i]',
-                '[role="combobox"]',
-                '[data-testid*="search" i]',
                 'input[type="search"]',
                 'input[name*="search" i]',
-                'button[aria-label*="search" i]',
-                '[class*="search" i] input',
-                '[class*="Search" i] input',
+                '[role="combobox"]',
+                '[data-testid*="search" i] input',
             ]
+            search_trigger_selectors = [
+                'button[aria-label*="Search" i]',
+                'button[aria-label*="search" i]',
+                '[data-testid*="search" i]',
+                'header button:has(svg)',
+                'nav button:has(svg)',
+                '[class*="Search" i] button',
+                '[class*="search" i] button',
+                'button:has(svg[class*="search" i])',
+                'a[href*="search"]',
+            ]
+
             search_box = None
-            for sel in search_selectors:
+
+            # First pass: input already visible
+            for sel in search_input_selectors:
                 try:
                     loc = page.locator(sel).first
-                    await loc.wait_for(state="visible", timeout=5000)
+                    await loc.wait_for(state="visible", timeout=3000)
                     search_box = loc
                     break
                 except Exception:
                     continue
 
-            # Fallback: navigate to the stocks search page and try again
+            # Second pass: click the icon trigger, then wait for input
+            if search_box is None:
+                for sel in search_trigger_selectors:
+                    try:
+                        trigger = page.locator(sel).first
+                        await trigger.wait_for(state="visible", timeout=3000)
+                        await trigger.click()
+                        await _random_delay(0.5, 1.0)
+                        # Now look for the revealed input
+                        for inp_sel in search_input_selectors:
+                            try:
+                                loc = page.locator(inp_sel).first
+                                await loc.wait_for(state="visible", timeout=3000)
+                                search_box = loc
+                                break
+                            except Exception:
+                                continue
+                        if search_box is not None:
+                            break
+                    except Exception:
+                        continue
+
+            # Third pass: try stocks/search URL fallback
             if search_box is None:
                 await page.goto(
                     f"https://simplywall.st/stocks/search?q=ASX%3A{ticker}",
@@ -142,10 +178,10 @@ async def download_csv(
                     timeout=30000,
                 )
                 await _random_delay(2, 4)
-                for sel in search_selectors:
+                for sel in search_input_selectors + search_trigger_selectors:
                     try:
                         loc = page.locator(sel).first
-                        await loc.wait_for(state="visible", timeout=5000)
+                        await loc.wait_for(state="visible", timeout=4000)
                         search_box = loc
                         break
                     except Exception:

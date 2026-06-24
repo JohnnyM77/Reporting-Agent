@@ -104,12 +104,23 @@ async def download_csv(
             await page.goto("https://simplywall.st/dashboard", wait_until="domcontentloaded", timeout=30000)
             await _random_delay(2, 4)
 
-            # 1a. Session check — if redirected to login/home, session has expired
+            # 1a. Log what we landed on — visible in Actions logs without needing artifacts
             current_url = page.url
+            title = await page.title()
+            print(f"[sws_downloader] Landed on: {current_url!r} | title={title!r}", flush=True)
+
+            # Save a screenshot immediately so we can see the page regardless of what happens next
+            await _save_debug(page, debug_dir, ticker, "after_navigate")
+
+            # 1b. Session check — if redirected to login/home, session has expired
             if any(p in current_url for p in ["/login", "/register", "simplywall.st/?", "simplywall.st/#"]):
-                await _save_debug(page, debug_dir, ticker, "session_expired")
                 raise SWSDownloadError(
                     "SWS session has expired — re-run --setup locally and update SWS_STORAGE_STATE secret"
+                )
+            # Also catch plain root URL redirect (no path)
+            if current_url.rstrip("/") in ["https://simplywall.st", "http://simplywall.st"]:
+                raise SWSDownloadError(
+                    "SWS session has expired (redirected to homepage) — re-run --setup and update SWS_STORAGE_STATE secret"
                 )
 
             # 2. Find and click search box

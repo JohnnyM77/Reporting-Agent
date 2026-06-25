@@ -6,12 +6,16 @@ on:
     - cron: '30 23 * * 1-5'
   workflow_dispatch:
     inputs:
+      tickers:
+        description: 'Tickers to download right now (comma-separated, e.g. BHP,BXB,WOW). Leave blank to use the queue.'
+        default: ''
+        type: string
       limit:
-        description: 'How many CSVs to download'
+        description: 'How many CSVs to pull from the queue (ignored if tickers is set)'
         default: '2'
         type: string
       dry_run:
-        description: 'Dry run (no actual downloads)'
+        description: 'Dry run — print next tickers without downloading'
         default: false
         type: boolean
       rebuild_queue:
@@ -35,9 +39,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: |
-          pip install playwright pyyaml
-          playwright install chromium --with-deps
+        run: pip install httpx pyyaml
 
       - name: Rebuild queue (optional)
         if: ${{ github.event.inputs.rebuild_queue == 'true' }}
@@ -56,15 +58,19 @@ jobs:
       - name: Run SWS drip
         env:
           SWS_STORAGE_STATE: ${{ secrets.SWS_STORAGE_STATE }}
-          SWS_EMAIL: ${{ secrets.SWS_EMAIL }}
-          SWS_PASSWORD: ${{ secrets.SWS_PASSWORD }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            python -m agents.sws_drip.run_drip --dry-run --limit ${{ github.event.inputs.limit || '2' }}
+          TICKERS="${{ github.event.inputs.tickers }}"
+          LIMIT="${{ github.event.inputs.limit || '2' }}"
+          DRY_RUN="${{ github.event.inputs.dry_run }}"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            python -m agents.sws_drip.run_drip --dry-run --limit "$LIMIT"
+          elif [ -n "$TICKERS" ]; then
+            python -m agents.sws_drip.run_drip --tickers "$TICKERS"
           else
-            python -m agents.sws_drip.run_drip --limit ${{ github.event.inputs.limit || '2' }}
+            python -m agents.sws_drip.run_drip --limit "$LIMIT"
           fi
 
       - name: Commit downloaded CSVs

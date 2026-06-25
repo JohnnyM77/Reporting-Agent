@@ -207,11 +207,29 @@ def cmd_sync_local() -> None:
     )
 
 
-def cmd_run(limit: int, local: bool) -> None:
+def cmd_run(limit: int, local: bool, tickers_override: list[str] | None = None) -> None:
     """Normal run: load session, download N CSVs, ingest, report."""
     storage_state = _load_storage_state(local)
 
-    tickers = get_next_tickers(_DB_PATH, limit=limit)
+    if tickers_override:
+        # Manual ticker list from --tickers flag (or GitHub Actions input)
+        tickers = []
+        for raw in tickers_override:
+            raw = raw.strip().upper()
+            if not raw:
+                continue
+            if ":" in raw:
+                exchange, ticker = raw.split(":", 1)
+            else:
+                exchange, ticker = "ASX", raw
+            tickers.append({"ticker": ticker, "exchange": exchange, "status": "manual", "priority": 99})
+        if not tickers:
+            print("[sws_drip] No valid tickers in --tickers list.", flush=True)
+            return
+        print(f"[sws_drip] Manual ticker override: {[t['exchange']+':'+t['ticker'] for t in tickers]}", flush=True)
+    else:
+        tickers = get_next_tickers(_DB_PATH, limit=limit)
+
     if not tickers:
         msg = "Queue is empty or all tickers already downloaded."
         print(f"[sws_drip] {msg}", flush=True)
@@ -263,7 +281,19 @@ def main(argv: list[str] | None = None) -> None:
             "Use this after manually downloading files from SWS or when syncing to a new machine."
         ),
     )
+    parser.add_argument(
+        "--tickers",
+        type=str,
+        default="",
+        help=(
+            "Comma-separated list of tickers to download immediately, bypassing the queue. "
+            "E.g. --tickers BHP,BXB,WOW or --tickers ASX:BHP,ASX:WOW"
+        ),
+    )
     args = parser.parse_args(argv)
+
+    # Parse --tickers into a list (empty string → None)
+    tickers_override = [t.strip() for t in args.tickers.split(",") if t.strip()] if args.tickers else None
 
     if args.setup:
         cmd_setup()
@@ -276,7 +306,7 @@ def main(argv: list[str] | None = None) -> None:
     elif args.sync_local:
         cmd_sync_local()
     else:
-        cmd_run(limit=args.limit, local=args.local)
+        cmd_run(limit=args.limit, local=args.local, tickers_override=tickers_override)
 
 
 if __name__ == "__main__":

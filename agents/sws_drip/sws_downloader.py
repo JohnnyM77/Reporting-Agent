@@ -2,7 +2,8 @@
 agents/sws_drip/sws_downloader.py
 ───────────────────────────────────
 Direct HTTP API approach: authenticate with Bearer JWT from storage_state,
-resolve ticker via SWS internal company API, download CSV via SWS REST API.
+resolve ticker slug by following the SWS short-URL redirect, then download
+CSV via the SWS REST API.
 
 No Playwright. No browser. No Cloudflare. No rotating Algolia keys.
 """
@@ -24,9 +25,6 @@ class SWSDownloadError(Exception):
 
 
 _SWS_BASE = "https://simplywall.st"
-_CSV_URL_TEMPLATE = (
-    "/api/company/download/csv//stocks/{country}/{sector}/asx-{ticker}/{slug}"
-)
 
 _USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -87,7 +85,8 @@ def _slugify(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
 
 
-def _sws_headers(bearer: str, cookie_header: str, referer: str = "") -> dict:
+def _api_headers(bearer: str, cookie_header: str, referer: str = "") -> dict:
+    """Headers for authenticated SWS API requests."""
     h = {
         "Authorization": f"Bearer {bearer}",
         "Accept": "application/vnd.simplywallst.v2",
@@ -101,105 +100,121 @@ def _sws_headers(bearer: str, cookie_header: str, referer: str = "") -> dict:
     return h
 
 
-def _resolve_ticker_via_sws_api(ticker: str, exchange: str, bearer: str, cookie_header: str) -> dict:
+def _resolve_via_redirect(ticker: str, bearer: str, cookie_header: str) -> dict:
     """
-    Use SWS's own authenticated company search API to resolve ticker →
-    {slug, sector, country}.
+    Hit the SWS short company URL and follow the redirect to get
+    country/sector/slug from the final URL path.
 
-    Tries multiple endpoints in order:
-      1. /api/company?query=ASX:BHP  (main search)
-      2. /api/company?query=BHP&exchange=ASX
-      3. /api/company/asx-{ticker}   (direct lookup by unique_symbol)
+    SWS maps: /stocks/asx-{ticker}  →  /stocks/{country}/{sector}/asx-{ticker}/{slug}
+
+    Returns {slug, sector, country} or raises SWSDownloadError.
     """
-    headers = _sws_headers(bearer, cookie_header, referer="https://simplywall.st/dashboard")
-    search_query = f"{exchange}:{ticker}"
+    short_url = f"{_SWS_BASE}/stocks/asx-{ticker.lower()}"
+    headers = _api_headers(bearer, cookie_header, referer="https://simplywall.st/dashboard")
 
-    with httpx.Client(timeout=20, follow_redirects=True) as client:
-        # Attempt 1: search by exchange:ticker
-        for params in [
-            {"query": search_query, "limit": 5},
-            {"query": ticker, "exchange": exchange, "limit": 5},
-        ]:
+    print(f"[sws_downloader] Trying redirect resolution: {short_url}", flush=True)
+    with httpx.Client(timeout=15, follow_redirects=True) as client:
+        resp = client.get(short_url, headers=headers)
+
+    final_url = str(resp.url)
+    print(f"[sws_downloader] Redirect → {final_url}  (status {resp.status_code})", flush=True)
+
+    # Parse /stocks/{country}/{sector}/asx-{ticker}/{slug}
+    m = re.search(r"/stocks/([^/]+)/([^/]+)/asx-[^/]+/([^/?#]+)", final_url)
+    if m:
+        country, sector, slug = m.group(1), m.group(2), m.group(3)
+        print(f"[sws_downloader] Parsed from URL: country={country!r} sector={sector!r} slug={slug!r}", flush=True)
+        return {"country": country, "sector": sector, "slug": slug}
+
+    # Didn't redirect — but maybe the API returned JSON with the URL
+    if resp.status_code == 200:
+        content_type = resp.headers.get("content-type", "")
+        if "json" in content_type:
             try:
-                resp = client.get(
-                    f"{_SWS_BASE}/api/company",
-                    params=params,
-                    headers=headers,
-                )
-                if resp.status_code == 200:
-                    data = resp.json()
-                    # Response may be {"data": [...]} or a list directly
-                    items = data.get("data", data) if isinstance(data, dict) else data
-                    if isinstance(items, list):
-                        for item in items:
-                            sym = (
-                                item.get("ticker_symbol")
-                                or item.get("unique_symbol")
-                                or item.get("symbol")
-                                or ""
-                            ).upper()
-                            # Match bare ticker or ASX:TICKER format
-                            if sym in (ticker.upper(), f"{exchange}:{ticker}".upper()):
-                                return _extract_company_meta(item, ticker)
+                data = resp.json()
+                print(f"[sws_downloader] JSON response keys: {list(data.keys()) if isinstance(data, dict) else type(data)}", flush=True)
             except Exception:
-                continue
-
-        # Attempt 2: direct unique_symbol lookup
-        try:
-            resp = client.get(
-                f"{_SWS_BASE}/api/company/asx-{ticker.lower()}",
-                headers=headers,
-            )
-            if resp.status_code == 200:
-                item = resp.json()
-                if isinstance(item, dict) and item.get("data"):
-                    item = item["data"]
-                return _extract_company_meta(item, ticker)
-        except Exception:
-            pass
+                pass
+        # Log first 300 chars of body for debugging
+        print(f"[sws_downloader] Response body[:300]: {resp.text[:300]!r}", flush=True)
 
     raise SWSDownloadError(
-        f"Could not resolve ticker '{ticker}' on exchange '{exchange}' via SWS company API. "
-        f"Check that the ticker exists on SWS, or the session has expired."
+        f"Could not resolve URL components for '{ticker}' from redirect. "
+        f"Final URL was: {final_url!r}  (status {resp.status_code}). "
+        f"Check debug output above."
     )
 
 
-def _extract_company_meta(item: dict, ticker: str) -> dict:
-    """Pull slug/sector/country out of an SWS company API response item."""
-    # Slug can come from several fields
+def _resolve_via_api(ticker: str, exchange: str, bearer: str, cookie_header: str) -> dict:
+    """
+    Try SWS REST API endpoints to get company metadata.
+    Logs responses to help diagnose which endpoint pattern is correct.
+    """
+    headers = _api_headers(bearer, cookie_header)
+    endpoints = [
+        f"{_SWS_BASE}/api/company?unique_symbol={exchange}:{ticker}",
+        f"{_SWS_BASE}/api/company?query={exchange}:{ticker}&limit=5",
+        f"{_SWS_BASE}/api/company?query={ticker}&exchange_symbol={exchange}&limit=5",
+        f"{_SWS_BASE}/api/companies?query={exchange}:{ticker}&limit=5",
+        f"{_SWS_BASE}/api/companies/search?q={exchange}:{ticker}",
+    ]
+
+    with httpx.Client(timeout=15, follow_redirects=True) as client:
+        for url in endpoints:
+            try:
+                resp = client.get(url, headers=headers)
+                print(
+                    f"[sws_downloader] {url!r} → {resp.status_code} "
+                    f"body[:200]={resp.text[:200]!r}",
+                    flush=True,
+                )
+                if resp.status_code == 200:
+                    try:
+                        data = resp.json()
+                        items = data.get("data", []) if isinstance(data, dict) else data
+                        if isinstance(items, list) and items:
+                            item = items[0]
+                            return _extract_meta_from_item(item, ticker)
+                    except Exception as e:
+                        print(f"[sws_downloader] JSON parse error: {e}", flush=True)
+            except Exception as e:
+                print(f"[sws_downloader] Request error for {url}: {e}", flush=True)
+
+    raise SWSDownloadError(
+        f"All API endpoint guesses failed for '{ticker}'. "
+        "See diagnostic output above to identify the correct endpoint."
+    )
+
+
+def _extract_meta_from_item(item: dict, ticker: str) -> dict:
     slug = (
-        item.get("slug")
-        or item.get("unique_symbol_slug")
-        or item.get("company_name_slug")
-        or ""
+        item.get("slug") or item.get("unique_symbol_slug") or item.get("company_name_slug") or ""
     ).lower()
-    # Remove leading exchange prefix if present (e.g. "asx-bhp" → "bhp")
     if slug.startswith("asx-"):
         slug = slug[4:]
-
-    # If still no slug, derive from company name
     if not slug:
-        name = item.get("name") or item.get("company_name") or ticker
-        slug = _slugify(name)
+        slug = _slugify(item.get("name") or item.get("company_name") or ticker)
 
     sector = (
-        item.get("industry_name")
-        or item.get("sector")
-        or item.get("gics_sector")
-        or "unknown"
+        item.get("industry_name") or item.get("sector") or item.get("gics_sector") or "unknown"
     )
-    country = (
-        item.get("country_iso")
-        or item.get("country")
-        or "au"
-    ).lower()
+    country = (item.get("country_iso") or item.get("country") or "au").lower()
+    return {"slug": slug, "sector": _slugify(sector), "country": country}
 
-    return {
-        "slug": slug,
-        "sector": _slugify(sector),
-        "country": country,
-        "raw": item,
-    }
+
+def _resolve_ticker(ticker: str, exchange: str, bearer: str, cookie_header: str) -> dict:
+    """
+    Resolve ticker → {slug, sector, country}.
+
+    Strategy 1: follow /stocks/asx-{ticker} redirect (cleanest)
+    Strategy 2: probe known API endpoint patterns (diagnostic fallback)
+    """
+    try:
+        return _resolve_via_redirect(ticker, bearer, cookie_header)
+    except SWSDownloadError as e:
+        print(f"[sws_downloader] Redirect strategy failed: {e}", flush=True)
+
+    return _resolve_via_api(ticker, exchange, bearer, cookie_header)
 
 
 def download_csv(
@@ -216,7 +231,7 @@ def download_csv(
 
     Steps:
       1. Extract Bearer JWT from storage_state
-      2. Resolve ticker → slug/sector/country via SWS company API (authenticated)
+      2. Resolve ticker → slug/sector/country (redirect or API probe)
       3. GET the CSV download endpoint with auth headers
 
     Returns the path to the saved CSV file.
@@ -228,37 +243,29 @@ def download_csv(
     bearer = _extract_bearer(storage_state)
     cookie_header = _build_cookie_header(storage_state)
 
-    print(f"[sws_downloader] Resolving {exchange}:{ticker} via SWS API...", flush=True)
+    print(f"[sws_downloader] Resolving {exchange}:{ticker}...", flush=True)
 
-    info = _resolve_ticker_via_sws_api(ticker, exchange, bearer, cookie_header)
+    info = _resolve_ticker(ticker, exchange, bearer, cookie_header)
     slug = info["slug"]
     sector = info["sector"]
     country = info["country"]
 
-    print(
-        f"[sws_downloader] Resolved: slug={slug!r} sector={sector!r} country={country!r}",
-        flush=True,
-    )
+    # Build CSV URL — note the double-slash before 'stocks' is intentional (matches SWS pattern)
+    url = f"{_SWS_BASE}/api/company/download/csv//stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
 
-    csv_path_segment = _CSV_URL_TEMPLATE.format(
-        country=country,
-        sector=sector,
-        ticker=ticker.lower(),
-        slug=slug,
-    )
-    url = _SWS_BASE + csv_path_segment
-
-    headers = _sws_headers(
+    headers = _api_headers(
         bearer,
         cookie_header,
-        referer=f"https://simplywall.st/stocks/au/{sector}/asx-{ticker.lower()}/{slug}",
+        referer=f"https://simplywall.st/stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}",
     )
 
-    print(f"[sws_downloader] Downloading CSV from: {url}", flush=True)
+    print(f"[sws_downloader] Downloading CSV: {url}", flush=True)
     time.sleep(random.uniform(1.5, 3.0))
 
     with httpx.Client(timeout=30, follow_redirects=True) as client:
         resp = client.get(url, headers=headers)
+
+    print(f"[sws_downloader] CSV response: {resp.status_code}  content-type={resp.headers.get('content-type', '')!r}", flush=True)
 
     if resp.status_code in (401, 403):
         raise SWSDownloadError(
@@ -271,23 +278,18 @@ def download_csv(
             f"URL: {url}\nStatus: {resp.status_code}\nBody: {resp.text[:2000]}",
             encoding="utf-8",
         )
-        raise SWSDownloadError(
-            f"CSV download failed for {ticker}: HTTP {resp.status_code}"
-        )
+        raise SWSDownloadError(f"CSV download failed for {ticker}: HTTP {resp.status_code}")
 
     content = resp.text
     if not content.strip() or "<html" in content[:100].lower():
         debug_dir.mkdir(parents=True, exist_ok=True)
-        (debug_dir / f"fail_{ticker}_csv_content.txt").write_text(
-            content[:2000], encoding="utf-8"
-        )
+        (debug_dir / f"fail_{ticker}_csv_content.txt").write_text(content[:2000], encoding="utf-8")
         raise SWSDownloadError(
-            f"CSV download for {ticker} returned HTML instead of CSV data. "
-            "Check session/URL."
+            f"CSV download for {ticker} returned HTML instead of CSV. Check session/URL."
         )
 
     output_path.write_text(content, encoding="utf-8")
-    print(f"[sws_downloader] Downloaded {ticker} → {output_path}", flush=True)
+    print(f"[sws_downloader] Saved → {output_path}", flush=True)
     return output_path
 
 

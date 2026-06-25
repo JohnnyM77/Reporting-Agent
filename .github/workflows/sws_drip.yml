@@ -41,6 +41,9 @@ jobs:
         shell: cmd  # Windows cmd — no execution policy restrictions
 
     steps:
+      - name: Fix git safe.directory (self-hosted runner)
+        run: git config --global --add safe.directory C:/actions-runner/_work/Reporting-Agent/Reporting-Agent
+
       - uses: actions/checkout@v4
 
       - name: Rebuild queue (optional)

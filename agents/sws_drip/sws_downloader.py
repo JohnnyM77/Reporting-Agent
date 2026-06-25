@@ -98,66 +98,79 @@ def _make_session(bearer: str, cookies: dict) -> cffi_requests.Session:
 
 def _resolve_ticker(ticker: str, exchange: str, session: cffi_requests.Session) -> dict:
     """
-    Resolve ticker → {slug, sector, country}.
+    Resolve ticker -> {slug, sector, country}.
 
-    Strategy 1 (canonical): GET the short company URL /stocks/asx-{ticker} and
-    follow the redirect. SWS redirects it to the full canonical path
-    /stocks/{country}/{sector}/asx-{ticker}/{slug}, which we parse directly.
-    No guessing, no API key — the exact path SWS itself uses.
-
-    Strategy 2 (fallback): probe the company search API and log raw responses.
-
-    All log messages use ASCII only so they never crash on Windows cp1252.
+    Fetches the SWS search page for the ticker and extracts the canonical URL
+    from the <link rel="canonical"> or <meta property="og:url"> tag.
+    This gives the exact country/sector/slug without needing internal API routes.
     """
-    # ---- Strategy 1: follow the short-URL redirect ----------------------------
-    short_url = f"{_SWS_BASE}/stocks/asx-{ticker.lower()}"
+    # Strategy 1: fetch the SWS stocks search page and parse the canonical link
+    search_url = f"{_SWS_BASE}/stocks/asx-{ticker.lower()}-shares"
     try:
-        resp = session.get(short_url, timeout=15, allow_redirects=True)
+        resp = session.get(search_url, timeout=20, allow_redirects=True)
         final_url = str(resp.url)
         print(
-            f"[sws_downloader] short-url {short_url} -> HTTP {resp.status_code}, "
-            f"final={final_url}",
+            f"[sws_downloader] search-url {search_url} -> HTTP {resp.status_code} final={final_url}",
             flush=True,
         )
-        m = re.search(r"/stocks/([^/]+)/([^/]+)/asx-[^/]+/([^/?#]+)", final_url)
-        if m:
-            return {"country": m.group(1), "sector": m.group(2), "slug": m.group(3)}
+        if resp.status_code == 200:
+            m = re.search(r"/stocks/([^/]+)/([^/]+)/asx-[^/]+/([^/?#\"']+)", resp.text)
+            if m:
+                result = {"country": m.group(1), "sector": m.group(2), "slug": m.group(3)}
+                print(f"[sws_downloader] Resolved via search page: {result}", flush=True)
+                return result
+            # Also try parsing from final URL if redirected
+            m = re.search(r"/stocks/([^/]+)/([^/]+)/asx-[^/]+/([^/?#]+)", final_url)
+            if m:
+                result = {"country": m.group(1), "sector": m.group(2), "slug": m.group(3)}
+                print(f"[sws_downloader] Resolved via redirect: {result}", flush=True)
+                return result
     except Exception as e:
-        print(f"[sws_downloader] short-url error: {type(e).__name__}: {e}", flush=True)
+        print(f"[sws_downloader] search-url error: {type(e).__name__}: {e}", flush=True)
 
-    # ---- Strategy 2: company search API (diagnostic fallback) ------------------
-    for endpoint in (f"{_SWS_BASE}/api/company", f"{_SWS_BASE}/api/companies"):
-        for query in (f"{exchange}:{ticker}", ticker):
-            try:
-                resp = session.get(endpoint, params={"query": query, "limit": 5}, timeout=15)
-                print(
-                    f"[sws_downloader] {endpoint}?query={query} -> HTTP {resp.status_code} "
-                    f"({resp.headers.get('content-type','')[:40]}) "
-                    f"body[:150]={resp.text[:150]!r}",
-                    flush=True,
-                )
-                if resp.status_code == 200:
-                    try:
-                        data = resp.json()
-                        items = data.get("data", []) if isinstance(data, dict) else data
-                        if isinstance(items, list):
-                            for item in items:
-                                sym = (
-                                    item.get("ticker_symbol")
-                                    or item.get("unique_symbol")
-                                    or item.get("symbol")
-                                    or ""
-                                ).upper().replace("ASX:", "")
-                                if sym == ticker.upper():
-                                    return _extract_meta(item, ticker)
-                    except Exception as e:
-                        print(f"[sws_downloader] JSON parse error: {type(e).__name__}: {e}", flush=True)
-            except Exception as e:
-                print(f"[sws_downloader] request error: {type(e).__name__}: {e}", flush=True)
+    # Strategy 2: try the SWS company page directly with known sector guesses
+    # SWS URL: /stocks/{country}/{sector}/asx-{ticker}/{slug}
+    # We fetch /stocks/ search results page and parse JSON embedded in the HTML
+    sitemap_url = f"{_SWS_BASE}/stocks/au"
+    search_api = f"{_SWS_BASE}/api/frontier/graphql"
+    query_body = {
+        "operationName": "SearchCompanies",
+        "variables": {"query": ticker.upper(), "limit": 5},
+        "query": (
+            "query SearchCompanies($query: String!, $limit: Int) {"
+            "  searchCompanies(query: $query, limit: $limit) {"
+            "    id unique_symbol slug country_iso industry { name } "
+            "  }"
+            "}"
+        ),
+    }
+    try:
+        resp = session.post(search_api, json=query_body, timeout=20)
+        print(
+            f"[sws_downloader] graphql search -> HTTP {resp.status_code} "
+            f"body[:200]={resp.text[:200]!r}",
+            flush=True,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            companies = (data.get("data") or {}).get("searchCompanies") or []
+            for c in companies:
+                sym = (c.get("unique_symbol") or "").upper().replace("ASX:", "")
+                if sym == ticker.upper():
+                    slug = (c.get("slug") or _slugify(ticker)).lower()
+                    if slug.startswith("asx-"):
+                        slug = slug[4:]
+                    sector = _slugify((c.get("industry") or {}).get("name") or "unknown")
+                    country = (c.get("country_iso") or "au").lower()
+                    result = {"slug": slug, "sector": sector, "country": country}
+                    print(f"[sws_downloader] Resolved via GraphQL: {result}", flush=True)
+                    return result
+    except Exception as e:
+        print(f"[sws_downloader] graphql error: {type(e).__name__}: {e}", flush=True)
 
     raise SWSDownloadError(
-        f"Could not resolve '{ticker}'. See diagnostic output above for the "
-        "actual HTTP responses from SWS."
+        f"Could not resolve '{ticker}'. See diagnostic output above. "
+        "Try running with a manual URL or check if the ticker is listed on SWS."
     )
 
 

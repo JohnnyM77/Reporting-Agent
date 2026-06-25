@@ -143,6 +143,12 @@ def _make_session(bearer: str, cookies: dict) -> cffi_requests.Session:
     session.headers.update({
         "Authorization": f"Bearer {bearer}",
         "Accept": "application/vnd.simplywallst.v2",
+        "Accept-Language": "en",
+        # SWS's API gateway requires this header — without it the CSV/company
+        # endpoints reject the request with a generic {"status":401,"title":""}.
+        # The value is the SWS frontend's service identifier (build suffix may
+        # change over time; the gateway accepts any "sws-services/..." value).
+        "X-Requested-With": "sws-services/mono-web",
         "User-Agent": _USER_AGENT,
         "Origin": "https://simplywall.st",
     })
@@ -378,10 +384,8 @@ def download_csv(
 
     # Double-slash before 'stocks' is intentional — matches the SWS API pattern
     url = f"{_SWS_BASE}/api/company/download/csv//stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
+    # Mirror the exact request the SWS frontend makes when you click "Export CSV".
     session.headers["Referer"] = f"https://simplywall.st/stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
-
-    # The browser sends a CSV-friendly Accept for the export, not the JSON vendor type.
-    session.headers["Accept"] = "text/csv, text/plain, */*"
 
     print(f"[sws_downloader] Downloading CSV: {url}", flush=True)
     time.sleep(random.uniform(1.5, 3.0))
@@ -389,31 +393,8 @@ def download_csv(
     resp = session.get(url, timeout=30)
     print(f"[sws_downloader] CSV response: {resp.status_code}  ct={resp.headers.get('content-type','')!r}", flush=True)
 
-    # On 401, log the body (tells us WHY) and retry once with cookies only —
-    # SWS CSV exports are session-cookie authenticated, and a stale Bearer
-    # header can itself trigger a 401 that the cookie session would have passed.
-    if resp.status_code == 401:
-        print(f"[sws_downloader] 401 body[:300]={resp.text[:300]!r}", flush=True)
-        print("[sws_downloader] Retrying CSV download with cookies only (no Bearer)...", flush=True)
-        cookie_session = cffi_requests.Session(impersonate=_CHROME_IMPERSONATE)
-        cookie_session.headers.update({
-            "Accept": "text/csv, text/plain, */*",
-            "User-Agent": _USER_AGENT,
-            "Origin": "https://simplywall.st",
-            "Referer": session.headers.get("Referer", ""),
-        })
-        cookie_session.cookies.update(cookies)
-        time.sleep(random.uniform(1.0, 2.0))
-        resp = cookie_session.get(url, timeout=30)
-        print(
-            f"[sws_downloader] CSV response (cookie-only): {resp.status_code}  "
-            f"ct={resp.headers.get('content-type','')!r}",
-            flush=True,
-        )
-        if resp.status_code == 401:
-            print(f"[sws_downloader] cookie-only 401 body[:300]={resp.text[:300]!r}", flush=True)
-
     if resp.status_code in (401, 403):
+        print(f"[sws_downloader] auth-fail body[:300]={resp.text[:300]!r}", flush=True)
         debug_dir.mkdir(parents=True, exist_ok=True)
         (debug_dir / f"fail_{ticker}_auth.txt").write_text(
             f"URL: {url}\nStatus: {resp.status_code}\nBody: {resp.text[:2000]}",
@@ -422,7 +403,7 @@ def download_csv(
         raise SWSDownloadError(
             f"Auth failed (HTTP {resp.status_code}) for {ticker}. "
             "Session may have expired — re-run --setup and update SWS_STORAGE_STATE secret. "
-            "See the 401 body logged above for the exact reason."
+            "See the body logged above for the exact reason."
         )
     if resp.status_code != 200:
         debug_dir.mkdir(parents=True, exist_ok=True)

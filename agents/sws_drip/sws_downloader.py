@@ -19,12 +19,17 @@ from typing import Union
 # curl_cffi impersonates Chrome's TLS fingerprint — required to pass Cloudflare
 from curl_cffi import requests as cffi_requests
 
+from . import sws_url_map
+
 
 class SWSDownloadError(Exception):
     """Raised when a download step fails."""
 
 
 _SWS_BASE = "https://simplywall.st"
+
+# Cached {ticker -> country/sector/slug} map built from SWS sitemaps.
+_URL_MAP_CACHE = Path(__file__).resolve().parents[2] / "data" / "sws_url_map.json"
 
 # Chrome version to impersonate — must match what was used when capturing storage_state
 _CHROME_IMPERSONATE = "chrome124"
@@ -161,10 +166,31 @@ def _resolve_ticker(ticker: str, exchange: str, session: cffi_requests.Session) 
     """
     Resolve ticker -> {slug, sector, country}.
 
+    Strategy 0 (primary): look the ticker up in the sitemap-derived URL map.
+        This is the reliable, dynamic path — SWS publishes every stock URL in
+        its sitemaps, so once the map is built any ASX ticker resolves instantly.
+        If the ticker is missing from a cached map, the map is rebuilt once.
     Strategy 1: SWS site search page (/search?q=TICKER) — parse stock links from HTML.
     Strategy 2: Extract live Algolia key from SWS homepage JS, then query Algolia.
     Strategy 3: Probe known SWS REST search endpoints.
     """
+    key = ticker.upper()
+
+    # Strategy 0: sitemap-derived URL map (cached, rebuilt when stale/missing).
+    try:
+        url_map = sws_url_map.load_or_build(session, _URL_MAP_CACHE)
+        if key not in url_map:
+            # Ticker absent — force one rebuild in case the cache predates a listing.
+            print(f"[sws_downloader] {key} not in cached map; rebuilding from sitemaps...", flush=True)
+            url_map = sws_url_map.load_or_build(session, _URL_MAP_CACHE, force=True)
+        if key in url_map:
+            result = url_map[key]
+            print(f"[sws_downloader] Resolved via sitemap map: {result}", flush=True)
+            return {"country": result["country"], "sector": result["sector"], "slug": result["slug"]}
+        print(f"[sws_downloader] {key} not found in sitemap map; trying fallbacks...", flush=True)
+    except Exception as e:
+        print(f"[sws_downloader] sitemap map error: {type(e).__name__}: {e}", flush=True)
+
     _STOCK_URL_RE = re.compile(
         r"/stocks/([a-z]{2})/([^/]+)/asx-" + re.escape(ticker.lower()) + r"/([^/?#\"' ]+)"
     )

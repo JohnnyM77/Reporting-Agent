@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Python dependencies
-        run: pip install curl-cffi pyyaml
+        run: python -m pip install curl-cffi pyyaml
 
       - name: Rebuild queue (optional)
         if: ${{ github.event.inputs.rebuild_queue == 'true' }}

@@ -28,17 +28,14 @@ permissions:
 
 jobs:
   drip:
-    runs-on: ubuntu-latest
+    # Runs on your home PC (mr_co-runer) — your home IP bypasses Cloudflare
+    runs-on: self-hosted
     timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install curl-cffi pyyaml
 
       - name: Rebuild queue (optional)
@@ -46,13 +43,10 @@ jobs:
         run: python -m agents.sws_drip.run_drip --rebuild-queue
 
       - name: Ensure queue exists
-        run: |
-          # Always ensure DB + queue are initialised; idempotent if already done
-          python -m agents.sws_drip.run_drip --rebuild-queue
+        run: python -m agents.sws_drip.run_drip --rebuild-queue
 
       - name: Mark stale CSVs for re-download
-        # Runs daily but only acts on tickers not refreshed in 180+ days.
-        # ASX companies report twice a year (Feb/Aug), so 180 days keeps data current.
+        # Only acts on tickers not refreshed in 180+ days (twice-yearly ASX reporting)
         run: python -m agents.sws_drip.run_drip --mark-stale --stale-days 180
 
       - name: Run SWS drip

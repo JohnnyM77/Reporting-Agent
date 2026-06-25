@@ -31,6 +31,9 @@ jobs:
     # Runs on your home PC (mr_co-runer) — your home IP bypasses Cloudflare
     runs-on: self-hosted
     timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash  # Use Git Bash on Windows (avoids PowerShell execution policy blocks)
 
     steps:
       - uses: actions/checkout@v4

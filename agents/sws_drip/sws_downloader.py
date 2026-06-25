@@ -137,18 +137,34 @@ def _slugify(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
 
 
+def _fetch_xrw_header(session: cffi_requests.Session) -> str:
+    """
+    Extract the current X-Requested-With service identifier from SWS's homepage.
+    SWS embeds it as a string like 'sws-services/mono-<build-hash>' in the HTML.
+    Falls back to a known-good value if extraction fails.
+    """
+    fallback = "sws-services/mono-manual-9eaf70d9-hotfix"
+    try:
+        resp = session.get(_SWS_BASE, timeout=20)
+        if resp.status_code == 200:
+            m = re.search(r'(sws-services/[a-z0-9/\-]+)', resp.text)
+            if m:
+                val = m.group(1).rstrip("-")
+                print(f"[sws_downloader] X-Requested-With from homepage: {val}", flush=True)
+                return val
+    except Exception as e:
+        print(f"[sws_downloader] X-Requested-With extraction failed: {e}", flush=True)
+    print(f"[sws_downloader] X-Requested-With fallback: {fallback}", flush=True)
+    return fallback
+
+
 def _make_session(bearer: str, cookies: dict) -> cffi_requests.Session:
     """Create a curl-cffi session that looks like Chrome to Cloudflare."""
     session = cffi_requests.Session(impersonate=_CHROME_IMPERSONATE)
     session.headers.update({
         "Authorization": f"Bearer {bearer}",
         "Accept": "application/vnd.simplywallst.v2",
-        "Accept-Language": "en",
-        # SWS's API gateway requires this header — without it the CSV/company
-        # endpoints reject the request with a generic {"status":401,"title":""}.
-        # The value is the SWS frontend's service identifier (build suffix may
-        # change over time; the gateway accepts any "sws-services/..." value).
-        "X-Requested-With": "sws-services/mono-web",
+        "Accept-Language": "en-US,en;q=0.9",
         "User-Agent": _USER_AGENT,
         "Origin": "https://simplywall.st",
     })
@@ -375,6 +391,11 @@ def download_csv(
 
     session = _make_session(bearer, cookies)
 
+    # Fetch the live X-Requested-With value from SWS homepage so we match
+    # whatever build hash their API gateway currently requires.
+    xrw = _fetch_xrw_header(session)
+    session.headers["X-Requested-With"] = xrw
+
     print(f"[sws_downloader] Resolving {exchange}:{ticker}...", flush=True)
     info = _resolve_ticker(ticker, exchange, session)
     slug = info["slug"]
@@ -384,20 +405,29 @@ def download_csv(
 
     # Double-slash before 'stocks' is intentional — matches the SWS API pattern
     url = f"{_SWS_BASE}/api/company/download/csv//stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
-    # Mirror the exact request the SWS frontend makes when you click "Export CSV".
-    session.headers["Referer"] = f"https://simplywall.st/stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
+    referer = f"https://simplywall.st/stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
 
     print(f"[sws_downloader] Downloading CSV: {url}", flush=True)
     time.sleep(random.uniform(1.5, 3.0))
 
-    resp = session.get(url, timeout=30)
+    # Use Accept: */* for the CSV download — the browser sends this for file downloads,
+    # not application/vnd.simplywallst.v2 which is for JSON API responses.
+    resp = session.get(url, timeout=30, headers={
+        "Referer": referer,
+        "Accept": "*/*",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+    })
+    resp_headers_str = "\n".join(f"  {k}: {v}" for k, v in resp.headers.items())
     print(f"[sws_downloader] CSV response: {resp.status_code}  ct={resp.headers.get('content-type','')!r}", flush=True)
 
     if resp.status_code in (401, 403):
         print(f"[sws_downloader] auth-fail body[:300]={resp.text[:300]!r}", flush=True)
         debug_dir.mkdir(parents=True, exist_ok=True)
         (debug_dir / f"fail_{ticker}_auth.txt").write_text(
-            f"URL: {url}\nStatus: {resp.status_code}\nBody: {resp.text[:2000]}",
+            f"URL: {url}\nReferer: {referer}\nX-Requested-With: {xrw}\n"
+            f"Status: {resp.status_code}\nResponse headers:\n{resp_headers_str}\n\nBody: {resp.text[:2000]}",
             encoding="utf-8",
         )
         raise SWSDownloadError(

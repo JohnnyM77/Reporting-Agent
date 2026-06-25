@@ -1,0 +1,8905 @@
+{
+"_built_at": "2026-06-25T22:35:52.526609+00:00",
+"tickers": {
+"EMT": {
+"country": "au",
+"sector": "materials",
+"slug": "emetals-shares"
+},
+"HYD": {
+"country": "au",
+"sector": "tech",
+"slug": "hydrix-shares"
+},
+"KLI": {
+"country": "au",
+"sector": "materials",
+"slug": "killi-resources-shares"
+},
+"T3D": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "333d-shares"
+},
+"PBL": {
+"country": "au",
+"sector": "materials",
+"slug": "parabellum-resources-shares"
+},
+"BCB": {
+"country": "au",
+"sector": "materials",
+"slug": "bowen-coking-coal-shares"
+},
+"DGL": {
+"country": "au",
+"sector": "materials",
+"slug": "dgl-group-shares"
+},
+"MGA": {
+"country": "au",
+"sector": "materials",
+"slug": "metalsgrove-mining-shares"
+},
+"H2G": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "h2g-shares"
+},
+"ML8": {
+"country": "au",
+"sector": "materials",
+"slug": "moonlight-resources-shares"
+},
+"PTX": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "prescient-therapeutics-shares"
+},
+"SFG": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "seafarms-group-shares"
+},
+"PAB": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "patrys-shares"
+},
+"OSL": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "oncosil-medical-shares"
+},
+"CBL": {
+"country": "au",
+"sector": "healthcare",
+"slug": "control-bionics-shares"
+},
+"AZI": {
+"country": "au",
+"sector": "materials",
+"slug": "altamin-shares"
+},
+"RPM": {
+"country": "au",
+"sector": "automobiles",
+"slug": "rpm-automotive-group-shares"
+},
+"CMM": {
+"country": "au",
+"sector": "materials",
+"slug": "capricorn-metals-shares"
+},
+"CSL": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "csl-shares"
+},
+"CAZ": {
+"country": "au",
+"sector": "materials",
+"slug": "cazaly-resources-shares"
+},
+"GLH": {
+"country": "au",
+"sector": "healthcare",
+"slug": "global-health-shares"
+},
+"VSR": {
+"country": "au",
+"sector": "materials",
+"slug": "voltaic-strategic-resources-shares"
+},
+"NME": {
+"country": "au",
+"sector": "materials",
+"slug": "nex-metals-explorations-shares"
+},
+"CPU": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "computershare-shares"
+},
+"CVN": {
+"country": "au",
+"sector": "energy",
+"slug": "carnarvon-energy-shares"
+},
+"FSA": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "fsa-group-shares"
+},
+"REG": {
+"country": "au",
+"sector": "healthcare",
+"slug": "regis-healthcare-shares"
+},
+"OLI": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "olivers-real-food-shares"
+},
+"HMX": {
+"country": "au",
+"sector": "materials",
+"slug": "hammer-metals-shares"
+},
+"AHC": {
+"country": "au",
+"sector": "healthcare",
+"slug": "austco-healthcare-shares"
+},
+"BMT": {
+"country": "au",
+"sector": "healthcare",
+"slug": "beamtree-holdings-shares"
+},
+"SBZ": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "schoolblazer-shares"
+},
+"NZM": {
+"country": "au",
+"sector": "media",
+"slug": "nzme-shares"
+},
+"PXA": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "pexa-group-shares"
+},
+"AAL": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "alfabs-australia-shares"
+},
+"OSM": {
+"country": "au",
+"sector": "materials",
+"slug": "osmond-resources-shares"
+},
+"RFT": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "rectifier-technologies-shares"
+},
+"MLS": {
+"country": "au",
+"sector": "materials",
+"slug": "metals-australia-shares"
+},
+"BNL": {
+"country": "au",
+"sector": "energy",
+"slug": "blue-star-helium-shares"
+},
+"NNL": {
+"country": "au",
+"sector": "materials",
+"slug": "nordic-resources-shares"
+},
+"BWF": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "blackwall-shares"
+},
+"PVE": {
+"country": "au",
+"sector": "energy",
+"slug": "po-valley-energy-shares"
+},
+"JNS": {
+"country": "au",
+"sector": "utilities",
+"slug": "janus-electric-holdings-shares"
+},
+"BSL": {
+"country": "au",
+"sector": "materials",
+"slug": "bluescope-steel-shares"
+},
+"BP8": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "bph-global-shares"
+},
+"SYR": {
+"country": "au",
+"sector": "materials",
+"slug": "syrah-resources-shares"
+},
+"HHR": {
+"country": "au",
+"sector": "energy",
+"slug": "hartshead-resources-shares"
+},
+"IBX": {
+"country": "au",
+"sector": "healthcare",
+"slug": "imagion-biosystems-shares"
+},
+"ZEO": {
+"country": "au",
+"sector": "materials",
+"slug": "zeotech-shares"
+},
+"TWE": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "treasury-wine-estates-shares"
+},
+"TBN": {
+"country": "au",
+"sector": "energy",
+"slug": "tamboran-resources-shares"
+},
+"RHY": {
+"country": "au",
+"sector": "healthcare",
+"slug": "rhythm-biosciences-shares"
+},
+"AVE": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "avecho-biotechnology-shares"
+},
+"NVX": {
+"country": "au",
+"sector": "tech",
+"slug": "novonix-shares"
+},
+"KGN": {
+"country": "au",
+"sector": "retail",
+"slug": "kogancom-shares"
+},
+"ANX": {
+"country": "au",
+"sector": "materials",
+"slug": "anax-metals-shares"
+},
+"MFD": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "mayfield-childcare-shares"
+},
+"ADR": {
+"country": "au",
+"sector": "healthcare",
+"slug": "adherium-shares"
+},
+"MLG": {
+"country": "au",
+"sector": "materials",
+"slug": "mlg-oz-shares"
+},
+"TNY": {
+"country": "au",
+"sector": "media",
+"slug": "tinybeans-group-shares"
+},
+"MQG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "macquarie-group-shares"
+},
+"RAG": {
+"country": "au",
+"sector": "materials",
+"slug": "ragnar-metals-shares"
+},
+"FRM": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "farm-pride-foods-shares"
+},
+"CBY": {
+"country": "au",
+"sector": "materials",
+"slug": "canterbury-resources-shares"
+},
+"APC": {
+"country": "au",
+"sector": "materials",
+"slug": "apc-minerals-shares"
+},
+"TGN": {
+"country": "au",
+"sector": "materials",
+"slug": "tungsten-mining-shares"
+},
+"VFX": {
+"country": "au",
+"sector": "healthcare",
+"slug": "visionflex-group-shares"
+},
+"WSI": {
+"country": "au",
+"sector": "materials",
+"slug": "weststar-industrial-shares"
+},
+"ZEU": {
+"country": "au",
+"sector": "energy",
+"slug": "zeus-resources-shares"
+},
+"BEO": {
+"country": "au",
+"sector": "software",
+"slug": "beonic-shares"
+},
+"CRR": {
+"country": "au",
+"sector": "materials",
+"slug": "critical-resources-shares"
+},
+"RTG": {
+"country": "au",
+"sector": "materials",
+"slug": "rtg-mining-shares"
+},
+"PTL": {
+"country": "au",
+"sector": "household",
+"slug": "prestal-holdings-shares"
+},
+"W2V": {
+"country": "au",
+"sector": "software",
+"slug": "way-2-vat-shares"
+},
+"GIB": {
+"country": "au",
+"sector": "materials",
+"slug": "gibb-river-diamonds-shares"
+},
+"CEH": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "coast-entertainment-holdings-shares"
+},
+"RIE": {
+"country": "au",
+"sector": "materials",
+"slug": "riedel-resources-shares"
+},
+"NAG": {
+"country": "au",
+"sector": "materials",
+"slug": "nagambie-resources-shares"
+},
+"QEM": {
+"country": "au",
+"sector": "materials",
+"slug": "qem-shares"
+},
+"EV1": {
+"country": "au",
+"sector": "materials",
+"slug": "evolution-energy-minerals-shares"
+},
+"MEX": {
+"country": "au",
+"sector": "materials",
+"slug": "minerals-exploration-shares"
+},
+"EDV": {
+"country": "au",
+"sector": "consumer-retailing",
+"slug": "endeavour-group-shares"
+},
+"AUG": {
+"country": "au",
+"sector": "materials",
+"slug": "augustus-minerals-shares"
+},
+"SMX": {
+"country": "au",
+"sector": "materials",
+"slug": "strata-minerals-shares"
+},
+"ROG": {
+"country": "au",
+"sector": "energy",
+"slug": "red-sky-energy-shares"
+},
+"NMG": {
+"country": "au",
+"sector": "materials",
+"slug": "new-murchison-gold-shares"
+},
+"PPG": {
+"country": "au",
+"sector": "materials",
+"slug": "pro-pac-packaging-shares"
+},
+"CDT": {
+"country": "au",
+"sector": "materials",
+"slug": "castle-minerals-shares"
+},
+"HPG": {
+"country": "au",
+"sector": "media",
+"slug": "hipages-group-holdings-shares"
+},
+"M4M": {
+"country": "au",
+"sector": "materials",
+"slug": "macro-metals-shares"
+},
+"ADY": {
+"country": "au",
+"sector": "materials",
+"slug": "admiralty-resources-shares"
+},
+"YOW": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "yowie-group-shares"
+},
+"OKJ": {
+"country": "au",
+"sector": "materials",
+"slug": "oakajee-shares"
+},
+"FDV": {
+"country": "au",
+"sector": "media",
+"slug": "frontier-digital-ventures-shares"
+},
+"CHC": {
+"country": "au",
+"sector": "real-estate",
+"slug": "charter-hall-group-shares"
+},
+"BSA": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "bsa-shares"
+},
+"TRE": {
+"country": "au",
+"sector": "materials",
+"slug": "toubani-resources-shares"
+},
+"SBR": {
+"country": "au",
+"sector": "materials",
+"slug": "sabre-resources-shares"
+},
+"DAF": {
+"country": "au",
+"sector": "materials",
+"slug": "discovery-alaska-shares"
+},
+"A2M": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "a2-milk-shares"
+},
+"AEG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "aland-equity-group-shares"
+},
+"BUS": {
+"country": "au",
+"sector": "materials",
+"slug": "bubalus-resources-shares"
+},
+"DAL": {
+"country": "au",
+"sector": "materials",
+"slug": "dalaroo-metals-shares"
+},
+"WHC": {
+"country": "au",
+"sector": "energy",
+"slug": "whitehaven-coal-shares"
+},
+"AGL": {
+"country": "au",
+"sector": "utilities",
+"slug": "agl-energy-shares"
+},
+"FG1": {
+"country": "au",
+"sector": "materials",
+"slug": "flynn-gold-shares"
+},
+"KLV": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "klevo-rewards-shares"
+},
+"TMK": {
+"country": "au",
+"sector": "energy",
+"slug": "tmk-energy-shares"
+},
+"QXR": {
+"country": "au",
+"sector": "materials",
+"slug": "qx-resources-shares"
+},
+"SKT": {
+"country": "au",
+"sector": "media",
+"slug": "sky-network-television-shares"
+},
+"AMN": {
+"country": "au",
+"sector": "materials",
+"slug": "agrimin-shares"
+},
+"CST": {
+"country": "au",
+"sector": "materials",
+"slug": "castile-resources-shares"
+},
+"ABX": {
+"country": "au",
+"sector": "materials",
+"slug": "abx-group-shares"
+},
+"ART": {
+"country": "au",
+"sector": "media",
+"slug": "airtasker-shares"
+},
+"MTH": {
+"country": "au",
+"sector": "materials",
+"slug": "mithril-silver-and-gold-shares"
+},
+"MAP": {
+"country": "au",
+"sector": "healthcare",
+"slug": "microba-life-sciences-shares"
+},
+"M2R": {
+"country": "au",
+"sector": "materials",
+"slug": "miramar-resources-shares"
+},
+"AQI": {
+"country": "au",
+"sector": "materials",
+"slug": "alicanto-minerals-shares"
+},
+"EM3": {
+"country": "au",
+"sector": "materials",
+"slug": "emc-gold-shares"
+},
+"AII": {
+"country": "au",
+"sector": "materials",
+"slug": "almonty-industries-shares"
+},
+"IAG": {
+"country": "au",
+"sector": "insurance",
+"slug": "insurance-australia-group-shares"
+},
+"RKB": {
+"country": "au",
+"sector": "materials",
+"slug": "rokeby-resources-shares"
+},
+"AM7": {
+"country": "au",
+"sector": "materials",
+"slug": "arcadia-minerals-shares"
+},
+"PWR": {
+"country": "au",
+"sector": "retail",
+"slug": "peter-warren-automotive-holdings-shares"
+},
+"NTM": {
+"country": "au",
+"sector": "materials",
+"slug": "nt-minerals-shares"
+},
+"IMB": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "intelligent-monitoring-group-shares"
+},
+"EE1": {
+"country": "au",
+"sector": "materials",
+"slug": "earths-energy-shares"
+},
+"SIO": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "simonds-group-shares"
+},
+"OBM": {
+"country": "au",
+"sector": "materials",
+"slug": "ora-banda-mining-shares"
+},
+"NGE": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "nge-capital-shares"
+},
+"ZMI": {
+"country": "au",
+"sector": "materials",
+"slug": "zinc-of-ireland-shares"
+},
+"CCO": {
+"country": "au",
+"sector": "household",
+"slug": "calmer-co-international-shares"
+},
+"AEM": {
+"country": "au",
+"sector": "materials",
+"slug": "advanced-energy-minerals-shares"
+},
+"JNO": {
+"country": "au",
+"sector": "materials",
+"slug": "juno-minerals-shares"
+},
+"CCL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "cuscal-shares"
+},
+"AEU": {
+"country": "au",
+"sector": "energy",
+"slug": "atomic-eagle-shares"
+},
+"SCN": {
+"country": "au",
+"sector": "materials",
+"slug": "scorpion-minerals-shares"
+},
+"CPN": {
+"country": "au",
+"sector": "materials",
+"slug": "caspin-resources-shares"
+},
+"TGM": {
+"country": "au",
+"sector": "materials",
+"slug": "theta-gold-mines-shares"
+},
+"TML": {
+"country": "au",
+"sector": "utilities",
+"slug": "timah-resources-shares"
+},
+"EQR": {
+"country": "au",
+"sector": "materials",
+"slug": "eq-resources-shares"
+},
+"PCK": {
+"country": "au",
+"sector": "healthcare",
+"slug": "painchek-shares"
+},
+"PL9": {
+"country": "au",
+"sector": "materials",
+"slug": "prairie-lithium-shares"
+},
+"XEN": {
+"country": "au",
+"sector": "retail",
+"slug": "xenitra-shares"
+},
+"JAN": {
+"country": "au",
+"sector": "software",
+"slug": "janison-education-group-shares"
+},
+"GSS": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "genetic-signatures-shares"
+},
+"GGP": {
+"country": "au",
+"sector": "materials",
+"slug": "greatland-resources-shares"
+},
+"VR8": {
+"country": "au",
+"sector": "materials",
+"slug": "vanadium-resources-shares"
+},
+"LDX": {
+"country": "au",
+"sector": "healthcare",
+"slug": "lumos-diagnostics-holdings-shares"
+},
+"AM3": {
+"country": "au",
+"sector": "materials",
+"slug": "amara-minerals-shares"
+},
+"ICR": {
+"country": "au",
+"sector": "healthcare",
+"slug": "intelicare-holdings-shares"
+},
+"FL1": {
+"country": "au",
+"sector": "materials",
+"slug": "first-lithium-shares"
+},
+"MM8": {
+"country": "au",
+"sector": "materials",
+"slug": "medallion-metals-shares"
+},
+"TTT": {
+"country": "au",
+"sector": "materials",
+"slug": "titomic-shares"
+},
+"WRK": {
+"country": "au",
+"sector": "software",
+"slug": "wrkr-shares"
+},
+"MQR": {
+"country": "au",
+"sector": "materials",
+"slug": "marquee-resources-shares"
+},
+"SEA": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "sea-forest-shares"
+},
+"CTQ": {
+"country": "au",
+"sector": "healthcare",
+"slug": "careteq-shares"
+},
+"MTC": {
+"country": "au",
+"sector": "materials",
+"slug": "metalstech-shares"
+},
+"SPK": {
+"country": "au",
+"sector": "telecom",
+"slug": "spark-new-zealand-shares"
+},
+"BXB": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "brambles-shares"
+},
+"PVT": {
+"country": "au",
+"sector": "materials",
+"slug": "pivotal-metals-shares"
+},
+"NUZ": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "neurizon-therapeutics-shares"
+},
+"SGH": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "sgh-shares"
+},
+"OCL": {
+"country": "au",
+"sector": "software",
+"slug": "objective-shares"
+},
+"BCM": {
+"country": "au",
+"sector": "materials",
+"slug": "brazilian-critical-minerals-shares"
+},
+"BMR": {
+"country": "au",
+"sector": "materials",
+"slug": "ballymore-resources-shares"
+},
+"EOL": {
+"country": "au",
+"sector": "software",
+"slug": "energy-one-shares"
+},
+"PLG": {
+"country": "au",
+"sector": "materials",
+"slug": "pearl-gull-iron-shares"
+},
+"SMM": {
+"country": "au",
+"sector": "materials",
+"slug": "somerset-minerals-shares"
+},
+"CNQ": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "clean-teq-water-shares"
+},
+"RDX": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "redox-shares"
+},
+"DUB": {
+"country": "au",
+"sector": "software",
+"slug": "dubber-shares"
+},
+"BHL": {
+"country": "au",
+"sector": "materials",
+"slug": "black-horse-mining-shares"
+},
+"EVG": {
+"country": "au",
+"sector": "materials",
+"slug": "evion-group-shares"
+},
+"SCNO": {
+"country": "au",
+"sector": "materials",
+"slug": "scorpion-minerals-shares"
+},
+"RCM": {
+"country": "au",
+"sector": "materials",
+"slug": "rapid-critical-metals-shares"
+},
+"A1M": {
+"country": "au",
+"sector": "materials",
+"slug": "aic-mines-shares"
+},
+"NMR": {
+"country": "au",
+"sector": "materials",
+"slug": "native-mineral-resources-holdings-shares"
+},
+"KPG": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "kelly-partners-group-holdings-shares"
+},
+"EHL": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "emeco-holdings-shares"
+},
+"FMN": {
+"country": "au",
+"sector": "materials",
+"slug": "famien-resources-shares"
+},
+"ARD": {
+"country": "au",
+"sector": "materials",
+"slug": "argent-minerals-shares"
+},
+"C7A": {
+"country": "au",
+"sector": "materials",
+"slug": "clara-resources-australia-shares"
+},
+"ALK": {
+"country": "au",
+"sector": "materials",
+"slug": "alkane-resources-shares"
+},
+"AMH": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "amcil-shares"
+},
+"CRI": {
+"country": "au",
+"sector": "materials",
+"slug": "critica-shares"
+},
+"OML": {
+"country": "au",
+"sector": "media",
+"slug": "oohmedia-shares"
+},
+"TG1": {
+"country": "au",
+"sector": "materials",
+"slug": "techgen-metals-shares"
+},
+"E25": {
+"country": "au",
+"sector": "materials",
+"slug": "element-25-shares"
+},
+"YUG": {
+"country": "au",
+"sector": "materials",
+"slug": "yugo-metals-shares"
+},
+"WOA": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "wide-open-agriculture-shares"
+},
+"ADH": {
+"country": "au",
+"sector": "retail",
+"slug": "adairs-shares"
+},
+"MGL": {
+"country": "au",
+"sector": "materials",
+"slug": "magontec-shares"
+},
+"MRZ": {
+"country": "au",
+"sector": "materials",
+"slug": "mont-royal-resources-shares"
+},
+"FEL": {
+"country": "au",
+"sector": "energy",
+"slug": "forte-energy-shares"
+},
+"DUR": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "duratec-shares"
+},
+"PNR": {
+"country": "au",
+"sector": "materials",
+"slug": "pantoro-gold-shares"
+},
+"VNT": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "ventia-services-group-shares"
+},
+"BUX": {
+"country": "au",
+"sector": "materials",
+"slug": "buxton-resources-shares"
+},
+"COG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "cog-financial-services-shares"
+},
+"DBF": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "duxton-farms-shares"
+},
+"HCW": {
+"country": "au",
+"sector": "real-estate",
+"slug": "healthco-healthcare-and-wellness-reit-shares"
+},
+"EQU": {
+"country": "au",
+"sector": "energy",
+"slug": "equus-energy-shares"
+},
+"KCC": {
+"country": "au",
+"sector": "materials",
+"slug": "kincora-copper-shares"
+},
+"PNC": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "pioneer-credit-shares"
+},
+"NVO": {
+"country": "au",
+"sector": "materials",
+"slug": "novo-resources-shares"
+},
+"AEE": {
+"country": "au",
+"sector": "energy",
+"slug": "aura-energy-shares"
+},
+"EXR": {
+"country": "au",
+"sector": "energy",
+"slug": "elixir-energy-shares"
+},
+"IKE": {
+"country": "au",
+"sector": "tech",
+"slug": "ikegps-group-shares"
+},
+"WYX": {
+"country": "au",
+"sector": "materials",
+"slug": "western-yilgarn-shares"
+},
+"BB1": {
+"country": "au",
+"sector": "healthcare",
+"slug": "blinklab-shares"
+},
+"LRM": {
+"country": "au",
+"sector": "materials",
+"slug": "lion-rock-minerals-shares"
+},
+"BSN": {
+"country": "au",
+"sector": "energy",
+"slug": "basin-energy-shares"
+},
+"PGM": {
+"country": "au",
+"sector": "materials",
+"slug": "platina-resources-shares"
+},
+"CYM": {
+"country": "au",
+"sector": "materials",
+"slug": "cyprium-metals-shares"
+},
+"TXR": {
+"country": "au",
+"sector": "materials",
+"slug": "talonx-resources-shares"
+},
+"MPX": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "mustera-property-group-shares"
+},
+"CAV": {
+"country": "au",
+"sector": "materials",
+"slug": "carnavale-resources-shares"
+},
+"NRX": {
+"country": "au",
+"sector": "materials",
+"slug": "noronex-shares"
+},
+"TWL": {
+"country": "au",
+"sector": "software",
+"slug": "trade-window-holdings-shares"
+},
+"TEE": {
+"country": "au",
+"sector": "energy",
+"slug": "top-end-energy-shares"
+},
+"RLF": {
+"country": "au",
+"sector": "materials",
+"slug": "rlf-agtech-shares"
+},
+"PGO": {
+"country": "au",
+"sector": "materials",
+"slug": "pacgold-shares"
+},
+"EFE": {
+"country": "au",
+"sector": "materials",
+"slug": "eastern-resources-shares"
+},
+"GUL": {
+"country": "au",
+"sector": "materials",
+"slug": "gullewa-shares"
+},
+"YRL": {
+"country": "au",
+"sector": "materials",
+"slug": "yandal-resources-shares"
+},
+"COL": {
+"country": "au",
+"sector": "consumer-retailing",
+"slug": "coles-group-shares"
+},
+"PPS": {
+"country": "au",
+"sector": "software",
+"slug": "praemium-shares"
+},
+"CXZ": {
+"country": "au",
+"sector": "software",
+"slug": "connexion-mobility-shares"
+},
+"IFT": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "infratil-shares"
+},
+"BTN": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "butn-shares"
+},
+"PIQ": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "proteomics-international-laboratories-shares"
+},
+"QPM": {
+"country": "au",
+"sector": "materials",
+"slug": "qpm-energy-shares"
+},
+"ALD": {
+"country": "au",
+"sector": "energy",
+"slug": "ampol-shares"
+},
+"GTE": {
+"country": "au",
+"sector": "materials",
+"slug": "great-western-exploration-shares"
+},
+"PFM": {
+"country": "au",
+"sector": "software",
+"slug": "platformo-shares"
+},
+"MSG": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "mcs-services-shares"
+},
+"GSM": {
+"country": "au",
+"sector": "materials",
+"slug": "golden-state-mining-shares"
+},
+"JAV": {
+"country": "au",
+"sector": "materials",
+"slug": "javelin-minerals-shares"
+},
+"UCM": {
+"country": "au",
+"sector": "healthcare",
+"slug": "uscom-shares"
+},
+"ACL": {
+"country": "au",
+"sector": "healthcare",
+"slug": "australian-clinical-labs-shares"
+},
+"ANZ": {
+"country": "au",
+"sector": "banks",
+"slug": "anz-group-holdings-shares"
+},
+"CUP": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "count-shares"
+},
+"COD": {
+"country": "au",
+"sector": "materials",
+"slug": "coda-minerals-shares"
+},
+"NWSLV": {
+"country": "au",
+"sector": "media",
+"slug": "news-shares"
+},
+"CRN": {
+"country": "au",
+"sector": "materials",
+"slug": "coronado-global-resources-shares"
+},
+"3PL": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "3p-learning-shares"
+},
+"XGL": {
+"country": "au",
+"sector": "media",
+"slug": "xamble-group-shares"
+},
+"ICL": {
+"country": "au",
+"sector": "materials",
+"slug": "iceni-gold-shares"
+},
+"EMP": {
+"country": "au",
+"sector": "energy",
+"slug": "emperor-energy-shares"
+},
+"RNU": {
+"country": "au",
+"sector": "materials",
+"slug": "renascor-resources-shares"
+},
+"DVL": {
+"country": "au",
+"sector": "healthcare",
+"slug": "dorsavi-shares"
+},
+"CC9": {
+"country": "au",
+"sector": "materials",
+"slug": "chariot-resources-shares"
+},
+"LGM": {
+"country": "au",
+"sector": "materials",
+"slug": "legacy-minerals-holdings-shares"
+},
+"SNL": {
+"country": "au",
+"sector": "retail",
+"slug": "supply-network-shares"
+},
+"ZAG": {
+"country": "au",
+"sector": "materials",
+"slug": "zuleika-gold-shares"
+},
+"CYG": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "coventry-group-shares"
+},
+"GG8": {
+"country": "au",
+"sector": "materials",
+"slug": "gorilla-gold-mines-shares"
+},
+"GOW": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "gowing-bros-shares"
+},
+"RFG": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "retail-food-group-shares"
+},
+"WAT": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "waterco-shares"
+},
+"MIN": {
+"country": "au",
+"sector": "materials",
+"slug": "mineral-resources-shares"
+},
+"LSR": {
+"country": "au",
+"sector": "materials",
+"slug": "lodestar-minerals-shares"
+},
+"SSG": {
+"country": "au",
+"sector": "retail",
+"slug": "shaver-shop-group-shares"
+},
+"SST": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "steamships-trading-shares"
+},
+"ARA": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "ariadne-australia-shares"
+},
+"DWG": {
+"country": "au",
+"sector": "software",
+"slug": "dataworks-group-shares"
+},
+"PNV": {
+"country": "au",
+"sector": "healthcare",
+"slug": "polynovo-shares"
+},
+"CRD": {
+"country": "au",
+"sector": "energy",
+"slug": "conrad-asia-energy-shares"
+},
+"AHE": {
+"country": "au",
+"sector": "healthcare",
+"slug": "adheris-health-shares"
+},
+"ANN": {
+"country": "au",
+"sector": "healthcare",
+"slug": "ansell-shares"
+},
+"GTI": {
+"country": "au",
+"sector": "software",
+"slug": "gratifii-shares"
+},
+"BRE": {
+"country": "au",
+"sector": "materials",
+"slug": "brazilian-rare-earths-shares"
+},
+"ILT": {
+"country": "au",
+"sector": "materials",
+"slug": "iltani-resources-shares"
+},
+"ANG": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "austin-engineering-shares"
+},
+"WC1O": {
+"country": "au",
+"sector": "materials",
+"slug": "west-cobar-metals-shares"
+},
+"EL8": {
+"country": "au",
+"sector": "energy",
+"slug": "elevate-uranium-shares"
+},
+"PPE": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "peoplein-shares"
+},
+"A8G": {
+"country": "au",
+"sector": "materials",
+"slug": "australasian-metals-shares"
+},
+"SRK": {
+"country": "au",
+"sector": "materials",
+"slug": "strike-resources-shares"
+},
+"SP3": {
+"country": "au",
+"sector": "tech",
+"slug": "spectur-shares"
+},
+"SNC": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "sandon-capital-investments-shares"
+},
+"HYT": {
+"country": "au",
+"sector": "energy",
+"slug": "hyterra-shares"
+},
+"ETM": {
+"country": "au",
+"sector": "materials",
+"slug": "energy-transition-minerals-shares"
+},
+"CRB": {
+"country": "au",
+"sector": "materials",
+"slug": "carbine-resources-shares"
+},
+"HZN": {
+"country": "au",
+"sector": "energy",
+"slug": "horizon-oil-shares"
+},
+"SCG": {
+"country": "au",
+"sector": "real-estate",
+"slug": "scentre-group-shares"
+},
+"SIX": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "sprintex-shares"
+},
+"L1M": {
+"country": "au",
+"sector": "materials",
+"slug": "lightning-minerals-shares"
+},
+"MBG": {
+"country": "au",
+"sector": "materials",
+"slug": "mb-gold-shares"
+},
+"GRX": {
+"country": "au",
+"sector": "materials",
+"slug": "greenx-metals-shares"
+},
+"SFM": {
+"country": "au",
+"sector": "materials",
+"slug": "santa-fe-minerals-shares"
+},
+"MPL": {
+"country": "au",
+"sector": "insurance",
+"slug": "medibank-private-shares"
+},
+"WAG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "australian-wealth-advisors-group-shares"
+},
+"WDS": {
+"country": "au",
+"sector": "energy",
+"slug": "woodside-energy-group-shares"
+},
+"ALB": {
+"country": "au",
+"sector": "materials",
+"slug": "albion-resources-shares"
+},
+"LTP": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "ltr-pharma-shares"
+},
+"FLT": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "flight-centre-travel-group-shares"
+},
+"AM5": {
+"country": "au",
+"sector": "materials",
+"slug": "antares-metals-shares"
+},
+"CBEO": {
+"country": "au",
+"sector": "materials",
+"slug": "cobre-shares"
+},
+"AT4": {
+"country": "au",
+"sector": "materials",
+"slug": "american-tungsten-and-antimony-shares"
+},
+"BOA": {
+"country": "au",
+"sector": "materials",
+"slug": "boa-resources-shares"
+},
+"DXB": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "dimerix-shares"
+},
+"SPL": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "starpharma-holdings-shares"
+},
+"GT3": {
+"country": "au",
+"sector": "materials",
+"slug": "green360-technologies-shares"
+},
+"PHX": {
+"country": "au",
+"sector": "software",
+"slug": "pharmx-technologies-shares"
+},
+"BCK": {
+"country": "au",
+"sector": "materials",
+"slug": "brockman-mining-shares"
+},
+"RC1": {
+"country": "au",
+"sector": "materials",
+"slug": "redcastle-resources-shares"
+},
+"SM1": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "synlait-milk-shares"
+},
+"ACF": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "acrow-shares"
+},
+"HT8": {
+"country": "au",
+"sector": "retail",
+"slug": "harris-technology-group-shares"
+},
+"IFG": {
+"country": "au",
+"sector": "software",
+"slug": "infocus-group-holdings-shares"
+},
+"CNJ": {
+"country": "au",
+"sector": "materials",
+"slug": "conico-shares"
+},
+"WJL": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "webjet-group-shares"
+},
+"BM1": {
+"country": "au",
+"sector": "materials",
+"slug": "ballard-mining-shares"
+},
+"AKO": {
+"country": "au",
+"sector": "materials",
+"slug": "akora-resources-shares"
+},
+"IBR": {
+"country": "au",
+"sector": "materials",
+"slug": "iron-bear-resources-shares"
+},
+"XYZ": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "block-shares"
+},
+"C29": {
+"country": "au",
+"sector": "materials",
+"slug": "c29-metals-shares"
+},
+"SGLLV": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "ricegrowers-shares"
+},
+"PR2": {
+"country": "au",
+"sector": "materials",
+"slug": "piche-resources-shares"
+},
+"CWP": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "cedar-woods-properties-shares"
+},
+"WIA": {
+"country": "au",
+"sector": "materials",
+"slug": "wia-gold-shares"
+},
+"LIS": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "li-s-energy-shares"
+},
+"EYE": {
+"country": "au",
+"sector": "healthcare",
+"slug": "nova-eye-medical-shares"
+},
+"AI1": {
+"country": "au",
+"sector": "software",
+"slug": "adisyn-shares"
+},
+"SVG": {
+"country": "au",
+"sector": "materials",
+"slug": "savannah-goldfields-shares"
+},
+"BGL": {
+"country": "au",
+"sector": "materials",
+"slug": "bellevue-gold-shares"
+},
+"BGE": {
+"country": "au",
+"sector": "software",
+"slug": "bridge-saas-shares"
+},
+"RR1": {
+"country": "au",
+"sector": "materials",
+"slug": "reach-resources-shares"
+},
+"EMC": {
+"country": "au",
+"sector": "materials",
+"slug": "everest-metals-shares"
+},
+"LBL": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "laserbond-shares"
+},
+"MAQ": {
+"country": "au",
+"sector": "software",
+"slug": "macquarie-technology-group-shares"
+},
+"WGN": {
+"country": "au",
+"sector": "materials",
+"slug": "wagners-holding-shares"
+},
+"ORA": {
+"country": "au",
+"sector": "materials",
+"slug": "orora-shares"
+},
+"RLC": {
+"country": "au",
+"sector": "materials",
+"slug": "reedy-lagoon-shares"
+},
+"DSM": {
+"country": "au",
+"sector": "materials",
+"slug": "desert-minerals-shares"
+},
+"ARC": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "arc-funds-shares"
+},
+"TCO": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "transmetro-shares"
+},
+"MSV": {
+"country": "au",
+"sector": "materials",
+"slug": "mitchell-services-shares"
+},
+"MCP": {
+"country": "au",
+"sector": "household",
+"slug": "mcphersons-shares"
+},
+"JMS": {
+"country": "au",
+"sector": "materials",
+"slug": "jupiter-mines-shares"
+},
+"GA8": {
+"country": "au",
+"sector": "materials",
+"slug": "goldarc-resources-shares"
+},
+"WTM": {
+"country": "au",
+"sector": "materials",
+"slug": "waratah-minerals-shares"
+},
+"CUF": {
+"country": "au",
+"sector": "materials",
+"slug": "cufe-shares"
+},
+"ODE": {
+"country": "au",
+"sector": "materials",
+"slug": "odessa-minerals-shares"
+},
+"HMC": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "hmc-capital-shares"
+},
+"GL1": {
+"country": "au",
+"sector": "materials",
+"slug": "global-lithium-resources-shares"
+},
+"CDO": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "cadence-opportunities-fund-shares"
+},
+"CHN": {
+"country": "au",
+"sector": "materials",
+"slug": "chalice-mining-shares"
+},
+"PGL": {
+"country": "au",
+"sector": "materials",
+"slug": "pilbara-gold-shares"
+},
+"IGL": {
+"country": "au",
+"sector": "media",
+"slug": "ive-group-shares"
+},
+"MTS": {
+"country": "au",
+"sector": "consumer-retailing",
+"slug": "metcash-shares"
+},
+"BIM": {
+"country": "au",
+"sector": "materials",
+"slug": "bindi-metals-shares"
+},
+"SLD": {
+"country": "au",
+"sector": "healthcare",
+"slug": "saluda-medical-shares"
+},
+"OBL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "omni-bridgeway-shares"
+},
+"AMS": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "atomos-shares"
+},
+"LMG": {
+"country": "au",
+"sector": "materials",
+"slug": "latrobe-magnesium-shares"
+},
+"GAS": {
+"country": "au",
+"sector": "energy",
+"slug": "state-gas-shares"
+},
+"AUI": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "australian-united-investment-shares"
+},
+"PFE": {
+"country": "au",
+"sector": "materials",
+"slug": "pantera-minerals-shares"
+},
+"RBR": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "rbr-group-shares"
+},
+"LGP": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "little-green-pharma-shares"
+},
+"GRR": {
+"country": "au",
+"sector": "materials",
+"slug": "grange-resources-shares"
+},
+"OCT": {
+"country": "au",
+"sector": "materials",
+"slug": "octava-minerals-shares"
+},
+"NFM": {
+"country": "au",
+"sector": "materials",
+"slug": "new-frontier-minerals-shares"
+},
+"DLY": {
+"country": "au",
+"sector": "materials",
+"slug": "daly-resources-shares"
+},
+"EAX": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "energy-action-shares"
+},
+"MAM": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "microequities-asset-management-group-shares"
+},
+"AUE": {
+"country": "au",
+"sector": "materials",
+"slug": "aurum-resources-shares"
+},
+"EMR": {
+"country": "au",
+"sector": "materials",
+"slug": "emerald-resources-shares"
+},
+"MBH": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "maggie-beer-holdings-shares"
+},
+"FLN": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "freelancer-shares"
+},
+"FWD": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "fleetwood-shares"
+},
+"RYM": {
+"country": "au",
+"sector": "healthcare",
+"slug": "ryman-healthcare-shares"
+},
+"KFM": {
+"country": "au",
+"sector": "materials",
+"slug": "kingfisher-mining-shares"
+},
+"OZM": {
+"country": "au",
+"sector": "materials",
+"slug": "ozaurum-resources-shares"
+},
+"TDO": {
+"country": "au",
+"sector": "energy",
+"slug": "3d-energi-shares"
+},
+"KEY": {
+"country": "au",
+"sector": "energy",
+"slug": "key-petroleum-shares"
+},
+"RIV": {
+"country": "au",
+"sector": "utilities",
+"slug": "rivco-australia-shares"
+},
+"PSC": {
+"country": "au",
+"sector": "materials",
+"slug": "prospect-resources-shares"
+},
+"49M": {
+"country": "au",
+"sector": "materials",
+"slug": "49-metals-shares"
+},
+"SMI": {
+"country": "au",
+"sector": "materials",
+"slug": "santana-minerals-shares"
+},
+"LTR": {
+"country": "au",
+"sector": "materials",
+"slug": "liontown-shares"
+},
+"UNT": {
+"country": "au",
+"sector": "media",
+"slug": "unith-shares"
+},
+"GPR": {
+"country": "au",
+"sector": "materials",
+"slug": "geopacific-resources-shares"
+},
+"WCE": {
+"country": "au",
+"sector": "materials",
+"slug": "west-coast-silver-shares"
+},
+"POL": {
+"country": "au",
+"sector": "materials",
+"slug": "polymetals-resources-shares"
+},
+"LIC": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "lifestyle-communities-shares"
+},
+"MHJ": {
+"country": "au",
+"sector": "retail",
+"slug": "michael-hill-international-shares"
+},
+"REM": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "remsense-technologies-shares"
+},
+"AUQ": {
+"country": "au",
+"sector": "materials",
+"slug": "alara-resources-shares"
+},
+"SEG": {
+"country": "au",
+"sector": "media",
+"slug": "sports-entertainment-group-shares"
+},
+"MPK": {
+"country": "au",
+"sector": "materials",
+"slug": "many-peaks-minerals-shares"
+},
+"GLE": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "glg-shares"
+},
+"OAK": {
+"country": "au",
+"sector": "software",
+"slug": "oakridge-international-shares"
+},
+"MI6": {
+"country": "au",
+"sector": "materials",
+"slug": "minerals-260-shares"
+},
+"SLZ": {
+"country": "au",
+"sector": "materials",
+"slug": "sultan-resources-shares"
+},
+"AXN": {
+"country": "au",
+"sector": "materials",
+"slug": "alliance-nickel-shares"
+},
+"AMC": {
+"country": "au",
+"sector": "materials",
+"slug": "amcor-shares"
+},
+"BWP": {
+"country": "au",
+"sector": "real-estate",
+"slug": "bwp-trust-shares"
+},
+"PME": {
+"country": "au",
+"sector": "healthcare",
+"slug": "pro-medicus-shares"
+},
+"CCV": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "cash-converters-international-shares"
+},
+"PV1": {
+"country": "au",
+"sector": "energy",
+"slug": "provaris-energy-shares"
+},
+"FCG": {
+"country": "au",
+"sector": "healthcare",
+"slug": "freedom-care-group-holdings-shares"
+},
+"LRV": {
+"country": "au",
+"sector": "materials",
+"slug": "larvotto-resources-shares"
+},
+"ARL": {
+"country": "au",
+"sector": "materials",
+"slug": "ardea-resources-shares"
+},
+"RNX": {
+"country": "au",
+"sector": "materials",
+"slug": "renegade-exploration-shares"
+},
+"RPL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "regal-partners-shares"
+},
+"GDM": {
+"country": "au",
+"sector": "materials",
+"slug": "great-divide-mining-shares"
+},
+"CLV": {
+"country": "au",
+"sector": "materials",
+"slug": "clover-shares"
+},
+"IXR": {
+"country": "au",
+"sector": "materials",
+"slug": "ionic-rare-earths-shares"
+},
+"HRE": {
+"country": "au",
+"sector": "materials",
+"slug": "heavy-rare-earths-shares"
+},
+"ENR": {
+"country": "au",
+"sector": "materials",
+"slug": "encounter-resources-shares"
+},
+"TKM": {
+"country": "au",
+"sector": "materials",
+"slug": "trek-metals-shares"
+},
+"RIO": {
+"country": "au",
+"sector": "materials",
+"slug": "rio-tinto-group-shares"
+},
+"BRN": {
+"country": "au",
+"sector": "software",
+"slug": "brainchip-holdings-shares"
+},
+"ATC": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "altech-batteries-shares"
+},
+"JLL": {
+"country": "au",
+"sector": "materials",
+"slug": "jindalee-lithium-shares"
+},
+"SRH": {
+"country": "au",
+"sector": "transportation",
+"slug": "saferoads-holdings-shares"
+},
+"VNL": {
+"country": "au",
+"sector": "software",
+"slug": "vinyl-group-shares"
+},
+"XST": {
+"country": "au",
+"sector": "energy",
+"slug": "xstate-resources-shares"
+},
+"APW": {
+"country": "au",
+"sector": "real-estate",
+"slug": "aims-property-securities-fund-shares"
+},
+"SPG": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "spc-global-holdings-shares"
+},
+"XPN": {
+"country": "au",
+"sector": "software",
+"slug": "xpon-technologies-group-shares"
+},
+"IGO": {
+"country": "au",
+"sector": "materials",
+"slug": "igo-shares"
+},
+"SOR": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "strategic-elements-shares"
+},
+"DGT": {
+"country": "au",
+"sector": "real-estate",
+"slug": "digico-infrastructure-reit-shares"
+},
+"FGR": {
+"country": "au",
+"sector": "materials",
+"slug": "first-graphene-shares"
+},
+"GML": {
+"country": "au",
+"sector": "materials",
+"slug": "gateway-mining-shares"
+},
+"PRG": {
+"country": "au",
+"sector": "materials",
+"slug": "prl-global-shares"
+},
+"SMS": {
+"country": "au",
+"sector": "materials",
+"slug": "star-minerals-shares"
+},
+"DTR": {
+"country": "au",
+"sector": "materials",
+"slug": "dateline-resources-shares"
+},
+"PR1": {
+"country": "au",
+"sector": "materials",
+"slug": "pure-resources-shares"
+},
+"PYC": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "pyc-therapeutics-shares"
+},
+"CR1": {
+"country": "au",
+"sector": "materials",
+"slug": "constellation-resources-shares"
+},
+"MEG": {
+"country": "au",
+"sector": "materials",
+"slug": "megado-minerals-shares"
+},
+"S2R": {
+"country": "au",
+"sector": "materials",
+"slug": "s2-resources-shares"
+},
+"ERL": {
+"country": "au",
+"sector": "materials",
+"slug": "empire-resources-shares"
+},
+"3DA": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "amaero-shares"
+},
+"AMP": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "amp-shares"
+},
+"SVM": {
+"country": "au",
+"sector": "materials",
+"slug": "sovereign-metals-shares"
+},
+"DRO": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "droneshield-shares"
+},
+"LAU": {
+"country": "au",
+"sector": "transportation",
+"slug": "lindsay-australia-shares"
+},
+"MKR": {
+"country": "au",
+"sector": "materials",
+"slug": "manuka-resources-shares"
+},
+"KAM": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "k2-asset-management-holdings-shares"
+},
+"TRJ": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "trajan-group-holdings-shares"
+},
+"AUA": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "audeara-shares"
+},
+"MGH": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "maas-group-holdings-shares"
+},
+"HAS": {
+"country": "au",
+"sector": "materials",
+"slug": "hastings-technology-metals-shares"
+},
+"IVR": {
+"country": "au",
+"sector": "materials",
+"slug": "investigator-silver-shares"
+},
+"HOR": {
+"country": "au",
+"sector": "materials",
+"slug": "horseshoe-metals-shares"
+},
+"LRD": {
+"country": "au",
+"sector": "materials",
+"slug": "lord-resources-shares"
+},
+"TAL": {
+"country": "au",
+"sector": "software",
+"slug": "talius-group-shares"
+},
+"AFL": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "af-legal-group-shares"
+},
+"L1G": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "l1-group-shares"
+},
+"PNN": {
+"country": "au",
+"sector": "materials",
+"slug": "power-minerals-shares"
+},
+"WHK": {
+"country": "au",
+"sector": "software",
+"slug": "whitehawk-shares"
+},
+"OR3": {
+"country": "au",
+"sector": "materials",
+"slug": "ore-resources-shares"
+},
+"MCM": {
+"country": "au",
+"sector": "energy",
+"slug": "mc-mining-shares"
+},
+"MGU": {
+"country": "au",
+"sector": "materials",
+"slug": "magnum-mining-and-exploration-shares"
+},
+"AEF": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "australian-ethical-investment-shares"
+},
+"BFG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "bell-financial-group-shares"
+},
+"EMA": {
+"country": "au",
+"sector": "materials",
+"slug": "eminence-minerals-shares"
+},
+"MHC": {
+"country": "au",
+"sector": "materials",
+"slug": "manhattan-gold-shares"
+},
+"WZR": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "wisr-shares"
+},
+"ADN": {
+"country": "au",
+"sector": "materials",
+"slug": "andromeda-metals-shares"
+},
+"BET": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "betmakers-technology-group-shares"
+},
+"IMR": {
+"country": "au",
+"sector": "healthcare",
+"slug": "imricor-medical-systems-shares"
+},
+"HPC": {
+"country": "au",
+"sector": "household",
+"slug": "hydration-pharmaceuticals-shares"
+},
+"PGYOA": {
+"country": "au",
+"sector": "energy",
+"slug": "pilot-energy-shares"
+},
+"FRS": {
+"country": "au",
+"sector": "materials",
+"slug": "forrestania-resources-shares"
+},
+"SGA": {
+"country": "au",
+"sector": "materials",
+"slug": "sarytogan-graphite-shares"
+},
+"CND": {
+"country": "au",
+"sector": "energy",
+"slug": "condor-energy-shares"
+},
+"STM": {
+"country": "au",
+"sector": "materials",
+"slug": "sunstone-metals-shares"
+},
+"VRC": {
+"country": "au",
+"sector": "materials",
+"slug": "volt-resources-shares"
+},
+"ERD": {
+"country": "au",
+"sector": "tech",
+"slug": "eroad-shares"
+},
+"NHC": {
+"country": "au",
+"sector": "energy",
+"slug": "new-hope-shares"
+},
+"MAH": {
+"country": "au",
+"sector": "materials",
+"slug": "macmahon-holdings-shares"
+},
+"IME": {
+"country": "au",
+"sector": "healthcare",
+"slug": "imexhs-shares"
+},
+"UBN": {
+"country": "au",
+"sector": "software",
+"slug": "urbanisecom-shares"
+},
+"RHI": {
+"country": "au",
+"sector": "materials",
+"slug": "red-hill-minerals-shares"
+},
+"MXI": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "maxiparts-shares"
+},
+"SHO": {
+"country": "au",
+"sector": "media",
+"slug": "sportshero-shares"
+},
+"FTI": {
+"country": "au",
+"sector": "media",
+"slug": "fortifai-shares"
+},
+"KM1": {
+"country": "au",
+"sector": "materials",
+"slug": "kali-metals-shares"
+},
+"AQN": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "aquirian-shares"
+},
+"URF": {
+"country": "au",
+"sector": "real-estate",
+"slug": "us-masters-residential-property-fund-shares"
+},
+"PWN": {
+"country": "au",
+"sector": "materials",
+"slug": "parkway-shares"
+},
+"AON": {
+"country": "au",
+"sector": "materials",
+"slug": "apollo-minerals-shares"
+},
+"DRX": {
+"country": "au",
+"sector": "materials",
+"slug": "diatreme-resources-shares"
+},
+"IPT": {
+"country": "au",
+"sector": "materials",
+"slug": "impact-minerals-shares"
+},
+"ORD": {
+"country": "au",
+"sector": "materials",
+"slug": "ordell-minerals-shares"
+},
+"BBL": {
+"country": "au",
+"sector": "media",
+"slug": "brisbane-broncos-shares"
+},
+"4DS": {
+"country": "au",
+"sector": "semiconductors",
+"slug": "4ds-memory-shares"
+},
+"FGH": {
+"country": "au",
+"sector": "materials",
+"slug": "foresta-group-holding-shares"
+},
+"AUZ": {
+"country": "au",
+"sector": "materials",
+"slug": "australian-mines-shares"
+},
+"AMI": {
+"country": "au",
+"sector": "materials",
+"slug": "aurelia-metals-shares"
+},
+"APX": {
+"country": "au",
+"sector": "software",
+"slug": "appen-shares"
+},
+"RSG": {
+"country": "au",
+"sector": "materials",
+"slug": "resolute-mining-shares"
+},
+"EGY": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "energy-technologies-shares"
+},
+"RMC": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "resimac-group-shares"
+},
+"BIS": {
+"country": "au",
+"sector": "materials",
+"slug": "bisalloy-steel-group-shares"
+},
+"SLA": {
+"country": "au",
+"sector": "materials",
+"slug": "solara-minerals-shares"
+},
+"PDI": {
+"country": "au",
+"sector": "materials",
+"slug": "predictive-discovery-shares"
+},
+"CLU": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "cluey-shares"
+},
+"S66": {
+"country": "au",
+"sector": "household",
+"slug": "star-combo-pharma-shares"
+},
+"FLG": {
+"country": "au",
+"sector": "materials",
+"slug": "flagship-minerals-shares"
+},
+"TTX": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "tetratherix-shares"
+},
+"EVT": {
+"country": "au",
+"sector": "media",
+"slug": "evt-shares"
+},
+"ECP": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "ecp-emerging-growth-shares"
+},
+"ENV": {
+"country": "au",
+"sector": "materials",
+"slug": "enova-mining-shares"
+},
+"REE": {
+"country": "au",
+"sector": "materials",
+"slug": "rarex-shares"
+},
+"BKB": {
+"country": "au",
+"sector": "materials",
+"slug": "black-bear-minerals-shares"
+},
+"GWA": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "gwa-group-shares"
+},
+"DJW": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "djerriwarrh-investments-shares"
+},
+"TSR": {
+"country": "au",
+"sector": "materials",
+"slug": "turnstone-resources-shares"
+},
+"CTP": {
+"country": "au",
+"sector": "energy",
+"slug": "central-petroleum-shares"
+},
+"LCY": {
+"country": "au",
+"sector": "materials",
+"slug": "legacy-iron-ore-shares"
+},
+"BML": {
+"country": "au",
+"sector": "materials",
+"slug": "boab-metals-shares"
+},
+"JHX": {
+"country": "au",
+"sector": "materials",
+"slug": "james-hardie-industries-shares"
+},
+"SGP": {
+"country": "au",
+"sector": "real-estate",
+"slug": "stockland-shares"
+},
+"MCY": {
+"country": "au",
+"sector": "utilities",
+"slug": "mercury-nz-shares"
+},
+"NEC": {
+"country": "au",
+"sector": "media",
+"slug": "nine-entertainment-holdings-shares"
+},
+"NES": {
+"country": "au",
+"sector": "materials",
+"slug": "nelson-resources-shares"
+},
+"HRN": {
+"country": "au",
+"sector": "materials",
+"slug": "horizon-gold-shares"
+},
+"VAU": {
+"country": "au",
+"sector": "materials",
+"slug": "vault-minerals-shares"
+},
+"E79": {
+"country": "au",
+"sector": "materials",
+"slug": "e79-gold-mines-shares"
+},
+"PAC": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "pacific-current-group-shares"
+},
+"COH": {
+"country": "au",
+"sector": "healthcare",
+"slug": "cochlear-shares"
+},
+"CAE": {
+"country": "au",
+"sector": "materials",
+"slug": "cannindah-resources-shares"
+},
+"LIT": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "livium-shares"
+},
+"BTR": {
+"country": "au",
+"sector": "materials",
+"slug": "brightstar-resources-shares"
+},
+"ESK": {
+"country": "au",
+"sector": "software",
+"slug": "etherstack-shares"
+},
+"MM1": {
+"country": "au",
+"sector": "materials",
+"slug": "midas-minerals-shares"
+},
+"GSN": {
+"country": "au",
+"sector": "materials",
+"slug": "great-southern-mining-shares"
+},
+"CYQ": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "cycliq-group-shares"
+},
+"SSL": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "sietel-shares"
+},
+"BMC": {
+"country": "au",
+"sector": "materials",
+"slug": "bmc-minerals-shares"
+},
+"BHP": {
+"country": "au",
+"sector": "materials",
+"slug": "bhp-group-shares"
+},
+"SER": {
+"country": "au",
+"sector": "materials",
+"slug": "strategic-energy-resources-shares"
+},
+"VMM": {
+"country": "au",
+"sector": "materials",
+"slug": "viridis-mining-and-minerals-shares"
+},
+"TAS": {
+"country": "au",
+"sector": "materials",
+"slug": "tasman-resources-shares"
+},
+"BBN": {
+"country": "au",
+"sector": "retail",
+"slug": "baby-bunting-group-shares"
+},
+"IDT": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "idt-australia-shares"
+},
+"AAP": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "australian-agricultural-projects-shares"
+},
+"EXL": {
+"country": "au",
+"sector": "household",
+"slug": "elixinol-wellness-shares"
+},
+"GRL": {
+"country": "au",
+"sector": "materials",
+"slug": "godolphin-resources-shares"
+},
+"FPH": {
+"country": "au",
+"sector": "healthcare",
+"slug": "fisher-paykel-healthcare-shares"
+},
+"OEC": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "orbital-shares"
+},
+"AVM": {
+"country": "au",
+"sector": "materials",
+"slug": "advance-metals-shares"
+},
+"ESR": {
+"country": "au",
+"sector": "materials",
+"slug": "estrella-resources-shares"
+},
+"FOS": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "fos-capital-shares"
+},
+"GGR": {
+"country": "au",
+"sector": "materials",
+"slug": "golden-globe-resources-shares"
+},
+"CVL": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "civmec-shares"
+},
+"FIN": {
+"country": "au",
+"sector": "materials",
+"slug": "fin-resources-shares"
+},
+"AUB": {
+"country": "au",
+"sector": "insurance",
+"slug": "aub-group-shares"
+},
+"ASM": {
+"country": "au",
+"sector": "materials",
+"slug": "australian-strategic-materials-shares"
+},
+"ORE": {
+"country": "au",
+"sector": "materials",
+"slug": "orezone-gold-shares"
+},
+"IPX": {
+"country": "au",
+"sector": "materials",
+"slug": "iperionx-shares"
+},
+"ICE": {
+"country": "au",
+"sector": "software",
+"slug": "icetana-shares"
+},
+"CHRCB": {
+"country": "au",
+"sector": "materials",
+"slug": "charger-metals-shares"
+},
+"COS": {
+"country": "au",
+"sector": "software",
+"slug": "cosol-shares"
+},
+"NXG": {
+"country": "au",
+"sector": "energy",
+"slug": "nexgen-energy-shares"
+},
+"JDO": {
+"country": "au",
+"sector": "banks",
+"slug": "judo-capital-holdings-shares"
+},
+"UWC": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "underwood-capital-shares"
+},
+"SMN": {
+"country": "au",
+"sector": "tech",
+"slug": "structural-monitoring-systems-shares"
+},
+"BEN": {
+"country": "au",
+"sector": "banks",
+"slug": "bendigo-and-adelaide-bank-shares"
+},
+"CU6": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "clarity-pharmaceuticals-shares"
+},
+"GLL": {
+"country": "au",
+"sector": "energy",
+"slug": "galilee-energy-shares"
+},
+"MAY": {
+"country": "au",
+"sector": "energy",
+"slug": "melbana-energy-shares"
+},
+"ATT": {
+"country": "au",
+"sector": "materials",
+"slug": "altitude-minerals-shares"
+},
+"LOV": {
+"country": "au",
+"sector": "retail",
+"slug": "lovisa-holdings-shares"
+},
+"LNQ": {
+"country": "au",
+"sector": "materials",
+"slug": "linq-minerals-shares"
+},
+"PRO": {
+"country": "au",
+"sector": "software",
+"slug": "prophecy-international-holdings-shares"
+},
+"PGY": {
+"country": "au",
+"sector": "energy",
+"slug": "pilot-energy-shares"
+},
+"JGH": {
+"country": "au",
+"sector": "energy",
+"slug": "jade-gas-holdings-shares"
+},
+"BGT": {
+"country": "au",
+"sector": "materials",
+"slug": "bio-gene-technology-shares"
+},
+"BNZ": {
+"country": "au",
+"sector": "materials",
+"slug": "benz-mining-shares"
+},
+"PRM": {
+"country": "au",
+"sector": "energy",
+"slug": "prominence-energy-shares"
+},
+"RIM": {
+"country": "au",
+"sector": "materials",
+"slug": "rimfire-pacific-mining-shares"
+},
+"NGY": {
+"country": "au",
+"sector": "energy",
+"slug": "nuenergy-gas-shares"
+},
+"NOX": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "noxopharm-shares"
+},
+"ACM": {
+"country": "au",
+"sector": "materials",
+"slug": "australian-critical-minerals-shares"
+},
+"ALV": {
+"country": "au",
+"sector": "materials",
+"slug": "alvo-minerals-shares"
+},
+"TAH": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "tabcorp-holdings-shares"
+},
+"KRM": {
+"country": "au",
+"sector": "materials",
+"slug": "kingsrose-mining-shares"
+},
+"OLY": {
+"country": "au",
+"sector": "materials",
+"slug": "olympio-metals-shares"
+},
+"AKA": {
+"country": "au",
+"sector": "materials",
+"slug": "aureka-shares"
+},
+"FNX": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "finexia-financial-group-shares"
+},
+"GRE": {
+"country": "au",
+"sector": "materials",
+"slug": "greentech-metals-shares"
+},
+"AUV": {
+"country": "au",
+"sector": "materials",
+"slug": "auravelle-metals-shares"
+},
+"EG1": {
+"country": "au",
+"sector": "materials",
+"slug": "evergold-minerals-shares"
+},
+"MSI": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "multistack-international-shares"
+},
+"MBK": {
+"country": "au",
+"sector": "materials",
+"slug": "metal-bank-shares"
+},
+"SEK": {
+"country": "au",
+"sector": "media",
+"slug": "seek-shares"
+},
+"SRV": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "servcorp-shares"
+},
+"PUR": {
+"country": "au",
+"sector": "materials",
+"slug": "pursuit-minerals-shares"
+},
+"IPH": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "iph-shares"
+},
+"HMI": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "hiremii-shares"
+},
+"JCS": {
+"country": "au",
+"sector": "software",
+"slug": "jcurve-solutions-shares"
+},
+"ENL": {
+"country": "au",
+"sector": "healthcare",
+"slug": "enlitic-shares"
+},
+"FDR": {
+"country": "au",
+"sector": "energy",
+"slug": "finder-energy-holdings-shares"
+},
+"RRL": {
+"country": "au",
+"sector": "materials",
+"slug": "regis-resources-shares"
+},
+"OM1": {
+"country": "au",
+"sector": "materials",
+"slug": "omnia-metals-group-shares"
+},
+"WAK": {
+"country": "au",
+"sector": "materials",
+"slug": "wa-kaolin-shares"
+},
+"ARB": {
+"country": "au",
+"sector": "automobiles",
+"slug": "arb-shares"
+},
+"LAT": {
+"country": "au",
+"sector": "materials",
+"slug": "latitude-66-shares"
+},
+"HSN": {
+"country": "au",
+"sector": "software",
+"slug": "hansen-technologies-shares"
+},
+"RMS": {
+"country": "au",
+"sector": "materials",
+"slug": "ramelius-resources-shares"
+},
+"CTT": {
+"country": "au",
+"sector": "retail",
+"slug": "cettire-shares"
+},
+"SLB": {
+"country": "au",
+"sector": "materials",
+"slug": "stelar-metals-shares"
+},
+"RIL": {
+"country": "au",
+"sector": "materials",
+"slug": "redivium-shares"
+},
+"VTX": {
+"country": "au",
+"sector": "materials",
+"slug": "vertex-minerals-shares"
+},
+"SK1": {
+"country": "au",
+"sector": "retail",
+"slug": "skinkandy-shares"
+},
+"TYR": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "tyro-payments-shares"
+},
+"EML": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "eml-payments-shares"
+},
+"ZLD": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "zelira-therapeutics-shares"
+},
+"LCE": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "london-city-equities-shares"
+},
+"DOC": {
+"country": "au",
+"sector": "healthcare",
+"slug": "doctor-care-anywhere-group-shares"
+},
+"OVT": {
+"country": "au",
+"sector": "media",
+"slug": "ovanti-shares"
+},
+"SHN": {
+"country": "au",
+"sector": "materials",
+"slug": "sunshine-metals-shares"
+},
+"LED": {
+"country": "au",
+"sector": "real-estate",
+"slug": "ldr-capital-property-fund-shares"
+},
+"PCG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "pengana-capital-group-shares"
+},
+"SEC": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "spheria-emerging-companies-shares"
+},
+"AMO": {
+"country": "au",
+"sector": "tech",
+"slug": "ambertech-shares"
+},
+"DXS": {
+"country": "au",
+"sector": "real-estate",
+"slug": "dexus-shares"
+},
+"TUA": {
+"country": "au",
+"sector": "telecom",
+"slug": "tuas-shares"
+},
+"ASG": {
+"country": "au",
+"sector": "retail",
+"slug": "autosports-group-shares"
+},
+"AXI": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "axtec-shares"
+},
+"AFA": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "asf-group-shares"
+},
+"BUY": {
+"country": "au",
+"sector": "energy",
+"slug": "bounty-oil-gas-shares"
+},
+"EUR": {
+"country": "au",
+"sector": "materials",
+"slug": "european-lithium-shares"
+},
+"CIN": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "carlton-investments-shares"
+},
+"CDP": {
+"country": "au",
+"sector": "real-estate",
+"slug": "carindale-property-trust-shares"
+},
+"SHA": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "shape-australia-shares"
+},
+"BEZ": {
+"country": "au",
+"sector": "materials",
+"slug": "besra-gold-shares"
+},
+"TTM": {
+"country": "au",
+"sector": "materials",
+"slug": "titan-minerals-shares"
+},
+"NCK": {
+"country": "au",
+"sector": "retail",
+"slug": "nick-scali-shares"
+},
+"NC1": {
+"country": "au",
+"sector": "materials",
+"slug": "nico-resources-shares"
+},
+"MAD": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "mader-group-shares"
+},
+"IRE": {
+"country": "au",
+"sector": "software",
+"slug": "iress-shares"
+},
+"ODA": {
+"country": "au",
+"sector": "software",
+"slug": "orcoda-shares"
+},
+"AW1": {
+"country": "au",
+"sector": "materials",
+"slug": "american-west-metals-shares"
+},
+"MTM": {
+"country": "au",
+"sector": "materials",
+"slug": "metallium-shares"
+},
+"LLC": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "lendlease-group-shares"
+},
+"ANO": {
+"country": "au",
+"sector": "materials",
+"slug": "advance-zinctek-shares"
+},
+"ABY": {
+"country": "au",
+"sector": "retail",
+"slug": "adore-beauty-group-shares"
+},
+"DVP": {
+"country": "au",
+"sector": "materials",
+"slug": "develop-global-shares"
+},
+"MPP": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "metro-performance-glass-shares"
+},
+"CF1": {
+"country": "au",
+"sector": "software",
+"slug": "complii-fintech-solutions-shares"
+},
+"BLG": {
+"country": "au",
+"sector": "semiconductors",
+"slug": "bluglass-shares"
+},
+"DKM": {
+"country": "au",
+"sector": "materials",
+"slug": "duketon-mining-shares"
+},
+"ITM": {
+"country": "au",
+"sector": "materials",
+"slug": "itech-minerals-shares"
+},
+"BFL": {
+"country": "au",
+"sector": "banks",
+"slug": "bsp-financial-group-shares"
+},
+"SIG": {
+"country": "au",
+"sector": "healthcare",
+"slug": "sigma-healthcare-shares"
+},
+"HMY": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "harmoney-shares"
+},
+"PPM": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "pepper-money-shares"
+},
+"WEC": {
+"country": "au",
+"sector": "energy",
+"slug": "white-energy-shares"
+},
+"CL8": {
+"country": "au",
+"sector": "transportation",
+"slug": "carly-holdings-shares"
+},
+"NYM": {
+"country": "au",
+"sector": "materials",
+"slug": "narryer-metals-shares"
+},
+"CGS": {
+"country": "au",
+"sector": "healthcare",
+"slug": "cogstate-shares"
+},
+"FFG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "fatfish-group-shares"
+},
+"RMD": {
+"country": "au",
+"sector": "healthcare",
+"slug": "resmed-shares"
+},
+"GBR": {
+"country": "au",
+"sector": "materials",
+"slug": "great-boulder-resources-shares"
+},
+"MOH": {
+"country": "au",
+"sector": "materials",
+"slug": "moho-resources-shares"
+},
+"TZL": {
+"country": "au",
+"sector": "tech",
+"slug": "tz-shares"
+},
+"AUR": {
+"country": "au",
+"sector": "materials",
+"slug": "auris-minerals-shares"
+},
+"MAG": {
+"country": "au",
+"sector": "materials",
+"slug": "magmatic-resources-shares"
+},
+"SLC": {
+"country": "au",
+"sector": "telecom",
+"slug": "superloop-shares"
+},
+"KAL": {
+"country": "au",
+"sector": "materials",
+"slug": "kalgoorlie-gold-mining-shares"
+},
+"AFI": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "australian-foundation-investment-shares"
+},
+"LPM": {
+"country": "au",
+"sector": "materials",
+"slug": "lithium-plus-minerals-shares"
+},
+"LMS": {
+"country": "au",
+"sector": "materials",
+"slug": "litchfield-minerals-shares"
+},
+"VRL": {
+"country": "au",
+"sector": "materials",
+"slug": "verity-resources-shares"
+},
+"MSB": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "mesoblast-shares"
+},
+"CIA": {
+"country": "au",
+"sector": "materials",
+"slug": "champion-iron-shares"
+},
+"FMG": {
+"country": "au",
+"sector": "materials",
+"slug": "fortescue-shares"
+},
+"KRR": {
+"country": "au",
+"sector": "materials",
+"slug": "king-river-resources-shares"
+},
+"AIV": {
+"country": "au",
+"sector": "materials",
+"slug": "activex-shares"
+},
+"GNG": {
+"country": "au",
+"sector": "materials",
+"slug": "gr-engineering-services-shares"
+},
+"VTM": {
+"country": "au",
+"sector": "materials",
+"slug": "victory-metals-shares"
+},
+"WOT": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "wotso-shares"
+},
+"TIA": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "tian-an-australia-shares"
+},
+"COF": {
+"country": "au",
+"sector": "real-estate",
+"slug": "centuria-office-reit-shares"
+},
+"CHM": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "chimeric-therapeutics-shares"
+},
+"BC8": {
+"country": "au",
+"sector": "materials",
+"slug": "black-cat-syndicate-shares"
+},
+"WTL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "wt-financial-group-shares"
+},
+"MVP": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "medical-developments-international-shares"
+},
+"29M": {
+"country": "au",
+"sector": "materials",
+"slug": "29metals-shares"
+},
+"OB1": {
+"country": "au",
+"sector": "materials",
+"slug": "orbminco-shares"
+},
+"GES": {
+"country": "au",
+"sector": "materials",
+"slug": "genesis-resources-shares"
+},
+"IPD": {
+"country": "au",
+"sector": "healthcare",
+"slug": "impedimed-shares"
+},
+"MAT": {
+"country": "au",
+"sector": "materials",
+"slug": "matsa-resources-shares"
+},
+"CMA": {
+"country": "au",
+"sector": "retail",
+"slug": "carma-shares"
+},
+"SVR": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "solvar-shares"
+},
+"BOC": {
+"country": "au",
+"sector": "materials",
+"slug": "bougainville-copper-shares"
+},
+"MML": {
+"country": "au",
+"sector": "materials",
+"slug": "mclaren-minerals-shares"
+},
+"BAK": {
+"country": "au",
+"sector": "materials",
+"slug": "barkly-rare-earths-shares"
+},
+"CXO": {
+"country": "au",
+"sector": "materials",
+"slug": "core-lithium-shares"
+},
+"CMG": {
+"country": "au",
+"sector": "materials",
+"slug": "critical-minerals-group-shares"
+},
+"ERM": {
+"country": "au",
+"sector": "materials",
+"slug": "emmerson-resources-shares"
+},
+"VMT": {
+"country": "au",
+"sector": "automobiles",
+"slug": "vmoto-shares"
+},
+"NTI": {
+"country": "au",
+"sector": "healthcare",
+"slug": "neurotech-international-shares"
+},
+"SDF": {
+"country": "au",
+"sector": "insurance",
+"slug": "steadfast-group-shares"
+},
+"ZIP": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "zip-co-shares"
+},
+"BAS": {
+"country": "au",
+"sector": "energy",
+"slug": "bass-oil-shares"
+},
+"EMH": {
+"country": "au",
+"sector": "materials",
+"slug": "european-metals-holdings-shares"
+},
+"GR8": {
+"country": "au",
+"sector": "materials",
+"slug": "great-dirt-resources-shares"
+},
+"FLC": {
+"country": "au",
+"sector": "utilities",
+"slug": "fluence-shares"
+},
+"CT1": {
+"country": "au",
+"sector": "tech",
+"slug": "constellation-technologies-shares"
+},
+"EM2": {
+"country": "au",
+"sector": "materials",
+"slug": "eagle-mountain-mining-shares"
+},
+"GBM": {
+"country": "au",
+"sector": "materials",
+"slug": "gbm-resources-shares"
+},
+"TRU": {
+"country": "au",
+"sector": "healthcare",
+"slug": "truscreen-group-shares"
+},
+"AIS": {
+"country": "au",
+"sector": "materials",
+"slug": "aeris-resources-shares"
+},
+"BIT": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "biotron-shares"
+},
+"CYB": {
+"country": "au",
+"sector": "software",
+"slug": "aucyber-shares"
+},
+"CEN": {
+"country": "au",
+"sector": "utilities",
+"slug": "contact-energy-shares"
+},
+"AXL": {
+"country": "au",
+"sector": "materials",
+"slug": "axel-ree-shares"
+},
+"WAF": {
+"country": "au",
+"sector": "materials",
+"slug": "west-african-resources-shares"
+},
+"USC": {
+"country": "au",
+"sector": "materials",
+"slug": "us1-critical-minerals-shares"
+},
+"SKS": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "sks-technologies-group-shares"
+},
+"MEU": {
+"country": "au",
+"sector": "energy",
+"slug": "marmota-shares"
+},
+"TCL": {
+"country": "au",
+"sector": "transportation",
+"slug": "transurban-group-shares"
+},
+"SHG": {
+"country": "au",
+"sector": "healthcare",
+"slug": "singular-health-group-shares"
+},
+"SEN": {
+"country": "au",
+"sector": "tech",
+"slug": "senetas-shares"
+},
+"RRE": {
+"country": "au",
+"sector": "materials",
+"slug": "right-resources-shares"
+},
+"AEV": {
+"country": "au",
+"sector": "materials",
+"slug": "avenira-shares"
+},
+"CIP": {
+"country": "au",
+"sector": "real-estate",
+"slug": "centuria-industrial-reit-shares"
+},
+"NDO": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "nido-education-shares"
+},
+"G11": {
+"country": "au",
+"sector": "materials",
+"slug": "g11-resources-shares"
+},
+"TEG": {
+"country": "au",
+"sector": "energy",
+"slug": "triangle-energy-global-shares"
+},
+"GUM": {
+"country": "au",
+"sector": "media",
+"slug": "gumtree-australia-markets-shares"
+},
+"M7T": {
+"country": "au",
+"sector": "healthcare",
+"slug": "mach7-technologies-shares"
+},
+"CLX": {
+"country": "au",
+"sector": "transportation",
+"slug": "cti-logistics-shares"
+},
+"ARI": {
+"country": "au",
+"sector": "materials",
+"slug": "arika-resources-shares"
+},
+"EGR": {
+"country": "au",
+"sector": "materials",
+"slug": "ecograf-shares"
+},
+"ELV": {
+"country": "au",
+"sector": "materials",
+"slug": "elevra-lithium-shares"
+},
+"WOR": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "worley-shares"
+},
+"LKE": {
+"country": "au",
+"sector": "materials",
+"slug": "lake-resources-shares"
+},
+"SIS": {
+"country": "au",
+"sector": "software",
+"slug": "simble-solutions-shares"
+},
+"WNR": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "wingara-shares"
+},
+"EXT": {
+"country": "au",
+"sector": "software",
+"slug": "excite-technology-services-shares"
+},
+"PMM": {
+"country": "au",
+"sector": "materials",
+"slug": "pioneer-minerals-shares"
+},
+"88E": {
+"country": "au",
+"sector": "energy",
+"slug": "88-energy-shares"
+},
+"AIA": {
+"country": "au",
+"sector": "transportation",
+"slug": "auckland-international-airport-shares"
+},
+"BUB": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "bubs-australia-shares"
+},
+"SGM": {
+"country": "au",
+"sector": "materials",
+"slug": "sims-shares"
+},
+"VEA": {
+"country": "au",
+"sector": "energy",
+"slug": "viva-energy-group-shares"
+},
+"RXL": {
+"country": "au",
+"sector": "materials",
+"slug": "rox-resources-shares"
+},
+"ALL": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "aristocrat-leisure-shares"
+},
+"MHM": {
+"country": "au",
+"sector": "materials",
+"slug": "mount-hope-mining-shares"
+},
+"ARV": {
+"country": "au",
+"sector": "materials",
+"slug": "artemis-resources-shares"
+},
+"ARN": {
+"country": "au",
+"sector": "materials",
+"slug": "aldoro-resources-shares"
+},
+"DTZ": {
+"country": "au",
+"sector": "tech",
+"slug": "dotz-nano-shares"
+},
+"CAT": {
+"country": "au",
+"sector": "software",
+"slug": "catapult-sports-shares"
+},
+"SLZO": {
+"country": "au",
+"sector": "materials",
+"slug": "sultan-resources-shares"
+},
+"HGO": {
+"country": "au",
+"sector": "materials",
+"slug": "hillgrove-resources-shares"
+},
+"GLB": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "globe-international-shares"
+},
+"PET": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "phoslock-environmental-technologies-shares"
+},
+"VRS": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "veris-shares"
+},
+"RGL": {
+"country": "au",
+"sector": "materials",
+"slug": "riversgold-shares"
+},
+"ODY": {
+"country": "au",
+"sector": "materials",
+"slug": "odyssey-gold-shares"
+},
+"IVX": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "invion-shares"
+},
+"CP8": {
+"country": "au",
+"sector": "materials",
+"slug": "canadian-phosphate-shares"
+},
+"PRX": {
+"country": "au",
+"sector": "materials",
+"slug": "prodigy-gold-shares"
+},
+"ELD": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "elders-shares"
+},
+"ATA": {
+"country": "au",
+"sector": "software",
+"slug": "atturra-shares"
+},
+"MEL": {
+"country": "au",
+"sector": "energy",
+"slug": "metgasco-shares"
+},
+"SPA": {
+"country": "au",
+"sector": "software",
+"slug": "spacetalk-shares"
+},
+"ITS": {
+"country": "au",
+"sector": "software",
+"slug": "infotrust-shares"
+},
+"AFG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "australian-finance-group-shares"
+},
+"ATM": {
+"country": "au",
+"sector": "materials",
+"slug": "antam-persero-shares"
+},
+"NVU": {
+"country": "au",
+"sector": "tech",
+"slug": "nanoveu-shares"
+},
+"SAN": {
+"country": "au",
+"sector": "energy",
+"slug": "sagalio-energy-shares"
+},
+"KCN": {
+"country": "au",
+"sector": "materials",
+"slug": "kingsgate-consolidated-shares"
+},
+"EQT": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "eqt-holdings-shares"
+},
+"ADS": {
+"country": "au",
+"sector": "software",
+"slug": "adslot-shares"
+},
+"SYL": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "symal-group-shares"
+},
+"AQX": {
+"country": "au",
+"sector": "materials",
+"slug": "alice-queen-shares"
+},
+"BDM": {
+"country": "au",
+"sector": "materials",
+"slug": "burgundy-diamond-mines-shares"
+},
+"GDR": {
+"country": "au",
+"sector": "materials",
+"slug": "golden-dragon-mining-shares"
+},
+"DYM": {
+"country": "au",
+"sector": "materials",
+"slug": "dynamic-metals-shares"
+},
+"RAS": {
+"country": "au",
+"sector": "materials",
+"slug": "ragusa-minerals-shares"
+},
+"MND": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "monadelphous-group-shares"
+},
+"M24": {
+"country": "au",
+"sector": "materials",
+"slug": "mamba-exploration-shares"
+},
+"14D": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "1414-degrees-shares"
+},
+"IND": {
+"country": "au",
+"sector": "materials",
+"slug": "industrial-minerals-shares"
+},
+"RON": {
+"country": "au",
+"sector": "materials",
+"slug": "ronin-resources-shares"
+},
+"FND": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "findi-shares"
+},
+"TAT": {
+"country": "au",
+"sector": "materials",
+"slug": "tartana-minerals-shares"
+},
+"BSR": {
+"country": "au",
+"sector": "materials",
+"slug": "bison-resources-shares"
+},
+"EMV": {
+"country": "au",
+"sector": "healthcare",
+"slug": "emvision-medical-devices-shares"
+},
+"VYS": {
+"country": "au",
+"sector": "materials",
+"slug": "vysarn-shares"
+},
+"DUG": {
+"country": "au",
+"sector": "software",
+"slug": "dug-technology-shares"
+},
+"EOS": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "electro-optic-systems-holdings-shares"
+},
+"4DX": {
+"country": "au",
+"sector": "healthcare",
+"slug": "4dmedical-shares"
+},
+"PIM": {
+"country": "au",
+"sector": "materials",
+"slug": "pinnacle-minerals-shares"
+},
+"NAN": {
+"country": "au",
+"sector": "healthcare",
+"slug": "nanosonics-shares"
+},
+"FUN": {
+"country": "au",
+"sector": "materials",
+"slug": "fortuna-metals-shares"
+},
+"SRJ": {
+"country": "au",
+"sector": "energy",
+"slug": "srj-technologies-group-shares"
+},
+"CSC": {
+"country": "au",
+"sector": "materials",
+"slug": "capstone-copper-shares"
+},
+"QBE": {
+"country": "au",
+"sector": "insurance",
+"slug": "qbe-insurance-group-shares"
+},
+"AAJ": {
+"country": "au",
+"sector": "materials",
+"slug": "aruma-resources-shares"
+},
+"M3M": {
+"country": "au",
+"sector": "materials",
+"slug": "m3-mining-shares"
+},
+"LEG": {
+"country": "au",
+"sector": "materials",
+"slug": "legend-mining-shares"
+},
+"FAL": {
+"country": "au",
+"sector": "materials",
+"slug": "falcon-metals-shares"
+},
+"MYG": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "mayfield-group-holdings-shares"
+},
+"GMN": {
+"country": "au",
+"sector": "materials",
+"slug": "gold-mountain-shares"
+},
+"ATS": {
+"country": "au",
+"sector": "energy",
+"slug": "australis-oil-gas-shares"
+},
+"NSB": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "neuroscientific-biopharmaceuticals-shares"
+},
+"ASP": {
+"country": "au",
+"sector": "media",
+"slug": "aspermont-shares"
+},
+"SLX": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "silex-systems-shares"
+},
+"MGX": {
+"country": "au",
+"sector": "materials",
+"slug": "mgx-resources-shares"
+},
+"UOS": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "united-overseas-australia-shares"
+},
+"NWH": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "nrw-holdings-shares"
+},
+"SKM": {
+"country": "au",
+"sector": "materials",
+"slug": "skylark-minerals-shares"
+},
+"AYT": {
+"country": "au",
+"sector": "materials",
+"slug": "austin-metals-shares"
+},
+"HM1": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "hearts-and-minds-investments-shares"
+},
+"CVV": {
+"country": "au",
+"sector": "materials",
+"slug": "caravel-minerals-shares"
+},
+"HFR": {
+"country": "au",
+"sector": "materials",
+"slug": "highfield-resources-shares"
+},
+"WOW": {
+"country": "au",
+"sector": "consumer-retailing",
+"slug": "woolworths-group-shares"
+},
+"STX": {
+"country": "au",
+"sector": "energy",
+"slug": "strike-energy-shares"
+},
+"OFX": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "ofx-group-shares"
+},
+"DTM": {
+"country": "au",
+"sector": "materials",
+"slug": "dart-mining-shares"
+},
+"KNO": {
+"country": "au",
+"sector": "software",
+"slug": "knosys-shares"
+},
+"ATG": {
+"country": "au",
+"sector": "retail",
+"slug": "articore-group-shares"
+},
+"IIQ": {
+"country": "au",
+"sector": "healthcare",
+"slug": "inoviq-shares"
+},
+"EQX": {
+"country": "au",
+"sector": "materials",
+"slug": "equatorial-resources-shares"
+},
+"SUN": {
+"country": "au",
+"sector": "insurance",
+"slug": "suncorp-group-shares"
+},
+"MOV": {
+"country": "au",
+"sector": "transportation",
+"slug": "move-logistics-group-shares"
+},
+"LML": {
+"country": "au",
+"sector": "materials",
+"slug": "lincoln-minerals-shares"
+},
+"FMR": {
+"country": "au",
+"sector": "materials",
+"slug": "fmr-resources-shares"
+},
+"RIC": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "ridley-shares"
+},
+"EMN": {
+"country": "au",
+"sector": "materials",
+"slug": "euro-manganese-shares"
+},
+"BNR": {
+"country": "au",
+"sector": "materials",
+"slug": "bulletin-resources-shares"
+},
+"ARU": {
+"country": "au",
+"sector": "materials",
+"slug": "arafura-rare-earths-shares"
+},
+"PXX": {
+"country": "au",
+"sector": "materials",
+"slug": "polarx-shares"
+},
+"TWD": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "tamawood-shares"
+},
+"ATX": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "amplia-therapeutics-shares"
+},
+"DPM": {
+"country": "au",
+"sector": "materials",
+"slug": "dpm-metals-shares"
+},
+"TYX": {
+"country": "au",
+"sector": "materials",
+"slug": "tyranna-resources-shares"
+},
+"WC8": {
+"country": "au",
+"sector": "materials",
+"slug": "wildcat-resources-shares"
+},
+"CYL": {
+"country": "au",
+"sector": "materials",
+"slug": "catalyst-metals-shares"
+},
+"ALR": {
+"country": "au",
+"sector": "materials",
+"slug": "altair-minerals-shares"
+},
+"ERG": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "eneco-refresh-shares"
+},
+"SGR": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "star-entertainment-group-shares"
+},
+"NX1": {
+"country": "au",
+"sector": "healthcare",
+"slug": "nexalis-therapeutics-shares"
+},
+"PFT": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "pure-foods-tasmania-shares"
+},
+"BRL": {
+"country": "au",
+"sector": "materials",
+"slug": "bathurst-resources-shares"
+},
+"VLS": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "vita-life-sciences-shares"
+},
+"RRR": {
+"country": "au",
+"sector": "materials",
+"slug": "revolver-resources-holdings-shares"
+},
+"YOJ": {
+"country": "au",
+"sector": "software",
+"slug": "yojee-shares"
+},
+"QAL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "qualitas-shares"
+},
+"PPY": {
+"country": "au",
+"sector": "materials",
+"slug": "papyrus-australia-shares"
+},
+"SRL": {
+"country": "au",
+"sector": "materials",
+"slug": "sunrise-energy-metals-shares"
+},
+"TLX": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "telix-pharmaceuticals-shares"
+},
+"AVW": {
+"country": "au",
+"sector": "materials",
+"slug": "avira-resources-shares"
+},
+"PLY": {
+"country": "au",
+"sector": "media",
+"slug": "playside-studios-shares"
+},
+"IMA": {
+"country": "au",
+"sector": "materials",
+"slug": "image-resources-shares"
+},
+"OCC": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "orthocell-shares"
+},
+"CUE": {
+"country": "au",
+"sector": "energy",
+"slug": "cue-energy-resources-shares"
+},
+"NXD": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "nexted-group-shares"
+},
+"8CO": {
+"country": "au",
+"sector": "software",
+"slug": "8common-shares"
+},
+"AA2": {
+"country": "au",
+"sector": "materials",
+"slug": "ariana-resources-shares"
+},
+"TFL": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "tasfoods-shares"
+},
+"ROC": {
+"country": "au",
+"sector": "software",
+"slug": "rocketboots-shares"
+},
+"CNI": {
+"country": "au",
+"sector": "real-estate",
+"slug": "centuria-capital-group-shares"
+},
+"PC2": {
+"country": "au",
+"sector": "materials",
+"slug": "pc-gold-shares"
+},
+"KYP": {
+"country": "au",
+"sector": "software",
+"slug": "kinatico-shares"
+},
+"AKG": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "academies-australasia-group-shares"
+},
+"BM8": {
+"country": "au",
+"sector": "materials",
+"slug": "battery-age-minerals-shares"
+},
+"QAN": {
+"country": "au",
+"sector": "transportation",
+"slug": "qantas-airways-shares"
+},
+"ASV": {
+"country": "au",
+"sector": "software",
+"slug": "asset-vision-co-shares"
+},
+"AKM": {
+"country": "au",
+"sector": "materials",
+"slug": "aspire-mining-shares"
+},
+"REH": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "reece-shares"
+},
+"MAN": {
+"country": "au",
+"sector": "materials",
+"slug": "mandrake-resources-shares"
+},
+"EME": {
+"country": "au",
+"sector": "energy",
+"slug": "energy-metals-shares"
+},
+"WRX": {
+"country": "au",
+"sector": "materials",
+"slug": "western-ridge-resources-shares"
+},
+"CAY": {
+"country": "au",
+"sector": "materials",
+"slug": "canyon-resources-shares"
+},
+"SKO": {
+"country": "au",
+"sector": "software",
+"slug": "serko-shares"
+},
+"AJX": {
+"country": "au",
+"sector": "materials",
+"slug": "alexium-international-group-shares"
+},
+"CTM": {
+"country": "au",
+"sector": "materials",
+"slug": "centaurus-metals-shares"
+},
+"SKN": {
+"country": "au",
+"sector": "household",
+"slug": "skin-elements-shares"
+},
+"HUB": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "hub24-shares"
+},
+"KNG": {
+"country": "au",
+"sector": "materials",
+"slug": "kingsland-minerals-shares"
+},
+"ALX": {
+"country": "au",
+"sector": "transportation",
+"slug": "atlas-arteria-shares"
+},
+"NGS": {
+"country": "au",
+"sector": "household",
+"slug": "nutritional-growth-solutions-shares"
+},
+"GTK": {
+"country": "au",
+"sector": "software",
+"slug": "gentrack-group-shares"
+},
+"FML": {
+"country": "au",
+"sector": "materials",
+"slug": "focus-minerals-shares"
+},
+"AU1": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "agency-group-australia-shares"
+},
+"CY5": {
+"country": "au",
+"sector": "materials",
+"slug": "cygnus-metals-shares"
+},
+"WPR": {
+"country": "au",
+"sector": "real-estate",
+"slug": "waypoint-reit-shares"
+},
+"FEG": {
+"country": "au",
+"sector": "materials",
+"slug": "far-east-gold-shares"
+},
+"RDM": {
+"country": "au",
+"sector": "materials",
+"slug": "red-metal-shares"
+},
+"BKT": {
+"country": "au",
+"sector": "materials",
+"slug": "black-rock-mining-shares"
+},
+"VMS": {
+"country": "au",
+"sector": "materials",
+"slug": "venari-minerals-shares"
+},
+"BGA": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "bega-cheese-shares"
+},
+"EXP": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "experience-co-shares"
+},
+"SOM": {
+"country": "au",
+"sector": "healthcare",
+"slug": "somnomed-shares"
+},
+"BPT": {
+"country": "au",
+"sector": "energy",
+"slug": "beach-energy-shares"
+},
+"XPD": {
+"country": "au",
+"sector": "materials",
+"slug": "xpedra-resources-shares"
+},
+"EV8": {
+"country": "au",
+"sector": "materials",
+"slug": "everlast-minerals-shares"
+},
+"ASN": {
+"country": "au",
+"sector": "materials",
+"slug": "anson-resources-shares"
+},
+"MCA": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "murray-cod-australia-shares"
+},
+"TSK": {
+"country": "au",
+"sector": "materials",
+"slug": "tusker-minerals-shares"
+},
+"DSK": {
+"country": "au",
+"sector": "retail",
+"slug": "dusk-group-shares"
+},
+"PNT": {
+"country": "au",
+"sector": "materials",
+"slug": "panther-metals-shares"
+},
+"AR1": {
+"country": "au",
+"sector": "materials",
+"slug": "austral-resources-australia-shares"
+},
+"BTM": {
+"country": "au",
+"sector": "materials",
+"slug": "breakthrough-minerals-shares"
+},
+"RFF": {
+"country": "au",
+"sector": "real-estate",
+"slug": "rural-funds-group-shares"
+},
+"ILA": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "island-pharmaceuticals-shares"
+},
+"NMT": {
+"country": "au",
+"sector": "materials",
+"slug": "neometals-shares"
+},
+"QFE": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "quickfee-shares"
+},
+"RZI": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "raiz-invest-shares"
+},
+"MFF": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "mff-capital-investments-shares"
+},
+"GLN": {
+"country": "au",
+"sector": "materials",
+"slug": "galan-lithium-shares"
+},
+"IDX": {
+"country": "au",
+"sector": "healthcare",
+"slug": "integral-diagnostics-shares"
+},
+"VGL": {
+"country": "au",
+"sector": "software",
+"slug": "vista-group-international-shares"
+},
+"DDT": {
+"country": "au",
+"sector": "automobiles",
+"slug": "datadot-technology-shares"
+},
+"RND": {
+"country": "au",
+"sector": "materials",
+"slug": "rand-mining-shares"
+},
+"TAR": {
+"country": "au",
+"sector": "materials",
+"slug": "taruga-minerals-shares"
+},
+"EGA": {
+"country": "au",
+"sector": "energy",
+"slug": "eastern-gas-shares"
+},
+"KAR": {
+"country": "au",
+"sector": "energy",
+"slug": "karoon-energy-shares"
+},
+"CML": {
+"country": "au",
+"sector": "tech",
+"slug": "connected-minerals-shares"
+},
+"BOE": {
+"country": "au",
+"sector": "energy",
+"slug": "boss-energy-shares"
+},
+"BKY": {
+"country": "au",
+"sector": "energy",
+"slug": "berkeley-energia-shares"
+},
+"WWG": {
+"country": "au",
+"sector": "transportation",
+"slug": "wiseway-group-shares"
+},
+"TGH": {
+"country": "au",
+"sector": "materials",
+"slug": "terragen-holdings-shares"
+},
+"TVN": {
+"country": "au",
+"sector": "materials",
+"slug": "tivan-shares"
+},
+"PBH": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "pointsbet-holdings-shares"
+},
+"ALY": {
+"country": "au",
+"sector": "materials",
+"slug": "alchemy-resources-shares"
+},
+"SNZ": {
+"country": "au",
+"sector": "healthcare",
+"slug": "summerset-group-holdings-shares"
+},
+"FRW": {
+"country": "au",
+"sector": "transportation",
+"slug": "freightways-group-shares"
+},
+"SRG": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "srg-global-shares"
+},
+"GAP": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "gale-pacific-shares"
+},
+"BTI": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "bailador-technology-investments-shares"
+},
+"CYP": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "cynata-therapeutics-shares"
+},
+"BRI": {
+"country": "au",
+"sector": "materials",
+"slug": "big-river-industries-shares"
+},
+"RAU": {
+"country": "au",
+"sector": "materials",
+"slug": "resouro-strategic-metals-shares"
+},
+"IPG": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "ipd-group-shares"
+},
+"MQWS": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "macquarie-group-shares"
+},
+"WAR": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "wam-strategic-value-shares"
+},
+"SHJ": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "shine-justice-shares"
+},
+"LVE": {
+"country": "au",
+"sector": "media",
+"slug": "love-group-global-shares"
+},
+"1AD": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "adalta-shares"
+},
+"PPK": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "ppk-group-shares"
+},
+"C79": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "chrysos-shares"
+},
+"MCO": {
+"country": "au",
+"sector": "materials",
+"slug": "myeco-group-shares"
+},
+"AAU": {
+"country": "au",
+"sector": "materials",
+"slug": "antilles-gold-shares"
+},
+"BRK": {
+"country": "au",
+"sector": "energy",
+"slug": "brookside-energy-shares"
+},
+"SFC": {
+"country": "au",
+"sector": "automobiles",
+"slug": "schaffer-shares"
+},
+"MFG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "magellan-financial-group-shares"
+},
+"AGI": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "ainsworth-game-technology-shares"
+},
+"DAI": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "decidr-ai-industries-shares"
+},
+"ZIM": {
+"country": "au",
+"sector": "materials",
+"slug": "zimplats-holdings-shares"
+},
+"TRM": {
+"country": "au",
+"sector": "materials",
+"slug": "truscott-mining-shares"
+},
+"ORN": {
+"country": "au",
+"sector": "materials",
+"slug": "orion-minerals-shares"
+},
+"PRN": {
+"country": "au",
+"sector": "materials",
+"slug": "perenti-shares"
+},
+"UNI": {
+"country": "au",
+"sector": "retail",
+"slug": "universal-store-holdings-shares"
+},
+"AAI": {
+"country": "au",
+"sector": "materials",
+"slug": "alcoa-shares"
+},
+"MTO": {
+"country": "au",
+"sector": "retail",
+"slug": "motorcycle-holdings-shares"
+},
+"VML": {
+"country": "au",
+"sector": "materials",
+"slug": "vital-metals-shares"
+},
+"MEK": {
+"country": "au",
+"sector": "materials",
+"slug": "meeka-metals-shares"
+},
+"MIO": {
+"country": "au",
+"sector": "materials",
+"slug": "macarthur-minerals-shares"
+},
+"DYL": {
+"country": "au",
+"sector": "energy",
+"slug": "deep-yellow-shares"
+},
+"NGX": {
+"country": "au",
+"sector": "materials",
+"slug": "ngx-shares"
+},
+"PMV": {
+"country": "au",
+"sector": "retail",
+"slug": "premier-investments-shares"
+},
+"OEQ": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "orion-equities-shares"
+},
+"GBL": {
+"country": "au",
+"sector": "energy",
+"slug": "great-bear-exploration-shares"
+},
+"SRN": {
+"country": "au",
+"sector": "materials",
+"slug": "surefire-resources-shares"
+},
+"EWC": {
+"country": "au",
+"sector": "utilities",
+"slug": "energy-world-shares"
+},
+"NIM": {
+"country": "au",
+"sector": "materials",
+"slug": "nimy-resources-shares"
+},
+"A3D": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "aurora-labs-shares"
+},
+"BCN": {
+"country": "au",
+"sector": "materials",
+"slug": "beacon-minerals-shares"
+},
+"P1E": {
+"country": "au",
+"sector": "energy",
+"slug": "pure-one-shares"
+},
+"ASK": {
+"country": "au",
+"sector": "real-estate",
+"slug": "abacus-storage-king-shares"
+},
+"EDE": {
+"country": "au",
+"sector": "energy",
+"slug": "eden-innovations-shares"
+},
+"SDI": {
+"country": "au",
+"sector": "healthcare",
+"slug": "sdi-shares"
+},
+"SHM": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "shriro-holdings-shares"
+},
+"BGD": {
+"country": "au",
+"sector": "materials",
+"slug": "barton-gold-holdings-shares"
+},
+"EGL": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "environmental-group-shares"
+},
+"DGH": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "desane-group-holdings-shares"
+},
+"A11": {
+"country": "au",
+"sector": "materials",
+"slug": "atlantic-lithium-shares"
+},
+"EDU": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "edu-holdings-shares"
+},
+"BEL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "bentley-capital-shares"
+},
+"MOM": {
+"country": "au",
+"sector": "materials",
+"slug": "moab-minerals-shares"
+},
+"ZGL": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "zicom-group-shares"
+},
+"CTE": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "cryosite-shares"
+},
+"HLS": {
+"country": "au",
+"sector": "healthcare",
+"slug": "healius-shares"
+},
+"USM": {
+"country": "au",
+"sector": "materials",
+"slug": "union-star-metals-shares"
+},
+"MRQ": {
+"country": "au",
+"sector": "materials",
+"slug": "mrg-metals-shares"
+},
+"SIQ": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "smartgroup-shares"
+},
+"GED": {
+"country": "au",
+"sector": "materials",
+"slug": "golden-deeps-shares"
+},
+"CWY": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "cleanaway-waste-management-shares"
+},
+"NTD": {
+"country": "au",
+"sector": "retail",
+"slug": "ntaw-holdings-shares"
+},
+"MEM": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "memphasys-shares"
+},
+"DME": {
+"country": "au",
+"sector": "materials",
+"slug": "dome-gold-mines-shares"
+},
+"NH3": {
+"country": "au",
+"sector": "materials",
+"slug": "nh3-clean-energy-shares"
+},
+"BBT": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "betr-entertainment-shares"
+},
+"SPN": {
+"country": "au",
+"sector": "materials",
+"slug": "sparc-technologies-shares"
+},
+"CUV": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "clinuvel-pharmaceuticals-shares"
+},
+"CDE": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "codeifai-shares"
+},
+"CVB": {
+"country": "au",
+"sector": "healthcare",
+"slug": "curvebeam-ai-shares"
+},
+"AXE": {
+"country": "au",
+"sector": "semiconductors",
+"slug": "archer-materials-shares"
+},
+"OCA": {
+"country": "au",
+"sector": "healthcare",
+"slug": "oceania-healthcare-shares"
+},
+"EPM": {
+"country": "au",
+"sector": "energy",
+"slug": "eclipse-metals-shares"
+},
+"NEM": {
+"country": "au",
+"sector": "materials",
+"slug": "newmont-shares"
+},
+"SPQ": {
+"country": "au",
+"sector": "materials",
+"slug": "superior-resources-shares"
+},
+"CQR": {
+"country": "au",
+"sector": "real-estate",
+"slug": "charter-hall-retail-reit-shares"
+},
+"KAT": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "katana-capital-shares"
+},
+"HCT": {
+"country": "au",
+"sector": "household",
+"slug": "holista-colltech-shares"
+},
+"LGI": {
+"country": "au",
+"sector": "utilities",
+"slug": "lgi-shares"
+},
+"CKF": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "collins-foods-shares"
+},
+"NOU": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "noumi-shares"
+},
+"BCA": {
+"country": "au",
+"sector": "materials",
+"slug": "black-canyon-shares"
+},
+"FAU": {
+"country": "au",
+"sector": "materials",
+"slug": "first-au-shares"
+},
+"CLG": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "close-the-loop-shares"
+},
+"PXR": {
+"country": "au",
+"sector": "energy",
+"slug": "pacific-resources-shares"
+},
+"SNG": {
+"country": "au",
+"sector": "materials",
+"slug": "siren-gold-shares"
+},
+"EMD": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "emyria-shares"
+},
+"SNT": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "syntara-shares"
+},
+"SUL": {
+"country": "au",
+"sector": "retail",
+"slug": "super-retail-group-shares"
+},
+"TR8": {
+"country": "au",
+"sector": "materials",
+"slug": "tarrina-resources-shares"
+},
+"BSX": {
+"country": "au",
+"sector": "materials",
+"slug": "blackstone-minerals-shares"
+},
+"EMU": {
+"country": "au",
+"sector": "materials",
+"slug": "emu-shares"
+},
+"CAF": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "centrepoint-alliance-shares"
+},
+"RVT": {
+"country": "au",
+"sector": "materials",
+"slug": "richmond-vanadium-technology-shares"
+},
+"REP": {
+"country": "au",
+"sector": "real-estate",
+"slug": "ram-essential-services-property-fund-shares"
+},
+"AZ9": {
+"country": "au",
+"sector": "materials",
+"slug": "azzuro-resources-shares"
+},
+"NAE": {
+"country": "au",
+"sector": "energy",
+"slug": "new-age-exploration-shares"
+},
+"FBR": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "fbr-shares"
+},
+"VGN": {
+"country": "au",
+"sector": "transportation",
+"slug": "virgin-australia-holdings-shares"
+},
+"APE": {
+"country": "au",
+"sector": "retail",
+"slug": "eagers-automotive-shares"
+},
+"TNC": {
+"country": "au",
+"sector": "materials",
+"slug": "true-north-copper-shares"
+},
+"IMU": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "imugene-shares"
+},
+"DGR": {
+"country": "au",
+"sector": "materials",
+"slug": "dgr-global-shares"
+},
+"GBE": {
+"country": "au",
+"sector": "materials",
+"slug": "globe-metals-mining-shares"
+},
+"FPR": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "fleetpartners-group-shares"
+},
+"NHE": {
+"country": "au",
+"sector": "energy",
+"slug": "noble-helium-shares"
+},
+"RCL": {
+"country": "au",
+"sector": "software",
+"slug": "readcloud-shares"
+},
+"CZR": {
+"country": "au",
+"sector": "materials",
+"slug": "czr-resources-shares"
+},
+"CMO": {
+"country": "au",
+"sector": "materials",
+"slug": "cosmo-metals-shares"
+},
+"XRO": {
+"country": "au",
+"sector": "software",
+"slug": "xero-shares"
+},
+"PPL": {
+"country": "au",
+"sector": "software",
+"slug": "pureprofile-shares"
+},
+"BRY": {
+"country": "au",
+"sector": "materials",
+"slug": "barys-resources-shares"
+},
+"RBX": {
+"country": "au",
+"sector": "materials",
+"slug": "resource-base-shares"
+},
+"MYR": {
+"country": "au",
+"sector": "retail",
+"slug": "myer-holdings-shares"
+},
+"TEK": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "thorney-technologies-shares"
+},
+"COI": {
+"country": "au",
+"sector": "energy",
+"slug": "comet-ridge-shares"
+},
+"AVH": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "avita-medical-shares"
+},
+"TRP": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "tissue-repair-shares"
+},
+"AEL": {
+"country": "au",
+"sector": "energy",
+"slug": "amplitude-energy-shares"
+},
+"JAL": {
+"country": "au",
+"sector": "materials",
+"slug": "jameson-resources-shares"
+},
+"HIT": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "hitech-group-australia-shares"
+},
+"HLI": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "helia-group-shares"
+},
+"AVR": {
+"country": "au",
+"sector": "healthcare",
+"slug": "anteris-technologies-global-shares"
+},
+"SNM": {
+"country": "au",
+"sector": "materials",
+"slug": "sentinel-metals-shares"
+},
+"NWM": {
+"country": "au",
+"sector": "materials",
+"slug": "norwest-minerals-shares"
+},
+"ASQ": {
+"country": "au",
+"sector": "materials",
+"slug": "australian-silica-quartz-group-shares"
+},
+"VPR": {
+"country": "au",
+"sector": "utilities",
+"slug": "volt-group-shares"
+},
+"BUR": {
+"country": "au",
+"sector": "materials",
+"slug": "burley-minerals-shares"
+},
+"HGH": {
+"country": "au",
+"sector": "banks",
+"slug": "heartland-group-holdings-shares"
+},
+"CDA": {
+"country": "au",
+"sector": "tech",
+"slug": "codan-shares"
+},
+"IVZ": {
+"country": "au",
+"sector": "energy",
+"slug": "invictus-energy-shares"
+},
+"TIO": {
+"country": "au",
+"sector": "materials",
+"slug": "temas-resources-shares"
+},
+"AX1": {
+"country": "au",
+"sector": "retail",
+"slug": "accent-group-shares"
+},
+"CPM": {
+"country": "au",
+"sector": "materials",
+"slug": "cooper-metals-shares"
+},
+"PPC": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "peet-shares"
+},
+"LKY": {
+"country": "au",
+"sector": "materials",
+"slug": "locksley-resources-shares"
+},
+"IOD": {
+"country": "au",
+"sector": "software",
+"slug": "iodm-shares"
+},
+"IDA": {
+"country": "au",
+"sector": "materials",
+"slug": "indiana-resources-shares"
+},
+"SNX": {
+"country": "au",
+"sector": "materials",
+"slug": "sierra-nevada-gold-shares"
+},
+"OLL": {
+"country": "au",
+"sector": "software",
+"slug": "openlearning-shares"
+},
+"ADX": {
+"country": "au",
+"sector": "energy",
+"slug": "adx-energy-shares"
+},
+"S32": {
+"country": "au",
+"sector": "materials",
+"slug": "south32-shares"
+},
+"PKO": {
+"country": "au",
+"sector": "materials",
+"slug": "peako-shares"
+},
+"RDN": {
+"country": "au",
+"sector": "materials",
+"slug": "raiden-resources-shares"
+},
+"HVN": {
+"country": "au",
+"sector": "retail",
+"slug": "harvey-norman-holdings-shares"
+},
+"UM1": {
+"country": "au",
+"sector": "materials",
+"slug": "unity-metals-shares"
+},
+"XRF": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "xrf-scientific-shares"
+},
+"MVL": {
+"country": "au",
+"sector": "materials",
+"slug": "marvel-gold-shares"
+},
+"AMU": {
+"country": "au",
+"sector": "materials",
+"slug": "american-uranium-shares"
+},
+"PLT": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "plenti-group-shares"
+},
+"TRI": {
+"country": "au",
+"sector": "healthcare",
+"slug": "trivarx-shares"
+},
+"CRS": {
+"country": "au",
+"sector": "materials",
+"slug": "caprice-resources-shares"
+},
+"FEX": {
+"country": "au",
+"sector": "materials",
+"slug": "fenix-resources-shares"
+},
+"MAF": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "ma-financial-group-shares"
+},
+"RB6": {
+"country": "au",
+"sector": "materials",
+"slug": "rubix-resources-shares"
+},
+"SFR": {
+"country": "au",
+"sector": "materials",
+"slug": "sandfire-resources-shares"
+},
+"BCC": {
+"country": "au",
+"sector": "tech",
+"slug": "beam-communications-holdings-shares"
+},
+"C1X": {
+"country": "au",
+"sector": "materials",
+"slug": "cosmos-exploration-shares"
+},
+"TLM": {
+"country": "au",
+"sector": "materials",
+"slug": "talisman-mining-shares"
+},
+"5GN": {
+"country": "au",
+"sector": "software",
+"slug": "5g-networks-shares"
+},
+"HPR": {
+"country": "au",
+"sector": "energy",
+"slug": "high-peak-royalties-shares"
+},
+"RAC": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "racura-oncology-shares"
+},
+"REA": {
+"country": "au",
+"sector": "media",
+"slug": "rea-group-shares"
+},
+"CHR": {
+"country": "au",
+"sector": "materials",
+"slug": "charger-metals-shares"
+},
+"ACS": {
+"country": "au",
+"sector": "materials",
+"slug": "accent-resources-shares"
+},
+"HMD": {
+"country": "au",
+"sector": "healthcare",
+"slug": "heramed-shares"
+},
+"TPC": {
+"country": "au",
+"sector": "utilities",
+"slug": "tpc-consolidated-shares"
+},
+"LIN": {
+"country": "au",
+"sector": "materials",
+"slug": "lindian-resources-shares"
+},
+"NTU": {
+"country": "au",
+"sector": "materials",
+"slug": "northern-minerals-shares"
+},
+"CR3": {
+"country": "au",
+"sector": "materials",
+"slug": "core-energy-minerals-shares"
+},
+"MNE": {
+"country": "au",
+"sector": "energy",
+"slug": "macallum-new-energy-shares"
+},
+"T92": {
+"country": "au",
+"sector": "energy",
+"slug": "terra-critical-minerals-shares"
+},
+"ACP": {
+"country": "au",
+"sector": "materials",
+"slug": "audalia-resources-shares"
+},
+"CKA": {
+"country": "au",
+"sector": "materials",
+"slug": "cokal-shares"
+},
+"CCE": {
+"country": "au",
+"sector": "utilities",
+"slug": "carnegie-clean-energy-shares"
+},
+"ANR": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "anatara-lifesciences-shares"
+},
+"KAU": {
+"country": "au",
+"sector": "materials",
+"slug": "kaiser-reef-shares"
+},
+"IMC": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "immuron-shares"
+},
+"G50": {
+"country": "au",
+"sector": "materials",
+"slug": "g50-shares"
+},
+"KMD": {
+"country": "au",
+"sector": "retail",
+"slug": "kmd-brands-shares"
+},
+"LAC": {
+"country": "au",
+"sector": "materials",
+"slug": "lac-gold-shares"
+},
+"MIR": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "mirrabooka-investments-shares"
+},
+"AAM": {
+"country": "au",
+"sector": "materials",
+"slug": "aumega-metals-shares"
+},
+"CAN": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "cann-group-shares"
+},
+"NST": {
+"country": "au",
+"sector": "materials",
+"slug": "northern-star-resources-shares"
+},
+"IXC": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "invex-therapeutics-shares"
+},
+"PGD": {
+"country": "au",
+"sector": "materials",
+"slug": "peregrine-gold-shares"
+},
+"MMS": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "mcmillan-shakespeare-shares"
+},
+"KSL": {
+"country": "au",
+"sector": "banks",
+"slug": "kina-securities-shares"
+},
+"FXG": {
+"country": "au",
+"sector": "materials",
+"slug": "felix-gold-shares"
+},
+"COY": {
+"country": "au",
+"sector": "materials",
+"slug": "coppermoly-shares"
+},
+"BRX": {
+"country": "au",
+"sector": "materials",
+"slug": "belararox-shares"
+},
+"ION": {
+"country": "au",
+"sector": "materials",
+"slug": "iondrive-shares"
+},
+"10X": {
+"country": "au",
+"sector": "materials",
+"slug": "exultant-mining-shares"
+},
+"TOK": {
+"country": "au",
+"sector": "materials",
+"slug": "tolu-minerals-shares"
+},
+"PL8": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "plato-income-maximiser-shares"
+},
+"RWC": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "reliance-worldwide-shares"
+},
+"CGO": {
+"country": "au",
+"sector": "software",
+"slug": "cpt-global-shares"
+},
+"AOA": {
+"country": "au",
+"sector": "materials",
+"slug": "ausmon-resources-shares"
+},
+"NEU": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "neuren-pharmaceuticals-shares"
+},
+"IG6": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "international-graphite-shares"
+},
+"MNC": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "merino-shares"
+},
+"AD8": {
+"country": "au",
+"sector": "tech",
+"slug": "audinate-group-shares"
+},
+"HIO": {
+"country": "au",
+"sector": "materials",
+"slug": "hawsons-iron-shares"
+},
+"NGI": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "navigator-global-investments-shares"
+},
+"OMG": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "omg-group-shares"
+},
+"FHS": {
+"country": "au",
+"sector": "materials",
+"slug": "freehill-mining-shares"
+},
+"CXU": {
+"country": "au",
+"sector": "energy",
+"slug": "cauldron-energy-shares"
+},
+"AVA": {
+"country": "au",
+"sector": "tech",
+"slug": "ava-risk-group-shares"
+},
+"NOV": {
+"country": "au",
+"sector": "software",
+"slug": "novatti-group-shares"
+},
+"STP": {
+"country": "au",
+"sector": "retail",
+"slug": "step-one-clothing-shares"
+},
+"CUL": {
+"country": "au",
+"sector": "materials",
+"slug": "cullen-resources-shares"
+},
+"RWD": {
+"country": "au",
+"sector": "materials",
+"slug": "reward-minerals-shares"
+},
+"AOK": {
+"country": "au",
+"sector": "energy",
+"slug": "australian-oil-shares"
+},
+"SOC": {
+"country": "au",
+"sector": "software",
+"slug": "soco-shares"
+},
+"KLS": {
+"country": "au",
+"sector": "transportation",
+"slug": "kelsian-group-shares"
+},
+"STK": {
+"country": "au",
+"sector": "materials",
+"slug": "strickland-metals-shares"
+},
+"GT1": {
+"country": "au",
+"sector": "materials",
+"slug": "green-technology-metals-shares"
+},
+"ARR": {
+"country": "au",
+"sector": "materials",
+"slug": "american-rare-earths-shares"
+},
+"ECH": {
+"country": "au",
+"sector": "energy",
+"slug": "echelon-resources-shares"
+},
+"ALA": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "arovella-therapeutics-shares"
+},
+"AR9": {
+"country": "au",
+"sector": "software",
+"slug": "archtis-shares"
+},
+"CDR": {
+"country": "au",
+"sector": "materials",
+"slug": "codrus-minerals-shares"
+},
+"PFP": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "propel-funeral-partners-shares"
+},
+"DDR": {
+"country": "au",
+"sector": "tech",
+"slug": "dicker-data-shares"
+},
+"TLG": {
+"country": "au",
+"sector": "materials",
+"slug": "talga-group-shares"
+},
+"NZK": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "new-zealand-king-salmon-investments-shares"
+},
+"ORP": {
+"country": "au",
+"sector": "materials",
+"slug": "orpheus-uranium-shares"
+},
+"R8R": {
+"country": "au",
+"sector": "materials",
+"slug": "regener8-resources-shares"
+},
+"ENP": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "entropy-neurodynamics-shares"
+},
+"AAC": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "australian-agricultural-shares"
+},
+"CG1": {
+"country": "au",
+"sector": "materials",
+"slug": "carbonxt-group-shares"
+},
+"ORI": {
+"country": "au",
+"sector": "materials",
+"slug": "orica-shares"
+},
+"BIO": {
+"country": "au",
+"sector": "household",
+"slug": "biome-australia-shares"
+},
+"PEX": {
+"country": "au",
+"sector": "materials",
+"slug": "peel-mining-shares"
+},
+"DRR": {
+"country": "au",
+"sector": "materials",
+"slug": "deterra-royalties-shares"
+},
+"CPV": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "clearvue-technologies-shares"
+},
+"VMC": {
+"country": "au",
+"sector": "materials",
+"slug": "venus-metals-shares"
+},
+"ECS": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "ecs-botanics-holdings-shares"
+},
+"QML": {
+"country": "au",
+"sector": "materials",
+"slug": "qmines-shares"
+},
+"MX1": {
+"country": "au",
+"sector": "healthcare",
+"slug": "micro-x-shares"
+},
+"D3E": {
+"country": "au",
+"sector": "energy",
+"slug": "d3-energy-shares"
+},
+"LEL": {
+"country": "au",
+"sector": "materials",
+"slug": "le-minerals-shares"
+},
+"SVY": {
+"country": "au",
+"sector": "materials",
+"slug": "stavely-minerals-shares"
+},
+"DEL": {
+"country": "au",
+"sector": "utilities",
+"slug": "delorean-shares"
+},
+"FRB": {
+"country": "au",
+"sector": "materials",
+"slug": "firebird-metals-shares"
+},
+"BTE": {
+"country": "au",
+"sector": "energy",
+"slug": "botala-energy-shares"
+},
+"FFM": {
+"country": "au",
+"sector": "materials",
+"slug": "firefly-metals-shares"
+},
+"GEM": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "g8-education-shares"
+},
+"HDN": {
+"country": "au",
+"sector": "real-estate",
+"slug": "homeco-daily-needs-reit-shares"
+},
+"AFP": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "aft-pharmaceuticals-shares"
+},
+"WCN": {
+"country": "au",
+"sector": "materials",
+"slug": "white-cliff-minerals-shares"
+},
+"SBM": {
+"country": "au",
+"sector": "materials",
+"slug": "st-barbara-shares"
+},
+"ELT": {
+"country": "au",
+"sector": "materials",
+"slug": "elementos-shares"
+},
+"1AE": {
+"country": "au",
+"sector": "materials",
+"slug": "aurora-energy-metals-shares"
+},
+"EZL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "euroz-hartleys-group-shares"
+},
+"MPR": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "mpr-australia-shares"
+},
+"LFT": {
+"country": "au",
+"sector": "materials",
+"slug": "li-ft-power-shares"
+},
+"XF1": {
+"country": "au",
+"sector": "software",
+"slug": "xref-shares"
+},
+"AL3": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "aml3d-shares"
+},
+"SRR": {
+"country": "au",
+"sector": "materials",
+"slug": "sarama-resources-shares"
+},
+"BPG": {
+"country": "au",
+"sector": "software",
+"slug": "black-pearl-group-shares"
+},
+"GYG": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "guzman-y-gomez-shares"
+},
+"CCP": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "credit-corp-group-shares"
+},
+"DNL": {
+"country": "au",
+"sector": "materials",
+"slug": "dyno-nobel-shares"
+},
+"GGE": {
+"country": "au",
+"sector": "energy",
+"slug": "grand-gulf-energy-shares"
+},
+"NWL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "netwealth-group-shares"
+},
+"CIW": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "clime-investment-management-shares"
+},
+"NFL": {
+"country": "au",
+"sector": "materials",
+"slug": "norfolk-metals-shares"
+},
+"1CG": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "one-click-group-shares"
+},
+"ARF": {
+"country": "au",
+"sector": "real-estate",
+"slug": "arena-reit-shares"
+},
+"CTO": {
+"country": "au",
+"sector": "materials",
+"slug": "citigold-shares"
+},
+"DEV": {
+"country": "au",
+"sector": "materials",
+"slug": "devex-resources-shares"
+},
+"ABG": {
+"country": "au",
+"sector": "real-estate",
+"slug": "abacus-group-shares"
+},
+"SMR": {
+"country": "au",
+"sector": "materials",
+"slug": "stanmore-resources-shares"
+},
+"PAT": {
+"country": "au",
+"sector": "materials",
+"slug": "patriot-resources-shares"
+},
+"SUH": {
+"country": "au",
+"sector": "materials",
+"slug": "southern-hemisphere-mining-shares"
+},
+"DOW": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "downer-edi-shares"
+},
+"THR": {
+"country": "au",
+"sector": "materials",
+"slug": "thor-energy-shares"
+},
+"TPG": {
+"country": "au",
+"sector": "telecom",
+"slug": "tpg-telecom-shares"
+},
+"CAR": {
+"country": "au",
+"sector": "media",
+"slug": "car-group-shares"
+},
+"AD1": {
+"country": "au",
+"sector": "software",
+"slug": "adneo-shares"
+},
+"SHL": {
+"country": "au",
+"sector": "healthcare",
+"slug": "sonic-healthcare-shares"
+},
+"NIC": {
+"country": "au",
+"sector": "materials",
+"slug": "nickel-industries-shares"
+},
+"CVC": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "cvc-shares"
+},
+"SS1": {
+"country": "au",
+"sector": "materials",
+"slug": "sun-silver-shares"
+},
+"TLC": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "lottery-shares"
+},
+"SX2": {
+"country": "au",
+"sector": "materials",
+"slug": "southern-cross-gold-consolidated-shares"
+},
+"G6M": {
+"country": "au",
+"sector": "materials",
+"slug": "group-6-metals-shares"
+},
+"EPY": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "earlypay-shares"
+},
+"RGN": {
+"country": "au",
+"sector": "real-estate",
+"slug": "region-group-shares"
+},
+"RML": {
+"country": "au",
+"sector": "materials",
+"slug": "resolution-minerals-shares"
+},
+"KLR": {
+"country": "au",
+"sector": "materials",
+"slug": "kaili-resources-shares"
+},
+"KSN": {
+"country": "au",
+"sector": "materials",
+"slug": "kingston-resources-shares"
+},
+"ENN": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "elanor-investors-group-shares"
+},
+"PKP": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "peak-processing-shares"
+},
+"AUC": {
+"country": "au",
+"sector": "materials",
+"slug": "ausgold-shares"
+},
+"CTN": {
+"country": "au",
+"sector": "materials",
+"slug": "catalina-resources-shares"
+},
+"HE8": {
+"country": "au",
+"sector": "energy",
+"slug": "helios-energy-shares"
+},
+"EVN": {
+"country": "au",
+"sector": "materials",
+"slug": "evolution-mining-shares"
+},
+"WA1": {
+"country": "au",
+"sector": "materials",
+"slug": "wa1-resources-shares"
+},
+"ERE": {
+"country": "au",
+"sector": "materials",
+"slug": "european-resources-shares"
+},
+"PGC": {
+"country": "au",
+"sector": "healthcare",
+"slug": "paragon-care-shares"
+},
+"SPD": {
+"country": "au",
+"sector": "materials",
+"slug": "southern-palladium-shares"
+},
+"SDV": {
+"country": "au",
+"sector": "materials",
+"slug": "scidev-shares"
+},
+"MRT": {
+"country": "au",
+"sector": "materials",
+"slug": "maritana-minerals-shares"
+},
+"AHL": {
+"country": "au",
+"sector": "automobiles",
+"slug": "adrad-holdings-shares"
+},
+"AHN": {
+"country": "au",
+"sector": "materials",
+"slug": "athena-resources-shares"
+},
+"SDR": {
+"country": "au",
+"sector": "software",
+"slug": "siteminder-shares"
+},
+"AT1": {
+"country": "au",
+"sector": "healthcare",
+"slug": "atomo-diagnostics-shares"
+},
+"COB": {
+"country": "au",
+"sector": "materials",
+"slug": "cobalt-blue-holdings-shares"
+},
+"CMW": {
+"country": "au",
+"sector": "real-estate",
+"slug": "cromwell-property-group-shares"
+},
+"NXT": {
+"country": "au",
+"sector": "software",
+"slug": "nextdc-shares"
+},
+"VVA": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "viva-leisure-shares"
+},
+"EIQ": {
+"country": "au",
+"sector": "software",
+"slug": "echo-iq-shares"
+},
+"BAP": {
+"country": "au",
+"sector": "retail",
+"slug": "bapcor-shares"
+},
+"LDR": {
+"country": "au",
+"sector": "materials",
+"slug": "lode-resources-shares"
+},
+"GDG": {
+"country": "au",
+"sector": "insurance",
+"slug": "generation-development-group-shares"
+},
+"CTD": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "corporate-travel-management-shares"
+},
+"TEA": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "tasmea-shares"
+},
+"KGL": {
+"country": "au",
+"sector": "materials",
+"slug": "kgl-resources-shares"
+},
+"JPR": {
+"country": "au",
+"sector": "energy",
+"slug": "jupiter-energy-shares"
+},
+"AS1": {
+"country": "au",
+"sector": "materials",
+"slug": "asara-resources-shares"
+},
+"SGQ": {
+"country": "au",
+"sector": "materials",
+"slug": "st-george-mining-shares"
+},
+"ICU": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "investor-centre-shares"
+},
+"CYC": {
+"country": "au",
+"sector": "healthcare",
+"slug": "cyclopharm-shares"
+},
+"IPC": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "imperial-pacific-shares"
+},
+"QGL": {
+"country": "au",
+"sector": "materials",
+"slug": "quantum-graphite-shares"
+},
+"TWR": {
+"country": "au",
+"sector": "insurance",
+"slug": "tower-shares"
+},
+"PIL": {
+"country": "au",
+"sector": "software",
+"slug": "peppermint-innovation-shares"
+},
+"KPO": {
+"country": "au",
+"sector": "utilities",
+"slug": "kalina-power-shares"
+},
+"AGN": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "argenica-therapeutics-shares"
+},
+"INA": {
+"country": "au",
+"sector": "real-estate",
+"slug": "ingenia-communities-group-shares"
+},
+"3DP": {
+"country": "au",
+"sector": "software",
+"slug": "pointerra-shares"
+},
+"HVY": {
+"country": "au",
+"sector": "materials",
+"slug": "heavy-minerals-shares"
+},
+"OSX": {
+"country": "au",
+"sector": "healthcare",
+"slug": "osteopore-shares"
+},
+"STN": {
+"country": "au",
+"sector": "materials",
+"slug": "saturn-metals-shares"
+},
+"BTL": {
+"country": "au",
+"sector": "energy",
+"slug": "beetaloo-energy-australia-shares"
+},
+"RAN": {
+"country": "au",
+"sector": "materials",
+"slug": "range-international-shares"
+},
+"DRE": {
+"country": "au",
+"sector": "materials",
+"slug": "dreadnought-resources-shares"
+},
+"XRG": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "xreality-group-shares"
+},
+"LNW": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "light-wonder-shares"
+},
+"BOQ": {
+"country": "au",
+"sector": "banks",
+"slug": "bank-of-queensland-shares"
+},
+"KME": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "kip-mcgrath-education-centres-shares"
+},
+"KSC": {
+"country": "au",
+"sector": "transportation",
+"slug": "ks-shares"
+},
+"JIN": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "jumbo-interactive-shares"
+},
+"TVL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "touch-ventures-shares"
+},
+"MME": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "moneyme-shares"
+},
+"CLZ": {
+"country": "au",
+"sector": "materials",
+"slug": "classic-minerals-shares"
+},
+"APL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "associate-global-partners-shares"
+},
+"AKN": {
+"country": "au",
+"sector": "materials",
+"slug": "auking-mining-shares"
+},
+"GW1": {
+"country": "au",
+"sector": "materials",
+"slug": "greenwing-resources-shares"
+},
+"DMG": {
+"country": "au",
+"sector": "materials",
+"slug": "dragon-mountain-gold-shares"
+},
+"TON": {
+"country": "au",
+"sector": "materials",
+"slug": "triton-minerals-shares"
+},
+"CBO": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "cobram-estate-olives-shares"
+},
+"ASL": {
+"country": "au",
+"sector": "materials",
+"slug": "andean-silver-shares"
+},
+"MGR": {
+"country": "au",
+"sector": "real-estate",
+"slug": "mirvac-group-shares"
+},
+"VRX": {
+"country": "au",
+"sector": "materials",
+"slug": "vrx-silica-shares"
+},
+"MMR": {
+"country": "au",
+"sector": "energy",
+"slug": "mec-resources-shares"
+},
+"HIQ": {
+"country": "au",
+"sector": "healthcare",
+"slug": "hitiq-shares"
+},
+"REC": {
+"country": "au",
+"sector": "materials",
+"slug": "recharge-metals-shares"
+},
+"SPZ": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "smart-parking-shares"
+},
+"PCL": {
+"country": "au",
+"sector": "energy",
+"slug": "pancontinental-energy-shares"
+},
+"RAP": {
+"country": "au",
+"sector": "materials",
+"slug": "raptor-metals-shares"
+},
+"ADC": {
+"country": "au",
+"sector": "materials",
+"slug": "acdc-metals-shares"
+},
+"AXP": {
+"country": "au",
+"sector": "energy",
+"slug": "axp-energy-shares"
+},
+"DM1": {
+"country": "au",
+"sector": "materials",
+"slug": "desert-metals-shares"
+},
+"LM1": {
+"country": "au",
+"sector": "materials",
+"slug": "leeuwin-metals-shares"
+},
+"LAM": {
+"country": "au",
+"sector": "energy",
+"slug": "laramide-resources-shares"
+},
+"BHM": {
+"country": "au",
+"sector": "materials",
+"slug": "broken-hill-mines-shares"
+},
+"TNE": {
+"country": "au",
+"sector": "software",
+"slug": "technology-one-shares"
+},
+"RNT": {
+"country": "au",
+"sector": "media",
+"slug": "rentcomau-shares"
+},
+"6KA": {
+"country": "au",
+"sector": "materials",
+"slug": "6k-additive-shares"
+},
+"AGY": {
+"country": "au",
+"sector": "materials",
+"slug": "argosy-minerals-shares"
+},
+"LIB": {
+"country": "au",
+"sector": "materials",
+"slug": "liberty-metals-shares"
+},
+"8IH": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "8i-holdings-shares"
+},
+"TSL": {
+"country": "au",
+"sector": "materials",
+"slug": "titanium-sands-shares"
+},
+"ALQ": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "als-shares"
+},
+"IFN": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "infragreen-group-shares"
+},
+"AN1": {
+"country": "au",
+"sector": "household",
+"slug": "anagenics-shares"
+},
+"AVD": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "avada-group-shares"
+},
+"FRE": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "firebrick-pharma-shares"
+},
+"RWL": {
+"country": "au",
+"sector": "tech",
+"slug": "rubicon-water-shares"
+},
+"ABR": {
+"country": "au",
+"sector": "materials",
+"slug": "albright-metals-shares"
+},
+"VBC": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "verbrec-shares"
+},
+"OIL": {
+"country": "au",
+"sector": "healthcare",
+"slug": "optiscan-imaging-shares"
+},
+"SWP": {
+"country": "au",
+"sector": "telecom",
+"slug": "swoop-holdings-shares"
+},
+"NOL": {
+"country": "au",
+"sector": "insurance",
+"slug": "nobleoak-life-shares"
+},
+"PKD": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "parkd-shares"
+},
+"MEZ": {
+"country": "au",
+"sector": "utilities",
+"slug": "meridian-energy-shares"
+},
+"BMN": {
+"country": "au",
+"sector": "energy",
+"slug": "bannerman-energy-shares"
+},
+"ATV": {
+"country": "au",
+"sector": "software",
+"slug": "activeport-group-shares"
+},
+"MRR": {
+"country": "au",
+"sector": "materials",
+"slug": "minrex-resources-shares"
+},
+"IVG": {
+"country": "au",
+"sector": "materials",
+"slug": "invert-graphite-shares"
+},
+"AGD": {
+"country": "au",
+"sector": "materials",
+"slug": "austral-gold-shares"
+},
+"HLX": {
+"country": "au",
+"sector": "materials",
+"slug": "helix-resources-shares"
+},
+"THL": {
+"country": "au",
+"sector": "transportation",
+"slug": "tourism-holdings-shares"
+},
+"GRV": {
+"country": "au",
+"sector": "energy",
+"slug": "greenvale-energy-shares"
+},
+"AYM": {
+"country": "au",
+"sector": "materials",
+"slug": "australia-united-mining-shares"
+},
+"PNI": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "pinnacle-investment-management-group-shares"
+},
+"AIZ": {
+"country": "au",
+"sector": "transportation",
+"slug": "air-new-zealand-shares"
+},
+"DMP": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "dominos-pizza-enterprises-shares"
+},
+"CMD": {
+"country": "au",
+"sector": "materials",
+"slug": "cassius-mining-shares"
+},
+"PRU": {
+"country": "au",
+"sector": "materials",
+"slug": "perseus-mining-shares"
+},
+"INV": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "investsmart-group-shares"
+},
+"T88": {
+"country": "au",
+"sector": "materials",
+"slug": "taiton-resources-shares"
+},
+"FHE": {
+"country": "au",
+"sector": "utilities",
+"slug": "frontier-energy-shares"
+},
+"OMH": {
+"country": "au",
+"sector": "materials",
+"slug": "om-holdings-shares"
+},
+"HFY": {
+"country": "au",
+"sector": "telecom",
+"slug": "hubify-shares"
+},
+"TOT": {
+"country": "au",
+"sector": "real-estate",
+"slug": "360-capital-reit-shares"
+},
+"ACE": {
+"country": "au",
+"sector": "software",
+"slug": "acusensus-shares"
+},
+"KOA": {
+"country": "au",
+"sector": "retail",
+"slug": "koala-shares"
+},
+"AHK": {
+"country": "au",
+"sector": "materials",
+"slug": "ark-mines-shares"
+},
+"MYS": {
+"country": "au",
+"sector": "banks",
+"slug": "mystate-shares"
+},
+"MYE": {
+"country": "au",
+"sector": "materials",
+"slug": "mastermyne-group-shares"
+},
+"AGR": {
+"country": "au",
+"sector": "materials",
+"slug": "aguia-resources-shares"
+},
+"BBC": {
+"country": "au",
+"sector": "banks",
+"slug": "bnk-banking-shares"
+},
+"NVA": {
+"country": "au",
+"sector": "materials",
+"slug": "nova-minerals-shares"
+},
+"AZY": {
+"country": "au",
+"sector": "materials",
+"slug": "antipa-minerals-shares"
+},
+"DLI": {
+"country": "au",
+"sector": "materials",
+"slug": "delta-lithium-shares"
+},
+"PLA": {
+"country": "au",
+"sector": "materials",
+"slug": "pacific-lime-and-cement-shares"
+},
+"TIP": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "teaminvest-private-group-shares"
+},
+"BCI": {
+"country": "au",
+"sector": "materials",
+"slug": "bci-minerals-shares"
+},
+"GTN": {
+"country": "au",
+"sector": "media",
+"slug": "gtn-shares"
+},
+"QUB": {
+"country": "au",
+"sector": "transportation",
+"slug": "qube-holdings-shares"
+},
+"CAA": {
+"country": "au",
+"sector": "materials",
+"slug": "capral-shares"
+},
+"ORG": {
+"country": "au",
+"sector": "utilities",
+"slug": "origin-energy-shares"
+},
+"AYA": {
+"country": "au",
+"sector": "healthcare",
+"slug": "artrya-shares"
+},
+"FAR": {
+"country": "au",
+"sector": "energy",
+"slug": "far-shares"
+},
+"APA": {
+"country": "au",
+"sector": "utilities",
+"slug": "apa-group-shares"
+},
+"WEL": {
+"country": "au",
+"sector": "energy",
+"slug": "winchester-energy-shares"
+},
+"SOP": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "synertec-shares"
+},
+"EPI": {
+"country": "au",
+"sector": "healthcare",
+"slug": "epiminder-shares"
+},
+"BOL": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "boom-logistics-shares"
+},
+"LIO": {
+"country": "au",
+"sector": "energy",
+"slug": "lion-energy-shares"
+},
+"X2M": {
+"country": "au",
+"sector": "tech",
+"slug": "x2m-connect-shares"
+},
+"ZNC": {
+"country": "au",
+"sector": "materials",
+"slug": "zenith-minerals-shares"
+},
+"HLO": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "helloworld-travel-shares"
+},
+"A1N": {
+"country": "au",
+"sector": "media",
+"slug": "arn-media-shares"
+},
+"HAL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "halo-technologies-holdings-shares"
+},
+"CC5": {
+"country": "au",
+"sector": "healthcare",
+"slug": "clever-culture-systems-shares"
+},
+"RTR": {
+"country": "au",
+"sector": "materials",
+"slug": "rumble-resources-shares"
+},
+"CNU": {
+"country": "au",
+"sector": "telecom",
+"slug": "chorus-shares"
+},
+"SFX": {
+"country": "au",
+"sector": "materials",
+"slug": "sheffield-resources-shares"
+},
+"FUL": {
+"country": "au",
+"sector": "materials",
+"slug": "fulcrum-lithium-shares"
+},
+"EVZ": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "evz-shares"
+},
+"WWI": {
+"country": "au",
+"sector": "materials",
+"slug": "west-wits-mining-shares"
+},
+"YAR": {
+"country": "au",
+"sector": "materials",
+"slug": "yari-resources-shares"
+},
+"PWH": {
+"country": "au",
+"sector": "automobiles",
+"slug": "pwr-holdings-shares"
+},
+"VCX": {
+"country": "au",
+"sector": "real-estate",
+"slug": "vicinity-centres-shares"
+},
+"HUM": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "humm-group-shares"
+},
+"SLM": {
+"country": "au",
+"sector": "materials",
+"slug": "solis-minerals-shares"
+},
+"IS3": {
+"country": "au",
+"sector": "software",
+"slug": "i-synergy-group-shares"
+},
+"CQE": {
+"country": "au",
+"sector": "real-estate",
+"slug": "charter-hall-social-infrastructure-reit-shares"
+},
+"1AI": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "algorae-pharmaceuticals-shares"
+},
+"FID": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "fiducian-group-shares"
+},
+"FRI": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "finbar-group-shares"
+},
+"LCL": {
+"country": "au",
+"sector": "materials",
+"slug": "lcl-resources-shares"
+},
+"ECT": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "environmental-clean-technologies-shares"
+},
+"GMD": {
+"country": "au",
+"sector": "materials",
+"slug": "genesis-minerals-shares"
+},
+"RDY": {
+"country": "au",
+"sector": "software",
+"slug": "readytech-holdings-shares"
+},
+"RLG": {
+"country": "au",
+"sector": "media",
+"slug": "roolife-group-shares"
+},
+"FRX": {
+"country": "au",
+"sector": "telecom",
+"slug": "flexiroam-shares"
+},
+"KP2": {
+"country": "au",
+"sector": "materials",
+"slug": "kore-potash-shares"
+},
+"BVS": {
+"country": "au",
+"sector": "software",
+"slug": "bravura-solutions-shares"
+},
+"MVF": {
+"country": "au",
+"sector": "healthcare",
+"slug": "monash-ivf-group-shares"
+},
+"GWR": {
+"country": "au",
+"sector": "materials",
+"slug": "gwr-group-shares"
+},
+"RKT": {
+"country": "au",
+"sector": "tech",
+"slug": "rocketdna-shares"
+},
+"NWS": {
+"country": "au",
+"sector": "media",
+"slug": "news-shares"
+},
+"LRK": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "lark-distilling-shares"
+},
+"MMI": {
+"country": "au",
+"sector": "materials",
+"slug": "metro-mining-shares"
+},
+"WBC": {
+"country": "au",
+"sector": "banks",
+"slug": "westpac-banking-shares"
+},
+"PSL": {
+"country": "au",
+"sector": "materials",
+"slug": "paterson-resources-shares"
+},
+"ATH": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "alterity-therapeutics-shares"
+},
+"CVR": {
+"country": "au",
+"sector": "materials",
+"slug": "cavalier-resources-shares"
+},
+"PDN": {
+"country": "au",
+"sector": "energy",
+"slug": "paladin-energy-shares"
+},
+"JAY": {
+"country": "au",
+"sector": "transportation",
+"slug": "jayride-group-shares"
+},
+"5GG": {
+"country": "au",
+"sector": "telecom",
+"slug": "pentanet-shares"
+},
+"GLF": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "gemlife-communities-group-shares"
+},
+"OEL": {
+"country": "au",
+"sector": "energy",
+"slug": "otto-energy-shares"
+},
+"ARG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "argo-investments-shares"
+},
+"PTR": {
+"country": "au",
+"sector": "materials",
+"slug": "ptr-minerals-shares"
+},
+"LFS": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "latitude-group-holdings-shares"
+},
+"AVG": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "australian-vintage-shares"
+},
+"WHI": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "whitefield-income-shares"
+},
+"KTK": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "ktek-aerosystems-shares"
+},
+"GDF": {
+"country": "au",
+"sector": "real-estate",
+"slug": "garda-property-group-shares"
+},
+"GHY": {
+"country": "au",
+"sector": "energy",
+"slug": "gold-hydrogen-shares"
+},
+"BXN": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "bioxyne-shares"
+},
+"TEM": {
+"country": "au",
+"sector": "materials",
+"slug": "tempest-minerals-shares"
+},
+"TMB": {
+"country": "au",
+"sector": "materials",
+"slug": "tambourah-metals-shares"
+},
+"TAM": {
+"country": "au",
+"sector": "materials",
+"slug": "tanami-gold-shares"
+},
+"SB2": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "salter-brothers-emerging-companies-shares"
+},
+"FCT": {
+"country": "au",
+"sector": "software",
+"slug": "firstwave-cloud-technology-shares"
+},
+"HTG": {
+"country": "au",
+"sector": "software",
+"slug": "harvest-technology-group-shares"
+},
+"ACU": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "acumentis-group-shares"
+},
+"BMH": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "baumart-holdings-shares"
+},
+"IOV": {
+"country": "au",
+"sector": "software",
+"slug": "ion-video-shares"
+},
+"DEM": {
+"country": "au",
+"sector": "utilities",
+"slug": "demem-shares"
+},
+"KNI": {
+"country": "au",
+"sector": "materials",
+"slug": "kuniko-shares"
+},
+"HTM": {
+"country": "au",
+"sector": "materials",
+"slug": "high-tech-metals-shares"
+},
+"EPX": {
+"country": "au",
+"sector": "software",
+"slug": "epx-shares"
+},
+"IGN": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "ignite-shares"
+},
+"PLS": {
+"country": "au",
+"sector": "materials",
+"slug": "pls-group-shares"
+},
+"AER": {
+"country": "au",
+"sector": "media",
+"slug": "aeeris-shares"
+},
+"GCM": {
+"country": "au",
+"sector": "materials",
+"slug": "green-critical-minerals-shares"
+},
+"TGF": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "tribeca-global-natural-resources-shares"
+},
+"PEB": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "pacific-edge-shares"
+},
+"VFY": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "vitrafy-life-sciences-shares"
+},
+"1TT": {
+"country": "au",
+"sector": "software",
+"slug": "thrive-tribe-technologies-shares"
+},
+"IR1": {
+"country": "au",
+"sector": "materials",
+"slug": "iris-metals-shares"
+},
+"MTL": {
+"country": "au",
+"sector": "materials",
+"slug": "mantle-minerals-shares"
+},
+"BKI": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "bki-investment-shares"
+},
+"TRA": {
+"country": "au",
+"sector": "retail",
+"slug": "turners-automotive-group-shares"
+},
+"IEL": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "idp-education-shares"
+},
+"AZJ": {
+"country": "au",
+"sector": "transportation",
+"slug": "aurizon-holdings-shares"
+},
+"ACR": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "acrux-shares"
+},
+"AEI": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "aeris-environmental-shares"
+},
+"LFG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "liberty-financial-group-shares"
+},
+"ZMM": {
+"country": "au",
+"sector": "tech",
+"slug": "zimi-shares"
+},
+"AMX": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "aerometrex-shares"
+},
+"GEN": {
+"country": "au",
+"sector": "materials",
+"slug": "genmin-shares"
+},
+"M79": {
+"country": "au",
+"sector": "materials",
+"slug": "mammoth-minerals-shares"
+},
+"GNP": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "genusplus-group-shares"
+},
+"NYR": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "nyrada-shares"
+},
+"PAR": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "paradigm-biopharmaceuticals-shares"
+},
+"SCP": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "scalare-partners-holdings-shares"
+},
+"JYC": {
+"country": "au",
+"sector": "retail",
+"slug": "joyce-shares"
+},
+"PVL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "powerhouse-ventures-shares"
+},
+"NC6": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "nanollose-shares"
+},
+"SVL": {
+"country": "au",
+"sector": "materials",
+"slug": "silver-mines-shares"
+},
+"IMM": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "immutep-shares"
+},
+"AWJ": {
+"country": "au",
+"sector": "materials",
+"slug": "auric-mining-shares"
+},
+"DXI": {
+"country": "au",
+"sector": "real-estate",
+"slug": "dexus-industria-reit-shares"
+},
+"CLW": {
+"country": "au",
+"sector": "real-estate",
+"slug": "charter-hall-long-wale-reit-shares"
+},
+"VUL": {
+"country": "au",
+"sector": "materials",
+"slug": "vulcan-energy-resources-shares"
+},
+"WGX": {
+"country": "au",
+"sector": "materials",
+"slug": "westgold-resources-shares"
+},
+"VEN": {
+"country": "au",
+"sector": "energy",
+"slug": "vintage-energy-shares"
+},
+"SHE": {
+"country": "au",
+"sector": "energy",
+"slug": "stonehorse-energy-shares"
+},
+"CEL": {
+"country": "au",
+"sector": "materials",
+"slug": "challenger-gold-shares"
+},
+"BHD": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "benjamin-hornigold-shares"
+},
+"CMP": {
+"country": "au",
+"sector": "healthcare",
+"slug": "compumedics-shares"
+},
+"PL3": {
+"country": "au",
+"sector": "materials",
+"slug": "patagonia-lithium-shares"
+},
+"MPW": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "metal-powder-works-shares"
+},
+"FBU": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "fletcher-building-shares"
+},
+"YAL": {
+"country": "au",
+"sector": "energy",
+"slug": "yancoal-australia-shares"
+},
+"1MC": {
+"country": "au",
+"sector": "materials",
+"slug": "morella-shares"
+},
+"VBS": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "vectus-biosystems-shares"
+},
+"CBE": {
+"country": "au",
+"sector": "materials",
+"slug": "cobre-shares"
+},
+"BST": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "boresight-shares"
+},
+"HMG": {
+"country": "au",
+"sector": "materials",
+"slug": "hamelin-gold-shares"
+},
+"SKK": {
+"country": "au",
+"sector": "software",
+"slug": "stakk-shares"
+},
+"LPE": {
+"country": "au",
+"sector": "utilities",
+"slug": "locality-planning-energy-holdings-shares"
+},
+"CPO": {
+"country": "au",
+"sector": "materials",
+"slug": "culpeo-minerals-shares"
+},
+"TSO": {
+"country": "au",
+"sector": "materials",
+"slug": "tesoro-gold-shares"
+},
+"HAV": {
+"country": "au",
+"sector": "materials",
+"slug": "havilah-resources-shares"
+},
+"NHF": {
+"country": "au",
+"sector": "insurance",
+"slug": "nib-holdings-shares"
+},
+"DES": {
+"country": "au",
+"sector": "materials",
+"slug": "desoto-resources-shares"
+},
+"ATR": {
+"country": "au",
+"sector": "materials",
+"slug": "astron-shares"
+},
+"BOT": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "botanix-pharmaceuticals-shares"
+},
+"BDX": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "bcal-diagnostics-shares"
+},
+"JAT": {
+"country": "au",
+"sector": "retail",
+"slug": "jatcorp-shares"
+},
+"LLM": {
+"country": "au",
+"sector": "materials",
+"slug": "loyal-metals-shares"
+},
+"TM1": {
+"country": "au",
+"sector": "materials",
+"slug": "terra-metals-shares"
+},
+"TOE": {
+"country": "au",
+"sector": "energy",
+"slug": "toro-energy-shares"
+},
+"PMT": {
+"country": "au",
+"sector": "materials",
+"slug": "pmet-resources-shares"
+},
+"PPT": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "perpetual-shares"
+},
+"VHM": {
+"country": "au",
+"sector": "materials",
+"slug": "vhm-shares"
+},
+"AMA": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "ama-group-shares"
+},
+"WNX": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "wellnex-life-shares"
+},
+"GG1": {
+"country": "au",
+"sector": "materials",
+"slug": "green-gold-minerals-shares"
+},
+"WSR": {
+"country": "au",
+"sector": "materials",
+"slug": "westar-resources-shares"
+},
+"RMX": {
+"country": "au",
+"sector": "materials",
+"slug": "red-mountain-mining-shares"
+},
+"ECL": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "excelsior-capital-shares"
+},
+"POD": {
+"country": "au",
+"sector": "materials",
+"slug": "podium-minerals-shares"
+},
+"UBIO": {
+"country": "au",
+"sector": "healthcare",
+"slug": "universal-biosensors-shares"
+},
+"CLA": {
+"country": "au",
+"sector": "materials",
+"slug": "celsius-resources-shares"
+},
+"SND": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "saunders-international-shares"
+},
+"SXL": {
+"country": "au",
+"sector": "media",
+"slug": "southern-cross-media-group-shares"
+},
+"SUMO": {
+"country": "au",
+"sector": "materials",
+"slug": "summit-minerals-shares"
+},
+"IRD": {
+"country": "au",
+"sector": "materials",
+"slug": "iron-road-shares"
+},
+"BRU": {
+"country": "au",
+"sector": "energy",
+"slug": "buru-energy-shares"
+},
+"SOL": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "whsp-holdings-shares"
+},
+"VAR": {
+"country": "au",
+"sector": "materials",
+"slug": "variscan-mines-shares"
+},
+"LU7": {
+"country": "au",
+"sector": "materials",
+"slug": "lithium-universe-shares"
+},
+"SXE": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "southern-cross-electrical-engineering-shares"
+},
+"WTN": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "winton-land-shares"
+},
+"HCL": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "highcom-shares"
+},
+"KAO": {
+"country": "au",
+"sector": "materials",
+"slug": "kaoko-metals-shares"
+},
+"DBI": {
+"country": "au",
+"sector": "transportation",
+"slug": "dalrymple-bay-infrastructure-shares"
+},
+"NPM": {
+"country": "au",
+"sector": "materials",
+"slug": "newpeak-metals-shares"
+},
+"KOB": {
+"country": "au",
+"sector": "materials",
+"slug": "koba-resources-shares"
+},
+"USL": {
+"country": "au",
+"sector": "materials",
+"slug": "unico-silver-shares"
+},
+"MXO": {
+"country": "au",
+"sector": "media",
+"slug": "motio-shares"
+},
+"HWK": {
+"country": "au",
+"sector": "materials",
+"slug": "hawk-resources-shares"
+},
+"WMG": {
+"country": "au",
+"sector": "materials",
+"slug": "western-mines-group-shares"
+},
+"AVL": {
+"country": "au",
+"sector": "materials",
+"slug": "australian-vanadium-shares"
+},
+"KTA": {
+"country": "au",
+"sector": "materials",
+"slug": "krakatoa-resources-shares"
+},
+"ALM": {
+"country": "au",
+"sector": "materials",
+"slug": "alma-metals-shares"
+},
+"IAM": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "income-asset-management-group-shares"
+},
+"B4P": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "beforepay-group-shares"
+},
+"BVR": {
+"country": "au",
+"sector": "materials",
+"slug": "bellavista-resources-shares"
+},
+"FFI": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "ffi-holdings-shares"
+},
+"TG6": {
+"country": "au",
+"sector": "materials",
+"slug": "tg-metals-shares"
+},
+"EZZ": {
+"country": "au",
+"sector": "household",
+"slug": "ezz-life-science-holdings-shares"
+},
+"TR2": {
+"country": "au",
+"sector": "materials",
+"slug": "tali-resources-shares"
+},
+"NSM": {
+"country": "au",
+"sector": "materials",
+"slug": "north-stawell-minerals-shares"
+},
+"CGF": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "challenger-shares"
+},
+"MDX": {
+"country": "au",
+"sector": "materials",
+"slug": "mindax-shares"
+},
+"RTH": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "ras-technology-holdings-shares"
+},
+"KIT": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "trustee-for-kapstream-investment-trust-shares"
+},
+"M96": {
+"country": "au",
+"sector": "materials",
+"slug": "maverick-minerals-australia-shares"
+},
+"LOT": {
+"country": "au",
+"sector": "energy",
+"slug": "lotus-resources-shares"
+},
+"GCR": {
+"country": "au",
+"sector": "materials",
+"slug": "golden-cross-resources-shares"
+},
+"SGI": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "stealth-group-holdings-shares"
+},
+"RCT": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "reef-casino-trust-shares"
+},
+"SQX": {
+"country": "au",
+"sector": "materials",
+"slug": "sqx-resources-shares"
+},
+"LYC": {
+"country": "au",
+"sector": "materials",
+"slug": "lynas-rare-earths-shares"
+},
+"ERA": {
+"country": "au",
+"sector": "energy",
+"slug": "energy-resources-of-australia-shares"
+},
+"AR3": {
+"country": "au",
+"sector": "materials",
+"slug": "australian-rare-earths-shares"
+},
+"RHC": {
+"country": "au",
+"sector": "healthcare",
+"slug": "ramsay-health-care-shares"
+},
+"QUE": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "queste-communications-shares"
+},
+"IRI": {
+"country": "au",
+"sector": "software",
+"slug": "integrated-research-shares"
+},
+"CZN": {
+"country": "au",
+"sector": "materials",
+"slug": "corazon-mining-shares"
+},
+"BLZ": {
+"country": "au",
+"sector": "energy",
+"slug": "blaze-minerals-shares"
+},
+"NVQ": {
+"country": "au",
+"sector": "software",
+"slug": "noviqtech-shares"
+},
+"MGT": {
+"country": "au",
+"sector": "materials",
+"slug": "magnetite-mines-shares"
+},
+"EPN": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "epsilon-healthcare-shares"
+},
+"CMX": {
+"country": "au",
+"sector": "materials",
+"slug": "chemx-materials-shares"
+},
+"STO": {
+"country": "au",
+"sector": "energy",
+"slug": "santos-shares"
+},
+"GAL": {
+"country": "au",
+"sector": "materials",
+"slug": "galileo-mining-shares"
+},
+"RAD": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "radiopharm-theranostics-shares"
+},
+"PTN": {
+"country": "au",
+"sector": "materials",
+"slug": "patronus-resources-shares"
+},
+"CXL": {
+"country": "au",
+"sector": "materials",
+"slug": "calix-shares"
+},
+"PKY": {
+"country": "au",
+"sector": "software",
+"slug": "pathkeyai-shares"
+},
+"OMA": {
+"country": "au",
+"sector": "energy",
+"slug": "omega-oil-gas-shares"
+},
+"ZNO": {
+"country": "au",
+"sector": "materials",
+"slug": "zoono-group-shares"
+},
+"NAB": {
+"country": "au",
+"sector": "banks",
+"slug": "national-australia-bank-shares"
+},
+"ID8": {
+"country": "au",
+"sector": "software",
+"slug": "identitii-shares"
+},
+"CVW": {
+"country": "au",
+"sector": "insurance",
+"slug": "clearview-wealth-shares"
+},
+"SNS": {
+"country": "au",
+"sector": "software",
+"slug": "sensen-networks-shares"
+},
+"VR1": {
+"country": "au",
+"sector": "software",
+"slug": "vection-technologies-shares"
+},
+"IMD": {
+"country": "au",
+"sector": "materials",
+"slug": "imdex-shares"
+},
+"AIM": {
+"country": "au",
+"sector": "software",
+"slug": "ai-media-technologies-shares"
+},
+"RKN": {
+"country": "au",
+"sector": "software",
+"slug": "reckon-shares"
+},
+"TMX": {
+"country": "au",
+"sector": "materials",
+"slug": "terrain-minerals-shares"
+},
+"CCG": {
+"country": "au",
+"sector": "telecom",
+"slug": "comms-group-shares"
+},
+"MYX": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "mayne-pharma-group-shares"
+},
+"SSH": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "ssh-group-shares"
+},
+"VKA": {
+"country": "au",
+"sector": "materials",
+"slug": "viking-mines-shares"
+},
+"DUN": {
+"country": "au",
+"sector": "materials",
+"slug": "dundas-minerals-shares"
+},
+"MNB": {
+"country": "au",
+"sector": "materials",
+"slug": "minbos-resources-shares"
+},
+"SPX": {
+"country": "au",
+"sector": "software",
+"slug": "spenda-shares"
+},
+"PEN": {
+"country": "au",
+"sector": "energy",
+"slug": "peninsula-energy-shares"
+},
+"GQG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "gqg-partners-shares"
+},
+"BPH": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "bph-energy-shares"
+},
+"ADD": {
+"country": "au",
+"sector": "materials",
+"slug": "adavale-resources-shares"
+},
+"NXM": {
+"country": "au",
+"sector": "materials",
+"slug": "nexus-minerals-shares"
+},
+"FME": {
+"country": "au",
+"sector": "materials",
+"slug": "future-metals-shares"
+},
+"ELS": {
+"country": "au",
+"sector": "tech",
+"slug": "elsight-shares"
+},
+"HZR": {
+"country": "au",
+"sector": "materials",
+"slug": "hazer-group-shares"
+},
+"HCH": {
+"country": "au",
+"sector": "materials",
+"slug": "hot-chili-shares"
+},
+"EVE": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "eve-health-group-shares"
+},
+"XRA": {
+"country": "au",
+"sector": "materials",
+"slug": "xenora-minerals-shares"
+},
+"KBC": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "keybridge-capital-shares"
+},
+"VSL": {
+"country": "au",
+"sector": "materials",
+"slug": "vulcan-steel-shares"
+},
+"SLS": {
+"country": "au",
+"sector": "materials",
+"slug": "solstice-minerals-shares"
+},
+"TBR": {
+"country": "au",
+"sector": "materials",
+"slug": "tribune-resources-shares"
+},
+"REZ": {
+"country": "au",
+"sector": "materials",
+"slug": "resources-energy-group-shares"
+},
+"ING": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "inghams-group-shares"
+},
+"HAW": {
+"country": "au",
+"sector": "materials",
+"slug": "hawthorn-resources-shares"
+},
+"H3E": {
+"country": "au",
+"sector": "energy",
+"slug": "h3-energy-shares"
+},
+"ODEO": {
+"country": "au",
+"sector": "materials",
+"slug": "odessa-minerals-shares"
+},
+"CCA": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "change-financial-shares"
+},
+"GPT": {
+"country": "au",
+"sector": "real-estate",
+"slug": "gpt-group-shares"
+},
+"GNC": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "graincorp-shares"
+},
+"360": {
+"country": "au",
+"sector": "software",
+"slug": "life360-shares"
+},
+"AS2": {
+"country": "au",
+"sector": "materials",
+"slug": "askari-metals-shares"
+},
+"ASH": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "ashley-services-group-shares"
+},
+"TD1": {
+"country": "au",
+"sector": "healthcare",
+"slug": "tali-digital-shares"
+},
+"DBO": {
+"country": "au",
+"sector": "materials",
+"slug": "diablo-resources-shares"
+},
+"MRD": {
+"country": "au",
+"sector": "materials",
+"slug": "mount-ridley-mines-shares"
+},
+"FCL": {
+"country": "au",
+"sector": "software",
+"slug": "fineos-corporation-holdings-shares"
+},
+"SKC": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "skycity-entertainment-group-shares"
+},
+"QOR": {
+"country": "au",
+"sector": "software",
+"slug": "qoria-shares"
+},
+"GDI": {
+"country": "au",
+"sector": "real-estate",
+"slug": "gdi-property-group-shares"
+},
+"COV": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "cleo-diagnostics-shares"
+},
+"KZR": {
+"country": "au",
+"sector": "materials",
+"slug": "kalamazoo-resources-shares"
+},
+"CQT": {
+"country": "au",
+"sector": "healthcare",
+"slug": "conneqt-health-shares"
+},
+"RCE": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "recce-pharmaceuticals-shares"
+},
+"HXL": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "hexima-shares"
+},
+"BMM": {
+"country": "au",
+"sector": "materials",
+"slug": "bayan-mining-and-minerals-shares"
+},
+"VEE": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "veem-shares"
+},
+"AIH": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "advanced-innergy-holdings-shares"
+},
+"TZN": {
+"country": "au",
+"sector": "materials",
+"slug": "terramin-australia-shares"
+},
+"KOV": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "korvest-shares"
+},
+"SRT": {
+"country": "au",
+"sector": "materials",
+"slug": "strata-investment-holdings-shares"
+},
+"ABB": {
+"country": "au",
+"sector": "telecom",
+"slug": "aussie-broadband-shares"
+},
+"CAQ": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "caq-holdings-shares"
+},
+"DCC": {
+"country": "au",
+"sector": "software",
+"slug": "digitalx-shares"
+},
+"TMS": {
+"country": "au",
+"sector": "materials",
+"slug": "tennant-minerals-shares"
+},
+"CCM": {
+"country": "au",
+"sector": "materials",
+"slug": "cadoux-shares"
+},
+"CHW": {
+"country": "au",
+"sector": "materials",
+"slug": "chilwa-minerals-shares"
+},
+"DTL": {
+"country": "au",
+"sector": "software",
+"slug": "data3-shares"
+},
+"AGC": {
+"country": "au",
+"sector": "materials",
+"slug": "australian-gold-and-copper-shares"
+},
+"NXL": {
+"country": "au",
+"sector": "software",
+"slug": "nuix-shares"
+},
+"HAR": {
+"country": "au",
+"sector": "materials",
+"slug": "haranga-resources-shares"
+},
+"VAL": {
+"country": "au",
+"sector": "materials",
+"slug": "valiant-gold-shares"
+},
+"RNV": {
+"country": "au",
+"sector": "healthcare",
+"slug": "renerve-shares"
+},
+"INR": {
+"country": "au",
+"sector": "materials",
+"slug": "ioneer-shares"
+},
+"SRZ": {
+"country": "au",
+"sector": "materials",
+"slug": "stellar-resources-shares"
+},
+"MAU": {
+"country": "au",
+"sector": "materials",
+"slug": "magnetic-resources-shares"
+},
+"MHK": {
+"country": "au",
+"sector": "materials",
+"slug": "metal-hawk-shares"
+},
+"RCR": {
+"country": "au",
+"sector": "materials",
+"slug": "rincon-resources-shares"
+},
+"KNB": {
+"country": "au",
+"sector": "materials",
+"slug": "koonenberry-gold-shares"
+},
+"BPM": {
+"country": "au",
+"sector": "materials",
+"slug": "bpm-minerals-shares"
+},
+"VTA": {
+"country": "au",
+"sector": "materials",
+"slug": "vita-resources-shares"
+},
+"PEC": {
+"country": "au",
+"sector": "materials",
+"slug": "perpetual-resources-shares"
+},
+"TCG": {
+"country": "au",
+"sector": "materials",
+"slug": "turaco-gold-shares"
+},
+"NUC": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "nuchev-shares"
+},
+"SP8": {
+"country": "au",
+"sector": "media",
+"slug": "streamplay-studio-shares"
+},
+"LKO": {
+"country": "au",
+"sector": "energy",
+"slug": "lakes-blue-energy-shares"
+},
+"A4N": {
+"country": "au",
+"sector": "materials",
+"slug": "alpha-hpa-shares"
+},
+"WES": {
+"country": "au",
+"sector": "retail",
+"slug": "wesfarmers-shares"
+},
+"STG": {
+"country": "au",
+"sector": "commercial-services",
+"slug": "straker-shares"
+},
+"IMI": {
+"country": "au",
+"sector": "materials",
+"slug": "infinity-mining-shares"
+},
+"EVR": {
+"country": "au",
+"sector": "materials",
+"slug": "ev-resources-shares"
+},
+"AQC": {
+"country": "au",
+"sector": "materials",
+"slug": "australian-pacific-coal-shares"
+},
+"AX8": {
+"country": "au",
+"sector": "materials",
+"slug": "accelerate-resources-shares"
+},
+"EMB": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "embelton-shares"
+},
+"ACW": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "actinogen-medical-shares"
+},
+"AHF": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "australian-dairy-nutritionals-shares"
+},
+"GMG": {
+"country": "au",
+"sector": "real-estate",
+"slug": "goodman-group-shares"
+},
+"GHM": {
+"country": "au",
+"sector": "materials",
+"slug": "golden-horse-minerals-shares"
+},
+"ENT": {
+"country": "au",
+"sector": "materials",
+"slug": "enterprise-metals-shares"
+},
+"AQZ": {
+"country": "au",
+"sector": "transportation",
+"slug": "alliance-aviation-services-shares"
+},
+"MMA": {
+"country": "au",
+"sector": "materials",
+"slug": "maronan-metals-shares"
+},
+"WGR": {
+"country": "au",
+"sector": "materials",
+"slug": "western-gold-resources-shares"
+},
+"AOV": {
+"country": "au",
+"sector": "automobiles",
+"slug": "amotiv-shares"
+},
+"G88": {
+"country": "au",
+"sector": "materials",
+"slug": "golden-mile-resources-shares"
+},
+"UBI": {
+"country": "au",
+"sector": "healthcare",
+"slug": "universal-biosensors-shares"
+},
+"RDS": {
+"country": "au",
+"sector": "materials",
+"slug": "redstone-resources-shares"
+},
+"M2M": {
+"country": "au",
+"sector": "materials",
+"slug": "mt-malcolm-mines-shares"
+},
+"DTI": {
+"country": "au",
+"sector": "tech",
+"slug": "dti-group-shares"
+},
+"VHL": {
+"country": "au",
+"sector": "healthcare",
+"slug": "vitasora-health-shares"
+},
+"ABV": {
+"country": "au",
+"sector": "automobiles",
+"slug": "advanced-braking-technology-shares"
+},
+"RHT": {
+"country": "au",
+"sector": "healthcare",
+"slug": "resonance-health-shares"
+},
+"ADO": {
+"country": "au",
+"sector": "materials",
+"slug": "anteotech-shares"
+},
+"VIT": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "vitura-health-shares"
+},
+"OMX": {
+"country": "au",
+"sector": "materials",
+"slug": "orange-minerals-shares"
+},
+"WIN": {
+"country": "au",
+"sector": "materials",
+"slug": "win-metals-shares"
+},
+"ABE": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "australian-bond-exchange-holdings-shares"
+},
+"EVO": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "embark-early-education-shares"
+},
+"CCX": {
+"country": "au",
+"sector": "retail",
+"slug": "city-chic-collective-shares"
+},
+"AGE": {
+"country": "au",
+"sector": "energy",
+"slug": "alligator-energy-shares"
+},
+"AV1": {
+"country": "au",
+"sector": "software",
+"slug": "adveritas-shares"
+},
+"FZR": {
+"country": "au",
+"sector": "energy",
+"slug": "fitzroy-river-shares"
+},
+"BWN": {
+"country": "au",
+"sector": "transportation",
+"slug": "bhagwan-marine-shares"
+},
+"WBT": {
+"country": "au",
+"sector": "semiconductors",
+"slug": "weebit-nano-shares"
+},
+"ILU": {
+"country": "au",
+"sector": "materials",
+"slug": "iluka-resources-shares"
+},
+"CHI": {
+"country": "au",
+"sector": "energy",
+"slug": "channel-infrastructure-nz-shares"
+},
+"OD6": {
+"country": "au",
+"sector": "materials",
+"slug": "od6-metals-shares"
+},
+"TER": {
+"country": "au",
+"sector": "energy",
+"slug": "terracom-shares"
+},
+"SHV": {
+"country": "au",
+"sector": "food-beverage-tobacco",
+"slug": "select-harvests-shares"
+},
+"OCN": {
+"country": "au",
+"sector": "materials",
+"slug": "oceana-metals-shares"
+},
+"AJL": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "aj-lucas-group-shares"
+},
+"OPT": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "opthea-shares"
+},
+"MC2": {
+"country": "au",
+"sector": "materials",
+"slug": "marimaca-copper-shares"
+},
+"APZ": {
+"country": "au",
+"sector": "real-estate",
+"slug": "aspen-group-shares"
+},
+"ASX": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "asx-shares"
+},
+"LEX": {
+"country": "au",
+"sector": "materials",
+"slug": "lefroy-exploration-shares"
+},
+"GNE": {
+"country": "au",
+"sector": "utilities",
+"slug": "genesis-energy-shares"
+},
+"MLX": {
+"country": "au",
+"sector": "materials",
+"slug": "metals-x-shares"
+},
+"GOZ": {
+"country": "au",
+"sector": "real-estate",
+"slug": "growthpoint-properties-australia-shares"
+},
+"BRG": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "breville-group-shares"
+},
+"AQD": {
+"country": "au",
+"sector": "materials",
+"slug": "ausquest-shares"
+},
+"I88": {
+"country": "au",
+"sector": "materials",
+"slug": "infini-resources-shares"
+},
+"SKY": {
+"country": "au",
+"sector": "materials",
+"slug": "sky-metals-shares"
+},
+"MEI": {
+"country": "au",
+"sector": "materials",
+"slug": "meteoric-resources-shares"
+},
+"RMI": {
+"country": "au",
+"sector": "materials",
+"slug": "resource-minerals-international-shares"
+},
+"BGP": {
+"country": "au",
+"sector": "retail",
+"slug": "briscoe-group-shares"
+},
+"PLC": {
+"country": "au",
+"sector": "materials",
+"slug": "plc-resources-shares"
+},
+"TOR": {
+"country": "au",
+"sector": "materials",
+"slug": "torque-metals-shares"
+},
+"BPP": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "babylon-pump-power-shares"
+},
+"BLU": {
+"country": "au",
+"sector": "energy",
+"slug": "blue-energy-shares"
+},
+"LM8": {
+"country": "au",
+"sector": "materials",
+"slug": "lunnon-metals-shares"
+},
+"MP1": {
+"country": "au",
+"sector": "software",
+"slug": "megaport-shares"
+},
+"STV": {
+"country": "au",
+"sector": "media",
+"slug": "swift-tv-shares"
+},
+"DXN": {
+"country": "au",
+"sector": "software",
+"slug": "dxn-shares"
+},
+"WEB": {
+"country": "au",
+"sector": "consumer-services",
+"slug": "web-travel-group-shares"
+},
+"CNB": {
+"country": "au",
+"sector": "materials",
+"slug": "carnaby-resources-shares"
+},
+"LSA": {
+"country": "au",
+"sector": "materials",
+"slug": "lachlan-star-shares"
+},
+"MDI": {
+"country": "au",
+"sector": "materials",
+"slug": "middle-island-resources-shares"
+},
+"ATP": {
+"country": "au",
+"sector": "consumer-durables",
+"slug": "atlas-pearls-shares"
+},
+"STH": {
+"country": "au",
+"sector": "software",
+"slug": "stepchange-holdings-shares"
+},
+"PFG": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "prime-financial-group-shares"
+},
+"SSM": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "service-stream-shares"
+},
+"CSX": {
+"country": "au",
+"sector": "healthcare",
+"slug": "cleanspace-holdings-shares"
+},
+"CHL": {
+"country": "au",
+"sector": "transportation",
+"slug": "camplify-holdings-shares"
+},
+"INF": {
+"country": "au",
+"sector": "materials",
+"slug": "infinity-metals-shares"
+},
+"PHO": {
+"country": "au",
+"sector": "materials",
+"slug": "phosco-shares"
+},
+"G1C": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "group-one-capital-shares"
+},
+"FLX": {
+"country": "au",
+"sector": "software",
+"slug": "felix-group-holdings-shares"
+},
+"WTC": {
+"country": "au",
+"sector": "software",
+"slug": "wisetech-global-shares"
+},
+"VIG": {
+"country": "au",
+"sector": "software",
+"slug": "victor-group-holdings-shares"
+},
+"RGT": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "argent-biopharma-shares"
+},
+"FNR": {
+"country": "au",
+"sector": "materials",
+"slug": "far-northern-resources-shares"
+},
+"ONE": {
+"country": "au",
+"sector": "healthcare",
+"slug": "oneview-healthcare-shares"
+},
+"CGR": {
+"country": "au",
+"sector": "materials",
+"slug": "cgn-resources-shares"
+},
+"NUF": {
+"country": "au",
+"sector": "materials",
+"slug": "nufarm-shares"
+},
+"BLX": {
+"country": "au",
+"sector": "retail",
+"slug": "beacon-lighting-group-shares"
+},
+"ARX": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "aroa-biosurgery-shares"
+},
+"AMD": {
+"country": "au",
+"sector": "materials",
+"slug": "arrow-minerals-shares"
+},
+"CCR": {
+"country": "au",
+"sector": "software",
+"slug": "credit-clear-shares"
+},
+"EBR": {
+"country": "au",
+"sector": "healthcare",
+"slug": "ebr-systems-shares"
+},
+"WC1": {
+"country": "au",
+"sector": "materials",
+"slug": "west-cobar-metals-shares"
+},
+"TPW": {
+"country": "au",
+"sector": "retail",
+"slug": "temple-webster-group-shares"
+},
+"TOU": {
+"country": "au",
+"sector": "energy",
+"slug": "tlou-energy-shares"
+},
+"VBX": {
+"country": "au",
+"sector": "materials",
+"slug": "vbx-shares"
+},
+"NRZ": {
+"country": "au",
+"sector": "materials",
+"slug": "neurizer-shares"
+},
+"KKO": {
+"country": "au",
+"sector": "energy",
+"slug": "kinetiko-energy-shares"
+},
+"MCE": {
+"country": "au",
+"sector": "energy",
+"slug": "matrix-composites-engineering-shares"
+},
+"SEQ": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "sequoia-financial-group-shares"
+},
+"PER": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "percheron-therapeutics-shares"
+},
+"EBO": {
+"country": "au",
+"sector": "healthcare",
+"slug": "ebos-group-shares"
+},
+"TLS": {
+"country": "au",
+"sector": "telecom",
+"slug": "telstra-group-shares"
+},
+"LYL": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "lycopodium-shares"
+},
+"GNM": {
+"country": "au",
+"sector": "materials",
+"slug": "great-northern-minerals-shares"
+},
+"EGG": {
+"country": "au",
+"sector": "media",
+"slug": "enero-group-shares"
+},
+"JBH": {
+"country": "au",
+"sector": "retail",
+"slug": "jb-hi-fi-shares"
+},
+"RMY": {
+"country": "au",
+"sector": "media",
+"slug": "rma-global-shares"
+},
+"AAR": {
+"country": "au",
+"sector": "materials",
+"slug": "astral-resources-shares"
+},
+"EGH": {
+"country": "au",
+"sector": "real-estate-management-and-development",
+"slug": "eureka-group-holdings-shares"
+},
+"NXN": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "nexsen-shares"
+},
+"CMB": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "cambium-bio-shares"
+},
+"ASB": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "austal-shares"
+},
+"DXC": {
+"country": "au",
+"sector": "real-estate",
+"slug": "dexus-convenience-retail-reit-shares"
+},
+"CBA": {
+"country": "au",
+"sector": "banks",
+"slug": "commonwealth-bank-of-australia-shares"
+},
+"GTG": {
+"country": "au",
+"sector": "pharmaceuticals-biotech",
+"slug": "genetic-technologies-shares"
+},
+"NOR": {
+"country": "au",
+"sector": "software",
+"slug": "norwood-systems-shares"
+},
+"SIV": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "siv-capital-shares"
+},
+"OLH": {
+"country": "au",
+"sector": "capital-goods",
+"slug": "oldfields-holdings-shares"
+},
+"WAU": {
+"country": "au",
+"sector": "materials",
+"slug": "wa-gold-shares"
+},
+"ALC": {
+"country": "au",
+"sector": "healthcare",
+"slug": "alcidion-group-shares"
+},
+"N1H": {
+"country": "au",
+"sector": "diversified-financials",
+"slug": "n1-holdings-shares"
+}
+}
+}

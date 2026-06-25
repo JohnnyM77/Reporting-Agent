@@ -2,14 +2,15 @@
 agents/sws_drip/sws_downloader.py
 ───────────────────────────────────
 Direct HTTP API approach: authenticate with Bearer JWT from storage_state,
-resolve ticker via Algolia, download CSV via SWS REST API.
+resolve ticker via SWS internal company API, download CSV via SWS REST API.
 
-No Playwright. No browser. No Cloudflare.
+No Playwright. No browser. No Cloudflare. No rotating Algolia keys.
 """
 
 from __future__ import annotations
 
 import json
+import re
 import time
 import random
 from pathlib import Path
@@ -21,11 +22,6 @@ import httpx
 class SWSDownloadError(Exception):
     """Raised when a download step fails."""
 
-
-# Algolia credentials (public — baked into SWS's own frontend JS)
-_ALGOLIA_APP_ID = "17IQHZWXZW"
-_ALGOLIA_API_KEY = "be7c37718f927d0137a88a11b69ae4198"
-_ALGOLIA_URL = f"https://{_ALGOLIA_APP_ID.lower()}-dsn.algolia.net/1/indexes/companies/query"
 
 _SWS_BASE = "https://simplywall.st"
 _CSV_URL_TEMPLATE = (
@@ -39,22 +35,22 @@ _USER_AGENT = (
 )
 
 
-def _extract_bearer(storage_state: Union[str, dict]) -> str:
-    """
-    Pull the Bearer JWT from storage_state.
-
-    Checks localStorage first (SWS stores auth_token there), then cookies.
-    Raises SWSDownloadError if not found.
-    """
+def _parse_state(storage_state: Union[str, dict]) -> dict:
     if isinstance(storage_state, str):
         if storage_state.strip().startswith("{"):
-            state = json.loads(storage_state)
-        else:
-            state = json.loads(Path(storage_state).read_text(encoding="utf-8"))
-    else:
-        state = storage_state
+            return json.loads(storage_state)
+        return json.loads(Path(storage_state).read_text(encoding="utf-8"))
+    return storage_state
 
-    # 1. Check localStorage origins
+
+def _extract_bearer(storage_state: Union[str, dict]) -> str:
+    """
+    Pull the Bearer JWT from storage_state (localStorage → cookies).
+    Raises SWSDownloadError if not found.
+    """
+    state = _parse_state(storage_state)
+
+    # 1. Check localStorage
     for origin in state.get("origins", []):
         for entry in origin.get("localStorage", []):
             key = entry.get("name", "")
@@ -63,7 +59,7 @@ def _extract_bearer(storage_state: Union[str, dict]) -> str:
                 if val and len(val) > 20:
                     return val
 
-    # 2. Check cookies named 'token', 'auth_token', 'jwt', etc.
+    # 2. Check cookies
     for cookie in state.get("cookies", []):
         name = cookie.get("name", "").lower()
         if any(k in name for k in ("token", "auth", "jwt", "session")):
@@ -79,14 +75,7 @@ def _extract_bearer(storage_state: Union[str, dict]) -> str:
 
 def _build_cookie_header(storage_state: Union[str, dict]) -> str:
     """Build a Cookie header string from all SWS cookies in storage_state."""
-    if isinstance(storage_state, str):
-        if storage_state.strip().startswith("{"):
-            state = json.loads(storage_state)
-        else:
-            state = json.loads(Path(storage_state).read_text(encoding="utf-8"))
-    else:
-        state = storage_state
-
+    state = _parse_state(storage_state)
     parts = []
     for cookie in state.get("cookies", []):
         if "simplywall" in cookie.get("domain", ""):
@@ -94,68 +83,123 @@ def _build_cookie_header(storage_state: Union[str, dict]) -> str:
     return "; ".join(parts)
 
 
-def _resolve_ticker_via_algolia(ticker: str, exchange: str) -> dict:
-    """
-    Query Algolia to resolve ticker → {slug, sector, country, company_id}.
-    Returns the first matching hit or raises SWSDownloadError.
-    """
-    query = f"{exchange}:{ticker}"
-    payload = {
-        "query": query,
-        "hitsPerPage": 5,
-        "filters": f"exchange_symbol:{exchange}",
-    }
-    headers = {
-        "X-Algolia-Application-Id": _ALGOLIA_APP_ID,
-        "X-Algolia-API-Key": _ALGOLIA_API_KEY,
-        "Content-Type": "application/json",
+def _slugify(s: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+
+
+def _sws_headers(bearer: str, cookie_header: str, referer: str = "") -> dict:
+    h = {
+        "Authorization": f"Bearer {bearer}",
+        "Accept": "application/vnd.simplywallst.v2",
         "User-Agent": _USER_AGENT,
+        "Origin": "https://simplywall.st",
     }
+    if referer:
+        h["Referer"] = referer
+    if cookie_header:
+        h["Cookie"] = cookie_header
+    return h
 
-    with httpx.Client(timeout=20) as client:
-        resp = client.post(_ALGOLIA_URL, json=payload, headers=headers)
 
-    if resp.status_code != 200:
-        raise SWSDownloadError(
-            f"Algolia search failed for {query}: HTTP {resp.status_code} — {resp.text[:200]}"
-        )
+def _resolve_ticker_via_sws_api(ticker: str, exchange: str, bearer: str, cookie_header: str) -> dict:
+    """
+    Use SWS's own authenticated company search API to resolve ticker →
+    {slug, sector, country}.
 
-    data = resp.json()
-    hits = data.get("hits", [])
-    if not hits:
-        # Retry without exchange filter (some tickers have unusual exchange codes)
-        payload_retry = {"query": ticker, "hitsPerPage": 5}
-        with httpx.Client(timeout=20) as client:
-            resp2 = client.post(_ALGOLIA_URL, json=payload_retry, headers=headers)
-        hits = resp2.json().get("hits", []) if resp2.status_code == 200 else []
+    Tries multiple endpoints in order:
+      1. /api/company?query=ASX:BHP  (main search)
+      2. /api/company?query=BHP&exchange=ASX
+      3. /api/company/asx-{ticker}   (direct lookup by unique_symbol)
+    """
+    headers = _sws_headers(bearer, cookie_header, referer="https://simplywall.st/dashboard")
+    search_query = f"{exchange}:{ticker}"
 
-    # Find best match: ticker symbol must match exactly
-    for hit in hits:
-        hit_ticker = (hit.get("ticker_symbol") or hit.get("symbol") or "").upper()
-        if hit_ticker == ticker.upper():
-            slug = hit.get("slug") or hit.get("unique_symbol_slug") or ""
-            sector = hit.get("industry_name") or hit.get("sector") or ""
-            country = hit.get("country_iso") or hit.get("country") or "au"
-            # Normalise: slug may already include exchange prefix
-            if slug.startswith("asx-"):
-                slug = slug[4:]
-            return {
-                "slug": slug.lower(),
-                "sector": _slugify(sector),
-                "country": country.lower(),
-                "hit": hit,
-            }
+    with httpx.Client(timeout=20, follow_redirects=True) as client:
+        # Attempt 1: search by exchange:ticker
+        for params in [
+            {"query": search_query, "limit": 5},
+            {"query": ticker, "exchange": exchange, "limit": 5},
+        ]:
+            try:
+                resp = client.get(
+                    f"{_SWS_BASE}/api/company",
+                    params=params,
+                    headers=headers,
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    # Response may be {"data": [...]} or a list directly
+                    items = data.get("data", data) if isinstance(data, dict) else data
+                    if isinstance(items, list):
+                        for item in items:
+                            sym = (
+                                item.get("ticker_symbol")
+                                or item.get("unique_symbol")
+                                or item.get("symbol")
+                                or ""
+                            ).upper()
+                            # Match bare ticker or ASX:TICKER format
+                            if sym in (ticker.upper(), f"{exchange}:{ticker}".upper()):
+                                return _extract_company_meta(item, ticker)
+            except Exception:
+                continue
+
+        # Attempt 2: direct unique_symbol lookup
+        try:
+            resp = client.get(
+                f"{_SWS_BASE}/api/company/asx-{ticker.lower()}",
+                headers=headers,
+            )
+            if resp.status_code == 200:
+                item = resp.json()
+                if isinstance(item, dict) and item.get("data"):
+                    item = item["data"]
+                return _extract_company_meta(item, ticker)
+        except Exception:
+            pass
 
     raise SWSDownloadError(
-        f"Algolia: no exact match for ticker '{ticker}' on exchange '{exchange}'. "
-        f"Hits returned: {[h.get('ticker_symbol') for h in hits]}"
+        f"Could not resolve ticker '{ticker}' on exchange '{exchange}' via SWS company API. "
+        f"Check that the ticker exists on SWS, or the session has expired."
     )
 
 
-def _slugify(s: str) -> str:
-    """Convert 'Real Estate' → 'real-estate' for URL segments."""
-    import re
-    return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+def _extract_company_meta(item: dict, ticker: str) -> dict:
+    """Pull slug/sector/country out of an SWS company API response item."""
+    # Slug can come from several fields
+    slug = (
+        item.get("slug")
+        or item.get("unique_symbol_slug")
+        or item.get("company_name_slug")
+        or ""
+    ).lower()
+    # Remove leading exchange prefix if present (e.g. "asx-bhp" → "bhp")
+    if slug.startswith("asx-"):
+        slug = slug[4:]
+
+    # If still no slug, derive from company name
+    if not slug:
+        name = item.get("name") or item.get("company_name") or ticker
+        slug = _slugify(name)
+
+    sector = (
+        item.get("industry_name")
+        or item.get("sector")
+        or item.get("gics_sector")
+        or "unknown"
+    )
+    country = (
+        item.get("country_iso")
+        or item.get("country")
+        or "au"
+    ).lower()
+
+    return {
+        "slug": slug,
+        "sector": _slugify(sector),
+        "country": country,
+        "raw": item,
+    }
 
 
 def download_csv(
@@ -164,7 +208,7 @@ def download_csv(
     *,
     storage_state: Union[str, dict],
     output_dir: Path,
-    headless: bool = True,  # kept for API compatibility, unused
+    headless: bool = True,
     debug_dir: Path,
 ) -> Path:
     """
@@ -172,7 +216,7 @@ def download_csv(
 
     Steps:
       1. Extract Bearer JWT from storage_state
-      2. Resolve ticker → slug/sector/country via Algolia
+      2. Resolve ticker → slug/sector/country via SWS company API (authenticated)
       3. GET the CSV download endpoint with auth headers
 
     Returns the path to the saved CSV file.
@@ -181,14 +225,12 @@ def download_csv(
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / f"{exchange}_{ticker}.csv"
 
-    # 1. Extract auth
     bearer = _extract_bearer(storage_state)
     cookie_header = _build_cookie_header(storage_state)
 
-    print(f"[sws_downloader] Resolving {exchange}:{ticker} via Algolia...", flush=True)
+    print(f"[sws_downloader] Resolving {exchange}:{ticker} via SWS API...", flush=True)
 
-    # 2. Resolve ticker metadata
-    info = _resolve_ticker_via_algolia(ticker, exchange)
+    info = _resolve_ticker_via_sws_api(ticker, exchange, bearer, cookie_header)
     slug = info["slug"]
     sector = info["sector"]
     country = info["country"]
@@ -198,7 +240,6 @@ def download_csv(
         flush=True,
     )
 
-    # 3. Download CSV
     csv_path_segment = _CSV_URL_TEMPLATE.format(
         country=country,
         sector=sector,
@@ -207,31 +248,24 @@ def download_csv(
     )
     url = _SWS_BASE + csv_path_segment
 
-    headers = {
-        "Authorization": f"Bearer {bearer}",
-        "Accept": "application/vnd.simplywallst.v2",
-        "User-Agent": _USER_AGENT,
-        "Referer": f"https://simplywall.st/stocks/au/asx-{ticker.lower()}/{slug}",
-        "Origin": "https://simplywall.st",
-    }
-    if cookie_header:
-        headers["Cookie"] = cookie_header
+    headers = _sws_headers(
+        bearer,
+        cookie_header,
+        referer=f"https://simplywall.st/stocks/au/{sector}/asx-{ticker.lower()}/{slug}",
+    )
 
     print(f"[sws_downloader] Downloading CSV from: {url}", flush=True)
-
-    # Small polite delay
     time.sleep(random.uniform(1.5, 3.0))
 
     with httpx.Client(timeout=30, follow_redirects=True) as client:
         resp = client.get(url, headers=headers)
 
-    if resp.status_code == 401 or resp.status_code == 403:
+    if resp.status_code in (401, 403):
         raise SWSDownloadError(
             f"Auth failed (HTTP {resp.status_code}) for {ticker}. "
             "Session may have expired — re-run --setup and update SWS_STORAGE_STATE secret."
         )
     if resp.status_code != 200:
-        # Save debug info
         debug_dir.mkdir(parents=True, exist_ok=True)
         (debug_dir / f"fail_{ticker}_csv_download.txt").write_text(
             f"URL: {url}\nStatus: {resp.status_code}\nBody: {resp.text[:2000]}",

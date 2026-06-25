@@ -96,81 +96,150 @@ def _make_session(bearer: str, cookies: dict) -> cffi_requests.Session:
     return session
 
 
+def _extract_algolia_key(session: cffi_requests.Session) -> tuple[str, str] | None:
+    """
+    Extract the current Algolia app_id + api_key from SWS's homepage JS bundle.
+    SWS embeds these as public credentials in their frontend code.
+    Returns (app_id, api_key) or None if not found.
+    """
+    try:
+        resp = session.get(_SWS_BASE, timeout=20)
+        if resp.status_code != 200:
+            print(f"[sws_downloader] homepage -> HTTP {resp.status_code}", flush=True)
+            return None
+        # Find the JS bundle URL(s)
+        js_urls = re.findall(r'src="(/_next/static/[^"]+\.js)"', resp.text)
+        if not js_urls:
+            js_urls = re.findall(r'src="(/[^"]+chunk[^"]+\.js)"', resp.text)
+        print(f"[sws_downloader] Found {len(js_urls)} JS chunks to scan for Algolia key", flush=True)
+        for js_url in js_urls[:10]:
+            full_url = _SWS_BASE + js_url if js_url.startswith("/") else js_url
+            r = session.get(full_url, timeout=15)
+            if r.status_code != 200:
+                continue
+            # Look for Algolia credentials pattern
+            m = re.search(r'"([A-Z0-9]{8,12})","([a-f0-9]{32,})"', r.text)
+            if m:
+                app_id, api_key = m.group(1), m.group(2)
+                print(f"[sws_downloader] Found Algolia creds: app_id={app_id}", flush=True)
+                return app_id, api_key
+    except Exception as e:
+        print(f"[sws_downloader] algolia-key extraction error: {e}", flush=True)
+    return None
+
+
+def _resolve_via_algolia(ticker: str, exchange: str, app_id: str, api_key: str) -> dict | None:
+    """Query Algolia search to get slug/sector/country for a ticker."""
+    algolia_url = f"https://{app_id.lower()}-dsn.algolia.net/1/indexes/companies/query"
+    headers = {
+        "X-Algolia-Application-Id": app_id,
+        "X-Algolia-API-Key": api_key,
+        "Content-Type": "application/json",
+        "User-Agent": _USER_AGENT,
+    }
+    payload = {"query": f"{exchange}:{ticker}", "hitsPerPage": 5}
+    try:
+        import httpx
+        with httpx.Client(timeout=15) as client:
+            resp = client.post(algolia_url, json=payload, headers=headers)
+        print(
+            f"[sws_downloader] algolia query -> HTTP {resp.status_code} "
+            f"body[:100]={resp.text[:100]!r}",
+            flush=True,
+        )
+        if resp.status_code == 200:
+            for hit in resp.json().get("hits", []):
+                sym = (hit.get("ticker_symbol") or hit.get("symbol") or "").upper()
+                if sym == ticker.upper():
+                    return _extract_meta(hit, ticker)
+    except Exception as e:
+        print(f"[sws_downloader] algolia query error: {e}", flush=True)
+    return None
+
+
 def _resolve_ticker(ticker: str, exchange: str, session: cffi_requests.Session) -> dict:
     """
     Resolve ticker -> {slug, sector, country}.
 
-    Fetches the SWS search page for the ticker and extracts the canonical URL
-    from the <link rel="canonical"> or <meta property="og:url"> tag.
-    This gives the exact country/sector/slug without needing internal API routes.
+    Strategy 1: SWS site search page (/search?q=TICKER) — parse stock links from HTML.
+    Strategy 2: Extract live Algolia key from SWS homepage JS, then query Algolia.
+    Strategy 3: Probe known SWS REST search endpoints.
     """
-    # Strategy 1: fetch the SWS stocks search page and parse the canonical link
-    search_url = f"{_SWS_BASE}/stocks/asx-{ticker.lower()}-shares"
-    try:
-        resp = session.get(search_url, timeout=20, allow_redirects=True)
-        final_url = str(resp.url)
-        print(
-            f"[sws_downloader] search-url {search_url} -> HTTP {resp.status_code} final={final_url}",
-            flush=True,
-        )
-        if resp.status_code == 200:
-            m = re.search(r"/stocks/([^/]+)/([^/]+)/asx-[^/]+/([^/?#\"']+)", resp.text)
-            if m:
-                result = {"country": m.group(1), "sector": m.group(2), "slug": m.group(3)}
-                print(f"[sws_downloader] Resolved via search page: {result}", flush=True)
-                return result
-            # Also try parsing from final URL if redirected
-            m = re.search(r"/stocks/([^/]+)/([^/]+)/asx-[^/]+/([^/?#]+)", final_url)
+    _STOCK_URL_RE = re.compile(
+        r"/stocks/([a-z]{2})/([^/]+)/asx-" + re.escape(ticker.lower()) + r"/([^/?#\"' ]+)"
+    )
+
+    # Strategy 1: SWS site search page
+    for search_url in (
+        f"{_SWS_BASE}/search?q={ticker}",
+        f"{_SWS_BASE}/search?q=ASX:{ticker}",
+        f"{_SWS_BASE}/discover/investing-ideas?search={ticker}",
+    ):
+        try:
+            resp = session.get(search_url, timeout=20, allow_redirects=True)
+            final_url = str(resp.url)
+            print(
+                f"[sws_downloader] {search_url} -> HTTP {resp.status_code} final={final_url}",
+                flush=True,
+            )
+            # Check redirect URL first
+            m = _STOCK_URL_RE.search(final_url)
             if m:
                 result = {"country": m.group(1), "sector": m.group(2), "slug": m.group(3)}
                 print(f"[sws_downloader] Resolved via redirect: {result}", flush=True)
                 return result
-    except Exception as e:
-        print(f"[sws_downloader] search-url error: {type(e).__name__}: {e}", flush=True)
-
-    # Strategy 2: try the SWS company page directly with known sector guesses
-    # SWS URL: /stocks/{country}/{sector}/asx-{ticker}/{slug}
-    # We fetch /stocks/ search results page and parse JSON embedded in the HTML
-    sitemap_url = f"{_SWS_BASE}/stocks/au"
-    search_api = f"{_SWS_BASE}/api/frontier/graphql"
-    query_body = {
-        "operationName": "SearchCompanies",
-        "variables": {"query": ticker.upper(), "limit": 5},
-        "query": (
-            "query SearchCompanies($query: String!, $limit: Int) {"
-            "  searchCompanies(query: $query, limit: $limit) {"
-            "    id unique_symbol slug country_iso industry { name } "
-            "  }"
-            "}"
-        ),
-    }
-    try:
-        resp = session.post(search_api, json=query_body, timeout=20)
-        print(
-            f"[sws_downloader] graphql search -> HTTP {resp.status_code} "
-            f"body[:200]={resp.text[:200]!r}",
-            flush=True,
-        )
-        if resp.status_code == 200:
-            data = resp.json()
-            companies = (data.get("data") or {}).get("searchCompanies") or []
-            for c in companies:
-                sym = (c.get("unique_symbol") or "").upper().replace("ASX:", "")
-                if sym == ticker.upper():
-                    slug = (c.get("slug") or _slugify(ticker)).lower()
-                    if slug.startswith("asx-"):
-                        slug = slug[4:]
-                    sector = _slugify((c.get("industry") or {}).get("name") or "unknown")
-                    country = (c.get("country_iso") or "au").lower()
-                    result = {"slug": slug, "sector": sector, "country": country}
-                    print(f"[sws_downloader] Resolved via GraphQL: {result}", flush=True)
+            if resp.status_code == 200:
+                m = _STOCK_URL_RE.search(resp.text)
+                if m:
+                    result = {"country": m.group(1), "sector": m.group(2), "slug": m.group(3)}
+                    print(f"[sws_downloader] Resolved via search page HTML: {result}", flush=True)
                     return result
-    except Exception as e:
-        print(f"[sws_downloader] graphql error: {type(e).__name__}: {e}", flush=True)
+                print(
+                    f"[sws_downloader] 200 OK but no stock URL found in HTML (first 300): "
+                    f"{resp.text[:300]!r}",
+                    flush=True,
+                )
+        except Exception as e:
+            print(f"[sws_downloader] search error {search_url}: {type(e).__name__}: {e}", flush=True)
+
+    # Strategy 2: extract live Algolia key from SWS JS and query Algolia
+    print("[sws_downloader] Trying Algolia key extraction from SWS homepage...", flush=True)
+    algolia_creds = _extract_algolia_key(session)
+    if algolia_creds:
+        result = _resolve_via_algolia(ticker, exchange, *algolia_creds)
+        if result:
+            return result
+
+    # Strategy 3: probe known SWS REST endpoints
+    for endpoint, params in (
+        (f"{_SWS_BASE}/api/companies", {"query": ticker, "exchange": exchange}),
+        (f"{_SWS_BASE}/api/company/search", {"q": ticker}),
+        (f"{_SWS_BASE}/api/search", {"q": ticker, "type": "company"}),
+    ):
+        try:
+            resp = session.get(endpoint, params=params, timeout=15)
+            print(
+                f"[sws_downloader] {endpoint} -> HTTP {resp.status_code} "
+                f"body[:150]={resp.text[:150]!r}",
+                flush=True,
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                items = data.get("data") or data if isinstance(data, (dict, list)) else []
+                if isinstance(items, dict):
+                    items = list(items.values())[:1]
+                for item in (items if isinstance(items, list) else []):
+                    sym = (
+                        item.get("ticker_symbol") or item.get("unique_symbol") or item.get("symbol") or ""
+                    ).upper().replace(f"{exchange}:", "")
+                    if sym == ticker.upper():
+                        return _extract_meta(item, ticker)
+        except Exception as e:
+            print(f"[sws_downloader] endpoint error {endpoint}: {type(e).__name__}: {e}", flush=True)
 
     raise SWSDownloadError(
-        f"Could not resolve '{ticker}'. See diagnostic output above. "
-        "Try running with a manual URL or check if the ticker is listed on SWS."
+        f"Could not resolve '{ticker}'. All strategies failed — see logs above. "
+        "The SWS session may have expired, or the ticker may not be listed on SWS."
     )
 
 

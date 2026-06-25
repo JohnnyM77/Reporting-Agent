@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 15
     defaults:
       run:
-        shell: bash  # Use Git Bash on Windows (avoids PowerShell execution policy blocks)
+        shell: cmd  # Windows cmd — no execution policy restrictions
 
     steps:
       - uses: actions/checkout@v4
@@ -49,26 +49,33 @@ jobs:
         run: python -m agents.sws_drip.run_drip --rebuild-queue
 
       - name: Mark stale CSVs for re-download
-        # Only acts on tickers not refreshed in 180+ days (twice-yearly ASX reporting)
         run: python -m agents.sws_drip.run_drip --mark-stale --stale-days 180
 
-      - name: Run SWS drip
+      # --- Three mutually exclusive run steps (GitHub Actions handles the if logic) ---
+
+      - name: Run SWS drip (dry run)
+        if: ${{ github.event.inputs.dry_run == 'true' }}
         env:
           SWS_STORAGE_STATE: ${{ secrets.SWS_STORAGE_STATE }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          TICKERS="${{ github.event.inputs.tickers }}"
-          LIMIT="${{ github.event.inputs.limit || '2' }}"
-          DRY_RUN="${{ github.event.inputs.dry_run }}"
+        run: python -m agents.sws_drip.run_drip --dry-run --limit ${{ github.event.inputs.limit || '2' }}
 
-          if [ "$DRY_RUN" = "true" ]; then
-            python -m agents.sws_drip.run_drip --dry-run --limit "$LIMIT"
-          elif [ -n "$TICKERS" ]; then
-            python -m agents.sws_drip.run_drip --tickers "$TICKERS"
-          else
-            python -m agents.sws_drip.run_drip --limit "$LIMIT"
-          fi
+      - name: Run SWS drip (manual tickers)
+        if: ${{ github.event.inputs.dry_run != 'true' && github.event.inputs.tickers != '' }}
+        env:
+          SWS_STORAGE_STATE: ${{ secrets.SWS_STORAGE_STATE }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m agents.sws_drip.run_drip --tickers ${{ github.event.inputs.tickers }}
+
+      - name: Run SWS drip (queue)
+        if: ${{ github.event.inputs.dry_run != 'true' && (github.event.inputs.tickers == '' || github.event_name == 'schedule') }}
+        env:
+          SWS_STORAGE_STATE: ${{ secrets.SWS_STORAGE_STATE }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m agents.sws_drip.run_drip --limit ${{ github.event.inputs.limit || '2' }}
 
       - name: Commit downloaded CSVs
         if: ${{ github.event.inputs.dry_run != 'true' }}
@@ -76,12 +83,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/sws_csv/
-          if git diff --staged --quiet; then
-            echo "No new CSVs to commit."
-          else
-            git commit -m "chore(sws): drip download $(date -u +%Y-%m-%d)"
-            git push
-          fi
+          git diff --staged --quiet && echo "No new CSVs to commit." || (git commit -m "chore(sws): drip download %DATE:~10,4%-%DATE:~4,2%-%DATE:~7,2%" && git push)
 
       - name: Upload debug artifacts
         if: always()

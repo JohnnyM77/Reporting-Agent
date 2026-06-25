@@ -26,6 +26,11 @@ on:
 permissions:
   contents: write
 
+env:
+  # Force UTF-8 so Unicode log characters never crash on the Windows runner
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: 'utf-8'
+
 jobs:
   drip:
     # Runs on your home PC (mr_co-runer) — your home IP bypasses Cloudflare

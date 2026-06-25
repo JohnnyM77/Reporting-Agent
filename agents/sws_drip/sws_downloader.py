@@ -98,27 +98,40 @@ def _make_session(bearer: str, cookies: dict) -> cffi_requests.Session:
 
 def _resolve_ticker(ticker: str, exchange: str, session: cffi_requests.Session) -> dict:
     """
-    Resolve ticker → {slug, sector, country} using the SWS company API.
+    Resolve ticker → {slug, sector, country}.
 
-    With curl-cffi (Chrome TLS fingerprint) + cf_clearance cookie, Cloudflare
-    passes us through and we get actual API responses.
+    Strategy 1 (canonical): GET the short company URL /stocks/asx-{ticker} and
+    follow the redirect. SWS redirects it to the full canonical path
+    /stocks/{country}/{sector}/asx-{ticker}/{slug}, which we parse directly.
+    No guessing, no API key — the exact path SWS itself uses.
+
+    Strategy 2 (fallback): probe the company search API and log raw responses.
+
+    All log messages use ASCII only so they never crash on Windows cp1252.
     """
-    search_queries = [f"{exchange}:{ticker}", ticker]
-    endpoints = [
-        f"{_SWS_BASE}/api/company",
-        f"{_SWS_BASE}/api/companies",
-    ]
+    # ---- Strategy 1: follow the short-URL redirect ----------------------------
+    short_url = f"{_SWS_BASE}/stocks/asx-{ticker.lower()}"
+    try:
+        resp = session.get(short_url, timeout=15, allow_redirects=True)
+        final_url = str(resp.url)
+        print(
+            f"[sws_downloader] short-url {short_url} -> HTTP {resp.status_code}, "
+            f"final={final_url}",
+            flush=True,
+        )
+        m = re.search(r"/stocks/([^/]+)/([^/]+)/asx-[^/]+/([^/?#]+)", final_url)
+        if m:
+            return {"country": m.group(1), "sector": m.group(2), "slug": m.group(3)}
+    except Exception as e:
+        print(f"[sws_downloader] short-url error: {type(e).__name__}: {e}", flush=True)
 
-    for endpoint in endpoints:
-        for query in search_queries:
+    # ---- Strategy 2: company search API (diagnostic fallback) ------------------
+    for endpoint in (f"{_SWS_BASE}/api/company", f"{_SWS_BASE}/api/companies"):
+        for query in (f"{exchange}:{ticker}", ticker):
             try:
-                resp = session.get(
-                    endpoint,
-                    params={"query": query, "limit": 5},
-                    timeout=15,
-                )
+                resp = session.get(endpoint, params={"query": query, "limit": 5}, timeout=15)
                 print(
-                    f"[sws_downloader] {endpoint}?query={query} → {resp.status_code} "
+                    f"[sws_downloader] {endpoint}?query={query} -> HTTP {resp.status_code} "
                     f"({resp.headers.get('content-type','')[:40]}) "
                     f"body[:150]={resp.text[:150]!r}",
                     flush=True,
@@ -138,13 +151,13 @@ def _resolve_ticker(ticker: str, exchange: str, session: cffi_requests.Session) 
                                 if sym == ticker.upper():
                                     return _extract_meta(item, ticker)
                     except Exception as e:
-                        print(f"[sws_downloader] JSON parse error: {e}", flush=True)
+                        print(f"[sws_downloader] JSON parse error: {type(e).__name__}: {e}", flush=True)
             except Exception as e:
-                print(f"[sws_downloader] Request error: {e}", flush=True)
+                print(f"[sws_downloader] request error: {type(e).__name__}: {e}", flush=True)
 
     raise SWSDownloadError(
-        f"Could not resolve '{ticker}' via SWS company API. "
-        "See diagnostic output above — the API responses will show the correct format."
+        f"Could not resolve '{ticker}'. See diagnostic output above for the "
+        "actual HTTP responses from SWS."
     )
 
 

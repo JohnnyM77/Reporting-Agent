@@ -39,6 +39,15 @@ import sys
 import time
 from pathlib import Path
 
+# Force UTF-8 console output. Windows defaults to cp1252, which crashes on
+# Unicode characters like → ✓ ✗ used in our log messages. This makes the
+# bot's output safe on every platform (Windows runner, Linux CI, macOS).
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 from .sws_db_init import init_db
 from .sws_ingest import ingest_csv
 from .sws_queue import (

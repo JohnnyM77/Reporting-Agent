@@ -1,36 +1,33 @@
 """
 agents/sws_drip/sws_downloader.py
 ───────────────────────────────────
-Direct HTTP API approach: authenticate with Bearer JWT from storage_state,
-resolve ticker via Algolia, download CSV via SWS REST API.
+Direct HTTP API: authenticate with Bearer JWT + cf_clearance from storage_state.
+Uses curl-cffi to impersonate Chrome's TLS fingerprint, bypassing Cloudflare.
 
-No Playwright. No browser. No Cloudflare.
+No Playwright. No browser headaches. No Cloudflare blocks.
 """
 
 from __future__ import annotations
 
 import json
+import re
 import time
 import random
 from pathlib import Path
 from typing import Union
 
-import httpx
+# curl_cffi impersonates Chrome's TLS fingerprint — required to pass Cloudflare
+from curl_cffi import requests as cffi_requests
 
 
 class SWSDownloadError(Exception):
     """Raised when a download step fails."""
 
 
-# Algolia credentials (public — baked into SWS's own frontend JS)
-_ALGOLIA_APP_ID = "17IQHZWXZW"
-_ALGOLIA_API_KEY = "be7c37718f927d0137a88a11b69ae4198"
-_ALGOLIA_URL = f"https://{_ALGOLIA_APP_ID.lower()}-dsn.algolia.net/1/indexes/companies/query"
-
 _SWS_BASE = "https://simplywall.st"
-_CSV_URL_TEMPLATE = (
-    "/api/company/download/csv//stocks/{country}/{sector}/asx-{ticker}/{slug}"
-)
+
+# Chrome version to impersonate — must match what was used when capturing storage_state
+_CHROME_IMPERSONATE = "chrome124"
 
 _USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -39,22 +36,18 @@ _USER_AGENT = (
 )
 
 
-def _extract_bearer(storage_state: Union[str, dict]) -> str:
-    """
-    Pull the Bearer JWT from storage_state.
-
-    Checks localStorage first (SWS stores auth_token there), then cookies.
-    Raises SWSDownloadError if not found.
-    """
+def _parse_state(storage_state: Union[str, dict]) -> dict:
     if isinstance(storage_state, str):
         if storage_state.strip().startswith("{"):
-            state = json.loads(storage_state)
-        else:
-            state = json.loads(Path(storage_state).read_text(encoding="utf-8"))
-    else:
-        state = storage_state
+            return json.loads(storage_state)
+        return json.loads(Path(storage_state).read_text(encoding="utf-8"))
+    return storage_state
 
-    # 1. Check localStorage origins
+
+def _extract_bearer(storage_state: Union[str, dict]) -> str:
+    """Pull Bearer JWT from localStorage → cookies. Raises if not found."""
+    state = _parse_state(storage_state)
+
     for origin in state.get("origins", []):
         for entry in origin.get("localStorage", []):
             key = entry.get("name", "")
@@ -63,7 +56,6 @@ def _extract_bearer(storage_state: Union[str, dict]) -> str:
                 if val and len(val) > 20:
                     return val
 
-    # 2. Check cookies named 'token', 'auth_token', 'jwt', etc.
     for cookie in state.get("cookies", []):
         name = cookie.get("name", "").lower()
         if any(k in name for k in ("token", "auth", "jwt", "session")):
@@ -77,85 +69,125 @@ def _extract_bearer(storage_state: Union[str, dict]) -> str:
     )
 
 
-def _build_cookie_header(storage_state: Union[str, dict]) -> str:
-    """Build a Cookie header string from all SWS cookies in storage_state."""
-    if isinstance(storage_state, str):
-        if storage_state.strip().startswith("{"):
-            state = json.loads(storage_state)
-        else:
-            state = json.loads(Path(storage_state).read_text(encoding="utf-8"))
-    else:
-        state = storage_state
-
-    parts = []
+def _build_cookie_jar(storage_state: Union[str, dict]) -> dict:
+    """Build a cookie dict from all SWS cookies (includes cf_clearance)."""
+    state = _parse_state(storage_state)
+    jar = {}
     for cookie in state.get("cookies", []):
         if "simplywall" in cookie.get("domain", ""):
-            parts.append(f"{cookie['name']}={cookie['value']}")
-    return "; ".join(parts)
-
-
-def _resolve_ticker_via_algolia(ticker: str, exchange: str) -> dict:
-    """
-    Query Algolia to resolve ticker → {slug, sector, country, company_id}.
-    Returns the first matching hit or raises SWSDownloadError.
-    """
-    query = f"{exchange}:{ticker}"
-    payload = {
-        "query": query,
-        "hitsPerPage": 5,
-        "filters": f"exchange_symbol:{exchange}",
-    }
-    headers = {
-        "X-Algolia-Application-Id": _ALGOLIA_APP_ID,
-        "X-Algolia-API-Key": _ALGOLIA_API_KEY,
-        "Content-Type": "application/json",
-        "User-Agent": _USER_AGENT,
-    }
-
-    with httpx.Client(timeout=20) as client:
-        resp = client.post(_ALGOLIA_URL, json=payload, headers=headers)
-
-    if resp.status_code != 200:
-        raise SWSDownloadError(
-            f"Algolia search failed for {query}: HTTP {resp.status_code} — {resp.text[:200]}"
-        )
-
-    data = resp.json()
-    hits = data.get("hits", [])
-    if not hits:
-        # Retry without exchange filter (some tickers have unusual exchange codes)
-        payload_retry = {"query": ticker, "hitsPerPage": 5}
-        with httpx.Client(timeout=20) as client:
-            resp2 = client.post(_ALGOLIA_URL, json=payload_retry, headers=headers)
-        hits = resp2.json().get("hits", []) if resp2.status_code == 200 else []
-
-    # Find best match: ticker symbol must match exactly
-    for hit in hits:
-        hit_ticker = (hit.get("ticker_symbol") or hit.get("symbol") or "").upper()
-        if hit_ticker == ticker.upper():
-            slug = hit.get("slug") or hit.get("unique_symbol_slug") or ""
-            sector = hit.get("industry_name") or hit.get("sector") or ""
-            country = hit.get("country_iso") or hit.get("country") or "au"
-            # Normalise: slug may already include exchange prefix
-            if slug.startswith("asx-"):
-                slug = slug[4:]
-            return {
-                "slug": slug.lower(),
-                "sector": _slugify(sector),
-                "country": country.lower(),
-                "hit": hit,
-            }
-
-    raise SWSDownloadError(
-        f"Algolia: no exact match for ticker '{ticker}' on exchange '{exchange}'. "
-        f"Hits returned: {[h.get('ticker_symbol') for h in hits]}"
-    )
+            jar[cookie["name"]] = cookie["value"]
+    return jar
 
 
 def _slugify(s: str) -> str:
-    """Convert 'Real Estate' → 'real-estate' for URL segments."""
-    import re
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
+
+
+def _make_session(bearer: str, cookies: dict) -> cffi_requests.Session:
+    """Create a curl-cffi session that looks like Chrome to Cloudflare."""
+    session = cffi_requests.Session(impersonate=_CHROME_IMPERSONATE)
+    session.headers.update({
+        "Authorization": f"Bearer {bearer}",
+        "Accept": "application/vnd.simplywallst.v2",
+        "User-Agent": _USER_AGENT,
+        "Origin": "https://simplywall.st",
+    })
+    session.cookies.update(cookies)
+    return session
+
+
+def _resolve_ticker(ticker: str, exchange: str, session: cffi_requests.Session) -> dict:
+    """
+    Resolve ticker -> {slug, sector, country}.
+
+    Fetches the SWS search page for the ticker and extracts the canonical URL
+    from the <link rel="canonical"> or <meta property="og:url"> tag.
+    This gives the exact country/sector/slug without needing internal API routes.
+    """
+    # Strategy 1: fetch the SWS stocks search page and parse the canonical link
+    search_url = f"{_SWS_BASE}/stocks/asx-{ticker.lower()}-shares"
+    try:
+        resp = session.get(search_url, timeout=20, allow_redirects=True)
+        final_url = str(resp.url)
+        print(
+            f"[sws_downloader] search-url {search_url} -> HTTP {resp.status_code} final={final_url}",
+            flush=True,
+        )
+        if resp.status_code == 200:
+            m = re.search(r"/stocks/([^/]+)/([^/]+)/asx-[^/]+/([^/?#\"']+)", resp.text)
+            if m:
+                result = {"country": m.group(1), "sector": m.group(2), "slug": m.group(3)}
+                print(f"[sws_downloader] Resolved via search page: {result}", flush=True)
+                return result
+            # Also try parsing from final URL if redirected
+            m = re.search(r"/stocks/([^/]+)/([^/]+)/asx-[^/]+/([^/?#]+)", final_url)
+            if m:
+                result = {"country": m.group(1), "sector": m.group(2), "slug": m.group(3)}
+                print(f"[sws_downloader] Resolved via redirect: {result}", flush=True)
+                return result
+    except Exception as e:
+        print(f"[sws_downloader] search-url error: {type(e).__name__}: {e}", flush=True)
+
+    # Strategy 2: try the SWS company page directly with known sector guesses
+    # SWS URL: /stocks/{country}/{sector}/asx-{ticker}/{slug}
+    # We fetch /stocks/ search results page and parse JSON embedded in the HTML
+    sitemap_url = f"{_SWS_BASE}/stocks/au"
+    search_api = f"{_SWS_BASE}/api/frontier/graphql"
+    query_body = {
+        "operationName": "SearchCompanies",
+        "variables": {"query": ticker.upper(), "limit": 5},
+        "query": (
+            "query SearchCompanies($query: String!, $limit: Int) {"
+            "  searchCompanies(query: $query, limit: $limit) {"
+            "    id unique_symbol slug country_iso industry { name } "
+            "  }"
+            "}"
+        ),
+    }
+    try:
+        resp = session.post(search_api, json=query_body, timeout=20)
+        print(
+            f"[sws_downloader] graphql search -> HTTP {resp.status_code} "
+            f"body[:200]={resp.text[:200]!r}",
+            flush=True,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            companies = (data.get("data") or {}).get("searchCompanies") or []
+            for c in companies:
+                sym = (c.get("unique_symbol") or "").upper().replace("ASX:", "")
+                if sym == ticker.upper():
+                    slug = (c.get("slug") or _slugify(ticker)).lower()
+                    if slug.startswith("asx-"):
+                        slug = slug[4:]
+                    sector = _slugify((c.get("industry") or {}).get("name") or "unknown")
+                    country = (c.get("country_iso") or "au").lower()
+                    result = {"slug": slug, "sector": sector, "country": country}
+                    print(f"[sws_downloader] Resolved via GraphQL: {result}", flush=True)
+                    return result
+    except Exception as e:
+        print(f"[sws_downloader] graphql error: {type(e).__name__}: {e}", flush=True)
+
+    raise SWSDownloadError(
+        f"Could not resolve '{ticker}'. See diagnostic output above. "
+        "Try running with a manual URL or check if the ticker is listed on SWS."
+    )
+
+
+def _extract_meta(item: dict, ticker: str) -> dict:
+    slug = (
+        item.get("slug") or item.get("unique_symbol_slug") or item.get("company_name_slug") or ""
+    ).lower()
+    if slug.startswith("asx-"):
+        slug = slug[4:]
+    if not slug:
+        slug = _slugify(item.get("name") or item.get("company_name") or ticker)
+
+    sector = (
+        item.get("industry_name") or item.get("sector") or item.get("gics_sector") or "unknown"
+    )
+    country = (item.get("country_iso") or item.get("country") or "au").lower()
+    return {"slug": slug, "sector": _slugify(sector), "country": country}
 
 
 def download_csv(
@@ -164,103 +196,82 @@ def download_csv(
     *,
     storage_state: Union[str, dict],
     output_dir: Path,
-    headless: bool = True,  # kept for API compatibility, unused
+    headless: bool = True,
     debug_dir: Path,
 ) -> Path:
     """
-    Download one SWS CSV for the given ticker using direct HTTP API calls.
+    Download one SWS CSV using curl-cffi (Chrome TLS impersonation).
 
-    Steps:
-      1. Extract Bearer JWT from storage_state
-      2. Resolve ticker → slug/sector/country via Algolia
-      3. GET the CSV download endpoint with auth headers
+    1. Extract Bearer JWT + cf_clearance cookie from storage_state
+    2. Create a curl-cffi session that Cloudflare accepts as Chrome
+    3. Resolve ticker → slug/sector/country via SWS company API
+    4. Download CSV
 
-    Returns the path to the saved CSV file.
-    Raises SWSDownloadError on failure.
+    Returns path to saved CSV. Raises SWSDownloadError on failure.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / f"{exchange}_{ticker}.csv"
 
-    # 1. Extract auth
     bearer = _extract_bearer(storage_state)
-    cookie_header = _build_cookie_header(storage_state)
+    cookies = _build_cookie_jar(storage_state)
 
-    print(f"[sws_downloader] Resolving {exchange}:{ticker} via Algolia...", flush=True)
-
-    # 2. Resolve ticker metadata
-    info = _resolve_ticker_via_algolia(ticker, exchange)
-    slug = info["slug"]
-    sector = info["sector"]
-    country = info["country"]
-
+    cf_present = "cf_clearance" in cookies
     print(
-        f"[sws_downloader] Resolved: slug={slug!r} sector={sector!r} country={country!r}",
+        f"[sws_downloader] Auth: bearer={'yes' if bearer else 'NO'} "
+        f"cf_clearance={'yes' if cf_present else 'NO (may still work if session is fresh)'} "
+        f"total_cookies={len(cookies)}",
         flush=True,
     )
 
-    # 3. Download CSV
-    csv_path_segment = _CSV_URL_TEMPLATE.format(
-        country=country,
-        sector=sector,
-        ticker=ticker.lower(),
-        slug=slug,
-    )
-    url = _SWS_BASE + csv_path_segment
+    session = _make_session(bearer, cookies)
 
-    headers = {
-        "Authorization": f"Bearer {bearer}",
-        "Accept": "application/vnd.simplywallst.v2",
-        "User-Agent": _USER_AGENT,
-        "Referer": f"https://simplywall.st/stocks/au/asx-{ticker.lower()}/{slug}",
-        "Origin": "https://simplywall.st",
-    }
-    if cookie_header:
-        headers["Cookie"] = cookie_header
+    print(f"[sws_downloader] Resolving {exchange}:{ticker}...", flush=True)
+    info = _resolve_ticker(ticker, exchange, session)
+    slug = info["slug"]
+    sector = info["sector"]
+    country = info["country"]
+    print(f"[sws_downloader] Resolved: country={country!r} sector={sector!r} slug={slug!r}", flush=True)
 
-    print(f"[sws_downloader] Downloading CSV from: {url}", flush=True)
+    # Double-slash before 'stocks' is intentional — matches the SWS API pattern
+    url = f"{_SWS_BASE}/api/company/download/csv//stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
+    session.headers["Referer"] = f"https://simplywall.st/stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
 
-    # Small polite delay
+    print(f"[sws_downloader] Downloading CSV: {url}", flush=True)
     time.sleep(random.uniform(1.5, 3.0))
 
-    with httpx.Client(timeout=30, follow_redirects=True) as client:
-        resp = client.get(url, headers=headers)
+    resp = session.get(url, timeout=30)
+    print(f"[sws_downloader] CSV response: {resp.status_code}  ct={resp.headers.get('content-type','')!r}", flush=True)
 
-    if resp.status_code == 401 or resp.status_code == 403:
+    if resp.status_code in (401, 403):
         raise SWSDownloadError(
             f"Auth failed (HTTP {resp.status_code}) for {ticker}. "
             "Session may have expired — re-run --setup and update SWS_STORAGE_STATE secret."
         )
     if resp.status_code != 200:
-        # Save debug info
         debug_dir.mkdir(parents=True, exist_ok=True)
         (debug_dir / f"fail_{ticker}_csv_download.txt").write_text(
             f"URL: {url}\nStatus: {resp.status_code}\nBody: {resp.text[:2000]}",
             encoding="utf-8",
         )
-        raise SWSDownloadError(
-            f"CSV download failed for {ticker}: HTTP {resp.status_code}"
-        )
+        raise SWSDownloadError(f"CSV download failed for {ticker}: HTTP {resp.status_code}")
 
     content = resp.text
     if not content.strip() or "<html" in content[:100].lower():
         debug_dir.mkdir(parents=True, exist_ok=True)
-        (debug_dir / f"fail_{ticker}_csv_content.txt").write_text(
-            content[:2000], encoding="utf-8"
-        )
+        (debug_dir / f"fail_{ticker}_csv_content.txt").write_text(content[:2000], encoding="utf-8")
         raise SWSDownloadError(
-            f"CSV download for {ticker} returned HTML instead of CSV data. "
-            "Check session/URL."
+            f"CSV download for {ticker} returned HTML instead of CSV. Check session/URL."
         )
 
     output_path.write_text(content, encoding="utf-8")
-    print(f"[sws_downloader] Downloaded {ticker} → {output_path}", flush=True)
+    print(f"[sws_downloader] Saved → {output_path}", flush=True)
     return output_path
 
 
 async def setup_session(output_path: Path) -> None:
     """
-    One-time manual login flow. Opens a headed browser, navigates to SWS login,
-    waits for the user to log in, then saves the browser context to output_path.
+    One-time manual login flow. Opens a headed browser, waits for login,
+    saves browser context (including cf_clearance cookie) to output_path.
     """
     from playwright.async_api import async_playwright
 
@@ -276,11 +287,7 @@ async def setup_session(output_path: Path) -> None:
         )
         context = await browser.new_context(
             viewport={"width": 1440, "height": 900},
-            user_agent=(
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/124.0.0.0 Safari/537.36"
-            ),
+            user_agent=_USER_AGENT,
         )
         page = await context.new_page()
         await page.goto("https://simplywall.st/login", wait_until="domcontentloaded")

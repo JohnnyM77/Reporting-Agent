@@ -49,29 +49,78 @@ def _parse_state(storage_state: Union[str, dict]) -> dict:
     return storage_state
 
 
+def _looks_like_jwt(val: str) -> bool:
+    """A JWT is three base64url segments joined by dots, header starts with 'ey'."""
+    return val.startswith("ey") and val.count(".") == 2
+
+
+def _jwt_exp_info(token: str) -> str:
+    """
+    Decode a JWT payload (no verification) and report its expiry status.
+    Used purely for diagnostics so we can see if a 401 is just an expired token.
+    """
+    if not _looks_like_jwt(token):
+        return "not-a-jwt"
+    try:
+        import base64
+        import json as _json
+        from datetime import datetime, timezone
+
+        payload_b64 = token.split(".")[1]
+        payload_b64 += "=" * (-len(payload_b64) % 4)  # pad to multiple of 4
+        payload = _json.loads(base64.urlsafe_b64decode(payload_b64))
+        exp = payload.get("exp")
+        if exp is None:
+            return "jwt (no exp claim)"
+        exp_dt = datetime.fromtimestamp(exp, tz=timezone.utc)
+        now = datetime.now(timezone.utc)
+        delta_h = (exp_dt - now).total_seconds() / 3600
+        state = "EXPIRED" if delta_h < 0 else "valid"
+        return f"jwt {state}, exp={exp_dt.isoformat()} ({delta_h:+.1f}h from now)"
+    except Exception as e:
+        return f"jwt (decode failed: {type(e).__name__})"
+
+
 def _extract_bearer(storage_state: Union[str, dict]) -> str:
-    """Pull Bearer JWT from localStorage → cookies. Raises if not found."""
+    """
+    Pull the Bearer token from localStorage -> cookies.
+
+    Prefers values that look like a JWT over arbitrary token-named entries,
+    and logs which key was chosen plus the token's expiry so a 401 is easy to
+    diagnose. Raises if nothing usable is found.
+    """
     state = _parse_state(storage_state)
 
+    candidates: list[tuple[str, str]] = []  # (source_label, value)
     for origin in state.get("origins", []):
         for entry in origin.get("localStorage", []):
             key = entry.get("name", "")
-            if "token" in key.lower() or "auth" in key.lower() or "jwt" in key.lower():
+            if any(k in key.lower() for k in ("token", "auth", "jwt")):
                 val = entry.get("value", "")
                 if val and len(val) > 20:
-                    return val
-
+                    candidates.append((f"localStorage:{key}", val))
     for cookie in state.get("cookies", []):
-        name = cookie.get("name", "").lower()
-        if any(k in name for k in ("token", "auth", "jwt", "session")):
+        name = cookie.get("name", "")
+        if any(k in name.lower() for k in ("token", "auth", "jwt", "session")):
             val = cookie.get("value", "")
             if val and len(val) > 20:
-                return val
+                candidates.append((f"cookie:{name}", val))
 
-    raise SWSDownloadError(
-        "Could not find Bearer token in storage_state. "
-        "Session may have expired — re-run --setup locally and update SWS_STORAGE_STATE secret."
+    if not candidates:
+        raise SWSDownloadError(
+            "Could not find Bearer token in storage_state. "
+            "Session may have expired — re-run --setup locally and update SWS_STORAGE_STATE secret."
+        )
+
+    # Prefer a real JWT; fall back to the first candidate otherwise.
+    jwts = [(src, v) for src, v in candidates if _looks_like_jwt(v)]
+    chosen_src, chosen = (jwts[0] if jwts else candidates[0])
+    print(
+        f"[sws_downloader] Bearer source: {chosen_src} | {_jwt_exp_info(chosen)} "
+        f"| {len(candidates)} candidate(s)",
+        flush=True,
     )
+    return chosen
 
 
 def _build_cookie_jar(storage_state: Union[str, dict]) -> dict:
@@ -331,16 +380,49 @@ def download_csv(
     url = f"{_SWS_BASE}/api/company/download/csv//stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
     session.headers["Referer"] = f"https://simplywall.st/stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
 
+    # The browser sends a CSV-friendly Accept for the export, not the JSON vendor type.
+    session.headers["Accept"] = "text/csv, text/plain, */*"
+
     print(f"[sws_downloader] Downloading CSV: {url}", flush=True)
     time.sleep(random.uniform(1.5, 3.0))
 
     resp = session.get(url, timeout=30)
     print(f"[sws_downloader] CSV response: {resp.status_code}  ct={resp.headers.get('content-type','')!r}", flush=True)
 
+    # On 401, log the body (tells us WHY) and retry once with cookies only —
+    # SWS CSV exports are session-cookie authenticated, and a stale Bearer
+    # header can itself trigger a 401 that the cookie session would have passed.
+    if resp.status_code == 401:
+        print(f"[sws_downloader] 401 body[:300]={resp.text[:300]!r}", flush=True)
+        print("[sws_downloader] Retrying CSV download with cookies only (no Bearer)...", flush=True)
+        cookie_session = cffi_requests.Session(impersonate=_CHROME_IMPERSONATE)
+        cookie_session.headers.update({
+            "Accept": "text/csv, text/plain, */*",
+            "User-Agent": _USER_AGENT,
+            "Origin": "https://simplywall.st",
+            "Referer": session.headers.get("Referer", ""),
+        })
+        cookie_session.cookies.update(cookies)
+        time.sleep(random.uniform(1.0, 2.0))
+        resp = cookie_session.get(url, timeout=30)
+        print(
+            f"[sws_downloader] CSV response (cookie-only): {resp.status_code}  "
+            f"ct={resp.headers.get('content-type','')!r}",
+            flush=True,
+        )
+        if resp.status_code == 401:
+            print(f"[sws_downloader] cookie-only 401 body[:300]={resp.text[:300]!r}", flush=True)
+
     if resp.status_code in (401, 403):
+        debug_dir.mkdir(parents=True, exist_ok=True)
+        (debug_dir / f"fail_{ticker}_auth.txt").write_text(
+            f"URL: {url}\nStatus: {resp.status_code}\nBody: {resp.text[:2000]}",
+            encoding="utf-8",
+        )
         raise SWSDownloadError(
             f"Auth failed (HTTP {resp.status_code}) for {ticker}. "
-            "Session may have expired — re-run --setup and update SWS_STORAGE_STATE secret."
+            "Session may have expired — re-run --setup and update SWS_STORAGE_STATE secret. "
+            "See the 401 body logged above for the exact reason."
         )
     if resp.status_code != 200:
         debug_dir.mkdir(parents=True, exist_ok=True)

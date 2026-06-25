@@ -87,7 +87,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/sws_csv/
+          git add data/sws_csv/ data/sws_url_map.json
           git diff --staged --quiet && echo "No new CSVs to commit." || (git commit -m "chore(sws): drip download %DATE:~10,4%-%DATE:~4,2%-%DATE:~7,2%" && git push)
 
       - name: Upload debug artifacts

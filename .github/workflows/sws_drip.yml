@@ -39,7 +39,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install httpx pyyaml
+        run: pip install curl-cffi pyyaml
 
       - name: Rebuild queue (optional)
         if: ${{ github.event.inputs.rebuild_queue == 'true' }}

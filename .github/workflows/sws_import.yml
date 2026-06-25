@@ -1,6 +1,11 @@
 name: SWS Database Import
 
 on:
+  # Trigger automatically when the drip bot commits new CSVs
+  push:
+    branches: [main]
+    paths:
+      - "data/sws_csv/ASX_*.csv"
   workflow_dispatch:
     inputs:
       force:
@@ -34,9 +39,13 @@ jobs:
           if [ "${{ github.event.inputs.force }}" = "true" ]; then
             FORCE_FLAG="--force"
           fi
+          # Primary source: drip bot downloads (data/sws_csv/)
+          # Fallback/supplement: committed test fixtures (investing/tests/fixtures/)
+          # Both folders are passed; import_sws_csv deduplicates by file hash
           python -m investing.import_sws_csv \
             --db /tmp/jm_investing_sws.sqlite \
             $FORCE_FLAG \
+            data/sws_csv/ \
             investing/tests/fixtures/
           # Verify only the consolidated .sqlite exists (no WAL/SHM sidecars)
           python -c "

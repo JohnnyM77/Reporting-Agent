@@ -1,0 +1,23 @@
+{
+  "annual_div_cents": {
+    "2020": 1.0,
+    "2021": 2.0,
+    "2022": 16.11,
+    "2023": 0.17
+  },
+  "annual_eps_cents": {
+    "2022": 13.63,
+    "2023": -0.41,
+    "2024": -1.98,
+    "2025": -2.23
+  },
+  "last_updated": "2026-06-23",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2022": "yfinance",
+    "2023": "yfinance",
+    "2024": "yfinance",
+    "2025": "yfinance"
+  },
+  "ticker": "AVA.AX"
+}

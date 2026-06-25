@@ -1,0 +1,90 @@
+name: SWS Drip Bot
+
+on:
+  schedule:
+    # 23:30 UTC = 09:30 Sydney AEST (post-ASX-open), weekdays only
+    - cron: '30 23 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'How many CSVs to download'
+        default: '2'
+        type: string
+      dry_run:
+        description: 'Dry run (no actual downloads)'
+        default: false
+        type: boolean
+      rebuild_queue:
+        description: 'Rebuild queue from watchlists before downloading'
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  drip:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install playwright pyyaml
+          playwright install chromium --with-deps
+
+      - name: Rebuild queue (optional)
+        if: ${{ github.event.inputs.rebuild_queue == 'true' }}
+        run: python -m agents.sws_drip.run_drip --rebuild-queue
+
+      - name: Ensure queue exists
+        run: |
+          # Always ensure DB + queue are initialised; idempotent if already done
+          python -m agents.sws_drip.run_drip --rebuild-queue
+
+      - name: Mark stale CSVs for re-download
+        # Runs daily but only acts on tickers not refreshed in 180+ days.
+        # ASX companies report twice a year (Feb/Aug), so 180 days keeps data current.
+        run: python -m agents.sws_drip.run_drip --mark-stale --stale-days 180
+
+      - name: Run SWS drip
+        env:
+          SWS_STORAGE_STATE: ${{ secrets.SWS_STORAGE_STATE }}
+          SWS_EMAIL: ${{ secrets.SWS_EMAIL }}
+          SWS_PASSWORD: ${{ secrets.SWS_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python -m agents.sws_drip.run_drip --dry-run --limit ${{ github.event.inputs.limit || '2' }}
+          else
+            python -m agents.sws_drip.run_drip --limit ${{ github.event.inputs.limit || '2' }}
+          fi
+
+      - name: Commit downloaded CSVs
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/sws_csv/
+          if git diff --staged --quiet; then
+            echo "No new CSVs to commit."
+          else
+            git commit -m "chore(sws): drip download $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Upload debug artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sws-debug-${{ github.run_id }}
+          path: data/sws_debug/
+          if-no-files-found: ignore
+          retention-days: 7

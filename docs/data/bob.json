@@ -1,23 +1,13 @@
 {
-  "last_run": "2026-06-22",
+  "last_run": "2026-06-24",
   "silence": false,
   "high_impact": [],
   "material": [],
   "fyi": [
     {
-      "ticker": "BXB",
-      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03106238"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03106130"
-    },
-    {
-      "ticker": "DRO",
-      "title": "Appointment of Non-Executive Director 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 412.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03106231"
+      "ticker": "ABB",
+      "title": "Ceasing to be a substantial holder 8\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 774.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03106869"
     }
   ]
 }

@@ -1,11 +1,10 @@
 """
 agents/sws_drip/sws_downloader.py
 ───────────────────────────────────
-Direct HTTP API approach: authenticate with Bearer JWT from storage_state,
-resolve ticker slug by following the SWS short-URL redirect, then download
-CSV via the SWS REST API.
+Direct HTTP API: authenticate with Bearer JWT + cf_clearance from storage_state.
+Uses curl-cffi to impersonate Chrome's TLS fingerprint, bypassing Cloudflare.
 
-No Playwright. No browser. No Cloudflare. No rotating Algolia keys.
+No Playwright. No browser headaches. No Cloudflare blocks.
 """
 
 from __future__ import annotations
@@ -17,7 +16,8 @@ import random
 from pathlib import Path
 from typing import Union
 
-import httpx
+# curl_cffi impersonates Chrome's TLS fingerprint — required to pass Cloudflare
+from curl_cffi import requests as cffi_requests
 
 
 class SWSDownloadError(Exception):
@@ -25,6 +25,9 @@ class SWSDownloadError(Exception):
 
 
 _SWS_BASE = "https://simplywall.st"
+
+# Chrome version to impersonate — must match what was used when capturing storage_state
+_CHROME_IMPERSONATE = "chrome124"
 
 _USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -42,13 +45,9 @@ def _parse_state(storage_state: Union[str, dict]) -> dict:
 
 
 def _extract_bearer(storage_state: Union[str, dict]) -> str:
-    """
-    Pull the Bearer JWT from storage_state (localStorage → cookies).
-    Raises SWSDownloadError if not found.
-    """
+    """Pull Bearer JWT from localStorage → cookies. Raises if not found."""
     state = _parse_state(storage_state)
 
-    # 1. Check localStorage
     for origin in state.get("origins", []):
         for entry in origin.get("localStorage", []):
             key = entry.get("name", "")
@@ -57,7 +56,6 @@ def _extract_bearer(storage_state: Union[str, dict]) -> str:
                 if val and len(val) > 20:
                     return val
 
-    # 2. Check cookies
     for cookie in state.get("cookies", []):
         name = cookie.get("name", "").lower()
         if any(k in name for k in ("token", "auth", "jwt", "session")):
@@ -71,122 +69,86 @@ def _extract_bearer(storage_state: Union[str, dict]) -> str:
     )
 
 
-def _build_cookie_header(storage_state: Union[str, dict]) -> str:
-    """Build a Cookie header string from all SWS cookies in storage_state."""
+def _build_cookie_jar(storage_state: Union[str, dict]) -> dict:
+    """Build a cookie dict from all SWS cookies (includes cf_clearance)."""
     state = _parse_state(storage_state)
-    parts = []
+    jar = {}
     for cookie in state.get("cookies", []):
         if "simplywall" in cookie.get("domain", ""):
-            parts.append(f"{cookie['name']}={cookie['value']}")
-    return "; ".join(parts)
+            jar[cookie["name"]] = cookie["value"]
+    return jar
 
 
 def _slugify(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
 
 
-def _api_headers(bearer: str, cookie_header: str, referer: str = "") -> dict:
-    """Headers for authenticated SWS API requests."""
-    h = {
+def _make_session(bearer: str, cookies: dict) -> cffi_requests.Session:
+    """Create a curl-cffi session that looks like Chrome to Cloudflare."""
+    session = cffi_requests.Session(impersonate=_CHROME_IMPERSONATE)
+    session.headers.update({
         "Authorization": f"Bearer {bearer}",
         "Accept": "application/vnd.simplywallst.v2",
         "User-Agent": _USER_AGENT,
         "Origin": "https://simplywall.st",
-    }
-    if referer:
-        h["Referer"] = referer
-    if cookie_header:
-        h["Cookie"] = cookie_header
-    return h
+    })
+    session.cookies.update(cookies)
+    return session
 
 
-def _resolve_via_redirect(ticker: str, bearer: str, cookie_header: str) -> dict:
+def _resolve_ticker(ticker: str, exchange: str, session: cffi_requests.Session) -> dict:
     """
-    Hit the SWS short company URL and follow the redirect to get
-    country/sector/slug from the final URL path.
+    Resolve ticker → {slug, sector, country} using the SWS company API.
 
-    SWS maps: /stocks/asx-{ticker}  →  /stocks/{country}/{sector}/asx-{ticker}/{slug}
-
-    Returns {slug, sector, country} or raises SWSDownloadError.
+    With curl-cffi (Chrome TLS fingerprint) + cf_clearance cookie, Cloudflare
+    passes us through and we get actual API responses.
     """
-    short_url = f"{_SWS_BASE}/stocks/asx-{ticker.lower()}"
-    headers = _api_headers(bearer, cookie_header, referer="https://simplywall.st/dashboard")
-
-    print(f"[sws_downloader] Trying redirect resolution: {short_url}", flush=True)
-    with httpx.Client(timeout=15, follow_redirects=True) as client:
-        resp = client.get(short_url, headers=headers)
-
-    final_url = str(resp.url)
-    print(f"[sws_downloader] Redirect → {final_url}  (status {resp.status_code})", flush=True)
-
-    # Parse /stocks/{country}/{sector}/asx-{ticker}/{slug}
-    m = re.search(r"/stocks/([^/]+)/([^/]+)/asx-[^/]+/([^/?#]+)", final_url)
-    if m:
-        country, sector, slug = m.group(1), m.group(2), m.group(3)
-        print(f"[sws_downloader] Parsed from URL: country={country!r} sector={sector!r} slug={slug!r}", flush=True)
-        return {"country": country, "sector": sector, "slug": slug}
-
-    # Didn't redirect — but maybe the API returned JSON with the URL
-    if resp.status_code == 200:
-        content_type = resp.headers.get("content-type", "")
-        if "json" in content_type:
-            try:
-                data = resp.json()
-                print(f"[sws_downloader] JSON response keys: {list(data.keys()) if isinstance(data, dict) else type(data)}", flush=True)
-            except Exception:
-                pass
-        # Log first 300 chars of body for debugging
-        print(f"[sws_downloader] Response body[:300]: {resp.text[:300]!r}", flush=True)
-
-    raise SWSDownloadError(
-        f"Could not resolve URL components for '{ticker}' from redirect. "
-        f"Final URL was: {final_url!r}  (status {resp.status_code}). "
-        f"Check debug output above."
-    )
-
-
-def _resolve_via_api(ticker: str, exchange: str, bearer: str, cookie_header: str) -> dict:
-    """
-    Try SWS REST API endpoints to get company metadata.
-    Logs responses to help diagnose which endpoint pattern is correct.
-    """
-    headers = _api_headers(bearer, cookie_header)
+    search_queries = [f"{exchange}:{ticker}", ticker]
     endpoints = [
-        f"{_SWS_BASE}/api/company?unique_symbol={exchange}:{ticker}",
-        f"{_SWS_BASE}/api/company?query={exchange}:{ticker}&limit=5",
-        f"{_SWS_BASE}/api/company?query={ticker}&exchange_symbol={exchange}&limit=5",
-        f"{_SWS_BASE}/api/companies?query={exchange}:{ticker}&limit=5",
-        f"{_SWS_BASE}/api/companies/search?q={exchange}:{ticker}",
+        f"{_SWS_BASE}/api/company",
+        f"{_SWS_BASE}/api/companies",
     ]
 
-    with httpx.Client(timeout=15, follow_redirects=True) as client:
-        for url in endpoints:
+    for endpoint in endpoints:
+        for query in search_queries:
             try:
-                resp = client.get(url, headers=headers)
+                resp = session.get(
+                    endpoint,
+                    params={"query": query, "limit": 5},
+                    timeout=15,
+                )
                 print(
-                    f"[sws_downloader] {url!r} → {resp.status_code} "
-                    f"body[:200]={resp.text[:200]!r}",
+                    f"[sws_downloader] {endpoint}?query={query} → {resp.status_code} "
+                    f"({resp.headers.get('content-type','')[:40]}) "
+                    f"body[:150]={resp.text[:150]!r}",
                     flush=True,
                 )
                 if resp.status_code == 200:
                     try:
                         data = resp.json()
                         items = data.get("data", []) if isinstance(data, dict) else data
-                        if isinstance(items, list) and items:
-                            item = items[0]
-                            return _extract_meta_from_item(item, ticker)
+                        if isinstance(items, list):
+                            for item in items:
+                                sym = (
+                                    item.get("ticker_symbol")
+                                    or item.get("unique_symbol")
+                                    or item.get("symbol")
+                                    or ""
+                                ).upper().replace("ASX:", "")
+                                if sym == ticker.upper():
+                                    return _extract_meta(item, ticker)
                     except Exception as e:
                         print(f"[sws_downloader] JSON parse error: {e}", flush=True)
             except Exception as e:
-                print(f"[sws_downloader] Request error for {url}: {e}", flush=True)
+                print(f"[sws_downloader] Request error: {e}", flush=True)
 
     raise SWSDownloadError(
-        f"All API endpoint guesses failed for '{ticker}'. "
-        "See diagnostic output above to identify the correct endpoint."
+        f"Could not resolve '{ticker}' via SWS company API. "
+        "See diagnostic output above — the API responses will show the correct format."
     )
 
 
-def _extract_meta_from_item(item: dict, ticker: str) -> dict:
+def _extract_meta(item: dict, ticker: str) -> dict:
     slug = (
         item.get("slug") or item.get("unique_symbol_slug") or item.get("company_name_slug") or ""
     ).lower()
@@ -202,21 +164,6 @@ def _extract_meta_from_item(item: dict, ticker: str) -> dict:
     return {"slug": slug, "sector": _slugify(sector), "country": country}
 
 
-def _resolve_ticker(ticker: str, exchange: str, bearer: str, cookie_header: str) -> dict:
-    """
-    Resolve ticker → {slug, sector, country}.
-
-    Strategy 1: follow /stocks/asx-{ticker} redirect (cleanest)
-    Strategy 2: probe known API endpoint patterns (diagnostic fallback)
-    """
-    try:
-        return _resolve_via_redirect(ticker, bearer, cookie_header)
-    except SWSDownloadError as e:
-        print(f"[sws_downloader] Redirect strategy failed: {e}", flush=True)
-
-    return _resolve_via_api(ticker, exchange, bearer, cookie_header)
-
-
 def download_csv(
     ticker: str,
     exchange: str,
@@ -227,45 +174,47 @@ def download_csv(
     debug_dir: Path,
 ) -> Path:
     """
-    Download one SWS CSV for the given ticker using direct HTTP API calls.
+    Download one SWS CSV using curl-cffi (Chrome TLS impersonation).
 
-    Steps:
-      1. Extract Bearer JWT from storage_state
-      2. Resolve ticker → slug/sector/country (redirect or API probe)
-      3. GET the CSV download endpoint with auth headers
+    1. Extract Bearer JWT + cf_clearance cookie from storage_state
+    2. Create a curl-cffi session that Cloudflare accepts as Chrome
+    3. Resolve ticker → slug/sector/country via SWS company API
+    4. Download CSV
 
-    Returns the path to the saved CSV file.
-    Raises SWSDownloadError on failure.
+    Returns path to saved CSV. Raises SWSDownloadError on failure.
     """
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / f"{exchange}_{ticker}.csv"
 
     bearer = _extract_bearer(storage_state)
-    cookie_header = _build_cookie_header(storage_state)
+    cookies = _build_cookie_jar(storage_state)
+
+    cf_present = "cf_clearance" in cookies
+    print(
+        f"[sws_downloader] Auth: bearer={'yes' if bearer else 'NO'} "
+        f"cf_clearance={'yes' if cf_present else 'NO (may still work if session is fresh)'} "
+        f"total_cookies={len(cookies)}",
+        flush=True,
+    )
+
+    session = _make_session(bearer, cookies)
 
     print(f"[sws_downloader] Resolving {exchange}:{ticker}...", flush=True)
-
-    info = _resolve_ticker(ticker, exchange, bearer, cookie_header)
+    info = _resolve_ticker(ticker, exchange, session)
     slug = info["slug"]
     sector = info["sector"]
     country = info["country"]
+    print(f"[sws_downloader] Resolved: country={country!r} sector={sector!r} slug={slug!r}", flush=True)
 
-    # Build CSV URL — note the double-slash before 'stocks' is intentional (matches SWS pattern)
+    # Double-slash before 'stocks' is intentional — matches the SWS API pattern
     url = f"{_SWS_BASE}/api/company/download/csv//stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
-
-    headers = _api_headers(
-        bearer,
-        cookie_header,
-        referer=f"https://simplywall.st/stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}",
-    )
+    session.headers["Referer"] = f"https://simplywall.st/stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
 
     print(f"[sws_downloader] Downloading CSV: {url}", flush=True)
     time.sleep(random.uniform(1.5, 3.0))
 
-    with httpx.Client(timeout=30, follow_redirects=True) as client:
-        resp = client.get(url, headers=headers)
-
-    print(f"[sws_downloader] CSV response: {resp.status_code}  content-type={resp.headers.get('content-type', '')!r}", flush=True)
+    resp = session.get(url, timeout=30)
+    print(f"[sws_downloader] CSV response: {resp.status_code}  ct={resp.headers.get('content-type','')!r}", flush=True)
 
     if resp.status_code in (401, 403):
         raise SWSDownloadError(
@@ -295,8 +244,8 @@ def download_csv(
 
 async def setup_session(output_path: Path) -> None:
     """
-    One-time manual login flow. Opens a headed browser, navigates to SWS login,
-    waits for the user to log in, then saves the browser context to output_path.
+    One-time manual login flow. Opens a headed browser, waits for login,
+    saves browser context (including cf_clearance cookie) to output_path.
     """
     from playwright.async_api import async_playwright
 
@@ -312,11 +261,7 @@ async def setup_session(output_path: Path) -> None:
         )
         context = await browser.new_context(
             viewport={"width": 1440, "height": 900},
-            user_agent=(
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/124.0.0.0 Safari/537.36"
-            ),
+            user_agent=_USER_AGENT,
         )
         page = await context.new_page()
         await page.goto("https://simplywall.st/login", wait_until="domcontentloaded")

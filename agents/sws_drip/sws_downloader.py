@@ -123,6 +123,43 @@ def _extract_bearer(storage_state: Union[str, dict]) -> str:
     return chosen
 
 
+def _extract_bearer_candidates(storage_state: Union[str, dict]) -> list[tuple[str, str]]:
+    """
+    Return ALL plausible Bearer tokens (source_label, value), JWTs first.
+
+    We don't actually know which of the stored tokens the SWS frontend sends as
+    the Authorization header, so the downloader tries each in turn until one is
+    accepted. Deduplicated by value, JWT-looking tokens ordered first.
+    """
+    state = _parse_state(storage_state)
+    candidates: list[tuple[str, str]] = []
+    for origin in state.get("origins", []):
+        for entry in origin.get("localStorage", []):
+            key = entry.get("name", "")
+            if any(k in key.lower() for k in ("token", "auth", "jwt")):
+                val = entry.get("value", "")
+                if val and len(val) > 20:
+                    candidates.append((f"localStorage:{key}", val))
+    for cookie in state.get("cookies", []):
+        name = cookie.get("name", "")
+        if any(k in name.lower() for k in ("token", "auth", "jwt", "session")):
+            val = cookie.get("value", "")
+            if val and len(val) > 20:
+                candidates.append((f"cookie:{name}", val))
+
+    # Dedup by value, keep first source seen.
+    seen: set[str] = set()
+    unique: list[tuple[str, str]] = []
+    for src, val in candidates:
+        if val not in seen:
+            seen.add(val)
+            unique.append((src, val))
+
+    # JWT-looking tokens first.
+    unique.sort(key=lambda sv: 0 if _looks_like_jwt(sv[1]) else 1)
+    return unique
+
+
 def _build_cookie_jar(storage_state: Union[str, dict]) -> dict:
     """Build a cookie dict from all SWS cookies (includes cf_clearance)."""
     state = _parse_state(storage_state)
@@ -378,18 +415,19 @@ def download_csv(
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / f"{exchange}_{ticker}.csv"
 
-    bearer = _extract_bearer(storage_state)
+    candidates = _extract_bearer_candidates(storage_state)
     cookies = _build_cookie_jar(storage_state)
 
     cf_present = "cf_clearance" in cookies
     print(
-        f"[sws_downloader] Auth: bearer={'yes' if bearer else 'NO'} "
+        f"[sws_downloader] Auth: {len(candidates)} bearer candidate(s) "
         f"cf_clearance={'yes' if cf_present else 'NO (may still work if session is fresh)'} "
         f"total_cookies={len(cookies)}",
         flush=True,
     )
 
-    session = _make_session(bearer, cookies)
+    # Build the session with the first candidate just so we can resolve the ticker.
+    session = _make_session(candidates[0][1], cookies)
 
     # Fetch the live X-Requested-With value from SWS homepage so we match
     # whatever build hash their API gateway currently requires.
@@ -406,27 +444,40 @@ def download_csv(
     # Double-slash before 'stocks' is intentional — matches the SWS API pattern
     url = f"{_SWS_BASE}/api/company/download/csv//stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
     referer = f"https://simplywall.st/stocks/{country}/{sector}/asx-{ticker.lower()}/{slug}"
-
-    print(f"[sws_downloader] Downloading CSV: {url}", flush=True)
-    time.sleep(random.uniform(1.5, 3.0))
-
-    # Use Accept: */* for the CSV download — the browser sends this for file downloads,
-    # not application/vnd.simplywallst.v2 which is for JSON API responses.
-    resp = session.get(url, timeout=30, headers={
+    dl_headers = {
         "Referer": referer,
         "Accept": "*/*",
         "sec-fetch-dest": "empty",
         "sec-fetch-mode": "cors",
         "sec-fetch-site": "same-origin",
-    })
+    }
+
+    print(f"[sws_downloader] Downloading CSV: {url}", flush=True)
+
+    # Try each bearer candidate until one is accepted — we don't know in advance
+    # which stored token the SWS frontend actually uses as its Authorization header.
+    resp = None
+    for i, (src, token) in enumerate(candidates):
+        session.headers["Authorization"] = f"Bearer {token}"
+        time.sleep(random.uniform(1.5, 3.0))
+        resp = session.get(url, timeout=30, headers=dl_headers)
+        print(
+            f"[sws_downloader] try {i+1}/{len(candidates)} bearer={src} "
+            f"({_jwt_exp_info(token)}) -> {resp.status_code} "
+            f"ct={resp.headers.get('content-type','')!r}",
+            flush=True,
+        )
+        if resp.status_code not in (401, 403):
+            break
+
     resp_headers_str = "\n".join(f"  {k}: {v}" for k, v in resp.headers.items())
-    print(f"[sws_downloader] CSV response: {resp.status_code}  ct={resp.headers.get('content-type','')!r}", flush=True)
 
     if resp.status_code in (401, 403):
         print(f"[sws_downloader] auth-fail body[:300]={resp.text[:300]!r}", flush=True)
         debug_dir.mkdir(parents=True, exist_ok=True)
         (debug_dir / f"fail_{ticker}_auth.txt").write_text(
             f"URL: {url}\nReferer: {referer}\nX-Requested-With: {xrw}\n"
+            f"Tried {len(candidates)} bearer candidate(s): {[s for s, _ in candidates]}\n"
             f"Status: {resp.status_code}\nResponse headers:\n{resp_headers_str}\n\nBody: {resp.text[:2000]}",
             encoding="utf-8",
         )

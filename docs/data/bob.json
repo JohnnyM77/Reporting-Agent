@@ -1,7 +1,33 @@
 {
-  "last_run": "2026-06-25",
-  "silence": true,
+  "last_run": "2026-06-26",
+  "silence": false,
   "high_impact": [],
   "material": [],
-  "fyi": []
+  "fyi": [
+    {
+      "ticker": "ABB",
+      "title": "Becoming a substantial holder 49\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.1MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03107931"
+    },
+    {
+      "ticker": "BHP",
+      "title": "BHP Executive leadership team update 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 115.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03108084"
+    },
+    {
+      "ticker": "CAT",
+      "title": "Application for quotation of securities - CAT 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03107968"
+    },
+    {
+      "ticker": "VAS",
+      "title": "Estimated Distribution Announcement 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 214.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03108156"
+    },
+    {
+      "ticker": "VHY",
+      "title": "Estimated Distribution Announcement 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 214.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03108156"
+    }
+  ]
 }

@@ -1,23 +1,7 @@
 {
-  "last_run": "2026-06-27",
-  "silence": false,
+  "last_run": "2026-06-28",
+  "silence": true,
   "high_impact": [],
   "material": [],
-  "fyi": [
-    {
-      "ticker": "BHP",
-      "title": "BHP Executive Leadership Team Update 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 108.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03108312"
-    },
-    {
-      "ticker": "CAT",
-      "title": "Release of Shares from Voluntary Escrow 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 32.1",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03108335"
-    },
-    {
-      "ticker": "DRO",
-      "title": "Application for quotation of securities - DRO 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03108491"
-    }
-  ]
+  "fyi": []
 }

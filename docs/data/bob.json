@@ -1,13 +1,66 @@
 {
-  "last_run": "2026-06-29",
+  "last_run": "2026-06-30",
   "silence": false,
-  "high_impact": [],
+  "high_impact": [
+    {
+      "ticker": "CAT",
+      "title": "2026 Annual Report 128\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 8.3MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03109281",
+      "type": "results",
+      "analysis": {
+        "executive_summary": [
+          "LLM could not run (limit/billing)."
+        ]
+      },
+      "drive_links": []
+    }
+  ],
   "material": [],
   "fyi": [
     {
-      "ticker": "CSL",
-      "title": "Update on TAVNEOS 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 145.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03108795"
+      "ticker": "CAT",
+      "title": "2026 Appendix 4G and CGS 24\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 681.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03109283"
+    },
+    {
+      "ticker": "CAT",
+      "title": "2026 Annual Report 128\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 8.3MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03109281"
+    },
+    {
+      "ticker": "CAT",
+      "title": "Release and Dispatch of 2026 Annual Report 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 5",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03109265"
+    },
+    {
+      "ticker": "CAT",
+      "title": "Ceasing to be a substantial holder 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 437.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03109177"
+    },
+    {
+      "ticker": "DRO",
+      "title": "Change of Director's Interest Notice - A Bean 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 267.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03109065"
+    },
+    {
+      "ticker": "DRO",
+      "title": "Notification regarding unquoted securities - DRO 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03109051"
+    },
+    {
+      "ticker": "VAS",
+      "title": "Updated Estimated Distribution Announcement 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 214.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03109355"
+    },
+    {
+      "ticker": "VEU",
+      "title": "US SEC Filing Announcement 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 186.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03108967"
+    },
+    {
+      "ticker": "VHY",
+      "title": "Updated Estimated Distribution Announcement 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 214.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03109355"
     }
   ]
 }

@@ -1,68 +1,31 @@
 {
-  "last_run": "2026-07-02",
+  "last_run": "2026-07-03",
   "silence": false,
-  "high_impact": [],
-  "material": [
+  "high_impact": [
     {
-      "ticker": "WDS",
-      "title": "Director resignation 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 130.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110694",
+      "ticker": "VEU",
+      "title": "US SEC Filing Announcement - Semi Annual Report 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 199.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03111002",
+      "type": "results",
       "analysis": {
-        "what_happened": "WDS: Director resignation 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                    ",
-        "so_what": "Price-sensitive headline — open link for details."
-      }
+        "executive_summary": [
+          "LLM could not run (limit/billing)."
+        ]
+      },
+      "drive_links": []
     }
   ],
+  "material": [],
   "fyi": [
     {
-      "ticker": "BHP",
-      "title": "Initial Director's Interest Notice 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 169.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110476"
+      "ticker": "RMD",
+      "title": "Statement of CDIs on issue - RMD 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 12.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03111347"
     },
     {
-      "ticker": "BHP",
-      "title": "Final Director's Interest Notice 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 199.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110474"
-    },
-    {
-      "ticker": "CAT",
-      "title": "Date of AGM 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 431.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110512"
-    },
-    {
-      "ticker": "DRO",
-      "title": "Initial Director's Interest Notice - L Goddard 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 219.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110472"
-    },
-    {
-      "ticker": "LAU",
-      "title": "Notification of cessation of securities - LAU 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110325"
-    },
-    {
-      "ticker": "MVP",
-      "title": "Change in substantial holding 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 148.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110260"
-    },
-    {
-      "ticker": "PWH",
-      "title": "Initial Director's Interest Notice - Matthew Bryson 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 171.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110257"
-    },
-    {
-      "ticker": "VAS",
-      "title": "Final Distribution Announcement 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 246.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110751"
-    },
-    {
-      "ticker": "VHY",
-      "title": "Final Distribution Announcement 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 246.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110751"
-    },
-    {
-      "ticker": "WDS",
-      "title": "Director resignation 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 130.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110694"
+      "ticker": "VEU",
+      "title": "US SEC Filing Announcement - Semi Annual Report 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 199.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03111002"
     }
   ]
 }

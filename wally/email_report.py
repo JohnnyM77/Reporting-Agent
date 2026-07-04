@@ -11,7 +11,8 @@ from email.mime.text import MIMEText
 from pathlib import Path
 from typing import TypedDict
 
-from .config import EmailSettings
+from .asx_news import NewsItem
+from .config import EmailSettings, NEWS_LOOKBACK_DAYS
 from .screening import TickerScreenResult
 
 
@@ -23,10 +24,49 @@ class WatchlistEmailData(TypedDict):
     flagged: list[TickerScreenResult]
     chart_notes: dict[str, str]
     inline_pngs: dict[str, str] | None  # ticker -> content-id
+    news: dict[str, list[NewsItem]] | None  # ticker -> significant ASX announcements
 
 
 def _fmt(n: float) -> str:
     return f"{n:.2f}"
+
+
+_PS_BADGE = (
+    "<span style='background:#C0392B;color:white;padding:1px 6px;"
+    "border-radius:3px;font-size:11px;white-space:nowrap'>PRICE SENSITIVE</span>"
+)
+
+
+def _build_news_html(ticker: str, items: list[NewsItem] | None) -> str:
+    """Render the significant-ASX-announcements block for one flagged ticker.
+
+    ``items`` is None for non-ASX tickers (no section rendered) and an empty
+    list for ASX tickers with no significant announcements in the window.
+    """
+    if items is None:
+        return ""
+    heading = (
+        f"<h4 style='margin-bottom:4px'>Significant ASX announcements "
+        f"— last {NEWS_LOOKBACK_DAYS} days</h4>"
+    )
+    if not items:
+        return heading + "<p><em>No significant announcements found.</em></p>"
+
+    rows = []
+    for item in items:
+        badge = f" {_PS_BADGE}" if item.price_sensitive else ""
+        rows.append(
+            f"<tr><td style='white-space:nowrap'>{item.date}</td>"
+            f"<td><a href='{item.url}'>{item.title}</a>{badge}</td>"
+            f"<td>{item.category}</td></tr>"
+        )
+    return (
+        heading
+        + "<table border='1' cellspacing='0' cellpadding='5' style='border-collapse:collapse'>"
+        + "<tr style='background:#3E5C8A;color:white'><th>Date</th><th>Announcement</th><th>Category</th></tr>"
+        + "".join(rows)
+        + "</table>"
+    )
 
 
 def build_combined_html(
@@ -57,6 +97,7 @@ def build_combined_html(
         flagged = wl_data["flagged"]
         chart_notes = wl_data.get("chart_notes", {})
         inline_pngs = wl_data.get("inline_pngs")
+        news = wl_data.get("news") or {}
         
         html_parts.append(f"<h2>{watchlist_name}</h2>")
         html_parts.append(f"<p>Checked: <strong>{len(results)}</strong> | Flagged: <strong>{len(flagged)}</strong></p>")
@@ -90,6 +131,7 @@ def build_combined_html(
                 html_parts.append(
                     f"<h3>{r.ticker} — {r.company_name}</h3>"
                     f"{chart_img}"
+                    f"{_build_news_html(r.ticker, news.get(r.ticker))}"
                 )
         else:
             html_parts.append("<p><strong>No stocks within 5% of 52-week low.</strong></p>")
@@ -106,6 +148,7 @@ def build_html(
     flagged: list[TickerScreenResult],
     chart_notes: dict[str, str],
     inline_pngs: dict[str, str] | None = None,  # ticker -> content-id
+    news: dict[str, list[NewsItem]] | None = None,  # ticker -> significant announcements
 ) -> str:
     rows = []
     for r in flagged:
@@ -133,6 +176,7 @@ def build_html(
         details.append(
             f"<h3>{r.ticker} — {r.company_name}</h3>"
             f"{chart_img}"
+            f"{_build_news_html(r.ticker, (news or {}).get(r.ticker))}"
         )
 
     return (

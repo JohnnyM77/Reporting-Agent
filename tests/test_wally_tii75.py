@@ -266,22 +266,20 @@ class TestValuationWorkbook:
 
 
 # ---------------------------------------------------------------------------
-# Integration: fallback workbook path registers range PNG as inline image
+# Integration: fallback workbook path has no inline chart image
 # ---------------------------------------------------------------------------
 
 class TestFallbackInlineImage:
-    """Verify that _process_watchlist registers the range-chart PNG as an
-    inline email image when the fallback valuation workbook is used.
-
-    This ensures TII75 companies (which have no valuations YAML config) show
-    a visual chart in the email body, matching the experience for Aussie Tech
-    companies that DO have a config (whose value-chart PNG is registered inline).
+    """Verify that _process_watchlist's fallback path (no valuations YAML
+    config, full xlsx build fails) builds the fallback workbook without
+    registering any inline chart image — the 52-week range PNG was removed
+    as a low-value visual, so the email body falls back to the plain-text
+    chart_notes message for these tickers.
     """
 
-    def test_range_png_registered_as_inline_image_for_fallback_ticker(self, tmp_path):
+    def test_no_inline_image_registered_for_fallback_ticker(self, tmp_path):
         """When a ticker has no valuations config, the fallback workbook is built
-        AND the 52-week range chart PNG is added to inline_images so the email
-        body shows a chart rather than plain text."""
+        but no PNG is registered inline — the email shows the text note instead."""
         import os
         from pathlib import Path
         from unittest.mock import MagicMock, patch
@@ -305,10 +303,6 @@ class TestFallbackInlineImage:
             dividend_yield=None,
         )
 
-        # Create a real (but tiny) PNG so path.read_bytes() in send_email succeeds
-        range_png_path = tmp_path / "cprt_range.png"
-        range_png_path.write_bytes(b"\x89PNG\r\n\x1a\n")  # minimal PNG header
-
         # Build a minimal watchlist YAML (written before patching Path methods)
         wl_yaml = tmp_path / "test_watchlist.yaml"
         wl_yaml.write_text(
@@ -318,7 +312,6 @@ class TestFallbackInlineImage:
         with (
             patch("wally.main.fetch_price_snapshot", return_value=fake_snap),
             patch("wally.main.fetch_valuation_snapshot", return_value=fake_val_snap),
-            patch("wally.main.render_range_chart", return_value=range_png_path),
             patch("wally.main.render_value_vs_price_chart", return_value=(None, "No valuation config found yet for this ticker")),
             patch("wally.main._build_xlsx", side_effect=FileNotFoundError("no config")),
             patch("wally.main._build_valuation_workbook") as mock_build_wb,
@@ -358,17 +351,12 @@ class TestFallbackInlineImage:
                     is_tii75=False,
                 )
 
-        # The range PNG must be in inline_images with the correct CID so the
-        # email body renders a chart image instead of plain text.
-        cid_expected = "chart_cprt"
-        inline_cids = [cid for cid, _ in result.inline_images]
-        assert cid_expected in inline_cids, (
-            f"Expected '{cid_expected}' in inline_images {inline_cids}. "
-            "The range-chart PNG must be registered inline so TII75 emails "
-            "show a visual chart (not just text)."
+        # No PNG should be registered inline for the fallback path anymore.
+        assert result.inline_images == [], (
+            f"Expected no inline images for fallback ticker, got {result.inline_images}"
         )
 
-        # The xlsx must also be in attachments
+        # The xlsx must still be in attachments
         xlsx_paths = [p for p in result.attachments if Path(p).suffix == ".xlsx"]
         assert xlsx_paths, "Expected fallback xlsx to be in attachments"
 
@@ -694,9 +682,6 @@ class TestMainLogsErrorBeforeFallback:
             trailing_pe=25.0, forward_pe=22.0, ev_to_ebitda=18.0,
             price_to_sales=4.5, fcf_yield=0.04, dividend_yield=None,
         )
-        range_png = tmp_path / "pool_range.png"
-        range_png.write_bytes(b"\x89PNG\r\n\x1a\n")
-
         wl_yaml = tmp_path / "test_wl.yaml"
         wl_yaml.write_text("name: Test\ntickers:\n  - ticker: POOL\n    name: Pool Corp\n")
 
@@ -705,7 +690,6 @@ class TestMainLogsErrorBeforeFallback:
         with (
             patch("wally.main.fetch_price_snapshot", return_value=fake_snap),
             patch("wally.main.fetch_valuation_snapshot", return_value=fake_val_snap),
-            patch("wally.main.render_range_chart", return_value=range_png),
             patch("wally.main.render_value_vs_price_chart", return_value=(None, "no config")),
             patch("wally.main._build_xlsx", side_effect=RuntimeError(error_reason)),
             patch("wally.main._build_valuation_workbook"),
@@ -760,16 +744,12 @@ class TestMainLogsErrorBeforeFallback:
             trailing_pe=60.0, forward_pe=50.0, ev_to_ebitda=40.0,
             price_to_sales=20.0, fcf_yield=0.01, dividend_yield=None,
         )
-        range_png = tmp_path / "fico_range.png"
-        range_png.write_bytes(b"\x89PNG\r\n\x1a\n")
-
         wl_yaml = tmp_path / "test_wl_fico.yaml"
         wl_yaml.write_text("name: Test\ntickers:\n  - ticker: FICO\n    name: Fair Isaac\n")
 
         with (
             patch("wally.main.fetch_price_snapshot", return_value=fake_snap),
             patch("wally.main.fetch_valuation_snapshot", return_value=fake_val_snap),
-            patch("wally.main.render_range_chart", return_value=range_png),
             patch("wally.main.render_value_vs_price_chart", return_value=(None, "no config")),
             patch("wally.main._build_xlsx", side_effect=RuntimeError("no price data")),
             patch("wally.main._build_valuation_workbook"),

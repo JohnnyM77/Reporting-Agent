@@ -9,7 +9,6 @@ import pandas as pd
 import yaml
 
 from .data_fetch import fetch_price_history_10y_monthly
-from .screening import TickerScreenResult
 
 
 @dataclass
@@ -41,25 +40,6 @@ def _load_valuation_config(ticker: str) -> Optional[ValuationConfig]:
         eps=eps,
         dividend=dividend,
     )
-
-
-def render_range_chart(result: TickerScreenResult, out_dir: Path) -> Path:
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out = out_dir / f"{result.ticker.lower().replace('.', '_')}_range.png"
-
-    fig, ax = plt.subplots(figsize=(5.2, 1.2))
-    ax.hlines(0, result.low_52w, result.high_52w, linewidth=8, color="#d1d5db")
-    ax.scatter([result.low_52w, result.current_price, result.high_52w], [0, 0, 0], c=["#374151", "#dc2626", "#374151"], s=40)
-    ax.text(result.low_52w, 0.12, f"Low {result.low_52w:.2f}", fontsize=8, ha="left")
-    ax.text(result.current_price, -0.18, f"Now {result.current_price:.2f}", fontsize=8, ha="center")
-    ax.text(result.high_52w, 0.12, f"High {result.high_52w:.2f}", fontsize=8, ha="right")
-    ax.set_yticks([])
-    ax.set_title(f"{result.ticker} — 52-week range", fontsize=9)
-    ax.spines[["left", "right", "top"]].set_visible(False)
-    fig.tight_layout()
-    fig.savefig(out, dpi=150)
-    plt.close(fig)
-    return out
 
 
 def render_value_vs_price_chart(ticker: str, out_dir: Path) -> tuple[Optional[Path], str]:

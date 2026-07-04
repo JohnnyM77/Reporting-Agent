@@ -2,7 +2,7 @@
 
 When Wally flags a watchlist ticker (trading near its 52-week low) this
 module fetches the company's ASX announcements over a recent lookback
-window (default 60 days, env WALLY_NEWS_LOOKBACK_DAYS) and keeps only the
+window (default 90 days, env WALLY_NEWS_LOOKBACK_DAYS) and keeps only the
 significant ones:
 
   * anything ASX has marked price-sensitive, always; plus

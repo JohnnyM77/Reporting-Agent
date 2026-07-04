@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from .asx_news import NewsItem, fetch_significant_news
-from .charts import render_range_chart, render_value_vs_price_chart
+from .charts import render_value_vs_price_chart
 from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, LOW_THRESHOLD_PCT, NEWS_LOOKBACK_DAYS, WALLY_EXCLUDED_TICKERS, build_run_context, load_email_settings, should_run_tii75
 from .data_fetch import fetch_price_snapshot, fetch_valuation_snapshot
 from .drive_upload import upload_to_drive
@@ -112,8 +112,6 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                 news_items = fetch_significant_news(ticker)
                 if news_items is not None:
                     news_by_ticker[ticker] = news_items
-                range_png = render_range_chart(row, ctx.output_root)
-                attachments.append(range_png)
                 value_png, note = render_value_vs_price_chart(ticker, ctx.output_root)
                 chart_notes[ticker] = note
                 if value_png:
@@ -212,12 +210,6 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                                 )
                                 chart_notes[ticker] = note
                                 print(f"[wally] Fallback workbook created: {fallback_out.name}", flush=True)
-                                # Register the 52-week range chart as inline email image so
-                                # the email body shows a visual chart (same experience as
-                                # tickers with a valuations config whose value-chart PNG is
-                                # registered inline above).
-                                cid = f"chart_{ticker.lower().replace('.', '_')}"
-                                inline_images.append((cid, range_png))
                                 # Upload to Drive
                                 drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
                                 if not drive_folder_id:

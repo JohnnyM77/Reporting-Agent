@@ -1,8 +1,8 @@
 {
-  "last_run": "2026-07-03T23:36:00.807699+00:00",
+  "last_run": "2026-07-04T07:21:20.010931+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-07-03T23:35:08.001516+00:00",
+      "run_timestamp": "2026-07-04T07:20:22.545548+00:00",
       "total": 74,
       "flagged_count": 4,
       "flagged": [
@@ -45,13 +45,13 @@
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-07-03T23:35:39.587834+00:00",
+      "run_timestamp": "2026-07-04T07:20:56.407538+00:00",
       "total": 34,
       "flagged_count": 0,
       "flagged": []
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-07-03T23:35:48.503793+00:00",
+      "run_timestamp": "2026-07-04T07:21:06.275243+00:00",
       "total": 35,
       "flagged_count": 2,
       "flagged": [
@@ -76,7 +76,7 @@
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-07-03T23:36:00.807699+00:00",
+      "run_timestamp": "2026-07-04T07:21:20.010931+00:00",
       "total": 30,
       "flagged_count": 0,
       "flagged": []

@@ -429,7 +429,6 @@ Wally is a second, separate agent that screens multiple watchlists for stocks tr
   - `distance_to_low_pct = ((current - low_52w) / low_52w) * 100`
   - flagged when `distance_to_low_pct <= 5`
 - Creates:
-  - compact 52-week range PNG chart for each flagged ticker
   - 10-year price-vs-value chart when valuation config exists
 - Sends an HTML email report (with chart attachments)
 - Writes machine-readable JSON output under `outputs/YYYY-MM-DD/`

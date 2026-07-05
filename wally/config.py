@@ -9,6 +9,11 @@ import yaml
 
 LOW_THRESHOLD_PCT = float(os.environ.get("WALLY_LOW_THRESHOLD_PCT", "5.0"))
 
+# ASX news lookback for flagged tickers: how far back to scan announcements
+# and how many significant items to keep per ticker.
+NEWS_LOOKBACK_DAYS = int(os.environ.get("WALLY_NEWS_LOOKBACK_DAYS", "90"))
+NEWS_MAX_ITEMS = int(os.environ.get("WALLY_NEWS_MAX_ITEMS", "10"))
+
 
 def _load_excluded_etfs() -> frozenset[str]:
     """Load the shared passive-ETF exclusion list from config/excluded_passive_etfs.yaml.

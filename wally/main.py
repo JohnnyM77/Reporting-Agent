@@ -8,8 +8,9 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional
 
-from .charts import render_range_chart, render_value_vs_price_chart
-from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, LOW_THRESHOLD_PCT, WALLY_EXCLUDED_TICKERS, build_run_context, load_email_settings, should_run_tii75
+from .asx_news import NewsItem, fetch_significant_news
+from .charts import render_value_vs_price_chart
+from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, LOW_THRESHOLD_PCT, NEWS_LOOKBACK_DAYS, WALLY_EXCLUDED_TICKERS, build_run_context, load_email_settings, should_run_tii75
 from .data_fetch import fetch_price_snapshot, fetch_valuation_snapshot
 from .drive_upload import upload_to_drive
 from .email_report import build_html, build_combined_html, send_email
@@ -39,6 +40,7 @@ class WatchlistProcessResult:
     attachments: list[Path]
     chart_notes: dict[str, str]
     inline_images: list[tuple[str, Path]]
+    news: dict[str, list[NewsItem]]  # flagged ASX ticker -> significant announcements
 
 
 def _log_screen_result(row: TickerScreenResult) -> None:
@@ -78,6 +80,7 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
     attachments: list[Path] = []
     chart_notes: dict[str, str] = {}
     inline_images: list[tuple[str, Path]] = []  # (content-id, png_path)
+    news_by_ticker: dict[str, list[NewsItem]] = {}  # flagged ASX ticker -> significant news
 
     for ticker in wl.tickers:
         if ticker in WALLY_EXCLUDED_TICKERS:
@@ -106,8 +109,9 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
             results.append(row)
             if row.flagged:
                 flagged.append(row)
-                range_png = render_range_chart(row, ctx.output_root)
-                attachments.append(range_png)
+                news_items = fetch_significant_news(ticker)
+                if news_items is not None:
+                    news_by_ticker[ticker] = news_items
                 value_png, note = render_value_vs_price_chart(ticker, ctx.output_root)
                 chart_notes[ticker] = note
                 if value_png:
@@ -166,7 +170,11 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                                     f"52-week low of {row.low_52w:.2f}"
                                 ]
                                 claude_analysis = _analyse_opportunity(
-                                    ticker, row.company_name, fallback_summary, reasons
+                                    ticker, row.company_name, fallback_summary, reasons,
+                                    news=[
+                                        f"{item.date} — {item.title}"
+                                        for item in news_by_ticker.get(ticker, [])
+                                    ] or None,
                                 )
                                 history_rows = [
                                     {
@@ -202,12 +210,6 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                                 )
                                 chart_notes[ticker] = note
                                 print(f"[wally] Fallback workbook created: {fallback_out.name}", flush=True)
-                                # Register the 52-week range chart as inline email image so
-                                # the email body shows a visual chart (same experience as
-                                # tickers with a valuations config whose value-chart PNG is
-                                # registered inline above).
-                                cid = f"chart_{ticker.lower().replace('.', '_')}"
-                                inline_images.append((cid, range_png))
                                 # Upload to Drive
                                 drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
                                 if not drive_folder_id:
@@ -250,6 +252,10 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
         "checked_tickers": wl.tickers,
         "flagged_tickers": [r.ticker for r in flagged],
         "results": [r.to_dict() for r in results],
+        "significant_news_lookback_days": NEWS_LOOKBACK_DAYS,
+        "significant_news": {
+            t: [item.to_dict() for item in items] for t, items in news_by_ticker.items()
+        },
     }
     json_path = ctx.output_root / f"{safe_slug(wl.name)}.json"
     write_json(json_path, payload)
@@ -292,11 +298,15 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
         png_cids = {r.ticker: f"chart_{r.ticker.lower().replace('.', '_')}"
                     for r in flagged
                     if any(cid == f"chart_{r.ticker.lower().replace('.', '_')}" for cid, _ in inline_images)}
-        html = build_html(wl.name, ctx.run_dt.date().isoformat(), results, flagged, chart_notes, inline_pngs=png_cids)
+        html = build_html(wl.name, ctx.run_dt.date().isoformat(), results, flagged, chart_notes, inline_pngs=png_cids, news=news_by_ticker)
         text = (
             f"Wally the Watcher report\nWatchlist: {wl.name}\nChecked: {len(results)}\nFlagged: {len(flagged)}\n"
             f"Flagged tickers: {', '.join([r.ticker for r in flagged]) if flagged else 'None'}"
         )
+        if news_by_ticker:
+            text += f"\nSignificant ASX announcements (last {NEWS_LOOKBACK_DAYS} days): " + ", ".join(
+                f"{t}: {len(items)}" for t, items in news_by_ticker.items()
+            )
         send_email(settings, subject, text, html, attachments, inline_images=inline_images if inline_images else None)
 
     return WatchlistProcessResult(
@@ -307,6 +317,7 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
         attachments=attachments,
         chart_notes=chart_notes,
         inline_images=inline_images,
+        news=news_by_ticker,
     )
 
 
@@ -346,6 +357,7 @@ def _process_watchlists_combined(watchlist_paths: list[str], force: bool = False
             "flagged": result.flagged,
             "chart_notes": result.chart_notes,
             "inline_pngs": png_cids,
+            "news": result.news,
         })
     
     html = build_combined_html(watchlist_data)
@@ -367,6 +379,8 @@ def _process_watchlists_combined(watchlist_paths: list[str], force: bool = False
         if result.flagged:
             text += f"\n{result.watchlist_name}:\n"
             text += f"  {', '.join([r.ticker for r in result.flagged])}\n"
+            for ticker, items in result.news.items():
+                text += f"  {ticker}: {len(items)} significant ASX announcement(s) in last {NEWS_LOOKBACK_DAYS} days\n"
         else:
             text += f"\n{result.watchlist_name}: None\n"
     
@@ -407,6 +421,20 @@ def _run_all_combined(force: bool = False) -> None:
     _process_watchlists_combined(watchlists_to_run, force=force)
 
 
+def _debug_news(ticker: str) -> None:
+    """Fetch and print significant ASX announcements for one ticker, no email."""
+    items = fetch_significant_news(ticker)
+    if items is None:
+        print(f"[wally] {ticker} is not an ASX ticker — no announcement lookup", flush=True)
+        return
+    if not items:
+        print(f"[wally] {ticker}: no significant ASX announcements in last {NEWS_LOOKBACK_DAYS} days", flush=True)
+        return
+    for item in items:
+        marker = " [PRICE SENSITIVE]" if item.price_sensitive else ""
+        print(f"[wally] {item.date} {item.category}: {item.title}{marker}\n        {item.url}", flush=True)
+
+
 def _debug_ticker(ticker: str) -> None:
     """Load TII75 watchlist, check ticker presence, fetch data, and print screening result."""
     wl = load_watchlist(TII75_WATCHLIST, validate_tii75=True)
@@ -434,8 +462,13 @@ def main() -> None:
     parser.add_argument("--combined-email", action="store_true", help="Send one combined email for all watchlists")
     parser.add_argument("--all-combined", action="store_true", help="Run all watchlists (standard + TII75) with combined email")
     parser.add_argument("--debug-ticker", metavar="TICKER", help="Debug a single ticker: load TII75, fetch data, print result, no email")
+    parser.add_argument("--debug-news", metavar="TICKER", help="Fetch significant ASX announcements for a ticker, print, no email")
 
     args = parser.parse_args()
+
+    if args.debug_news:
+        _debug_news(args.debug_news)
+        return
 
     if args.debug_ticker:
         _debug_ticker(args.debug_ticker)
@@ -456,7 +489,7 @@ def main() -> None:
         _run_tii75(force=args.force, combined_email=args.combined_email)
 
     if not args.watchlist and not args.all_standard_watchlists and not args.tii75 and not args.all_combined:
-        parser.error("Choose --watchlist, --all-standard-watchlists, --tii75, --all-combined, or --debug-ticker TICKER")
+        parser.error("Choose --watchlist, --all-standard-watchlists, --tii75, --all-combined, --debug-ticker TICKER, or --debug-news TICKER")
 
 
 if __name__ == "__main__":

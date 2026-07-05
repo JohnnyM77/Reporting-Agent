@@ -11,7 +11,7 @@ from typing import Optional
 
 import requests
 
-from .config import MAX_PDF_BYTES, PDF_DOWNLOAD_TIMEOUT_SECS
+from .config import MAX_PDF_DOWNLOAD_BYTES, PDF_DOWNLOAD_TIMEOUT_SECS
 from .models import Announcement, ResultPack
 from .utils import log, safe_filename
 
@@ -65,7 +65,12 @@ def _download_via_requests(url: str, session: requests.Session) -> Optional[byte
         r.raise_for_status()
         if not r.content[:4] == b"%PDF":
             return None
-        if len(r.content) > MAX_PDF_BYTES:
+        if len(r.content) > MAX_PDF_DOWNLOAD_BYTES:
+            # Well beyond even a generous sanity ceiling — not worth holding
+            # in memory / on disk at all. Anything smaller than this (even
+            # if over Claude's native-attach limit) is still downloaded so
+            # claude_runner can fall back to extracted text instead of the
+            # document silently vanishing from the pack.
             log(f"[pdf_downloader] PDF too large ({len(r.content) // 1024} KB), skipping: {url[:80]}")
             return None
         return r.content

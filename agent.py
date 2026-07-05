@@ -4,20 +4,23 @@
 # - Includes ALL announcements in an FYI section (headline-only, 2 lines + link)
 # - Uses Requests first for PDFs; if ASX consent gate blocks, falls back to Playwright
 # - Runs deep analysis only for HY/FY results, acquisitions, and capital/debt raises
-# - Produces clean email: HIGH IMPACT + MATERIAL + FYI or SILENCE
+# - Produces clean email: HIGH IMPACT + MATERIAL + FYI, or a plain
+#   no-announcements message with a local joke of the day
 # - Uploads PDFs to Google Drive for big announcements and includes Drive view links
 # - Never hallucinates off the ASX "Access to this site" legal page
 # - Optionally emails AR9 items to your brother (BROTHER_EMAIL secret)
 # - Uses Anthropic Claude API for all AI analysis (native PDF support)
 
+from __future__ import annotations
+
 import os
 import re
 import json
 import ssl
-import base64
 import hashlib
 import smtplib
 import tempfile
+import time
 import datetime as dt
 import textwrap
 import html as htmlmod
@@ -34,6 +37,13 @@ import anthropic
 import asyncio
 from playwright_fetch import fetch_pdf_with_playwright
 from asx_fetch import fetch_asx_announcements_html
+from shared.pdf_llm import (
+    LLM_FAILED,
+    LLM_SKIPPED,
+    PdfAttachment,
+    build_pdf_attachments,
+    build_single_pdf_content,
+)
 
 from prompts import (
     DEFAULT_2LINE_PROMPT,
@@ -60,24 +70,15 @@ MODEL_DEFAULT = "claude-sonnet-4-6"
 
 REQUESTS_PDF_TIMEOUT_SECS = 20
 HTML_TIMEOUT_SECS = 30
-FUN_CONTENT_TIMEOUT_SECS = 10
 
 COLOR_HIGH_IMPACT = "#F59E0B"
 COLOR_MATERIAL = "#3B82F6"
 COLOR_FYI = "#10B981"
-COLOR_SILENCE = "#6B7280"
 COLOR_BG = "#0B1220"
 COLOR_PANEL = "#111B2E"
 COLOR_TEXT = "#E5E7EB"
 
-JOKE_API_URL = os.environ.get(
-    "JOKE_API_URL",
-    "https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,racist,sexist,explicit&type=single",
-).strip()
-CARTOON_PAGE_URL = os.environ.get(
-    "CARTOON_PAGE_URL",
-    "https://www.cagle.com/category/political-cartoon/",
-).strip()
+_JOKES_FILE = Path(__file__).resolve().parent / "config" / "daily_jokes.txt"
 
 
 def log(msg: str):
@@ -138,56 +139,23 @@ def save_seen_state(path: Path, state: Dict[str, str]) -> None:
     path.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
 
 
-def fetch_joke_of_the_day(session: requests.Session) -> str:
+def _get_daily_joke() -> str:
+    """Return a deterministic joke-of-the-day from the local jokes file.
+
+    No network calls — reads config/daily_jokes.txt and rotates by date so
+    the same joke shows all day. Returns "" (never raises) if the file is
+    missing or empty.
+    """
     try:
-        resp = session.get(JOKE_API_URL, timeout=FUN_CONTENT_TIMEOUT_SECS, headers={"Accept": "application/json"})
-        resp.raise_for_status()
-        data = resp.json()
-        if isinstance(data, dict):
-            if data.get("type") == "single" and isinstance(data.get("joke"), str):
-                joke = data["joke"].strip()
-                if joke:
-                    return joke
-            if data.get("type") == "twopart":
-                setup = str(data.get("setup", "")).strip()
-                delivery = str(data.get("delivery", "")).strip()
-                joined = " — ".join([p for p in [setup, delivery] if p])
-                if joined:
-                    return joined
-    except Exception as e:
-        log(f"Joke fetch failed: {e}")
-    return "Why did the investor bring a ladder? To reach higher returns."
-
-
-def fetch_cartoon_of_the_day(session: requests.Session) -> Tuple[str, str]:
-    fallback_title = "Political cartoon pick"
-    fallback_url = CARTOON_PAGE_URL
-    try:
-        resp = session.get(CARTOON_PAGE_URL, timeout=FUN_CONTENT_TIMEOUT_SECS)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
-        for a in soup.select("a[href]"):
-            href = (a.get("href") or "").strip()
-            if not href:
-                continue
-            lowered = href.lower()
-            if "cagle.com" in lowered and "/cartoon/" in lowered:
-                title = " ".join(a.get_text(" ", strip=True).split()) or fallback_title
-                return title, href
-    except Exception as e:
-        log(f"Cartoon fetch failed: {e}")
-    return fallback_title, fallback_url
-
-
-def build_silence_line(session: requests.Session) -> str:
-    base = f"No announcements found in the last {HOURS_BACK} hours."
-    joke = fetch_joke_of_the_day(session)
-    cartoon_title, cartoon_url = fetch_cartoon_of_the_day(session)
-    return (
-        f"{base}\n"
-        f"Joke of the day: {joke}\n"
-        f"Cartoon of the day: {cartoon_title} — {cartoon_url}"
-    )
+        lines = [
+            ln.strip() for ln in _JOKES_FILE.read_text(encoding="utf-8").splitlines()
+            if ln.strip()
+        ]
+    except Exception:
+        return ""
+    if not lines:
+        return ""
+    return lines[today_sgt_date().toordinal() % len(lines)]
 
 
 def send_email(subject: str, body_text: str, body_html: Optional[str] = None, to_addr: Optional[str] = None):
@@ -413,51 +381,98 @@ def _anthropic_client() -> anthropic.Anthropic:
     return anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 
+def _llm_cap_reached(counters: Dict) -> bool:
+    """Return True (and log clearly) when the run's LLM call budget is used up.
+
+    This is an intentional, expected stop — NOT an error — so it must never
+    be confused with a genuine API failure downstream.
+    """
+    if counters["llm_calls"] >= counters["MAX_LLM_CALLS_PER_RUN"]:
+        log(
+            f"LLM call skipped: call cap reached "
+            f"({counters['llm_calls']}/{counters['MAX_LLM_CALLS_PER_RUN']} this run)"
+        )
+        return True
+    return False
+
+
+def _call_anthropic(system_prompt: str, content: object, counters: Dict, max_retries: int = 1) -> str:
+    """Send *content* to Claude, incrementing the run's call counter once.
+
+    Retries a genuine exception (timeout, transient 5xx, rate limit, etc.)
+    once before giving up. On final failure this logs at ERROR level and
+    returns LLM_FAILED — callers must surface this distinctly from
+    LLM_SKIPPED rather than substituting the same placeholder text for both.
+    """
+    counters["llm_calls"] += 1
+    model = os.environ.get("CLAUDE_MODEL", MODEL_DEFAULT)
+    client = _anthropic_client()
+
+    last_err: Optional[Exception] = None
+    for attempt in range(max_retries + 1):
+        try:
+            resp = client.messages.create(
+                model=model,
+                max_tokens=4096,
+                system=system_prompt,
+                messages=[{"role": "user", "content": content}],
+            )
+            return (resp.content[0].text or "").strip()
+        except Exception as e:
+            last_err = e
+            if attempt < max_retries:
+                log(f"WARNING: Claude API call failed (attempt {attempt + 1}/{max_retries + 1}, model={model}): {e} — retrying once")
+                time.sleep(2)
+                continue
+            log(f"ERROR: Claude API call failed after {attempt + 1} attempt(s) (model={model}): {e}")
+
+    counters["last_llm_error"] = str(last_err) if last_err else "unknown error"
+    return LLM_FAILED
+
+
 def llm_chat(
     system_prompt: str,
     user_content: str,
     counters: Dict,
     pdf_path: Optional[Path] = None,
+    fallback_text: str = "",
 ) -> str:
-    if counters["llm_calls"] >= counters["MAX_LLM_CALLS_PER_RUN"]:
-        return "__LLM_SKIPPED__"
-    counters["llm_calls"] += 1
-    model = os.environ.get("CLAUDE_MODEL", MODEL_DEFAULT)
+    """Call Claude with an optional single native PDF attachment.
 
-    if pdf_path and pdf_path.exists():
-        try:
-            pdf_bytes = pdf_path.read_bytes()
-            pdf_b64 = base64.standard_b64encode(pdf_bytes).decode("utf-8")
-            content: object = [
-                {
-                    "type": "document",
-                    "source": {
-                        "type": "base64",
-                        "media_type": "application/pdf",
-                        "data": pdf_b64,
-                    },
-                },
-                {"type": "text", "text": user_content[:50_000]},
-            ]
-            log(f"Sending PDF ({len(pdf_bytes)//1024}KB) natively to Claude")
-        except Exception as e:
-            log(f"PDF encoding failed, falling back to text: {e}")
-            content = user_content[:100_000]
+    *fallback_text* should be the already-extracted text for *pdf_path* (if
+    any) — it's used only if the PDF turns out to be missing, malformed, or
+    too large for a native document block, so a downgrade never means
+    sending an empty/near-empty message.
+    """
+    if _llm_cap_reached(counters):
+        return LLM_SKIPPED
+    content, _used_native = build_single_pdf_content(
+        pdf_path, user_content, fallback_text=fallback_text, log=log,
+    )
+    return _call_anthropic(system_prompt, content, counters)
+
+
+def llm_chat_with_pdfs(
+    system_prompt: str,
+    user_content: str,
+    counters: Dict,
+    pdf_attachments: List[PdfAttachment],
+) -> str:
+    """Call Claude with zero or more native PDF attachments (e.g. the primary
+    financial report plus the investor presentation deck, sent together so
+    both retain full table/chart fidelity instead of the deck being
+    downgraded to extracted text)."""
+    if _llm_cap_reached(counters):
+        return LLM_SKIPPED
+    batch = build_pdf_attachments(pdf_attachments, log=log)
+    if batch.any_native:
+        content: object = list(batch.document_blocks) + [
+            {"type": "text", "text": user_content[:50_000]}
+        ]
     else:
-        content = user_content[:100_000]
-
-    try:
-        client = _anthropic_client()
-        resp = client.messages.create(
-            model=model,
-            max_tokens=4096,
-            system=system_prompt,
-            messages=[{"role": "user", "content": content}],
-        )
-        return (resp.content[0].text or "").strip()
-    except Exception as e:
-        log(f"Claude API failed: {e}")
-        return "__LLM_FAILED__"
+        prefix = "\n\n".join(batch.fallback_sections)
+        content = (f"{prefix}\n\n{user_content}" if prefix else user_content)[:100_000]
+    return _call_anthropic(system_prompt, content, counters)
 
 
 def download_pdf_requests(session: requests.Session, url: str, out_path: Path) -> bool:
@@ -584,8 +599,14 @@ def build_email(
     high_impact: List[str],
     material: List[str],
     fyi: List[str],
-    silence_line: str,
 ) -> Tuple[str, str]:
+    no_announcements = not high_impact and not material and not fyi
+    no_announcements_msg = f"No reportable announcements found in the last {HOURS_BACK} hours."
+    if no_announcements:
+        joke = _get_daily_joke()
+        if joke:
+            no_announcements_msg += f"\nJoke of the day: {joke}"
+
     lines: List[str] = []
     lines.append(f"{BOB_NAME} {VERSION_LABEL}")
     lines.append("=" * len(BOB_NAME))
@@ -607,8 +628,8 @@ def build_email(
         lines.append("-" * 60)
         lines.extend(fyi)
         lines.append("")
-    if not high_impact and not material and not fyi:
-        lines.append(silence_line)
+    if no_announcements:
+        lines.append(no_announcements_msg)
     body_text = "\n".join(lines)
 
     header_html = f"""
@@ -626,15 +647,10 @@ def build_email(
     sections_html += _html_section("HIGH IMPACT", COLOR_HIGH_IMPACT, high_impact)
     sections_html += _html_section("MATERIAL", COLOR_MATERIAL, material)
     sections_html += _html_section("FYI (ALL ANNOUNCEMENTS)", COLOR_FYI, fyi)
-    if not high_impact and not material and not fyi:
+    if no_announcements:
         sections_html += f"""
-        <div style="margin:18px 0;">
-          <div style="padding:10px 12px; background:{COLOR_SILENCE}; color:#0B1220; font-weight:800; border-radius:10px; letter-spacing:0.6px;">
-            SILENCE
-          </div>
-          <div style="margin-top:10px; padding:12px; background:{COLOR_PANEL}; border-radius:10px; color:{COLOR_TEXT};">
-            {htmlmod.escape(silence_line)}
-          </div>
+        <div style="margin:18px 0; padding:12px; background:{COLOR_PANEL}; border-radius:10px; color:{COLOR_TEXT};">
+          {htmlmod.escape(no_announcements_msg).replace(chr(10), "<br>")}
         </div>
         """
     footer_html = "</div>"
@@ -653,10 +669,16 @@ def summarise_two_lines_llm(ticker: str, title: str, text: str, counters: Dict) 
         return None
     user = f"Ticker: {ticker}\nTitle: {title}\n\nText:\n{text}"
     out = llm_chat(DEFAULT_2LINE_PROMPT, user, counters)
-    if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
+    if out == LLM_SKIPPED:
         return {
             "what_happened": f"{ticker}: {title[:160]}",
-            "so_what": "Price-sensitive headline; open link for details.",
+            "so_what": LLM_SKIP_MESSAGE,
+        }
+    if out == LLM_FAILED:
+        marker = _failed_marker("so_what", counters)
+        return {
+            "what_happened": f"{ticker}: {title[:160]}",
+            "so_what": marker["so_what"],
         }
     parsed = _parse_analysis_json(out)
     if parsed and "what_happened" in parsed:
@@ -683,7 +705,7 @@ def _prettify_analysis_text(text: str, width: int = 140) -> str:
 
 def _parse_analysis_json(text: str) -> Optional[dict]:
     """Parse structured JSON from LLM output, stripping any markdown code fences."""
-    if not text or text in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
+    if not text or text in (LLM_SKIPPED, LLM_FAILED):
         return None
     cleaned = re.sub(r"^```(?:json)?\s*", "", text.strip(), flags=re.MULTILINE)
     cleaned = re.sub(r"\s*```\s*$", "", cleaned.strip(), flags=re.MULTILINE)
@@ -803,6 +825,36 @@ def _analysis_to_email_text(analysis: dict, kind: str) -> str:
     return "\n".join(lines).strip() if lines else str(analysis)
 
 
+LLM_FAILURE_FLAG = "⚠️ Analysis failed — manual review needed"
+LLM_SKIP_MESSAGE = "Analysis skipped — LLM call-cap reached for this run (not an error)."
+
+
+def _skip_marker(key: str, as_list: bool = False) -> dict:
+    """Placeholder for the MAX_LLM_CALLS_PER_RUN cap — expected, not an error.
+    Deliberately does not resemble real analysis output."""
+    return {key: [LLM_SKIP_MESSAGE] if as_list else LLM_SKIP_MESSAGE}
+
+
+def _failed_marker(key: str, counters: Dict, as_list: bool = False) -> dict:
+    """Placeholder for a genuine API exception — must read as a clear failure,
+    never as a terse-but-real analysis."""
+    detail = (counters.get("last_llm_error") or "").strip()
+    suffix = f" ({detail})" if detail else ""
+    message = f"{LLM_FAILURE_FLAG}{suffix}."
+    return {key: [message] if as_list else message}
+
+
+def _is_llm_failure(memo: dict) -> bool:
+    def _flagged(v: object) -> bool:
+        if isinstance(v, str):
+            return v.startswith(LLM_FAILURE_FLAG)
+        if isinstance(v, list):
+            return any(_flagged(x) for x in v)
+        return False
+
+    return any(_flagged(v) for v in memo.values())
+
+
 def build_high_impact_block(
     ticker: str,
     heading: str,
@@ -811,9 +863,12 @@ def build_high_impact_block(
     analysed_via_pdf: bool = False,
     drive_links: Optional[List[str]] = None,
     kind: Optional[str] = None,
+    failed: bool = False,
 ) -> str:
     lines: List[str] = [f"{ticker} — {heading}"]
-    if analysed_via_pdf:
+    if failed:
+        lines[-1] = f"{LLM_FAILURE_FLAG} — {ticker} — {heading}"
+    elif analysed_via_pdf:
         lines[-1] += " (analysed via PDF)"
     if isinstance(memo, dict):
         memo_text = _analysis_to_email_text(memo, kind or "generic")
@@ -832,14 +887,16 @@ def deep_acquisition_memo(
 ) -> dict:
     if pdf_path and pdf_path.exists():
         user = f"Ticker: {ticker}\nTitle: {title}\n\nPlease analyse the attached acquisition announcement PDF."
-        out = llm_chat(ACQUISITION_PROMPT, user, counters, pdf_path=pdf_path)
+        out = llm_chat(ACQUISITION_PROMPT, user, counters, pdf_path=pdf_path, fallback_text=text)
     elif is_meaningful_text(text, min_chars=900):
         user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
         out = llm_chat(ACQUISITION_PROMPT, user, counters)
     else:
         return {"deal_summary": "Could not extract meaningful announcement text. Open the link and review manually."}
-    if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return {"deal_summary": "LLM could not run (limit/billing)."}
+    if out == LLM_SKIPPED:
+        return _skip_marker("deal_summary")
+    if out == LLM_FAILED:
+        return _failed_marker("deal_summary", counters)
     parsed = _parse_analysis_json(out)
     return parsed if parsed else {"deal_summary": out}
 
@@ -849,14 +906,16 @@ def deep_capital_memo(
 ) -> dict:
     if pdf_path and pdf_path.exists():
         user = f"Ticker: {ticker}\nTitle: {title}\n\nPlease analyse the attached capital/debt raise announcement PDF."
-        out = llm_chat(CAPITAL_OR_DEBT_RAISE_PROMPT, user, counters, pdf_path=pdf_path)
+        out = llm_chat(CAPITAL_OR_DEBT_RAISE_PROMPT, user, counters, pdf_path=pdf_path, fallback_text=text)
     elif is_meaningful_text(text, min_chars=900):
         user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
         out = llm_chat(CAPITAL_OR_DEBT_RAISE_PROMPT, user, counters)
     else:
         return {"what_happened": "Could not extract meaningful announcement text. Open the link and review manually."}
-    if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return {"what_happened": "LLM could not run (limit/billing)."}
+    if out == LLM_SKIPPED:
+        return _skip_marker("what_happened")
+    if out == LLM_FAILED:
+        return _failed_marker("what_happened", counters)
     parsed = _parse_analysis_json(out)
     return parsed if parsed else {"what_happened": out}
 
@@ -866,14 +925,16 @@ def deep_trading_update_memo(
 ) -> dict:
     if pdf_path and pdf_path.exists():
         user = f"Ticker: {ticker}\nTitle: {title}\n\nPlease analyse the attached trading update / guidance announcement PDF."
-        out = llm_chat(TRADING_UPDATE_PROMPT, user, counters, pdf_path=pdf_path)
+        out = llm_chat(TRADING_UPDATE_PROMPT, user, counters, pdf_path=pdf_path, fallback_text=text)
     elif is_meaningful_text(text, min_chars=600):
         user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
         out = llm_chat(TRADING_UPDATE_PROMPT, user, counters)
     else:
         return {"what_they_said": "Could not extract meaningful announcement text. Open the link and review manually."}
-    if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return {"what_they_said": "LLM could not run (limit/billing)."}
+    if out == LLM_SKIPPED:
+        return _skip_marker("what_they_said")
+    if out == LLM_FAILED:
+        return _failed_marker("what_they_said", counters)
     parsed = _parse_analysis_json(out)
     return parsed if parsed else {"what_they_said": out}
 
@@ -883,14 +944,16 @@ def deep_price_sensitive_memo(
 ) -> dict:
     if pdf_path and pdf_path.exists():
         user = f"Ticker: {ticker}\nTitle: {title}\n\nPlease analyse the attached ASX price-sensitive announcement PDF."
-        out = llm_chat(PRICE_SENSITIVE_PROMPT, user, counters, pdf_path=pdf_path)
+        out = llm_chat(PRICE_SENSITIVE_PROMPT, user, counters, pdf_path=pdf_path, fallback_text=text)
     elif is_meaningful_text(text, min_chars=600):
         user = f"Ticker: {ticker}\nTitle: {title}\n\nAnnouncement text:\n{text}"
         out = llm_chat(PRICE_SENSITIVE_PROMPT, user, counters)
     else:
         return {"what_happened": "Could not extract meaningful announcement text. Open the link and review manually."}
-    if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return {"what_happened": "LLM could not run (limit/billing)."}
+    if out == LLM_SKIPPED:
+        return _skip_marker("what_happened")
+    if out == LLM_FAILED:
+        return _failed_marker("what_happened", counters)
     parsed = _parse_analysis_json(out)
     return parsed if parsed else {"what_happened": out}
 
@@ -903,13 +966,35 @@ def deep_results_analysis(
     report_pdf: Optional[Path] = None,
     deck_pdf: Optional[Path] = None,
 ) -> dict:
-    if report_pdf and report_pdf.exists():
-        deck_context = f"\n\n=== INVESTOR DECK TEXT (extracted) ===\n{deck_text[:30_000]}" if deck_text else ""
-        user = (
-            f"Ticker: {ticker}\n"
-            f"Please analyse the attached financial results PDF as the primary source.{deck_context}"
-        )
-        out = llm_chat(RESULTS_HYFY_PROMPT, user, counters, pdf_path=report_pdf)
+    has_pdf = (report_pdf and report_pdf.exists()) or (deck_pdf and deck_pdf.exists())
+    if has_pdf:
+        # Send BOTH the financial report and the investor deck as native PDF
+        # document blocks (not extracted text) so table/chart fidelity is
+        # preserved for both — the deck is often the more table-heavy of
+        # the two. Each falls back independently to its extracted text if
+        # it's individually malformed/too large, or if attaching both would
+        # exceed Claude's combined per-request PDF budget.
+        attachments: List[PdfAttachment] = []
+        if report_pdf and report_pdf.exists():
+            try:
+                attachments.append(PdfAttachment(
+                    name=f"{report_pdf.name} (financial report)",
+                    pdf_bytes=report_pdf.read_bytes(),
+                    fallback_text=report_text,
+                ))
+            except Exception as e:
+                log(f"Could not read report PDF {report_pdf}: {e}")
+        if deck_pdf and deck_pdf.exists() and deck_pdf != report_pdf:
+            try:
+                attachments.append(PdfAttachment(
+                    name=f"{deck_pdf.name} (investor presentation)",
+                    pdf_bytes=deck_pdf.read_bytes(),
+                    fallback_text=deck_text,
+                ))
+            except Exception as e:
+                log(f"Could not read deck PDF {deck_pdf}: {e}")
+        user = f"Ticker: {ticker}\n\nPlease analyse the attached financial results PDF(s) as the primary source."
+        out = llm_chat_with_pdfs(RESULTS_HYFY_PROMPT, user, counters, attachments)
     elif is_meaningful_text(report_text, min_chars=MIN_RESULTS_TEXT_CHARS) or is_meaningful_text(deck_text, min_chars=MIN_RESULTS_TEXT_CHARS):
         user = (
             f"Ticker: {ticker}\n\n"
@@ -919,8 +1004,10 @@ def deep_results_analysis(
         out = llm_chat(RESULTS_HYFY_PROMPT, user, counters)
     else:
         return {"executive_summary": ["No meaningful report text or PDF available for analysis."]}
-    if out in ("__LLM_SKIPPED__", "__LLM_FAILED__"):
-        return {"executive_summary": ["LLM could not run (limit/billing)."]}
+    if out == LLM_SKIPPED:
+        return _skip_marker("executive_summary", as_list=True)
+    if out == LLM_FAILED:
+        return _failed_marker("executive_summary", counters, as_list=True)
     parsed = _parse_analysis_json(out)
     return parsed if parsed else {"executive_summary": [out]}
 
@@ -1014,6 +1101,19 @@ def main():
     asx_tickers, _lse_tickers = read_tickers()
     drive_folder_id = os.environ.get("GDRIVE_FOLDER_ID", "").strip()
 
+    # FORCE_RERUN_TICKERS lets a manual run re-process a ticker's announcements
+    # even if they're already recorded in seen_state — e.g. to verify a fix
+    # against a known past result-day PDF without clearing the whole state
+    # file. Forced tickers also skip the normal HOURS_BACK fetch window so a
+    # PDF from days/weeks ago can still be picked up.
+    force_rerun_tickers = frozenset(
+        t.strip().upper()
+        for t in os.environ.get("FORCE_RERUN_TICKERS", "").split(",")
+        if t.strip()
+    )
+    if force_rerun_tickers:
+        log(f"FORCE_RERUN_TICKERS active: {sorted(force_rerun_tickers)}")
+
     counters = {
         "MAX_LLM_CALLS_PER_RUN": MAX_LLM_CALLS_PER_RUN,
         "llm_calls": 0,
@@ -1039,7 +1139,11 @@ def main():
     by_ticker: Dict[str, List[Dict]] = {}
     for t in asx_tickers:
         try:
-            by_ticker[t] = fetch_asx_announcements_html(session, t, from_date=from_date)
+            # Forced tickers get the full ASX history window (no from_date
+            # filter) so a past result-day PDF can be found regardless of
+            # how long ago it was released.
+            fetch_from = None if t in force_rerun_tickers else from_date
+            by_ticker[t] = fetch_asx_announcements_html(session, t, from_date=fetch_from)
         except Exception as e:
             log(f"Fetch failed for {t}: {e}")
             by_ticker[t] = []
@@ -1056,7 +1160,7 @@ def main():
             fresh_items: List[Dict] = []
             for it in items:
                 key = announcement_key(ticker, it["url"])
-                if key in seen_state:
+                if key in seen_state and ticker not in force_rerun_tickers:
                     continue
                 it["seen_key"] = key
                 fresh_items.append(it)
@@ -1144,6 +1248,7 @@ def main():
                     analysed_via_pdf=bool(has_pdf),
                     drive_links=drive_links,
                     kind="results",
+                    failed=_is_llm_failure(analysis),
                 )
                 high_impact_blocks.append(block)
                 high_impact_items.append({
@@ -1219,6 +1324,7 @@ def main():
                         analysed_via_pdf=got_pdf,
                         drive_links=drive_links_item,
                         kind=item_kind,
+                        failed=_is_llm_failure(memo),
                     )
                     if pdf_path.exists():
                         try:
@@ -1274,6 +1380,7 @@ def main():
                         analysed_via_pdf=got_pdf,
                         drive_links=drive_links_item,
                         kind="price_sensitive",
+                        failed=_is_llm_failure(memo),
                     )
                     if pdf_path.exists():
                         try:
@@ -1320,26 +1427,7 @@ def main():
                 if ticker == "AR9":
                     brother_blocks.append(block)
 
-    silence_line = build_silence_line(session)
-
-    # If everything is empty, fetch the raw ASX response for BHP and include it in
-    # the email so we can see exactly what the API is returning.
-    if not high_impact_blocks and not material_blocks and not fyi_blocks:
-        try:
-            diag_url = (
-                "https://www.asx.com.au/asx/v2/statistics/announcements.do"
-                "?asxCode=BHP&by=asxCode&period=M6&timeframe=D"
-            )
-            r = session.get(diag_url, timeout=15)
-            raw = r.text[:1500]
-            silence_line += (
-                f"\n\n[BOB DIAGNOSTIC — raw ASX response for BHP (HTTP {r.status_code})]:\n{raw}"
-            )
-            log(f"Diagnostic fetch HTTP {r.status_code}, body[:200]: {r.text[:200]}")
-        except Exception as e:
-            silence_line += f"\n\n[BOB DIAGNOSTIC — fetch failed: {e}]"
-
-    body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks, silence_line)
+    body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks)
     send_email(subject, body_text, body_html)
 
     brother_email = os.environ.get("BROTHER_EMAIL", "").strip()

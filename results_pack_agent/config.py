@@ -23,8 +23,13 @@ ASX_HISTORY_MONTHS = 6
 HTTP_TIMEOUT_SECS = 30
 PDF_DOWNLOAD_TIMEOUT_SECS = 30
 
-# PDF size cap per document sent to Claude (~20 MB)
-MAX_PDF_BYTES = 20 * 1024 * 1024
+# Download-time sanity ceiling — generous on purpose. This is NOT the Claude
+# native-document-block limit (see shared.pdf_llm.MAX_PDF_BYTES for that);
+# it just stops us saving/holding pathologically large files. A PDF between
+# the Claude limit and this ceiling still gets downloaded and saved so
+# claude_runner can fall back to pypdf-extracted text instead of the
+# document silently vanishing from the pack.
+MAX_PDF_DOWNLOAD_BYTES = 60 * 1024 * 1024
 
 # Maximum PDFs to send per Claude request
 MAX_PDFS_PER_CALL = 10

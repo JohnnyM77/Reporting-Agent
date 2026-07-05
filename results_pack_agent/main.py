@@ -397,6 +397,7 @@ def run(
         include_strawman=do_strawman,
         dry_run=dry_run,
     )
+    llm_failures = prompt_artifacts.pop("_llm_failures", None)
     artifacts.update(prompt_artifacts)
 
     # ── 7. Build valuation workbook ─────────────────────────────────────────────
@@ -445,6 +446,16 @@ def run(
         valuation_path=valuation_path,
         artifacts=artifacts,
     )
+    if llm_failures and not dry_run:
+        # Claude did not produce a real analysis for one or more prompts
+        # (API/billing error, or no usable PDF/text content) — never report
+        # this run as a success just because local files were written.
+        summary.failure_reason = "CLAUDE_ANALYSIS_FAILED"
+        summary.failure_message = (
+            f"Claude analysis failed for: {', '.join(llm_failures)}. "
+            "Placeholder files were written — see logs above for the exact "
+            "API error and re-run once resolved."
+        )
     summary.print_summary()
     return summary
 

@@ -1,43 +1,7 @@
 {
-  "last_run": "2026-07-04",
-  "silence": false,
+  "last_run": "2026-07-05",
+  "silence": true,
   "high_impact": [],
   "material": [],
-  "fyi": [
-    {
-      "ticker": "ABB",
-      "title": "Becoming a substantial holder from MQG 139\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 418.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03111712"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03111493"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Notification regarding unquoted securities - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03111488"
-    },
-    {
-      "ticker": "VAS",
-      "title": "Distribution Reinvestment Plan Issue Price Announcement 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 170.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03111657"
-    },
-    {
-      "ticker": "VAS",
-      "title": "Distribution Tax Estimates 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 290.1KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03111556"
-    },
-    {
-      "ticker": "VHY",
-      "title": "Distribution Reinvestment Plan Issue Price Announcement 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 170.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03111657"
-    },
-    {
-      "ticker": "VHY",
-      "title": "Distribution Tax Estimates 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 289.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03111554"
-    }
-  ]
+  "fyi": []
 }

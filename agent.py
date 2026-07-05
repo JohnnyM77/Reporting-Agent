@@ -4,7 +4,8 @@
 # - Includes ALL announcements in an FYI section (headline-only, 2 lines + link)
 # - Uses Requests first for PDFs; if ASX consent gate blocks, falls back to Playwright
 # - Runs deep analysis only for HY/FY results, acquisitions, and capital/debt raises
-# - Produces clean email: HIGH IMPACT + MATERIAL + FYI or SILENCE
+# - Produces clean email: HIGH IMPACT + MATERIAL + FYI, or a plain
+#   no-announcements message with a local joke of the day
 # - Uploads PDFs to Google Drive for big announcements and includes Drive view links
 # - Never hallucinates off the ASX "Access to this site" legal page
 # - Optionally emails AR9 items to your brother (BROTHER_EMAIL secret)
@@ -69,24 +70,15 @@ MODEL_DEFAULT = "claude-sonnet-4-6"
 
 REQUESTS_PDF_TIMEOUT_SECS = 20
 HTML_TIMEOUT_SECS = 30
-FUN_CONTENT_TIMEOUT_SECS = 10
 
 COLOR_HIGH_IMPACT = "#F59E0B"
 COLOR_MATERIAL = "#3B82F6"
 COLOR_FYI = "#10B981"
-COLOR_SILENCE = "#6B7280"
 COLOR_BG = "#0B1220"
 COLOR_PANEL = "#111B2E"
 COLOR_TEXT = "#E5E7EB"
 
-JOKE_API_URL = os.environ.get(
-    "JOKE_API_URL",
-    "https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,racist,sexist,explicit&type=single",
-).strip()
-CARTOON_PAGE_URL = os.environ.get(
-    "CARTOON_PAGE_URL",
-    "https://www.cagle.com/category/political-cartoon/",
-).strip()
+_JOKES_FILE = Path(__file__).resolve().parent / "config" / "daily_jokes.txt"
 
 
 def log(msg: str):
@@ -147,56 +139,23 @@ def save_seen_state(path: Path, state: Dict[str, str]) -> None:
     path.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
 
 
-def fetch_joke_of_the_day(session: requests.Session) -> str:
+def _get_daily_joke() -> str:
+    """Return a deterministic joke-of-the-day from the local jokes file.
+
+    No network calls — reads config/daily_jokes.txt and rotates by date so
+    the same joke shows all day. Returns "" (never raises) if the file is
+    missing or empty.
+    """
     try:
-        resp = session.get(JOKE_API_URL, timeout=FUN_CONTENT_TIMEOUT_SECS, headers={"Accept": "application/json"})
-        resp.raise_for_status()
-        data = resp.json()
-        if isinstance(data, dict):
-            if data.get("type") == "single" and isinstance(data.get("joke"), str):
-                joke = data["joke"].strip()
-                if joke:
-                    return joke
-            if data.get("type") == "twopart":
-                setup = str(data.get("setup", "")).strip()
-                delivery = str(data.get("delivery", "")).strip()
-                joined = " — ".join([p for p in [setup, delivery] if p])
-                if joined:
-                    return joined
-    except Exception as e:
-        log(f"Joke fetch failed: {e}")
-    return "Why did the investor bring a ladder? To reach higher returns."
-
-
-def fetch_cartoon_of_the_day(session: requests.Session) -> Tuple[str, str]:
-    fallback_title = "Political cartoon pick"
-    fallback_url = CARTOON_PAGE_URL
-    try:
-        resp = session.get(CARTOON_PAGE_URL, timeout=FUN_CONTENT_TIMEOUT_SECS)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
-        for a in soup.select("a[href]"):
-            href = (a.get("href") or "").strip()
-            if not href:
-                continue
-            lowered = href.lower()
-            if "cagle.com" in lowered and "/cartoon/" in lowered:
-                title = " ".join(a.get_text(" ", strip=True).split()) or fallback_title
-                return title, href
-    except Exception as e:
-        log(f"Cartoon fetch failed: {e}")
-    return fallback_title, fallback_url
-
-
-def build_silence_line(session: requests.Session) -> str:
-    base = f"No announcements found in the last {HOURS_BACK} hours."
-    joke = fetch_joke_of_the_day(session)
-    cartoon_title, cartoon_url = fetch_cartoon_of_the_day(session)
-    return (
-        f"{base}\n"
-        f"Joke of the day: {joke}\n"
-        f"Cartoon of the day: {cartoon_title} — {cartoon_url}"
-    )
+        lines = [
+            ln.strip() for ln in _JOKES_FILE.read_text(encoding="utf-8").splitlines()
+            if ln.strip()
+        ]
+    except Exception:
+        return ""
+    if not lines:
+        return ""
+    return lines[today_sgt_date().toordinal() % len(lines)]
 
 
 def send_email(subject: str, body_text: str, body_html: Optional[str] = None, to_addr: Optional[str] = None):
@@ -640,8 +599,14 @@ def build_email(
     high_impact: List[str],
     material: List[str],
     fyi: List[str],
-    silence_line: str,
 ) -> Tuple[str, str]:
+    no_announcements = not high_impact and not material and not fyi
+    no_announcements_msg = f"No reportable announcements found in the last {HOURS_BACK} hours."
+    if no_announcements:
+        joke = _get_daily_joke()
+        if joke:
+            no_announcements_msg += f"\nJoke of the day: {joke}"
+
     lines: List[str] = []
     lines.append(f"{BOB_NAME} {VERSION_LABEL}")
     lines.append("=" * len(BOB_NAME))
@@ -663,8 +628,8 @@ def build_email(
         lines.append("-" * 60)
         lines.extend(fyi)
         lines.append("")
-    if not high_impact and not material and not fyi:
-        lines.append(silence_line)
+    if no_announcements:
+        lines.append(no_announcements_msg)
     body_text = "\n".join(lines)
 
     header_html = f"""
@@ -682,15 +647,10 @@ def build_email(
     sections_html += _html_section("HIGH IMPACT", COLOR_HIGH_IMPACT, high_impact)
     sections_html += _html_section("MATERIAL", COLOR_MATERIAL, material)
     sections_html += _html_section("FYI (ALL ANNOUNCEMENTS)", COLOR_FYI, fyi)
-    if not high_impact and not material and not fyi:
+    if no_announcements:
         sections_html += f"""
-        <div style="margin:18px 0;">
-          <div style="padding:10px 12px; background:{COLOR_SILENCE}; color:#0B1220; font-weight:800; border-radius:10px; letter-spacing:0.6px;">
-            SILENCE
-          </div>
-          <div style="margin-top:10px; padding:12px; background:{COLOR_PANEL}; border-radius:10px; color:{COLOR_TEXT};">
-            {htmlmod.escape(silence_line)}
-          </div>
+        <div style="margin:18px 0; padding:12px; background:{COLOR_PANEL}; border-radius:10px; color:{COLOR_TEXT};">
+          {htmlmod.escape(no_announcements_msg).replace(chr(10), "<br>")}
         </div>
         """
     footer_html = "</div>"
@@ -1467,26 +1427,7 @@ def main():
                 if ticker == "AR9":
                     brother_blocks.append(block)
 
-    silence_line = build_silence_line(session)
-
-    # If everything is empty, fetch the raw ASX response for BHP and include it in
-    # the email so we can see exactly what the API is returning.
-    if not high_impact_blocks and not material_blocks and not fyi_blocks:
-        try:
-            diag_url = (
-                "https://www.asx.com.au/asx/v2/statistics/announcements.do"
-                "?asxCode=BHP&by=asxCode&period=M6&timeframe=D"
-            )
-            r = session.get(diag_url, timeout=15)
-            raw = r.text[:1500]
-            silence_line += (
-                f"\n\n[BOB DIAGNOSTIC — raw ASX response for BHP (HTTP {r.status_code})]:\n{raw}"
-            )
-            log(f"Diagnostic fetch HTTP {r.status_code}, body[:200]: {r.text[:200]}")
-        except Exception as e:
-            silence_line += f"\n\n[BOB DIAGNOSTIC — fetch failed: {e}]"
-
-    body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks, silence_line)
+    body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks)
     send_email(subject, body_text, body_html)
 
     brother_email = os.environ.get("BROTHER_EMAIL", "").strip()

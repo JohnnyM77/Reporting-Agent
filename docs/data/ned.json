@@ -1,8 +1,8 @@
 {
   "agent": "Ned",
-  "last_run": "2026-07-05T01:12:49.669710Z",
+  "last_run": "2026-07-06T01:16:06.276739Z",
   "youtube_hits": 0,
-  "news_hits": 14,
-  "total_hits": 14,
-  "status": "ok"
+  "news_hits": 0,
+  "total_hits": 0,
+  "status": "silence"
 }

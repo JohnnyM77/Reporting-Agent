@@ -1,28 +1,37 @@
 {
-  "last_run": "2026-07-04T07:44:20.526192+00:00",
+  "last_run": "2026-07-07T23:31:14.756896+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-07-04T07:43:29.179669+00:00",
+      "run_timestamp": "2026-07-07T23:30:13.637048+00:00",
       "total": 74,
-      "flagged_count": 4,
+      "flagged_count": 5,
       "flagged": [
         {
           "ticker": "WPR.AX",
           "company_name": "Waypoint REIT",
-          "current_price": 2.4100000858306885,
+          "current_price": 2.4200000762939453,
           "low_52w": 2.3299999237060547,
           "high_52w": 2.7899999618530273,
-          "distance_to_low_pct": 3.433483465415184,
-          "below_high_pct": 13.620067427167823
+          "distance_to_low_pct": 3.86266761952241,
+          "below_high_pct": 13.261644825017852
         },
         {
           "ticker": "HSN.AX",
           "company_name": "Hansen Technologies Limited",
-          "current_price": 4.389999866485596,
+          "current_price": 4.260000228881836,
           "low_52w": 4.190000057220459,
           "high_52w": 6.489999771118164,
-          "distance_to_low_pct": 4.773265072406982,
-          "below_high_pct": 32.35747270713322
+          "distance_to_low_pct": 1.6706484655232514,
+          "below_high_pct": 34.360548857956594
+        },
+        {
+          "ticker": "GTK.AX",
+          "company_name": "Gentrack Group Limited",
+          "current_price": 3.0799999237060547,
+          "low_52w": 2.990000009536743,
+          "high_52w": 11.970000267028809,
+          "distance_to_low_pct": 3.0100305646238343,
+          "below_high_pct": 74.26900705934094
         },
         {
           "ticker": "CNU.AX",
@@ -36,50 +45,88 @@
         {
           "ticker": "ORG.AX",
           "company_name": "Origin Energy Limited",
-          "current_price": 10.359999656677246,
-          "low_52w": 10.359999656677246,
+          "current_price": 10.149999618530273,
+          "low_52w": 10.149999618530273,
           "high_52w": 13.069999694824219,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 20.734507279446575
+          "below_high_pct": 22.341240585110945
         }
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-07-04T07:43:59.309104+00:00",
+      "run_timestamp": "2026-07-07T23:30:49.701656+00:00",
       "total": 34,
-      "flagged_count": 0,
-      "flagged": []
+      "flagged_count": 1,
+      "flagged": [
+        {
+          "ticker": "SPZ.AX",
+          "company_name": "Smart Parking Limited",
+          "current_price": 0.800000011920929,
+          "low_52w": 0.7749999761581421,
+          "high_52w": 1.4199999570846558,
+          "distance_to_low_pct": 3.225811165403894,
+          "below_high_pct": 43.66196928883178
+        }
+      ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-07-04T07:44:08.324859+00:00",
+      "run_timestamp": "2026-07-07T23:31:00.713335+00:00",
       "total": 35,
       "flagged_count": 2,
       "flagged": [
         {
           "ticker": "OCL.AX",
           "company_name": "Objective Corporation Limited",
-          "current_price": 6.75,
+          "current_price": 6.78000020980835,
           "low_52w": 6.75,
           "high_52w": 22.899999618530273,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 70.52401697623601
+          "distance_to_low_pct": 0.4444475527162905,
+          "below_high_pct": 70.39301169104783
         },
         {
           "ticker": "SHJ.AX",
           "company_name": "Shine Justice Ltd",
-          "current_price": 0.6100000143051147,
-          "low_52w": 0.5899999737739563,
+          "current_price": 0.574999988079071,
+          "low_52w": 0.574999988079071,
           "high_52w": 0.7549999952316284,
-          "distance_to_low_pct": 3.3898375288438505,
-          "below_high_pct": 19.2052956082508
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 23.841060700581156
         }
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-07-04T07:44:20.526192+00:00",
+      "run_timestamp": "2026-07-07T23:31:14.756896+00:00",
       "total": 30,
-      "flagged_count": 0,
-      "flagged": []
+      "flagged_count": 3,
+      "flagged": [
+        {
+          "ticker": "CPRT",
+          "company_name": "Copart, Inc.",
+          "current_price": 29.270000457763672,
+          "low_52w": 28.100000381469727,
+          "high_52w": 49.970001220703125,
+          "distance_to_low_pct": 4.163701282600304,
+          "below_high_pct": 41.42485542778657
+        },
+        {
+          "ticker": "ORLY",
+          "company_name": "O'Reilly Automotive, Inc.",
+          "current_price": 86.6500015258789,
+          "low_52w": 84.23999786376953,
+          "high_52w": 107.81999969482422,
+          "distance_to_low_pct": 2.86087811398899,
+          "below_high_pct": 19.634574502750212
+        },
+        {
+          "ticker": "FIZZ",
+          "company_name": "National Beverage Corp.",
+          "current_price": 32.47999954223633,
+          "low_52w": 31.0,
+          "high_52w": 47.689998626708984,
+          "distance_to_low_pct": 4.7741920717300905,
+          "below_high_pct": 31.89347771537622
+        }
+      ]
     },
     "Test": {
       "run_timestamp": "2025-01-01T00:00:00",

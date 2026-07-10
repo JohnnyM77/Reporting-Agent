@@ -1,33 +1,38 @@
 {
-  "last_run": "2026-07-09",
+  "last_run": "2026-07-10",
   "silence": false,
   "high_impact": [],
   "material": [],
   "fyi": [
     {
-      "ticker": "CPU",
-      "title": "Notification of cessation of securities - CPU 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03113399"
+      "ticker": "BHP",
+      "title": "Notification regarding unquoted securities - BHP 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 16.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03113562"
     },
     {
-      "ticker": "CPU",
-      "title": "Notification regarding unquoted securities - CPU 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 16.8KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03113398"
+      "ticker": "IAG",
+      "title": "Notification of cessation of securities - IAG 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03113691"
     },
     {
-      "ticker": "CPU",
-      "title": "Notification regarding unquoted securities - CPU 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03113397"
+      "ticker": "RMD",
+      "title": "Statement of changes in beneficial ownership 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 13.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03113730"
     },
     {
       "ticker": "TWE",
-      "title": "Change in substantial holding 183\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 16.7MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03113289"
+      "title": "Notification of cessation of securities - TWE 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03113632"
     },
     {
-      "ticker": "WDS",
-      "title": "Appendix 3Z 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 288.8KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03113141"
+      "ticker": "TWE",
+      "title": "Notification of cessation of securities - TWE 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03113630"
+    },
+    {
+      "ticker": "TWE",
+      "title": "Notification regarding unquoted securities - TWE 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 16.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03113628"
     }
   ]
 }

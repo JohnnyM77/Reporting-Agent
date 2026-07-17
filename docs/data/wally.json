@@ -1,139 +1,139 @@
 {
-  "last_run": "2026-07-14T23:26:30.599126+00:00",
+  "last_run": "2026-07-17T23:25:14.501486+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-07-14T23:25:28.262853+00:00",
+      "run_timestamp": "2026-07-17T23:24:20.840372+00:00",
       "total": 74,
-      "flagged_count": 4,
+      "flagged_count": 2,
       "flagged": [
-        {
-          "ticker": "WPR.AX",
-          "company_name": "Waypoint REIT",
-          "current_price": 2.4200000762939453,
-          "low_52w": 2.3299999237060547,
-          "high_52w": 2.7899999618530273,
-          "distance_to_low_pct": 3.86266761952241,
-          "below_high_pct": 13.261644825017852
-        },
         {
           "ticker": "HSN.AX",
           "company_name": "Hansen Technologies Limited",
-          "current_price": 4.190000057220459,
-          "low_52w": 4.190000057220459,
+          "current_price": 4.139999866485596,
+          "low_52w": 4.139999866485596,
           "high_52w": 6.489999771118164,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 35.43913397552305
-        },
-        {
-          "ticker": "GTK.AX",
-          "company_name": "Gentrack Group Limited",
-          "current_price": 3.0799999237060547,
-          "low_52w": 2.950000047683716,
-          "high_52w": 10.960000038146973,
-          "distance_to_low_pct": 4.406775387153377,
-          "below_high_pct": 71.8978110129022
+          "below_high_pct": 36.209552966250506
         },
         {
           "ticker": "ORG.AX",
           "company_name": "Origin Energy Limited",
-          "current_price": 10.470000267028809,
+          "current_price": 10.529999732971191,
           "low_52w": 10.149999618530273,
           "high_52w": 13.069999694824219,
-          "distance_to_low_pct": 3.1527158672432685,
-          "below_high_pct": 19.892880554733463
+          "distance_to_low_pct": 3.7438436327344635,
+          "below_high_pct": 19.433818065496048
         }
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-07-14T23:26:03.370468+00:00",
+      "run_timestamp": "2026-07-17T23:24:45.863831+00:00",
       "total": 34,
-      "flagged_count": 1,
+      "flagged_count": 3,
       "flagged": [
+        {
+          "ticker": "ARB.AX",
+          "company_name": "ARB Corporation Limited",
+          "current_price": 17.790000915527344,
+          "low_52w": 17.010000228881836,
+          "high_52w": 40.81999969482422,
+          "distance_to_low_pct": 4.585541893886157,
+          "below_high_pct": 56.41841977332736
+        },
+        {
+          "ticker": "XRF.AX",
+          "company_name": "XRF Scientific Limited",
+          "current_price": 1.6799999475479126,
+          "low_52w": 1.625,
+          "high_52w": 2.3499999046325684,
+          "distance_to_low_pct": 3.384612156794621,
+          "below_high_pct": 28.510637628702916
+        },
         {
           "ticker": "SPZ.AX",
           "company_name": "Smart Parking Limited",
-          "current_price": 0.75,
-          "low_52w": 0.75,
+          "current_price": 0.7149999737739563,
+          "low_52w": 0.7149999737739563,
           "high_52w": 1.4199999570846558,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 47.18309699531298
+          "below_high_pct": 49.64788764910291
         }
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-07-14T23:26:14.597101+00:00",
+      "run_timestamp": "2026-07-17T23:25:00.870234+00:00",
       "total": 35,
       "flagged_count": 3,
       "flagged": [
         {
-          "ticker": "OCL.AX",
-          "company_name": "Objective Corporation Limited",
-          "current_price": 6.820000171661377,
-          "low_52w": 6.75,
-          "high_52w": 22.899999618530273,
-          "distance_to_low_pct": 1.0370395801685475,
-          "below_high_pct": 70.21833936563583
+          "ticker": "AIM.AX",
+          "company_name": "Ai-Media Technologies Limited",
+          "current_price": 0.20000000298023224,
+          "low_52w": 0.19499999284744263,
+          "high_52w": 0.949999988079071,
+          "distance_to_low_pct": 2.5641078544558447,
+          "below_high_pct": 78.94736784316827
         },
         {
           "ticker": "EOL.AX",
           "company_name": "Energy One Limited",
-          "current_price": 11.300000190734863,
-          "low_52w": 11.300000190734863,
+          "current_price": 11.079999923706055,
+          "low_52w": 11.079999923706055,
           "high_52w": 19.829999923706055,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 43.015631698383835
+          "below_high_pct": 44.12506320557112
         },
         {
           "ticker": "SHJ.AX",
           "company_name": "Shine Justice Ltd",
-          "current_price": 0.5699999928474426,
+          "current_price": 0.5899999737739563,
           "low_52w": 0.5699999928474426,
           "high_52w": 0.7549999952316284,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 24.503311728820496
+          "distance_to_low_pct": 3.508768627628134,
+          "below_high_pct": 21.854307615863142
         }
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-07-14T23:26:30.599126+00:00",
+      "run_timestamp": "2026-07-17T23:25:14.501486+00:00",
       "total": 30,
       "flagged_count": 4,
       "flagged": [
         {
           "ticker": "CPRT",
           "company_name": "Copart, Inc.",
-          "current_price": 27.520000457763672,
-          "low_52w": 27.450000762939453,
+          "current_price": 27.610000610351562,
+          "low_52w": 27.280000686645508,
           "high_52w": 49.970001220703125,
-          "distance_to_low_pct": 0.2550079886290062,
-          "below_high_pct": 44.926956602991176
+          "distance_to_low_pct": 1.2096771092370278,
+          "below_high_pct": 44.74684823719309
         },
         {
           "ticker": "ORLY",
           "company_name": "O'Reilly Automotive, Inc.",
-          "current_price": 85.75,
-          "low_52w": 84.23999786376953,
+          "current_price": 86.05000305175781,
+          "low_52w": 82.7300033569336,
           "high_52w": 107.81999969482422,
-          "distance_to_low_pct": 1.7925002071728444,
-          "below_high_pct": 20.46930046122386
+          "distance_to_low_pct": 4.013053982967076,
+          "below_high_pct": 20.191056116383436
         },
         {
           "ticker": "FIZZ",
           "company_name": "National Beverage Corp.",
-          "current_price": 30.920000076293945,
-          "low_52w": 30.920000076293945,
+          "current_price": 31.06999969482422,
+          "low_52w": 30.850000381469727,
           "high_52w": 47.689998626708984,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 35.16460271194667
+          "distance_to_low_pct": 0.7131258043245807,
+          "below_high_pct": 34.85007215449292
         },
         {
           "ticker": "NFLX",
           "company_name": "Netflix, Inc.",
-          "current_price": 73.52999877929688,
-          "low_52w": 70.9000015258789,
-          "high_52w": 127.41699981689453,
-          "distance_to_low_pct": 3.709445975763491,
-          "below_high_pct": 42.29184576236793
+          "current_price": 68.94999694824219,
+          "low_52w": 68.94999694824219,
+          "high_52w": 126.32499694824219,
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 45.418564326985624
         }
       ]
     },

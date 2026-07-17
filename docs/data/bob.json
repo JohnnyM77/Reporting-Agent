@@ -1,58 +1,23 @@
 {
-  "last_run": "2026-07-16",
+  "last_run": "2026-07-17",
   "silence": false,
-  "high_impact": [
-    {
-      "ticker": "BHP",
-      "title": "Quarterly Activities Report 25\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 655.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03115448",
-      "type": "trading_update",
-      "analysis": {
-        "what_they_said": "BHP FY26 operational review (year ended 30 June 2026). Copper production 1,953 kt, down 3% vs FY25 2,017 kt, but within FY26 guidance range of 1,900-2,000 kt. Record WAIO iron ore 256.9 Mt (BHP share), up 0% vs FY25 but a record; total group iron ore 264.7 Mt, up 1%. Steelmaking coal BMA 18.6 Mt, up 3%. Energy coal NSWEC 16.4 Mt, up 9%, exceeding guidance top end. Average realised copper price US$5.74/lb, up 35% YoY. Iron ore US$84.56/wmt, up 3%. Steelmaking coal US$210.21/t, up 8%. Unit costs: all copper assets at bottom end of guidance; WAIO within range; BMA towards top end. Net debt expected ~US$9bn at 30 June 2026. Jansen Stage 1 (potash) 84% complete, first production mid-CY27. Key exceptional items: Jansen impairment ~US$2.3bn pre/post-tax; WA Nickel negative EBITDA ~US$150m H2; Jansen negative EBITDA ~US$150m H2; higher D&A ~US$450m H2 vs H1. Net cash tax paid US$5.4-5.5bn. Antamina silver streaming proceeds ~US$4.3bn financing inflow. Capex ~US$5bn.",
-        "vs_prior_guidance": "In-line to marginally positive on production metrics. Copper FY26 at 1,953 kt lands within the 1,900-2,000 kt range but below FY25 actuals. Unit costs better than expected — copper assets at bottom end is a genuine beat on costs. NSWEC beat top end of 14-16 Mt guidance at 16.4 Mt. Management is framing this positively by leading with 'record' iron ore and 'second consecutive ~2 Mt copper' while burying the 3% copper volume decline and the US$2.3bn Jansen impairment in the financial disclosures table. The Jansen impairment is material and was not pre-flagged in prior guidance language.",
-        "the_numbers": "FY26 actuals: Copper 1,953 kt (guidance 1,900-2,000 kt); Iron ore 264.7 Mt (guidance 258-269 Mt); BMA coal 18.6 Mt (guidance 18-20 Mt); NSWEC 16.4 Mt (guidance 14-16 Mt). FY27 guidance: Copper 1,650-1,800 kt (sharp step-down of ~8-15% from FY26); Escondida 1,000-1,100 kt vs FY26 1,261 kt (-13% to -21%); Copper SA 290-320 kt vs FY26 321 kt; Iron ore 260-272 Mt; BMA 18.5-20.5 Mt. Net debt ~US$9bn. Jansen impairment ~US$2.3bn. Capex ~US$5bn. Antamina streaming proceeds ~US$4.3bn. Tax paid US$5.4-5.5bn. RCII funding US$100-150m charge. Effective tax rate lower half of 36-40% range. Escondida FY27 grade ~0.70% vs FY26 0.90% — significant grade cliff. Medium-term Escondida guidance 900-1,000 ktpa (FY28-FY31 average), implying FY27 1,000-1,100 kt is itself a transition year before further decline.",
-        "why_happening": "1. Escondida grade decline is the dominant copper volume driver — feed grade fell from 1.02% in FY25 to 0.90% in FY26, dropping further to ~0.70% in FY27, a 31% grade deterioration in two years. This is structural/geological, not operational. 2. Spence (Pampa Norte) down 21% on complex hypogene ore processing issues; concentrator upgrade not online until FY28. 3. Carrapateena underground conveyor belt failure post period-end (July 2026) adds up to 8 weeks production impact on top of planned smelter maintenance inventory build — compounding Copper SA FY27 guidance cut. 4. Jansen impairment of US$2.3bn signals reduced expected returns from the potash project despite 84% completion — no detailed explanation given. 5. WA Nickel remains suspended, still burning ~US$150m EBITDA negative in H2. 6. BMA geotechnical issues at Broadmeadow and cyclone weather disruptions partially offset by operational recovery.",
-        "balance_sheet": "Net debt guided to ~US$9bn at 30 June 2026. The US$4.3bn Antamina silver streaming proceeds are a financing inflow that materially cushions the balance sheet in H2 FY26 — without this, net debt would be ~US$13bn+. Capex of ~US$5bn plus Jansen Stage 2 (US$6.9bn total, 16% complete) and Ministers North approval (~US$0.9bn, 100% basis) mean capital commitments remain substantial. Tax payment of US$5.4-5.5bn is a large cash drain. The Jansen impairment (US$2.3bn) is flagged as pre- and post-tax, suggesting limited tax shield. No change to dividend framework disclosed but H1 FY26 dividend was ~US$3.7bn outflow. No incremental funding need flagged explicitly, but free cash flow generation will be tested in FY27 with lower copper volumes and ongoing Jansen Stage 2 spend.",
-        "red_flags": [
-          "Copper FY27 guidance of 1,650-1,800 kt is a 10-15% step-down from FY26 1,953 kt — largest single-year production drop in the portfolio's recent history, driven by Escondida grade falling to ~0.70%. This is not a one-year issue; medium-term guidance averages 900-1,000 ktpa at Escondida alone (FY28-FY31), implying the asset loses ~200 kt of annual production permanently at current mine plan.",
-          "Jansen US$2.3bn impairment on a project 84% complete and US$8.4bn total committed is deeply concerning — management provides no explanation of the impairment trigger, discount rate changes, or revised return assumptions. A feasibility-stage impairment of this scale on a near-complete project suggests potash market assumptions have deteriorated materially or project costs have blown out further.",
-          "Carrapateena conveyor belt failure (July 2026, post period-end) is an unplanned operational event adding to already reduced FY27 Copper SA guidance of 290-320 kt vs FY26 321 kt. The combination of this, smelter maintenance inventory build, and Prominent Hill weather-related sales deferrals suggests H1 FY27 copper volumes will be heavily back-end weighted.",
-          "AUD/USD realised at 0.68 vs guidance assumption of 0.65 — a 4.5% stronger AUD inflates reported unit costs in USD terms relative to guidance. Management neutralises this by reporting costs 'at guidance FX rates', obscuring the true cash cost headwind. At spot AUD, WAIO and BMA unit costs would look worse.",
-          "WA Nickel remains in suspension burning ~US$150m EBITDA negative per half with no restart timeline or divestment update disclosed — a stranded asset with ongoing cash drag and no resolution in sight.",
-          "Antamina copper FY27 guidance 120-140 kt vs FY26 152 kt (down ~18%) due to planned grade decline — a third major copper asset with volume headwinds simultaneously.",
-          "Samarco financial impact from dam failure still 'not yet finalised' after years — ongoing legal and remediation tail risk unquantified in this release."
-        ],
-        "bottom_line": "Operationally BHP delivered a solid FY26 — costs controlled, iron ore at records, copper at the top of guidance — but the forward picture is materially worse: FY27 copper production falls ~10-15% driven by a severe and structural Escondida grade cliff, three of four copper assets face simultaneous volume headwinds, and a US$2.3bn impairment on a nearly-complete Jansen with no explanation is a red flag management is actively downplaying. The headline 'record production' framing is misleading given the volume step-down already baked into FY27 guidance.",
-        "key_questions": [
-          "What specifically triggered the US$2.3bn Jansen impairment at 84% completion — is this a potash price assumption reset, cost overrun, or revised operational ramp-up timeline, and what is the revised IRR/NPV for Stage 1 and Stage 2?",
-          "Escondida grade drops from 0.90% in FY26 to ~0.70% in FY27 and medium-term guidance averages 900-1,000 ktpa — what is the expected grade recovery profile beyond FY31 and when does Los Colorados concentrator optimisation and leaching technology sufficiently offset the structural grade decline?",
-          "With copper production down ~300 kt in FY27 at roughly US$5-6/lb spot prices, what is the expected free cash flow generation for FY27 after capex (~US$5bn run-rate), Jansen Stage 2 drawdown, and dividends — and does net debt of ~US$9bn remain stable or does BHP need to cut returns to shareholders?"
-        ]
-      },
-      "drive_links": []
-    }
-  ],
+  "high_impact": [],
   "material": [],
   "fyi": [
     {
-      "ticker": "BHP",
-      "title": "Quarterly Activities Report 25\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 655.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03115448"
+      "ticker": "ABB",
+      "title": "Notification regarding unquoted securities - ABB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 22.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03115633"
     },
     {
-      "ticker": "MSV",
-      "title": "Extension of share buy-back 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 277.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03115464"
+      "ticker": "CAT",
+      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 205.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03115646"
     },
     {
-      "ticker": "MSV",
-      "title": "Update - Notification of buy-back - MSV 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 16.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03115459"
-    },
-    {
-      "ticker": "MSV",
-      "title": "Investor Webinar - FY26 Q4 update 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 219.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03115251"
+      "ticker": "CAT",
+      "title": "Notification regarding unquoted securities - CAT 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 21.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03115644"
     }
   ]
 }

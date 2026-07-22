@@ -1,13 +1,47 @@
 {
-  "last_run": "2026-07-21",
+  "last_run": "2026-07-22",
   "silence": false,
-  "high_impact": [],
+  "high_impact": [
+    {
+      "ticker": "MSV",
+      "title": "Quarterly Investor Update 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 215.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03116987",
+      "type": "trading_update",
+      "analysis": {
+        "what_they_said": "FY26 Q4 revenue $56.5m (+12% vs FY25 Q4), Q4 EBITDA $10.2m (+32%, 18% margin), Q4 operating cash flow $12.3m (120.9% conversion). Full year FY26: revenue $207.4m (+5.5%), EBITDA $42.8m (+67%, 20.6% margin), EBT $20.8m (vs $0.7m prior year), PAT guided ~$15.2m, ROIC 25.2%, operating cash flow $37.4m (+109%), capex $21.3m. Net cash position $3.5m at 30 June 2026 (vs net debt $8.4m at 30 June 2025). Exited FY26 with 65 operating rigs. Gold = 61% revenue, coal = 30%. Loop Decarbonisation: drilling commenced on second customer contract.",
+        "vs_prior_guidance": "No explicit prior numerical guidance provided in this document for comparison. This is a positive trading update — genuine operational improvement, not corporate spin. The FY26 result represents a step-change from FY25: EBITDA nearly doubled, EBT went from near-zero to $20.8m. Management is not dressing up a miss; the numbers are directionally and materially better across all key metrics. The rig count trough narrative (April 2026 low) is a forward-looking positive framing, which is credible given the exit count of 65 vs average of 62 in Q4.",
+        "the_numbers": "FY26 revenue $207.4m; EBITDA $42.8m (20.6% margin); EBT $20.8m; PAT ~$15.2m (estimated, tax not finalised); ROIC 25.2%; net cash $3.5m (cash $12.1m, equipment finance debt $8.6m); capex $21.3m; operating cash flow $37.4m. Q4 annualised revenue run-rate ~$226m, EBITDA run-rate ~$40.7m. Exit rig count 65. FY27 rig count: 'expected to continue increasing throughout H1 FY27' — vague, no target number given. Dividend: 'a portion of earnings' — quantum unspecified.",
+        "why_happening": "1) Successful commodity mix shift away from declining Queensland coal (30% of revenue) toward gold (61%), which carries better pricing/margins. 2) Revenue per rig improved 8.4% YoY ($3,373k annualised vs $3,112k) — pricing power or mix upgrade. 3) Operating leverage: revenue +5.5% on roughly flat volumes drove EBITDA +67%, suggesting FY25 had meaningful stranded/transitional costs that have now been absorbed. 4) Queensland coal demobilisations are complete (final rigs off in April 2026), removing drag. 5) New contract wins and scope expansions driving rig count recovery from April trough.",
+        "balance_sheet": "Balance sheet materially improved — swung from $8.4m net debt to $3.5m net cash in 12 months on $37.4m operating cash flow vs $21.3m capex. Debt is exclusively equipment finance ($8.6m), low risk. No equity funding required. Net cash position creates optionality for dividends, buybacks, or growth capex. If rig count grows in H1 FY27 as guided, incremental capex for new rigs could absorb some cash, but at current cash conversion rates this is self-funding. No balance sheet stress.",
+        "red_flags": [
+          "No explicit FY27 earnings guidance — 'rig count to continue increasing' is directional only; investors cannot model earnings without margin and volume targets",
+          "Q4 cash conversion ratio declined to 120.9% vs 143.1% in Q4 FY25, and full year was 87.4% — full-year conversion below 100% means working capital absorbed cash; bears watching as revenue scales",
+          "Coal still 30% of revenue — residual exposure to a structurally declining commodity; further customer decisions could cause unexpected demobilisations",
+          "Loop Decarbonisation is early-stage with no disclosed revenue, contract values, or financial contribution — qualitative progress language ('initial indications are positive') is not measurable",
+          "PAT of ~$15.2m is an estimate — tax numbers not yet finalised, creating minor uncertainty on the bottom line",
+          "Dividend quantum is unspecified — 'a portion of earnings' is deliberately vague; could disappoint if capital allocation priorities shift toward growth"
+        ],
+        "bottom_line": "This is a genuine, clean operational recovery — MSV delivered a step-change year with EBITDA up 67%, ROIC of 25%, and a balance sheet that flipped to net cash, all driven by a credible commodity mix shift and operating leverage. The key outstanding question is the pace and margin profile of the H1 FY27 rig ramp, for which management has offered direction but no numbers.",
+        "key_questions": [
+          "What is the target operating rig count and associated EBITDA margin assumption for H1 FY27, and what is the incremental capex per new rig deployed?",
+          "What is the gold price sensitivity in the revenue base — given 61% gold exposure, how does a 10-15% gold price correction affect contract pricing and client drilling budgets?",
+          "What is the Board's specific dividend payout ratio or absolute quantum under consideration, and is a buyback being evaluated given the net cash position and likely market cap discount?"
+        ]
+      },
+      "drive_links": []
+    }
+  ],
   "material": [],
   "fyi": [
     {
       "ticker": "DRO",
-      "title": "Change in substantial holding 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 499.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03116469"
+      "title": "Becoming a substantial holder 38\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.8MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03116972"
+    },
+    {
+      "ticker": "MSV",
+      "title": "Quarterly Investor Update 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 215.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03116987"
     }
   ]
 }

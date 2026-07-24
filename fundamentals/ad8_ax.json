@@ -1,9 +1,9 @@
 {
   "annual_div_cents": {},
   "annual_eps_cents": {
-    "2022": -2.36,
-    "2023": -1.93,
-    "2024": -0.64
+    "2022": -5.8,
+    "2023": 13.59,
+    "2024": 12.49
   },
   "last_updated": "2026-07-24",
   "quarterly_eps_cents": {},
@@ -12,5 +12,5 @@
     "2023": "yfinance",
     "2024": "yfinance"
   },
-  "ticker": "AIM.AX"
+  "ticker": "AD8.AX"
 }

@@ -1,23 +1,61 @@
 {
-  "last_run": "2026-07-23",
+  "last_run": "2026-07-24",
   "silence": false,
-  "high_impact": [],
-  "material": [],
+  "high_impact": [
+    {
+      "ticker": "MVP",
+      "title": "Appendix 4C and Quarterly Activity Report 30 June 2026 8\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 375.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03117758",
+      "type": "trading_update",
+      "analysis": {
+        "what_they_said": "FY26 group revenue $42.6m (+$3.5m vs pcp); Q4 revenue $10.5m (+$0.3m vs pcp). Pain Management (Penthrox) full year revenue $31.7m (+$5.4m vs pcp), Q4 $7.9m (+$0.4m). Australian hospital segment volume +28% YoY. European in-market Penthrox volume +18% YoY. Respiratory full year revenue $10.9m (-$1.9m vs pcp), Q4 $2.6m (-$0.1m). Operating cash flow FY26 $5.8m (vs ~$0m pcp). Q4 operating cash flow $3.0m. Cash at 30 June 2026: $21.4m. No debt facilities. Paediatric label approved UK and all EU markets. FY26 EBIT guided as 'modestly improved' on FY25.",
+        "vs_prior_guidance": "Upgrade relative to prior trajectory — first positive free cashflow year signals a meaningful operational improvement. However EBIT guidance uses the vague qualifier 'modestly improved on FY25' rather than a hard number, which management is deploying to avoid committing to a specific figure. No explicit prior EBIT guidance number disclosed in this release for comparison. European volume uplift partly flattered by inventory stocking related to France supply transition from 1 July 2025 — management acknowledges this in passing but does not quantify the inventory pull-forward component.",
+        "the_numbers": "FY26 revenue: $42.6m; FY25 implied revenue: ~$39.1m (+9% YoY). Pain Management revenue FY26: $31.7m; Respiratory FY26: $10.9m. Q4 revenue: $10.5m. Operating cash FY26: $5.8m vs ~$0 pcp. Capex + IP spend FY26: $0.8m (minimal). Cash: $21.4m. FY26 EBIT: 'modestly improved on FY25' — NO absolute EBIT number provided; FY25 EBIT not disclosed in this release for reference. Inventory-related European volume boost: unquantified. Paediatric label revenue contribution: described only as 'future periods' with no timeline or sizing.",
+        "why_happening": "Penthrox Australia hospital segment gaining traction via targeted ED clinical engagement (+28% volume). European underlying demand growing (+18% in-market) but partly aided by one-off inventory build ahead of France supply transition. Australian pricing higher. France transfer prices lower post-transition (partially offsetting revenue per unit). Respiratory segment (US-focused) still declining on volumes despite higher pricing — volume stabilisation in Q4 is a modest positive. Overhead reduction driving operating leverage and cashflow inflection.",
+        "balance_sheet": "No change to funding needs. $21.4m cash, zero debt facilities, capex de minimis at $0.8m for the year. Company is now self-funding. No equity issuance in the period. Employee Trust share purchase ($0.5m) was only material non-operating cash use. Balance sheet is clean and no dilution risk apparent near-term.",
+        "red_flags": [
+          "EBIT guidance is purely qualitative — 'modestly improved on FY25' with no absolute number disclosed; FY25 EBIT baseline not provided in this release, making the guidance essentially unverifiable at this stage",
+          "European volume growth of 18% partially inflated by inventory stocking ahead of France supply transition from 1 July 2025 — pull-forward quantum not quantified, raising questions about underlying run-rate demand",
+          "Respiratory segment continues to shrink: full year revenue down $1.9m (-15% approx) with only 'stabilisation' in Q4 — management offers no recovery pathway or timeline",
+          "Paediatric label upside characterised entirely in vague terms ('benefits in future periods') with no revenue sizing, adoption timeline, or partner commitment disclosed",
+          "Q4 group revenue growth of only $0.3m vs pcp suggests momentum is decelerating into year-end despite full-year headline growth"
+        ],
+        "bottom_line": "MVP has delivered a genuine operational improvement — first positive free cashflow year, Penthrox Australia gaining real clinical traction, and a clean balance sheet — but the headline numbers are modest in absolute terms and the EBIT 'upgrade' guidance is deliberately vague, European volume is partly a stocking artefact, and the Respiratory drag has no visible fix. This is a credible stabilisation story, not a breakout.",
+        "key_questions": [
+          "What is the actual FY25 EBIT baseline and what does 'modestly improved' translate to in dollar terms — given staff costs of $14.9m and manufacturing/operating costs of $13.1m against $42.6m revenue, EBIT margins appear thin and the range of 'modest' matters enormously for valuation?",
+          "How much of the European volume growth (18% in-market) is genuine underlying demand versus one-off inventory pre-loading by the French partner ahead of the 1 July 2025 supply transition, and what is the normalised run-rate?",
+          "What is the concrete commercialisation plan and revenue ramp timeline for the paediatric Penthrox indication in the UK and EU — which partners, which channels, and what incremental volume uplift is management internally modelling for FY27?"
+        ]
+      },
+      "drive_links": []
+    }
+  ],
+  "material": [
+    {
+      "ticker": "AHC",
+      "title": "Austco Healthcare Secures A$4.2m Maintenance Contract 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 187.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03117789",
+      "analysis": {
+        "what_happened": "Austco Healthcare won a A$4.2 million, 10-year maintenance contract for its Tacera platform at Jurong Health Complex in Singapore, running October 2026 to September 2036.",
+        "so_what": "Adds ~A$420k in annualised recurring revenue, extending an existing customer relationship and converting installed base into long-term predictable service revenue, which supports valuation multiple expansion if the company continues to grow this recurring revenue mix."
+      }
+    }
+  ],
   "fyi": [
     {
-      "ticker": "ATP",
-      "title": "Notification regarding unquoted securities - ATP 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.9KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03117254"
+      "ticker": "AHC",
+      "title": "Austco Healthcare Secures A$4.2m Maintenance Contract 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 187.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03117789"
     },
     {
-      "ticker": "CAT",
-      "title": "Catapult launches IMPECT Video Scouting 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 439.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03117433"
+      "ticker": "MVP",
+      "title": "Appendix 4C and Quarterly Activity Report 30 June 2026 8\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 375.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03117758"
     },
     {
       "ticker": "WDS",
-      "title": "Sustainability Focus Session 2026 18\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.4MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03117213"
+      "title": "Sustainability Focus Session 2026 Transcript 12\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 254.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03117660"
     }
   ]
 }

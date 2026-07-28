@@ -1,178 +1,79 @@
 {
-  "last_run": "2026-07-24T23:34:18.158705+00:00",
+  "last_run": "2026-07-28T23:31:47.388945+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-07-24T23:32:39.918773+00:00",
+      "run_timestamp": "2026-07-28T23:30:42.672036+00:00",
       "total": 74,
-      "flagged_count": 7,
+      "flagged_count": 4,
       "flagged": [
-        {
-          "ticker": "LOV.AX",
-          "company_name": "Lovisa Holdings Limited",
-          "current_price": 20.65999984741211,
-          "low_52w": 20.270000457763672,
-          "high_52w": 43.13999938964844,
-          "distance_to_low_pct": 1.924022599116729,
-          "below_high_pct": 52.10941089542636
-        },
         {
           "ticker": "HSN.AX",
           "company_name": "Hansen Technologies Limited",
-          "current_price": 3.9800000190734863,
-          "low_52w": 3.9800000190734863,
+          "current_price": 4.0,
+          "low_52w": 3.950000047683716,
           "high_52w": 6.489999771118164,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 38.67488198096237
+          "distance_to_low_pct": 1.265821562346669,
+          "below_high_pct": 38.366715854123385
         },
         {
           "ticker": "GTK.AX",
           "company_name": "Gentrack Group Limited",
-          "current_price": 2.9800000190734863,
+          "current_price": 2.9700000286102295,
           "low_52w": 2.9000000953674316,
-          "high_52w": 10.130000114440918,
-          "distance_to_low_pct": 2.758617968111434,
-          "below_high_pct": 70.58242857445461
-        },
-        {
-          "ticker": "CNU.AX",
-          "company_name": "Chorus Limited",
-          "current_price": 7.869999885559082,
-          "low_52w": 7.550000190734863,
-          "high_52w": 8.90999984741211,
-          "distance_to_low_pct": 4.238406446888742,
-          "below_high_pct": 11.672278110701575
-        },
-        {
-          "ticker": "TLS.AX",
-          "company_name": "Telstra Group Limited",
-          "current_price": 4.889999866485596,
-          "low_52w": 4.71999979019165,
-          "high_52w": 5.550000190734863,
-          "distance_to_low_pct": 3.6016966917501203,
-          "below_high_pct": 11.891897325536458
+          "high_52w": 9.970000267028809,
+          "distance_to_low_pct": 2.4137907220975046,
+          "below_high_pct": 70.21063240657938
         },
         {
           "ticker": "MAF.AX",
           "company_name": "MA Financial Group Limited",
-          "current_price": 5.71999979019165,
+          "current_price": 5.75,
           "low_52w": 5.71999979019165,
           "high_52w": 11.329999923706055,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 49.514564618632114
+          "distance_to_low_pct": 0.5244792116914474,
+          "below_high_pct": 49.24977900512493
         },
         {
           "ticker": "ORG.AX",
           "company_name": "Origin Energy Limited",
-          "current_price": 10.619999885559082,
+          "current_price": 10.640000343322754,
           "low_52w": 10.149999618530273,
           "high_52w": 13.069999694824219,
-          "distance_to_low_pct": 4.630544676777682,
-          "below_high_pct": 18.745217034973216
+          "distance_to_low_pct": 4.827593529145697,
+          "below_high_pct": 18.59219134078294
         }
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-07-24T23:33:26.582760+00:00",
+      "run_timestamp": "2026-07-28T23:31:17.904553+00:00",
       "total": 34,
-      "flagged_count": 7,
+      "flagged_count": 2,
       "flagged": [
-        {
-          "ticker": "WTC.AX",
-          "company_name": "WiseTech Global Limited",
-          "current_price": 30.020000457763672,
-          "low_52w": 28.760000228881836,
-          "high_52w": 120.5,
-          "distance_to_low_pct": 4.381085601023389,
-          "below_high_pct": 75.08713654957371
-        },
-        {
-          "ticker": "AD8.AX",
-          "company_name": "Audinate Group Limited",
-          "current_price": 1.8250000476837158,
-          "low_52w": 1.75,
-          "high_52w": 6.889999866485596,
-          "distance_to_low_pct": 4.285717010498047,
-          "below_high_pct": 73.51233551453464
-        },
-        {
-          "ticker": "XRO.AX",
-          "company_name": "Xero Limited",
-          "current_price": 61.58000183105469,
-          "low_52w": 61.58000183105469,
-          "high_52w": 180.99000549316406,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 65.97602079558999
-        },
         {
           "ticker": "PNV.AX",
           "company_name": "PolyNovo Limited",
-          "current_price": 0.8550000190734863,
-          "low_52w": 0.8550000190734863,
+          "current_price": 0.8500000238418579,
+          "low_52w": 0.8149999976158142,
           "high_52w": 1.625,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 47.38461421086238
+          "distance_to_low_pct": 4.294481758089831,
+          "below_high_pct": 47.69230622511644
         },
         {
-          "ticker": "FMG.AX",
-          "company_name": "Fortescue Ltd",
-          "current_price": 18.56999969482422,
-          "low_52w": 17.770000457763672,
-          "high_52w": 22.989999771118164,
-          "distance_to_low_pct": 4.5019652023195595,
-          "below_high_pct": 19.22575084949194
-        },
-        {
-          "ticker": "SPZ.AX",
-          "company_name": "Smart Parking Limited",
-          "current_price": 0.6499999761581421,
-          "low_52w": 0.6499999761581421,
-          "high_52w": 1.4199999570846558,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 54.22535240827537
-        },
-        {
-          "ticker": "TLS.AX",
-          "company_name": "Telstra Group Limited",
-          "current_price": 4.889999866485596,
-          "low_52w": 4.71999979019165,
-          "high_52w": 5.550000190734863,
-          "distance_to_low_pct": 3.6016966917501203,
-          "below_high_pct": 11.891897325536458
+          "ticker": "XRF.AX",
+          "company_name": "XRF Scientific Limited",
+          "current_price": 1.684999942779541,
+          "low_52w": 1.625,
+          "high_52w": 2.3499999046325684,
+          "distance_to_low_pct": 3.692304171048678,
+          "below_high_pct": 28.297871865531103
         }
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-07-24T23:33:52.498616+00:00",
+      "run_timestamp": "2026-07-28T23:31:30.951624+00:00",
       "total": 35,
-      "flagged_count": 7,
+      "flagged_count": 3,
       "flagged": [
-        {
-          "ticker": "WTC.AX",
-          "company_name": "WiseTech Global Limited",
-          "current_price": 30.020000457763672,
-          "low_52w": 28.760000228881836,
-          "high_52w": 120.5,
-          "distance_to_low_pct": 4.381085601023389,
-          "below_high_pct": 75.08713654957371
-        },
-        {
-          "ticker": "AD8.AX",
-          "company_name": "Audinate Group Limited",
-          "current_price": 1.8250000476837158,
-          "low_52w": 1.75,
-          "high_52w": 6.889999866485596,
-          "distance_to_low_pct": 4.285717010498047,
-          "below_high_pct": 73.51233551453464
-        },
-        {
-          "ticker": "XRO.AX",
-          "company_name": "Xero Limited",
-          "current_price": 61.58000183105469,
-          "low_52w": 61.58000183105469,
-          "high_52w": 180.99000549316406,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 65.97602079558999
-        },
         {
           "ticker": "AIM.AX",
           "company_name": "Ai-Media Technologies Limited",
@@ -183,22 +84,13 @@
           "below_high_pct": 78.94736784316827
         },
         {
-          "ticker": "OCL.AX",
-          "company_name": "Objective Corporation Limited",
-          "current_price": 6.690000057220459,
-          "low_52w": 6.690000057220459,
-          "high_52w": 22.899999618530273,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 70.78602546435403
-        },
-        {
           "ticker": "EOL.AX",
           "company_name": "Energy One Limited",
-          "current_price": 10.539999961853027,
-          "low_52w": 10.539999961853027,
+          "current_price": 10.279999732971191,
+          "low_52w": 10.279999732971191,
           "high_52w": 19.829999923706055,
           "distance_to_low_pct": 0.0,
-          "below_high_pct": 46.84820977103064
+          "below_high_pct": 48.159355660501944
         },
         {
           "ticker": "SHJ.AX",
@@ -212,47 +104,10 @@
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-07-24T23:34:18.158705+00:00",
+      "run_timestamp": "2026-07-28T23:31:47.388945+00:00",
       "total": 30,
-      "flagged_count": 4,
-      "flagged": [
-        {
-          "ticker": "CPRT",
-          "company_name": "Copart, Inc.",
-          "current_price": 27.940000534057617,
-          "low_52w": 27.170000076293945,
-          "high_52w": 49.970001220703125,
-          "distance_to_low_pct": 2.8340097740209567,
-          "below_high_pct": 44.086452168262575
-        },
-        {
-          "ticker": "FIZZ",
-          "company_name": "National Beverage Corp.",
-          "current_price": 30.700000762939453,
-          "low_52w": 30.530000686645508,
-          "high_52w": 47.0,
-          "distance_to_low_pct": 0.5568295855568293,
-          "below_high_pct": 34.680849440554354
-        },
-        {
-          "ticker": "POOL",
-          "company_name": "Pool Corporation",
-          "current_price": 183.77000427246094,
-          "low_52w": 175.24000549316406,
-          "high_52w": 333.6199951171875,
-          "distance_to_low_pct": 4.86760928550052,
-          "below_high_pct": 44.916369833315954
-        },
-        {
-          "ticker": "NFLX",
-          "company_name": "Netflix, Inc.",
-          "current_price": 70.08999633789062,
-          "low_52w": 67.5999984741211,
-          "high_52w": 126.32499694824219,
-          "distance_to_low_pct": 3.683428875701473,
-          "below_high_pct": 44.51613059083796
-        }
-      ]
+      "flagged_count": 0,
+      "flagged": []
     },
     "Test": {
       "run_timestamp": "2025-01-01T00:00:00",

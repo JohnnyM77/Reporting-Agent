@@ -1,69 +1,23 @@
 {
-  "last_run": "2026-07-28",
+  "last_run": "2026-07-29",
   "silence": false,
-  "high_impact": [
-    {
-      "ticker": "DRO",
-      "title": "Material Contracts, Product Release & Trading Update 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 358.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03118839",
-      "type": "trading_update",
-      "analysis": {
-        "what_they_said": "DroneShield (ASX:DRO) reports 1H 2026 preliminary revenue of $125.8M (+74% vs PCP), gross margin of 60% (down from 65% PCP), and recurring revenue of $14.2M (11.3% of total). FY2026 Committed Revenue stands at $206M as of 28 July 2026. FY2027+ committed revenue is $26M. Full-year FY2026 revenue guidance set at $250M-$270M (+15-25% vs FY2025). Also announces $23.2M European military contract package (approx $21M into FY2026 Committed Revenue) and new RfAI-3 RF detection engine product launch.",
-        "vs_prior_guidance": "Upgrade on revenue volume — $206M committed vs FY2025 total revenue implying ~$217M baseline, so the $250-270M FY2026 guide is a formal raise. However, the gross margin story is a meaningful downgrade: 60% actual in 1H vs 65% target and 65% PCP. Management buries the margin miss in a three-part explanation (mix, FX, one-off ERP/relocation impairment) and pivots quickly to 'targeting 65% blended for FY' — classic framing of a structural headwind as a transitory issue.",
-        "the_numbers": "1H 2026 revenue: $125.8M; 1H 2026 gross margin: 60% (vs 65% PCP); recurring revenue: $14.2M (11.3% of revenue); FY2026 Committed Revenue: $206M; FY2027+ committed revenue: $26M; FY2026 revenue guidance: $250M-$270M; target blended gross margin: ~65%; new contract: $23.2M total ($21M in FY2026). EBITDA, EBIT, net profit, operating cash flow, and balance sheet figures are entirely absent — no bottom-line profitability numbers provided.",
-        "why_happening": "Revenue growth driven by strong European and defence demand, conversion of pipeline, and ramp of vehicle-mountable counter-drone solutions. Margin compression driven by: (1) higher mix of pass-through third-party hardware in contracts (structurally dilutive), (2) AUD/USD or other currency movements, (3) one-off raw material impairment during production facility relocation and ERP implementation. The third-party hardware pass-through is a recurring structural feature of reseller contracts and is likely to recur, not a clean one-off.",
-        "balance_sheet": "No balance sheet data provided. CEO references ongoing investment in R&D, sales capability, systems, and 'working capital that growth at this pace requires' — a clear signal of cash consumption. Rapid revenue growth with margin compression and heavy capex/opex investment raises the question of whether existing cash reserves (from prior equity raises) remain sufficient or whether another raise is approaching. No explicit guidance on cash position or funding needs.",
-        "red_flags": [
-          "Gross margin dropped 500bps to 60% in 1H — management targets 65% for full year implying a very sharp 2H recovery; this is mathematically aggressive and not adequately explained",
-          "Third-party hardware pass-through in contracts is structurally margin-dilutive and likely to persist as European reseller deals grow — not a clean one-off",
-          "Zero profitability metrics disclosed (no EBITDA, no net profit, no operating cash flow) despite calling this a 'trading update' — significant omission for a company of this scale",
-          "FY2027+ committed revenue of only $26M is thin for a business guiding $250-270M in FY2026, suggesting very limited revenue visibility beyond the current year",
-          "Recurring revenue is only 11.3% of 1H revenue — the subscription/software model is still nascent despite being central to the valuation thesis",
-          "Leadership transition in April referenced but not explained; post-transition 'detailed organisational assessment' hints at prior execution issues",
-          "Raw material impairment during ERP and facility relocation is an operational execution flag — scale-up is not running cleanly",
-          "FY2026 revenue guidance of $250-270M requires $124-144M of 2H revenue against $125.8M in 1H — back-half weighting acknowledged but reliant on orders 'not currently tracked'"
-        ],
-        "bottom_line": "Revenue growth is genuinely strong (+74% 1H YoY, $206M committed with 5 months remaining) and the demand environment is real, but the 500bps gross margin miss is the key negative and management's framing as largely transitory is not convincing given structural third-party hardware mix in contracts. The complete absence of profitability and cash flow data in a 'trading update' for a company burning working capital at scale is a material omission investors should push hard on at the 26 August result.",
-        "key_questions": [
-          "What is the actual EBITDA and operating cash flow for 1H 2026, and what is the current cash balance — the working capital commentary implies significant cash burn that is completely unquantified?",
-          "What proportion of the FY2026 $250-270M revenue guide involves pass-through third-party hardware, and what is the blended gross margin on those contracts specifically — is the 65% full-year target realistic or aspirational?",
-          "What was the quantum of the raw material impairment charge in 1H, and is the ERP/facility transition now complete or will there be further disruption costs in 2H?"
-        ]
-      },
-      "drive_links": []
-    }
-  ],
+  "high_impact": [],
   "material": [],
   "fyi": [
     {
-      "ticker": "DRO",
-      "title": "Material Contracts, Product Release & Trading Update 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 358.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03118839"
+      "ticker": "CSL",
+      "title": "CSL Update on Enhanced Plasma Manufacturing 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page ",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119263"
     },
     {
       "ticker": "TWE",
-      "title": "Becoming a substantial holder 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.7MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03118571"
+      "title": "Change in substantial holding 21\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.2MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119038"
     },
     {
-      "ticker": "VAS",
-      "title": "FATCA and CRS Tax Residency Certification Reminder 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 225.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03118440"
-    },
-    {
-      "ticker": "VAS",
-      "title": "Exit Statement Notification 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 231.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03118439"
-    },
-    {
-      "ticker": "VHY",
-      "title": "FATCA and CRS Tax Residency Certification Reminder 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 225.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03118440"
-    },
-    {
-      "ticker": "VHY",
-      "title": "Exit Statement Notification 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 231.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03118439"
+      "ticker": "WDS",
+      "title": "Second Quarter 2026 Report 23\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 274.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119219"
     }
   ]
 }

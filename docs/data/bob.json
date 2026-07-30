@@ -1,23 +1,38 @@
 {
-  "last_run": "2026-07-29",
+  "last_run": "2026-07-30",
   "silence": false,
   "high_impact": [],
-  "material": [],
+  "material": [
+    {
+      "ticker": "ABB",
+      "title": "ABB FY26 Results Release Date and Investor Briefing 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                             ",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119734",
+      "analysis": {
+        "what_happened": "ABB: ABB FY26 Results Release Date and Investor Briefing 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n     ",
+        "so_what": "Price-sensitive headline — open link for details."
+      }
+    }
+  ],
   "fyi": [
     {
-      "ticker": "CSL",
-      "title": "CSL Update on Enhanced Plasma Manufacturing 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page ",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119263"
+      "ticker": "ABB",
+      "title": "ABB FY26 Results Release Date and Investor Briefing 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                             ",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119734"
+    },
+    {
+      "ticker": "AR9",
+      "title": "Investor Webinar 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 132.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119403"
+    },
+    {
+      "ticker": "RTH",
+      "title": "Tabcorp signs new agreement for Data and Content 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 245.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119877"
     },
     {
       "ticker": "TWE",
-      "title": "Change in substantial holding 21\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.2MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119038"
-    },
-    {
-      "ticker": "WDS",
-      "title": "Second Quarter 2026 Report 23\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 274.9KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119219"
+      "title": "Becoming a substantial holder from MQG 209\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 638.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119528"
     }
   ]
 }

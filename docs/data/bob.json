@@ -1,38 +1,65 @@
 {
-  "last_run": "2026-07-30",
+  "last_run": "2026-07-31",
   "silence": false,
-  "high_impact": [],
+  "high_impact": [
+    {
+      "ticker": "AR9",
+      "title": "Quarterly Activities/Appendix 4C Cash Flow Report 11\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.1MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03120463",
+      "type": "trading_update",
+      "analysis": {
+        "what_they_said": "ARR of $14.8M (+209% PCP, up from $4.8M - largely Spirion acquisition-driven, not organic). Q4 FY26 revenue $3.5M (+92% PCP, flat QoQ). Gross margin 74% for Q4 and FY26. Operating expenses $5.3M in Q4, down 11% QoQ. Operating cash outflow Q4: -$3.8M (includes $0.8M one-offs). Cash at quarter end: $2.869M. Total available funding (cash + unused facilities): $3.37M. Trade receivables: $2.9M. Deferred revenue $8.9M (+40% PCP). FY26 contracted sales $14.1M (+65% vs FY25 $8.6M). Customer count 225 vs ~60 prior year. Post-period: $3.2M Australian Defence Kojensi contract (commencing 1 July 2026, $1M ARR + $2.2M services). U.S. DoD NC Protect passed all 60 production test cases; enterprise licensing negotiations described as 'advanced'.",
+        "vs_prior_guidance": "No explicit prior numerical guidance provided to compare against. Management is framing an acquisition-inflated ARR growth number (209% is almost entirely Spirion consolidation, not organic growth) as headline performance. The pro-forma contracted sales figure of $16.6M is selectively introduced to inflate the optics. Cash position deterioration is materially downplayed - cash fell from $7.437M to $2.869M in a single quarter, a drop of $4.6M, which is buried behind composite 'cash + receivables + deposits' of $5.8M framing.",
+        "the_numbers": "ARR: $14.8M; Q4 revenue: $3.5M; FY26 gross margin: 74%; Q4 opex: $5.3M; Q4 operating cash outflow: -$3.785M; FY26 operating cash outflow: -$14.069M; FY26 investing cash outflow: -$18.611M; Cash at quarter end: $2.869M; Unused facilities: $0.504M; Total available funding: $3.373M; Estimated quarters of funding: 0.89 quarters (less than 1 quarter of runway on current burn); Deferred revenue: $8.9M; Loan facilities drawn: $8.0M of $8.0M (fully drawn); $4M CBA facility matures 30 October 2026 - imminent refinancing risk. No quantified FY27 revenue or ARR guidance provided - only vague language: 'decline in operating expenses in coming quarters', 'strong visibility over FY2027 revenue', 'enterprise-scale recurring revenue and sustainable growth'.",
+        "why_happening": "ARR/revenue growth driven almost entirely by Spirion acquisition (consummated in FY26) rather than organic wins. Cost reduction reflects post-acquisition integration and redundancies. Cash burn driven by integration costs, one-offs, high staff cost base ($4.0M in Q4 alone vs $2.642M customer receipts in the quarter). U.S. DoD enterprise deal remains in procurement limbo with no committed timeline or size. Australian Defence contract is renewal/expansion, not purely new business. Revenue recognition timing issue evident: $3.5M quarterly revenue but only $2.642M cash receipts from customers.",
+        "balance_sheet": "Critical concern. Loan facilities are fully drawn at $8.0M with only $0.504M in unused credit lines. The $4M CBA tranche matures 30 October 2026 - less than 3 months away - creating acute refinancing risk that is not explicitly flagged in the narrative. Regulatory disclosure (item 8.5) shows 0.89 quarters of funding available, triggering mandatory going concern disclosure questions. Management contests this by pointing to $2.9M receivables and post-period ADF cash receipt, but even adjusted, runway is extremely tight. The entity raised $27.96M in equity and $6M in debt during FY26 yet still ends the year with sub-$3M cash and fully drawn debt. Net assets $15.6M largely reflects goodwill/intangibles from Spirion.",
+        "red_flags": [
+          "0.89 quarters of funding available per mandatory ASX disclosure - company has less than one quarter of cash runway on current burn rate",
+          "$4M CBA loan facility matures 30 October 2026 with loans fully drawn at $8M and only $504K unused - imminent refinancing crisis not prominently disclosed in narrative",
+          "Operating cash outflow of -$3.785M in Q4 against customer receipts of only $2.642M - cash conversion deeply negative; revenue is being recognised faster than cash is being collected",
+          "209% ARR growth is almost entirely acquisition-driven (Spirion); organic ARR growth is not disclosed and is likely modest",
+          "U.S. DoD enterprise licensing deal has no size, no timeline, no committed contract - 'negotiations advanced' is not a number; this is the key bull case catalyst and remains entirely speculative",
+          "FY26 full-year operating cash burn of -$14.069M against ARR of $14.8M means the business is spending ~$1 of cash for every $1 of ARR - structurally unsustainable",
+          "Staff costs of $15.446M for FY26 against total revenue run-rate of approximately $14M annualised - staff cost base exceeds revenue",
+          "Management selectively uses pro-forma $16.6M contracted sales figure (adding pre-consolidation Spirion sales) only where it flatters the result",
+          "Going concern mitigation response (item 8.6) states entity is 'actively evaluating all available options' for further cash - standard precursor language to equity raise"
+        ],
+        "bottom_line": "archTIS has less than one quarter of cash runway, fully drawn debt with a $4M tranche maturing in October 2026, and a staff cost base that exceeds annualised revenue - the 'record FY26' narrative is almost entirely an M&A artefact, not organic performance. The U.S. DoD enterprise deal is the only plausible near-term catalyst to change the funding trajectory, but it has no committed size or timeline; absent that or an imminent equity raise, the company faces a serious liquidity crunch within 90 days.",
+        "key_questions": [
+          "What is the refinancing plan for the $4M CBA facility maturing 30 October 2026, and has CBA indicated willingness to extend or refinance given the deteriorating cash position?",
+          "What is the actual organic ARR growth (excluding Spirion contribution), and what is the churn rate within the Spirion-acquired customer base so far?",
+          "What is the realistic timeline and potential TCV for the U.S. DoD NC Protect enterprise licensing deal, and does management have any contractual milestone or budget appropriation signal that underpins the 'negotiations advanced' language?"
+        ]
+      },
+      "drive_links": []
+    }
+  ],
   "material": [
     {
-      "ticker": "ABB",
-      "title": "ABB FY26 Results Release Date and Investor Briefing 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                             ",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119734",
+      "ticker": "AR9",
+      "title": "Investor Presentation 12\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.2MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03120501",
       "analysis": {
-        "what_happened": "ABB: ABB FY26 Results Release Date and Investor Briefing 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n     ",
+        "what_happened": "AR9: Investor Presentation 12\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.2MB",
         "so_what": "Price-sensitive headline — open link for details."
       }
     }
   ],
   "fyi": [
     {
-      "ticker": "ABB",
-      "title": "ABB FY26 Results Release Date and Investor Briefing 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                             ",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119734"
+      "ticker": "AR9",
+      "title": "Investor Presentation 12\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.2MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03120501"
     },
     {
       "ticker": "AR9",
-      "title": "Investor Webinar 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 132.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119403"
+      "title": "Quarterly Activities/Appendix 4C Cash Flow Report 11\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.1MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03120463"
     },
     {
-      "ticker": "RTH",
-      "title": "Tabcorp signs new agreement for Data and Content 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 245.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119877"
-    },
-    {
-      "ticker": "TWE",
-      "title": "Becoming a substantial holder from MQG 209\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 638.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119528"
+      "ticker": "CAT",
+      "title": "Becoming a substantial holder 43\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 4.6MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03120098"
     }
   ]
 }

@@ -6,6 +6,8 @@ Sunday Sally is a weekly valuation review agent that reuses Bob's portfolio univ
 
 Sunday Sally flags portfolio names near 52-week highs, checks for rich valuation relative to company history, builds evidence packs, and sends a skeptical review memo + spreadsheet. She never auto-sells.
 
+For each flagged (trim-candidate) ticker, Sally also pulls the last 90 days of significant ASX announcements — trading halts, capital raisings, M&A, guidance changes, results, board changes, and anything ASX marked price-sensitive (same significance taxonomy Wally uses). These show up in the email, `memo.md`, and `handoff_payload.json`.
+
 ## Run locally
 
 ```bash

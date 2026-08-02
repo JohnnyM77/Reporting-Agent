@@ -37,11 +37,14 @@ _PS_BADGE = (
 )
 
 
-def _build_news_html(ticker: str, items: list[NewsItem] | None) -> str:
+def build_news_html(ticker: str, items: list[NewsItem] | None) -> str:
     """Render the significant-ASX-announcements block for one flagged ticker.
 
     ``items`` is None for non-ASX tickers (no section rendered) and an empty
     list for ASX tickers with no significant announcements in the window.
+
+    Public — shared with Sunday Sally, which renders the same block for its
+    own flagged (near 52-week high) tickers.
     """
     if items is None:
         return ""
@@ -131,7 +134,7 @@ def build_combined_html(
                 html_parts.append(
                     f"<h3>{r.ticker} — {r.company_name}</h3>"
                     f"{chart_img}"
-                    f"{_build_news_html(r.ticker, news.get(r.ticker))}"
+                    f"{build_news_html(r.ticker, news.get(r.ticker))}"
                 )
         else:
             html_parts.append("<p><strong>No stocks within 5% of 52-week low.</strong></p>")
@@ -176,7 +179,7 @@ def build_html(
         details.append(
             f"<h3>{r.ticker} — {r.company_name}</h3>"
             f"{chart_img}"
-            f"{_build_news_html(r.ticker, (news or {}).get(r.ticker))}"
+            f"{build_news_html(r.ticker, (news or {}).get(r.ticker))}"
         )
 
     return (

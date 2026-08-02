@@ -3,6 +3,20 @@ from __future__ import annotations
 from pathlib import Path
 
 
+def _build_news_section(significant_news: list[dict], lookback_days: int) -> str:
+    heading = f"## 7. Recent Significant ASX Announcements (last {lookback_days} days)"
+    if not significant_news:
+        return f"\n{heading}\n- No significant announcements found.\n"
+    rows = "\n".join(
+        f"- {item.get('date', '')} — {item.get('title', '')} "
+        f"[{item.get('category', '')}]"
+        + (" **PRICE SENSITIVE**" if item.get("price_sensitive") else "")
+        + (f" ({item['url']})" if item.get("url") else "")
+        for item in significant_news
+    )
+    return f"\n{heading}\n{rows}\n"
+
+
 def build_memo_text(
     company: dict,
     summary: dict,
@@ -10,6 +24,8 @@ def build_memo_text(
     doubts: list[str],
     decision_framing: str,
     claude_analysis: dict | None = None,
+    significant_news: list[dict] | None = None,
+    lookback_days: int = 90,
 ) -> str:
     reasons_block = "\n- ".join(reasons) if reasons else "No strong rerating evidence captured this week."
     doubts_block = "\n- ".join(doubts) if doubts else "Data gaps: use statutory filings/cashflow checks before conclusions."
@@ -43,11 +59,13 @@ def build_memo_text(
 > Mr Market is feeling cheerful. Fine. Show me the maths.
 """
 
+    base += _build_news_section(significant_news or [], lookback_days)
+
     if claude_analysis:
         ai_section = f"""
 ---
 
-## 7. Claude AI Analysis
+## 8. Claude AI Analysis
 
 **Verdict:** {claude_analysis.get('verdict', 'n/a')}
 

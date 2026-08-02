@@ -38,6 +38,18 @@ try:
     from wally.drive_upload import upload_or_replace_xlsx as _drive_upload
 except ImportError:
     pass
+fetch_significant_news = None
+build_news_html = None
+NewsItem = None
+NEWS_LOOKBACK_DAYS = 90
+_ASX_NEWS_AVAILABLE = False
+try:
+    from wally.asx_news import fetch_significant_news, NewsItem
+    from wally.email_report import build_news_html
+    from wally.config import NEWS_LOOKBACK_DAYS
+    _ASX_NEWS_AVAILABLE = True
+except ImportError:
+    pass
 
 
 def _load_settings() -> dict:
@@ -92,6 +104,12 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
     news = fetch_news_context(company.exchange_ticker)
     save_source_documents(company.ticker, run_folder, announcements)
 
+    # Significant ASX announcements over the last N days (same significance
+    # taxonomy Wally uses for his flagged tickers — trading halts, capital
+    # raisings, M&A, guidance, results, board changes, etc).
+    significant_news = fetch_significant_news(company.exchange_ticker) if _ASX_NEWS_AVAILABLE else None
+    significant_news_dicts = [item.to_dict() for item in (significant_news or [])]
+
     summary = {
         "company_name": price.company_name,
         "ticker": company.ticker,
@@ -111,6 +129,8 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         "pe_10y_avg": hist.pe_10y_avg,
         "valuation_percentile": hist.valuation_percentile,
         "valuation_percentile_bucket": percentile_bucket(hist.valuation_percentile),
+        "significant_news": significant_news_dicts,
+        "significant_news_lookback_days": NEWS_LOOKBACK_DAYS,
         "alert_tier": alert.tier,
         "sally_verdict": (
             "Trim candidate"
@@ -128,6 +148,7 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         announcements=announcements,
         news=news,
         run_date=summary["review_date"],
+        significant_news=significant_news_dicts,
     )
 
     ticker_folder = run_folder / company.ticker
@@ -158,12 +179,15 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         }
     ]
 
+    news_headlines = [f"{item['date']} — {item['title']}" for item in significant_news_dicts]
+    if isinstance(news, list):
+        news_headlines += [n.get("title", "") for n in news if n.get("title")]
     claude_analysis = analyse_company(
         ticker=company.ticker,
         company_name=price.company_name,
         summary=summary,
         reasons=alert.reasons,
-        news=[n.get("headline", "") for n in news] if isinstance(news, list) else [],
+        news=news_headlines or None,
     )
 
     # Build the value chart workbook + PNG (requires a valuations/<ticker>.yaml config).
@@ -187,6 +211,8 @@ def _process_company(company, settings, run_folder, tz, near_high_max, threshold
         doubts=hist.notes,
         decision_framing=summary["sally_verdict"],
         claude_analysis=claude_analysis,
+        significant_news=significant_news_dicts,
+        lookback_days=NEWS_LOOKBACK_DAYS,
     )
     save_memo(ticker_folder / "memo.md", memo)
 
@@ -271,6 +297,11 @@ def main() -> None:
                 f"{row['distance_to_high_pct']}% below 52w high — "
                 f"{row['sally_verdict']}"
             )
+            if row.get("significant_news"):
+                lines.append(
+                    f"    {len(row['significant_news'])} significant ASX announcement(s) "
+                    f"in last {row.get('significant_news_lookback_days', 90)} days"
+                )
         lines += [
             "",
             "Valuation workbooks and review memos are attached.",
@@ -338,6 +369,9 @@ def main() -> None:
                     f"<h3>{ticker} — Value Chart</h3>"
                     f"<img src='cid:{cid}' style='max-width:100%;border:1px solid #ccc'><br>"
                 )
+            if _ASX_NEWS_AVAILABLE and build_news_html is not None:
+                items = [NewsItem(**d) for d in (row.get("significant_news") or [])]
+                html_parts.append(build_news_html(ticker, items))
         html_parts.append("<p>Value chart workbooks and memos are attached.</p>")
     else:
         html_parts.append("<p>No valuation stretch alerts this week. Nothing near 52-week highs.</p>")

@@ -23,6 +23,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r sunday-sally/requirements.txt
+          # Playwright is the stage-2 fallback for ASX announcement fetches
+          # (asx_fetch.py, via wally.asx_news) when the direct HTTP path is
+          # blocked for runner IPs.
+          pip install playwright
+          playwright install chromium --with-deps
 
       - name: Run Selling Sally
         working-directory: sunday-sally

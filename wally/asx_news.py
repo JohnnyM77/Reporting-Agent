@@ -1,8 +1,9 @@
-"""Significant ASX announcement lookup for Wally-flagged tickers.
+"""Significant ASX announcement lookup for a flagged ticker.
 
-When Wally flags a watchlist ticker (trading near its 52-week low) this
-module fetches the company's ASX announcements over a recent lookback
-window (default 90 days, env WALLY_NEWS_LOOKBACK_DAYS) and keeps only the
+When Wally flags a watchlist ticker (trading near its 52-week low) or
+Sunday Sally flags one (trading near its 52-week high), this module
+fetches the company's ASX announcements over a recent lookback window
+(default 90 days, env WALLY_NEWS_LOOKBACK_DAYS) and keeps only the
 significant ones:
 
   * anything ASX has marked price-sensitive, always; plus
@@ -15,7 +16,7 @@ notices, substantial-holder filings, AGM paperwork, …).
 
 Retrieval delegates to the repo-root ``asx_fetch`` module — the same
 proven 2-stage path (direct HTTP → Playwright) used by Bob.  The import
-is lazy so Wally degrades gracefully when bs4/requests are unavailable.
+is lazy so callers degrade gracefully when bs4/requests are unavailable.
 """
 from __future__ import annotations
 

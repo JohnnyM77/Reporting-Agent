@@ -4,7 +4,15 @@ from pathlib import Path
 import json
 
 
-def build_handoff_payload(company: dict, valuation: dict, history: dict, announcements: list[dict], news: list[dict], run_date: str) -> dict:
+def build_handoff_payload(
+    company: dict,
+    valuation: dict,
+    history: dict,
+    announcements: list[dict],
+    news: list[dict],
+    run_date: str,
+    significant_news: list[dict] | None = None,
+) -> dict:
     return {
         "company": company,
         "run_date": run_date,
@@ -12,6 +20,7 @@ def build_handoff_payload(company: dict, valuation: dict, history: dict, announc
         "historical_valuation_summary": history,
         "recent_announcements": announcements,
         "news_context": news,
+        "significant_news": significant_news or [],
         "instructions": {
             "tone": "skeptical, evidence-based, challenge bullish narratives",
             "deliverables": ["valuation_review.xlsx", "memo.md", "email_summary_snippet.md"],

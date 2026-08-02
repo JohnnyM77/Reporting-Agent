@@ -1,13 +1,7 @@
 {
-  "last_run": "2026-08-01",
-  "silence": false,
+  "last_run": "2026-08-02",
+  "silence": true,
   "high_impact": [],
   "material": [],
-  "fyi": [
-    {
-      "ticker": "TWE",
-      "title": "Change in substantial holding 9\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.1MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03120919"
-    }
-  ]
+  "fyi": []
 }

@@ -1,18 +1,31 @@
 {
-  "last_run": "2026-07-26",
+  "last_run": "2026-08-02",
   "portfolio_size": 20,
-  "flagged_count": 1,
+  "flagged_count": 2,
   "flagged": [
+    {
+      "ticker": "CPU",
+      "company_name": "Computershare Limited",
+      "current_price": 40.939998626708984,
+      "high_52w": 42.150001525878906,
+      "distance_to_high_pct": 2.87,
+      "trailing_pe": 27.850338,
+      "forward_pe": 18.722631,
+      "dividend_yield": 2.69,
+      "valuation_percentile": 0.975,
+      "alert_tier": "Tier 3: Deep Review",
+      "sally_verdict": "Trim candidate"
+    },
     {
       "ticker": "PWH",
       "company_name": "PWR Holdings Limited",
-      "current_price": 9.600000381469727,
+      "current_price": 9.920000076293945,
       "high_52w": 10.029999732971191,
-      "distance_to_high_pct": 4.29,
-      "trailing_pe": 87.27273,
-      "forward_pe": 43.190716,
-      "dividend_yield": 0.52,
-      "valuation_percentile": 0.8166666666666667,
+      "distance_to_high_pct": 1.1,
+      "trailing_pe": 90.181816,
+      "forward_pe": 43.744762,
+      "dividend_yield": 0.5,
+      "valuation_percentile": 0.8333333333333334,
       "alert_tier": "Tier 3: Deep Review",
       "sally_verdict": "Trim candidate"
     }

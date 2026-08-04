@@ -1,7 +1,28 @@
 {
-  "last_run": "2026-08-03",
-  "silence": true,
+  "last_run": "2026-08-04",
+  "silence": false,
   "high_impact": [],
   "material": [],
-  "fyi": []
+  "fyi": [
+    {
+      "ticker": "BXB",
+      "title": "Notification regarding unquoted securities - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03121368"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 411.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03121367"
+    },
+    {
+      "ticker": "DRO",
+      "title": "Change in substantial holding 28\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.4MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03121550"
+    },
+    {
+      "ticker": "TWE",
+      "title": "Ceasing to be a substantial holder from MQG 17\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 200.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03121458"
+    }
+  ]
 }

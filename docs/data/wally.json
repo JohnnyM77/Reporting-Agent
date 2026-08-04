@@ -1,51 +1,42 @@
 {
-  "last_run": "2026-07-31T23:32:38.349241+00:00",
+  "last_run": "2026-08-04T23:34:59.513779+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-07-31T23:30:48.231087+00:00",
+      "run_timestamp": "2026-08-04T23:33:01.434566+00:00",
       "total": 74,
-      "flagged_count": 4,
+      "flagged_count": 3,
       "flagged": [
-        {
-          "ticker": "MAQ.AX",
-          "company_name": "Macquarie Technology Group Limited",
-          "current_price": 60.400001525878906,
-          "low_52w": 58.0,
-          "high_52w": 78.30000305175781,
-          "distance_to_low_pct": 4.137933665308459,
-          "below_high_pct": 22.860792884064974
-        },
-        {
-          "ticker": "CNU.AX",
-          "company_name": "Chorus Limited",
-          "current_price": 7.889999866485596,
-          "low_52w": 7.550000190734863,
-          "high_52w": 8.90999984741211,
-          "distance_to_low_pct": 4.503306849819289,
-          "below_high_pct": 11.447811429792228
-        },
         {
           "ticker": "RTO.L",
           "company_name": "Rentokil Initial plc",
-          "current_price": 352.0,
-          "low_52w": 352.0,
+          "current_price": 356.79998779296875,
+          "low_52w": 344.79998779296875,
           "high_52w": 506.79998779296875,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 30.54459185508221
+          "distance_to_low_pct": 3.480278545486859,
+          "below_high_pct": 29.597475061754743
         },
         {
           "ticker": "MAF.AX",
           "company_name": "MA Financial Group Limited",
-          "current_price": 5.710000038146973,
+          "current_price": 5.860000133514404,
           "low_52w": 5.599999904632568,
           "high_52w": 11.329999923706055,
-          "distance_to_low_pct": 1.964288131923133,
-          "below_high_pct": 49.60282368405149
+          "distance_to_low_pct": 4.642861309100241,
+          "below_high_pct": 48.27890403376461
+        },
+        {
+          "ticker": "UMG.AS",
+          "company_name": "Universal Music Group N.V.",
+          "current_price": 14.345000267028809,
+          "low_52w": 14.345000267028809,
+          "high_52w": 25.309999465942383,
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 43.32279506235584
         }
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-07-31T23:32:03.045843+00:00",
+      "run_timestamp": "2026-08-04T23:34:39.271938+00:00",
       "total": 34,
       "flagged_count": 2,
       "flagged": [
@@ -61,18 +52,18 @@
         {
           "ticker": "FMG.AX",
           "company_name": "Fortescue Ltd",
-          "current_price": 18.510000228881836,
-          "low_52w": 17.770000457763672,
+          "current_price": 18.079999923706055,
+          "low_52w": 17.799999237060547,
           "high_52w": 22.989999771118164,
-          "distance_to_low_pct": 4.164320495528518,
-          "below_high_pct": 19.486731565193203
+          "distance_to_low_pct": 1.5730376328473739,
+          "below_high_pct": 21.35711133664488
         }
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-07-31T23:32:17.278876+00:00",
+      "run_timestamp": "2026-08-04T23:34:50.334148+00:00",
       "total": 35,
-      "flagged_count": 5,
+      "flagged_count": 2,
       "flagged": [
         {
           "ticker": "AR9.AX",
@@ -91,58 +82,22 @@
           "high_52w": 0.23499999940395355,
           "distance_to_low_pct": 0.0,
           "below_high_pct": 0.0
-        },
-        {
-          "ticker": "OCL.AX",
-          "company_name": "Objective Corporation Limited",
-          "current_price": 7.0,
-          "low_52w": 6.690000057220459,
-          "high_52w": 22.899999618530273,
-          "distance_to_low_pct": 4.633780868879975,
-          "below_high_pct": 69.43231390128179
-        },
-        {
-          "ticker": "MAQ.AX",
-          "company_name": "Macquarie Technology Group Limited",
-          "current_price": 60.400001525878906,
-          "low_52w": 58.0,
-          "high_52w": 78.30000305175781,
-          "distance_to_low_pct": 4.137933665308459,
-          "below_high_pct": 22.860792884064974
-        },
-        {
-          "ticker": "SHJ.AX",
-          "company_name": "Shine Justice Ltd",
-          "current_price": 0.5899999737739563,
-          "low_52w": 0.5699999928474426,
-          "high_52w": 0.7549999952316284,
-          "distance_to_low_pct": 3.508768627628134,
-          "below_high_pct": 21.854307615863142
         }
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-07-31T23:32:38.349241+00:00",
+      "run_timestamp": "2026-08-04T23:34:59.513779+00:00",
       "total": 30,
-      "flagged_count": 2,
+      "flagged_count": 1,
       "flagged": [
-        {
-          "ticker": "WSO",
-          "company_name": "Watsco, Inc.",
-          "current_price": 309.29998779296875,
-          "low_52w": 309.29998779296875,
-          "high_52w": 456.8599853515625,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 32.29873534339925
-        },
         {
           "ticker": "FIZZ",
           "company_name": "National Beverage Corp.",
-          "current_price": 31.639999389648438,
+          "current_price": 31.770000457763672,
           "low_52w": 30.530000686645508,
-          "high_52w": 47.0,
-          "distance_to_low_pct": 3.635763766911632,
-          "below_high_pct": 32.68085236245014
+          "high_52w": 46.75,
+          "distance_to_low_pct": 4.061577933932268,
+          "below_high_pct": 32.04277976948947
         }
       ]
     },

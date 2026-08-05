@@ -1,28 +1,33 @@
 {
-  "last_run": "2026-08-04",
+  "last_run": "2026-08-05",
   "silence": false,
   "high_impact": [],
-  "material": [],
+  "material": [
+    {
+      "ticker": "CSL",
+      "title": "Notice of Investor/Analyst Briefing 2026 Full Year Result 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 130.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122003",
+      "analysis": {
+        "what_happened": "CSL: Notice of Investor/Analyst Briefing 2026 Full Year Result 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 130.1KB",
+        "so_what": "Price-sensitive headline — open link for details."
+      }
+    }
+  ],
   "fyi": [
     {
       "ticker": "BXB",
-      "title": "Notification regarding unquoted securities - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03121368"
+      "title": "End of Financial Year Key Dates 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 168.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122017"
     },
     {
-      "ticker": "BXB",
-      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 411.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03121367"
+      "ticker": "CSL",
+      "title": "Notice of Investor/Analyst Briefing 2026 Full Year Result 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 130.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122003"
     },
     {
-      "ticker": "DRO",
-      "title": "Change in substantial holding 28\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.4MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03121550"
-    },
-    {
-      "ticker": "TWE",
-      "title": "Ceasing to be a substantial holder from MQG 17\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 200.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03121458"
+      "ticker": "RTH",
+      "title": "Change in substantial holding 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 181.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03121898"
     }
   ]
 }

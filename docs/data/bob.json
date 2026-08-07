@@ -1,68 +1,48 @@
 {
-  "last_run": "2026-08-06",
+  "last_run": "2026-08-07",
   "silence": false,
-  "high_impact": [
+  "high_impact": [],
+  "material": [
     {
-      "ticker": "LAU",
-      "title": "Notice of FY2026 results presentation 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 309.8KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122238",
-      "type": "results",
+      "ticker": "RMD",
+      "title": "Resmed Announces Results for the Fourth Quarter of FY2026 10\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 689.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122852",
       "analysis": {
-        "executive_summary": [
-          "This document is solely a notice of results date — Lindsay Australia (LAU) will release FY2026 full-year results on 24 August 2026; no financial data has been published yet.",
-          "Investors should wait for the actual results release and webcast on 24 August 2026 before making any assessment of the company's financial performance.",
-          "Red flag: No financial information whatsoever is contained in this filing — any analysis of revenue, earnings, cash flow, or balance sheet metrics is impossible from this document alone."
-        ],
-        "key_numbers": {
-          "revenue": "Not disclosed — results not yet released",
-          "ebitda_margin": "Not disclosed — results not yet released",
-          "npat_statutory": "Not disclosed — results not yet released",
-          "npat_underlying": "Not disclosed — results not yet released",
-          "eps": "Not disclosed — results not yet released",
-          "operating_cashflow": "Not disclosed — results not yet released",
-          "free_cashflow": "Not disclosed — results not yet released",
-          "net_debt_cash": "Not disclosed — results not yet released"
-        },
-        "quality_of_earnings": "Cannot be assessed. The filing contains no financial statements, no earnings figures, and no operational commentary. The sole content is a notice that FY2026 results for the year ended 30 June 2026 will be released on 24 August 2026 via webcast.",
-        "management_framing": "Not assessable — this is an administrative ASX release only. No management commentary, guidance, or framing of any financial outcome is present. The document is limited to webcast logistics and IR contact details.",
-        "positives": [
-          "Management has provided advance notice of the results date and webcast details, allowing investors to plan accordingly.",
-          "Both CEO Clay McDonald and CFO Justin Green will present, suggesting direct senior management accountability at the results briefing."
-        ],
-        "negatives": [
-          "No financial data, guidance, or trading update accompanies this notice — investors have zero visibility into FY2026 outcomes ahead of the 24 August release.",
-          "The document provides no indication of whether results will be in line with, ahead of, or below prior expectations — absence of any qualitative trading update is notable for a 30 June year-end company releasing results nearly two months after period close."
-        ],
-        "bottom_line": {
-          "bull": "If LAU's FY2026 results on 24 August 2026 demonstrate continued freight volume recovery and Rural division resilience, the stock could re-rate given its exposure to Australian agricultural supply chains.",
-          "bear": "Without any forward guidance or trading update in this notice, there is no basis to rule out a weak result driven by softer freight markets or margin compression from fuel/labour costs.",
-          "what_changes_mind": "Review the actual FY2026 results release and financial statements on 24 August 2026, paying particular attention to Transport segment EBIT margins, Rural division same-store performance, free cash flow conversion, and any update on debt levels following prior capital expenditure cycles."
-        }
-      },
-      "drive_links": []
+        "what_happened": "RMD: Resmed Announces Results for the Fourth Quarter of FY2026 10\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 689.4KB",
+        "so_what": "Price-sensitive headline — open link for details."
+      }
     }
   ],
-  "material": [],
   "fyi": [
     {
-      "ticker": "CAT",
-      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 586.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122307"
+      "ticker": "NHC",
+      "title": "Notification of cessation of securities - NHC 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122915"
     },
     {
-      "ticker": "CSL",
-      "title": "Notification of cessation of securities - CSL 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122424"
-    },
-    {
-      "ticker": "LAU",
-      "title": "Notice of FY2026 results presentation 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 309.8K",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122238"
+      "ticker": "NHC",
+      "title": "Notification regarding unquoted securities - NHC 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 16.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122914"
     },
     {
       "ticker": "RMD",
-      "title": "Statement of CDIs on issue - RMD 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 12.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122207"
+      "title": "Deferral of Conversions between Australian and US Registers 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                     ",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122898"
+    },
+    {
+      "ticker": "RMD",
+      "title": "Dividend/Distribution - RMD 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122853"
+    },
+    {
+      "ticker": "RMD",
+      "title": "Resmed Announces Results for the Fourth Quarter of FY2026 10\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 689.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122852"
+    },
+    {
+      "ticker": "RMD",
+      "title": "144 Report of proposed sale of securities 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 158.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122845"
     }
   ]
 }

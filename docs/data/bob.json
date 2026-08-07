@@ -1,48 +1,33 @@
 {
-  "last_run": "2026-08-07",
+  "last_run": "2026-08-08",
   "silence": false,
   "high_impact": [],
-  "material": [
-    {
-      "ticker": "RMD",
-      "title": "Resmed Announces Results for the Fourth Quarter of FY2026 10\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 689.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122852",
-      "analysis": {
-        "what_happened": "RMD: Resmed Announces Results for the Fourth Quarter of FY2026 10\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 689.4KB",
-        "so_what": "Price-sensitive headline — open link for details."
-      }
-    }
-  ],
+  "material": [],
   "fyi": [
     {
-      "ticker": "NHC",
-      "title": "Notification of cessation of securities - NHC 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122915"
+      "ticker": "DRO",
+      "title": "Becoming a substantial holder 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 295.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123069"
     },
     {
-      "ticker": "NHC",
-      "title": "Notification regarding unquoted securities - NHC 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 16.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122914"
+      "ticker": "PWH",
+      "title": "Becoming a substantial holder 50\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.0MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123175"
     },
     {
-      "ticker": "RMD",
-      "title": "Deferral of Conversions between Australian and US Registers 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                     ",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122898"
+      "ticker": "VAS",
+      "title": "Outstanding ETF Securities and Fund Flows 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 378.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123032"
     },
     {
-      "ticker": "RMD",
-      "title": "Dividend/Distribution - RMD 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.8KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122853"
+      "ticker": "VEU",
+      "title": "Outstanding ETF Securities and Fund Flows Announcement 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 199.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123034"
     },
     {
-      "ticker": "RMD",
-      "title": "Resmed Announces Results for the Fourth Quarter of FY2026 10\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 689.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122852"
-    },
-    {
-      "ticker": "RMD",
-      "title": "144 Report of proposed sale of securities 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 158.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122845"
+      "ticker": "VHY",
+      "title": "Outstanding ETF Securities and Fund Flows 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 378.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123032"
     }
   ]
 }

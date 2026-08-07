@@ -1,42 +1,14 @@
 {
-  "last_run": "2026-08-04T23:34:59.513779+00:00",
+  "last_run": "2026-08-07T23:06:53.526733+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-08-04T23:33:01.434566+00:00",
+      "run_timestamp": "2026-08-07T23:06:19.647013+00:00",
       "total": 74,
-      "flagged_count": 3,
-      "flagged": [
-        {
-          "ticker": "RTO.L",
-          "company_name": "Rentokil Initial plc",
-          "current_price": 356.79998779296875,
-          "low_52w": 344.79998779296875,
-          "high_52w": 506.79998779296875,
-          "distance_to_low_pct": 3.480278545486859,
-          "below_high_pct": 29.597475061754743
-        },
-        {
-          "ticker": "MAF.AX",
-          "company_name": "MA Financial Group Limited",
-          "current_price": 5.860000133514404,
-          "low_52w": 5.599999904632568,
-          "high_52w": 11.329999923706055,
-          "distance_to_low_pct": 4.642861309100241,
-          "below_high_pct": 48.27890403376461
-        },
-        {
-          "ticker": "UMG.AS",
-          "company_name": "Universal Music Group N.V.",
-          "current_price": 14.345000267028809,
-          "low_52w": 14.345000267028809,
-          "high_52w": 25.309999465942383,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 43.32279506235584
-        }
-      ]
+      "flagged_count": 0,
+      "flagged": []
     },
     "JM Watch List": {
-      "run_timestamp": "2026-08-04T23:34:39.271938+00:00",
+      "run_timestamp": "2026-08-07T23:06:36.865167+00:00",
       "total": 34,
       "flagged_count": 2,
       "flagged": [
@@ -52,28 +24,19 @@
         {
           "ticker": "FMG.AX",
           "company_name": "Fortescue Ltd",
-          "current_price": 18.079999923706055,
+          "current_price": 18.020000457763672,
           "low_52w": 17.799999237060547,
           "high_52w": 22.989999771118164,
-          "distance_to_low_pct": 1.5730376328473739,
-          "below_high_pct": 21.35711133664488
+          "distance_to_low_pct": 1.235961967038014,
+          "below_high_pct": 21.618092052346142
         }
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-08-04T23:34:50.334148+00:00",
+      "run_timestamp": "2026-08-07T23:06:46.347534+00:00",
       "total": 35,
-      "flagged_count": 2,
+      "flagged_count": 1,
       "flagged": [
-        {
-          "ticker": "AR9.AX",
-          "company_name": "archTIS Limited",
-          "current_price": 0.052000001072883606,
-          "low_52w": 0.052000001072883606,
-          "high_52w": 0.2150000035762787,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 75.81395339166363
-        },
         {
           "ticker": "QOR.AX",
           "company_name": "Qoria Ltd",
@@ -86,20 +49,10 @@
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-08-04T23:34:59.513779+00:00",
+      "run_timestamp": "2026-08-07T23:06:53.526733+00:00",
       "total": 30,
-      "flagged_count": 1,
-      "flagged": [
-        {
-          "ticker": "FIZZ",
-          "company_name": "National Beverage Corp.",
-          "current_price": 31.770000457763672,
-          "low_52w": 30.530000686645508,
-          "high_52w": 46.75,
-          "distance_to_low_pct": 4.061577933932268,
-          "below_high_pct": 32.04277976948947
-        }
-      ]
+      "flagged_count": 0,
+      "flagged": []
     },
     "Test": {
       "run_timestamp": "2025-01-01T00:00:00",

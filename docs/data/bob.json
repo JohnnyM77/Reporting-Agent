@@ -1,33 +1,7 @@
 {
-  "last_run": "2026-08-08",
-  "silence": false,
+  "last_run": "2026-08-09",
+  "silence": true,
   "high_impact": [],
   "material": [],
-  "fyi": [
-    {
-      "ticker": "DRO",
-      "title": "Becoming a substantial holder 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 295.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123069"
-    },
-    {
-      "ticker": "PWH",
-      "title": "Becoming a substantial holder 50\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.0MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123175"
-    },
-    {
-      "ticker": "VAS",
-      "title": "Outstanding ETF Securities and Fund Flows 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 378.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123032"
-    },
-    {
-      "ticker": "VEU",
-      "title": "Outstanding ETF Securities and Fund Flows Announcement 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 199.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123034"
-    },
-    {
-      "ticker": "VHY",
-      "title": "Outstanding ETF Securities and Fund Flows 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 378.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123032"
-    }
-  ]
+  "fyi": []
 }

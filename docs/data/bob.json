@@ -1,7 +1,91 @@
 {
-  "last_run": "2026-08-09",
-  "silence": true,
-  "high_impact": [],
+  "last_run": "2026-08-10",
+  "silence": false,
+  "high_impact": [
+    {
+      "ticker": "AHC",
+      "title": "Austco Healthcare to acquire Medical Communications Systems 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 310.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123394",
+      "type": "acquisition",
+      "analysis": {
+        "deal_summary": "Austco Healthcare (ASX: AHC), via its subsidiary Austco Communication Systems Pty Ltd, is acquiring 100% of Medical Communications Systems Pty Ltd (MCS), its own certified nurse call reseller in South Australia, for total consideration of ~A$2.88 million (3.5x normalised EBITDA) structured as ~A$2.24m upfront cash plus an estimated ~A$0.64m performance-based earnout tied to FY27 EBITDA. The deal is cash-funded from existing reserves on a cash-free, debt-free basis.",
+        "what_they_bought": "Primarily market access and margin capture, not capability. MCS is a distribution/installation/service arm that has been selling Austco's own products in SA since 2011 — Austco already knew exactly what it was buying. The acquisition eliminates the reseller margin layer and converts an arm's-length channel relationship into a direct one. There is no new technology, no new product, and no meaningful new geography. This is channel consolidation, not strategic expansion.",
+        "price_check": "3.5x normalised EBITDA on ~A$0.82m of incremental EBITDA implies a purchase price of ~A$2.88m total. Implied revenue multiple is ~1.5x incremental revenue (A$1.88m). These are low multiples consistent with small private service businesses and well below AHC's own ASX trading multiple (typically 10–20x EBITDA for listed healthcare technology peers), so on a pure arbitrage basis the deal is accretive on day one. However, MCS's gross revenue was A$3.33m with A$1.45m (44%) being pass-through purchases from Austco, suggesting MCS's own value-add revenue base is thin at ~A$1.88m. The EBITDA margin on that incremental revenue is ~44% (A$0.82m / A$1.88m), which looks high for a 12-person install/service business and warrants scrutiny — what is included/excluded in 'normalised' EBITDA?",
+        "strategic_fit": "Fit is genuine but narrow. Austco is executing a clear, repeatable channel roll-up strategy (Teknocorp 2023, Amentco 2024, G&S Technologies 2025, now MCS 2026). Bringing the SA reseller in-house eliminates channel conflict, improves margin, and gives Austco direct customer data and relationships. The synergy story is simple and credible: Austco was already supplying MCS, so there is no integration of product lines, just of people and contracts. Claimed synergies (direct customer relationships, margin capture) are specific and plausible. The hand-waving is the 'proven acquisition model' assertion — no quantified performance data from the prior three acquisitions is provided to substantiate this claim.",
+        "integration_risk": "Low-to-moderate. MCS is small (12 staff), single-geography, and already deeply embedded in the Austco ecosystem. Key risks: (1) Key-person dependency — completion is conditional on key employees signing new employment agreements, meaning if they walk, the deal may not close or the customer book walks with them; (2) Lease dependency — completion is also conditional on a new premises lease, a minor but real execution risk; (3) Customer retention — SA healthcare/aged-care customers contracted through MCS may have loyalty to MCS individuals rather than Austco corporate; (4) Systems integration is unlikely to be complex given MCS already runs Austco products. Culture risk is low given the 15-year relationship.",
+        "balance_sheet_impact": "Immaterial at the group level. A$2.24m upfront cash outflow is small for a listed entity; no debt is being taken on; no equity dilution. The earnout of ~A$0.64m is payable in cash post FY27 audit, so it is a deferred but fixed-ish liability. Impact on Austco's liquidity depends on its current cash position, which is not disclosed in this announcement — this needs checking against the forthcoming FY26 results. No covenant issues expected given zero leverage in the transaction structure.",
+        "red_flags": [
+          "No audited MCS financials disclosed — 'normalised EBITDA' is management's own figure with no independent verification referenced; the ~44% EBITDA margin on incremental revenue is unusually high for a trade services business and the normalisation adjustments are unspecified.",
+          "Completion conditional on key employee re-signing — if MCS's SA customer relationships are held by 1–2 individuals who negotiate hard or depart post-close, the acquisition economics deteriorate materially.",
+          "No performance data provided on prior three reseller acquisitions (Teknocorp, Amentco, G&S Technologies) — the 'proven model' claim is unverified and investors cannot assess whether the roll-up is genuinely creating value or simply adding revenue at thin incremental returns.",
+          "Earnout structure creates a short FY27 window (annualised from completion to 30 June 2027) that is easily gamed by deferring costs or accelerating revenue into the measurement period.",
+          "Austco's current cash balance is not disclosed in this announcement, making it impossible to assess whether the A$2.24m+ outflow is genuinely comfortable or stretches liquidity ahead of FY26 results."
+        ],
+        "bottom_line": {
+          "bull": "At 3.5x EBITDA, Austco is buying a known, de-risked asset at a substantial discount to its own market multiple, capturing margin it was previously sharing with a reseller, and executing a consistent channel consolidation strategy that mechanically improves direct revenue quality and customer visibility across Australia.",
+          "bear": "This is a tiny, dependent service business whose economics rest on a handful of people and whose 'normalised' 44% EBITDA margin has not been independently verified; if key staff leave or customer relationships prove non-transferable, Austco has paid A$2.88m for a lease in Morphett Vale and 12 onboarded employees with no incremental revenue.",
+          "key_questions": [
+            "What are the actual audited financials for MCS FY26, and what specific items were 'normalised' out to arrive at the A$0.82m EBITDA figure — owner salaries, related-party transactions, one-off costs?",
+            "What quantified EBITDA contribution have Teknocorp, Amentco and G&S Technologies each delivered versus their acquisition-day forecasts, and are they tracking at or above the promised multiples?",
+            "What is Austco's pro-forma cash balance post this transaction, and what is the pipeline of remaining reseller acquisition targets and their indicative aggregate cost?"
+          ]
+        }
+      },
+      "drive_links": []
+    },
+    {
+      "ticker": "CAT",
+      "title": "Extension and Expansion of Debt Facility 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 44.",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123428",
+      "type": "capital",
+      "analysis": {
+        "what_happened": "Catapult Sports (ASX:CAT) extended and upsized its existing revolving credit facility with Western Alliance Bank. Maturity extended from May 2027 to May 2031 (4-year extension). Facility upsized from US$30M to US$50M. Facility is currently fully undrawn. No equity issued. No specific use of proceeds disclosed beyond 'inorganic growth opportunities.' Company reports cash >US$53M at end of FY26.",
+        "fairness_signaling": "Non-dilutive to existing equity holders — no shares issued. With US$53M cash and a fully undrawn US$50M facility, the company has ~US$103M of total liquidity headroom. The extension 4+ years before maturity (May 2027 was still ~9 months away at announcement) suggests Catapult had reasonable bargaining power and was not refinancing under duress. Western Alliance's willingness to upsize implies lender comfort with the credit. No insider-advantaging structure visible.",
+        "balance_sheet_impact": "Modestly positive. Pre-existing facility was undrawn; this maintains zero drawn debt while extending runway and increasing dry powder. No leverage increase at close. Key unknowns: interest rate on the facility (likely SOFR + spread), commitment fees on undrawn balance, and any financial covenants (minimum liquidity, EBITDA, etc.) are not disclosed. If covenants exist, they could constrain M&A deployment or operating flexibility. Refinancing risk effectively neutralized until 2031.",
+        "why_now": "Opportunistic rather than defensive. Company appears to be in a healthy cash position (>US$53M cash, no debt, guiding to higher FCF in FY27). Extending with ~9 months to go on the old maturity while conditions are favorable — and growing the facility — reads as proactive capital structure management ahead of potential M&A activity. Not a rescue raise.",
+        "dilution_math": "No equity dilution. If the facility is drawn for M&A, dilution would depend on deal structure. Implicit cost of the undrawn facility is the commitment fee (not disclosed). If drawn, interest cost likely SOFR (~5%+) plus a spread — effective all-in rate probably 7-9% range for a company of this profile, though not stated. US$50M fully drawn against a ~US$300-400M market cap company would be meaningful but manageable given the cash buffer.",
+        "disclosure_quality": "Thin but adequate for a facility extension announcement. Missing: interest rate / pricing grid, commitment fees, financial covenants, any drawdown conditions or restrictions, specific M&A targets or criteria, and the actual FY26 revenue/EBITDA figures that underpin the lender's comfort. The 'excluding transaction costs' qualifier on FY27 FCF guidance is slightly opaque — transaction costs for what?",
+        "bottom_line": "This is a clean, non-dilutive, opportunistic refinancing executed from a position of strength — US$53M cash, zero drawn debt, and improving FCF. The main open question is what acquisition target(s) the extra US$20M headroom is being positioned for.",
+        "key_questions": [
+          "What are the financial covenants attached to the facility, and how much operating headroom do they leave if FCF disappoints or an acquisition pressures near-term EBITDA?",
+          "What is the all-in pricing (rate + commitment fee) on the facility, and how does it compare to the prior terms — was this an improvement or a cost increase for the upsize?",
+          "What does 'transaction costs' mean in the FY27 FCF guidance qualifier — is an acquisition already in advanced stages, and if so, what is the size and target profile being contemplated?"
+        ]
+      },
+      "drive_links": []
+    }
+  ],
   "material": [],
-  "fyi": []
+  "fyi": [
+    {
+      "ticker": "AHC",
+      "title": "Austco Healthcare to acquire Medical Communications Systems 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 310.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123394"
+    },
+    {
+      "ticker": "CAT",
+      "title": "Extension and Expansion of Debt Facility 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 44.",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123428"
+    },
+    {
+      "ticker": "DRO",
+      "title": "RfRecon Launch - Flagship Next-Generation Solution 9\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.3MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123367"
+    },
+    {
+      "ticker": "NHC",
+      "title": "Investor and Analyst Call Details 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 244.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123431"
+    },
+    {
+      "ticker": "TWE",
+      "title": "New Regional Operating Model - Historical Financials 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 257.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123380"
+    },
+    {
+      "ticker": "TWE",
+      "title": "TWE accelerates actions to rebalance its US supply chain 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 301.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123377"
+    }
+  ]
 }

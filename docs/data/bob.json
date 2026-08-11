@@ -1,23 +1,97 @@
 {
-  "last_run": "2026-08-11",
+  "last_run": "2026-08-12",
   "silence": false,
-  "high_impact": [],
+  "high_impact": [
+    {
+      "ticker": "CPU",
+      "title": "CPU FY26 Results Presentation 52\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.4MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124057",
+      "type": "results",
+      "analysis": {
+        "executive_summary": [
+          "Revenue grew 4.6% to $3,257.5m (FY25: $3,114.6m), driven by Employee Share Plans (+18.0% reported, +10.2% CC), Corporate Trust (+9.6% reported, +5.7% CC) and Issuer Services (+7.7% reported, +4.4% CC); FX tailwinds added $53.2m. Statutory NPAT rose only 1.9% to $618.7m due to the $78.3m gross cost of the UK Mortgage Services disposal (loss $46.3m + disposal-related costs $32.0m) and a 360bp jump in effective tax rate to 27.0% from 23.4%. Management NPAT (underlying) rose 7.3% to $849.8m (Management EPS 146.92 cps vs. 135.28 cps).",
+          "The single most important issue for investors is the trajectory of Margin Income: MI fell $5.5m (-0.7%) to $755.6m as rate cuts across all major markets (-63bps weighted avg yield to 2.36%) were almost entirely offset by average client balance growth of $2.1bn to $32.0bn. The hedge book (WAL 5.07 years) locks in ~$1.9bn of MI over FY26-FY35, providing structural earnings resilience. FY27 guidance for MI of ~$770m implies a recovery driven by balance growth and hedging, even as rates are assumed flat. Net debt collapsed to $144.1m (0.11x EBITDA) from $527.6m, the balance sheet now almost unleveraged.",
+          "Red flag — the statutory effective tax rate surged to 27.0% (FY25: 23.4%), adding ~$43.6m in tax versus a stable-rate scenario; the UK MS disposal generated $19.5m of non-deductible losses under UK Substantial Shareholding Exemption rules (gain is exempt but loss is also not deductible, creating a permanent difference), and the prior period benefited from a one-off US state tax methodology change ($16.3m prior-year over-provision credit). Restructuring costs remain persistent at $61.6m after-tax for the 6th consecutive year, and Technology & Operations absorbed $97.9m management EBIT loss (excluding stranded costs) — the corporate cost sink is not shrinking. Additionally, Issuer Services management EBIT ex-MI fell 4.6% CC to $209.2m as newly acquired businesses diluted margins and stranded costs were reallocated."
+        ],
+        "key_numbers": {
+          "revenue": "$3,257.5m vs. $3,114.6m (PCP), up 4.6%; organic CC growth ~3.0% excluding FX and portfolio changes",
+          "ebitda_margin": "Management EBITDA $1,284.9m (actual FX); statutory EBITDA not explicitly disclosed but implied ~$1,023m pre-finance costs and tax. Management EBITDA margin 39.3% of management revenue vs. 39.9% PCP (per segment data). Operating cash to EBITDA conversion 65% (stable vs. 66% PCP)",
+          "npat_statutory": "$618.7m vs. $607.0m (PCP), up 1.9%",
+          "npat_underlying": "Management NPAT $849.8m vs. $793.8m (PCP), up 7.0%. Difference of $231.1m (after-tax) comprises: amortisation of acquisition intangibles $76.3m, acquisitions/disposals $84.9m (UK MS loss $46.3m + disposal costs $32.0m + other), restructuring $61.6m, hedge modification $8.6m and other. These items have recurred for multiple years, making 'underlying' a generous label for persistently recurring costs",
+          "eps": "Basic statutory EPS 106.97 cps vs. 103.45 cps (PCP), up 3.4%. Management EPS 146.92 cps vs. 135.28 cps (PCP), up 8.6% (at reported WANOS of 578.4m)",
+          "operating_cashflow": "$836.6m vs. $823.7m (PCP), up 1.6%; cash conversion to management EBITDA 65% vs. 66% PCP; impacted by $53.0m receivables outflow and higher prepayments (long-term tech contracts)",
+          "free_cashflow": "$801.2m vs. $780.1m (PCP), up 2.7% (defined as operating cash less capex of $35.4m; no capitalised development costs — software expensed)",
+          "net_debt_cash": "Net debt $144.1m at 30 June 2026 vs. $527.6m at 30 June 2025; reduction of $383.5m driven by strong FCF and $562.8m net debt repayment; leverage 0.11x EBITDA vs. 0.42x. Total borrowings $1,197.8m non-current, nil current; cash $1,053.7m"
+        },
+        "quality_of_earnings": "Cash conversion is healthy at 65% of management EBITDA but has edged down from 66% in FY25, partly due to a $53m receivables build and $24.7m in non-current prepayments for long-term technology contracts (a form of off-balance-sheet capex deferral). Receivables rose $19.9m to $566.8m. No material development costs are capitalised (explicitly confirmed), which is a positive quality signal. However, management adjustment items have now totalled $231.1m (FY26), $186.8m (FY25), and $355.7m (FY24) — over $770m across three years — with restructuring costs ($61.6m net of tax in FY26) recurring for the 6th consecutive year and integration charges ($10.8m) still flowing through despite major acquisitions being largely complete. The $8.6m non-cash hedge modification charge (unwinding through FY34) obscures true interest economics. Statutory ETR of 27.0% versus management ETR of 24.6% also flags non-recurring distortions that inflate the gap between statutory and underlying profit.",
+        "management_framing": "Mixed — the presentation leads strongly with management (non-IFRS) metrics: Management EPS 145.2 cps (CC) / 146.92 cps (actual) is the headline number, while statutory EPS of 106.97 cps and NPAT growth of just 1.9% are disclosed only in the appendix. The deck emphasises the 35.4% final dividend increase and 58% payout ratio, ROIC of 36.5%, near-zero leverage, and 10.4% CAGR in management EPS since FY23 — all legitimate positives. Downplayed: the UK MS disposal destroyed $46.3m of value (sold for $13.0m net against $34.2m net assets plus $15.2m FX reserve reclassification plus $9.9m transaction costs), Issuer Services EBIT ex-MI fell 4.6% in CC terms, the effective tax rate step-up, and the Technology & Operations segment running a -$97.9m management EBIT loss (including stranded costs). The segment reclassification — combining four sub-segments into 'Corporate & Other' — reduces visibility into stranded cost progress going forward. Management explicitly note this will be the 'final year' of cost-out reporting, which removes a key tracking mechanism for investors.",
+        "positives": [
+          "Employee Share Plans delivered standout performance: revenue +10.2% CC to $559.7m, management EBIT +24.3% to $260.8m, EBIT margin expanded 530bps to 46.6%, and EBIT ex-MI margin up 710bps to 42.0% CC — driven by transactional revenue +18.6% to $316.9m and AuA of $288.6bn (+8%). This is a high-quality, recurring-revenue growth business benefiting from structural trend of equity-based remuneration.",
+          "Balance sheet transformation: net debt fell to $144.1m (0.11x EBITDA) from $527.6m (0.42x), EBITDA interest coverage rose to 15.6x from 10.7x, average cost of debt declined 122bps to 5.53%, and $1,083m of undrawn bank facilities remain available. Free cash flow of $801.2m supports 55% dividend payout ratio (up from 45%) and positions the company for acquisitions. FY27 interest expense is guided down ~15%, adding ~2 cps to management EPS.",
+          "Margin Income structural protection: $1.9bn of hedged MI locked in over FY26-FY35 (WAL 5.07 years), with exposed balances up $1.3bn to $10.0bn and recapture rate improving to 97%. The hedge book's growing contribution ($331.6m in FY26 vs. $314.9m FY25) increasingly offsets rate cuts, and FY27 MI is guided to ~$770m — a recovery from FY26 — as hedged balances rise from $9.6bn to $11.7bn at yield of 3.64%.",
+          "Corporate Trust synergies ahead of schedule: $80m Wells Fargo synergies delivered one year early; cumulative CCT synergies of $83.4m (cost $29.7m + revenue $53.7m) against a $116m total plan target, with $5m remaining to be delivered in FY27. Revenue grew 5.7% CC to $1,032.0m with structured products mandates won up 21.9%."
+        ],
+        "negatives": [
+          "UK Mortgage Services disposal was value-destructive: sold for $13.0m gross consideration (net cash outflow $3.4m after deducting $9.8m cash disposed) against net assets of $34.2m plus $15.2m FX reserves reclassified, plus $9.9m transaction costs = $46.3m pre-tax loss. Zero tax benefit under UK Substantial Shareholding Exemption. Additionally, $32.0m of redundancy/provisions were charged as disposal-related expenses below the EBIT line. Total cash and P&L cost ~$78.3m gross. This follows a pattern of loss-making disposals (US MS loss $129.4m in FY24).",
+          "Effective tax rate jumped 360bps to 27.0% from 23.4%, adding ~$30m+ in tax versus PCP normalized rate; the management ETR of 24.6% is more stable but the statutory gap to prior year reflects $19.5m of permanent differences from UK MS disposal and the absence of the $16.3m prior-year US state tax benefit. FY27 guidance assumes ~24% management ETR but statutory rate uncertainty remains elevated.",
+          "Issuer Services EBIT ex-MI fell 4.6% CC to $209.2m (margin down 220bps to 19.3% CC) despite revenue growth of 4.4%, as newly acquired businesses (ingage, CMi2i) dilute margins while scaling, and $13.3m of stranded costs were allocated back. Global managed shareholder accounts continue to shrink (33.9m units in FY26 vs. 35.1m in FY25), indicating structural headwinds in the register maintenance core.",
+          "Restructuring and integration costs remain persistently high and are being excluded from 'underlying' earnings: $61.6m major restructuring (after-tax) in FY26 after $60.7m in FY25 and $47.1m in FY24; total cost-to-achieve post-tax of $609.4m cumulative. FY26 is described as the 'final year' of cost-out reporting, removing future accountability. Technology costs rose to 10.9% of revenue ($356m) from 10.2% ($317m), with maintenance +36% to $64.2m, signalling tech debt rather than transformation progress."
+        ],
+        "bottom_line": {
+          "bull": "CPU is a near-unlevered, cash-generative infrastructure business with a 10.4% management EPS CAGR since FY23, structural MI protection via a $1.9bn hedged book (WAL 5 years), and a powerful growth engine in Employee Share Plans (EBIT margin 46.6% and rising). FY27 management EPS guidance of ~154 cps (+6%) is supported by MI recovery ($770m), lower interest expense (~15% reduction), and EBIT ex-MI expansion to ~19%; the dividend (AUD 120 cps total in FY26 vs. 93 cps FY25) reflects genuine balance sheet strength and management confidence.",
+          "bear": "Statutory earnings growth is just 1.9% after absorbing recurring 'non-recurring' costs that have totalled $770m+ over three years, ongoing value-destructive disposals, and a structurally rising tax rate. Issuer Services core margins are compressing, managed shareholder accounts are declining, technology costs are inflating, and the Technology & Operations segment absorbs ~$98m annually. MI sensitivity remains: a 100bps rate decline would cost ~$72m in annual MI at current exposed balance levels, and the hedge book yield advantage reverses post-FY31 as older higher-rate swaps mature.",
+          "what_changes_mind": "Bull-to-bear: a sustained decline in global interest rates below 3% (MI falls to ~$728m at 3% rates per sensitivity table, and lower still if exposed balances soften); failure to deploy the $1bn+ balance sheet firepower on value-accretive acquisitions (risk of returning to low-quality bolt-ons at high prices); or Issuer Services margin recovery stalling as stranded cost reallocation continues. Bear-to-bull: evidence that management EPS ex-MI can reach the 20% margin target (currently 18.1%), demonstrated by Issuer Services ex-MI margin recovering above 21% and restructuring costs finally ceasing (FY28 per guidance); or a large-scale Corporate Trust or Entity Solutions acquisition that immediately accretive at scale."
+        }
+      },
+      "drive_links": []
+    }
+  ],
   "material": [
     {
-      "ticker": "DRO",
-      "title": "August 2026 Investor Presentation 20\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.5MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123818",
+      "ticker": "CAT",
+      "title": "Canaccord Growth Conference Presentation 22\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 7.0MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124055",
       "analysis": {
-        "what_happened": "DRO: August 2026 Investor Presentation 20\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.5MB",
+        "what_happened": "CAT: Canaccord Growth Conference Presentation 22\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 7.0MB",
         "so_what": "Price-sensitive headline — open link for details."
       }
     }
   ],
   "fyi": [
     {
-      "ticker": "DRO",
-      "title": "August 2026 Investor Presentation 20\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.5MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123818"
+      "ticker": "CAT",
+      "title": "Canaccord Growth Conference Presentation 22\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 7.0MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124055"
+    },
+    {
+      "ticker": "CPU",
+      "title": "CPU - Appointment of Director 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 76.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124058"
+    },
+    {
+      "ticker": "CPU",
+      "title": "CPU FY26 Results Presentation 52\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.4MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124057"
+    },
+    {
+      "ticker": "CPU",
+      "title": "CPU FY26 Results Market Announcement 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 198.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124054"
+    },
+    {
+      "ticker": "CPU",
+      "title": "Dividend/Distribution - CPU 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124053"
+    },
+    {
+      "ticker": "CPU",
+      "title": "CPU FY26 Preliminary Final Report - Appendix 4E 20\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 257.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124052"
+    },
+    {
+      "ticker": "RMD",
+      "title": "Statement of changes in beneficial ownership 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124153"
     }
   ]
 }

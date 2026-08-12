@@ -1,46 +1,122 @@
 {
-  "last_run": "2026-08-12",
+  "last_run": "2026-08-13",
   "silence": false,
   "high_impact": [
     {
-      "ticker": "CPU",
-      "title": "CPU FY26 Results Presentation 52\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.4MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124057",
+      "ticker": "IAG",
+      "title": "IAG FY26 Results Presentation 40\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.8MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124617",
       "type": "results",
       "analysis": {
         "executive_summary": [
-          "Revenue grew 4.6% to $3,257.5m (FY25: $3,114.6m), driven by Employee Share Plans (+18.0% reported, +10.2% CC), Corporate Trust (+9.6% reported, +5.7% CC) and Issuer Services (+7.7% reported, +4.4% CC); FX tailwinds added $53.2m. Statutory NPAT rose only 1.9% to $618.7m due to the $78.3m gross cost of the UK Mortgage Services disposal (loss $46.3m + disposal-related costs $32.0m) and a 360bp jump in effective tax rate to 27.0% from 23.4%. Management NPAT (underlying) rose 7.3% to $849.8m (Management EPS 146.92 cps vs. 135.28 cps).",
-          "The single most important issue for investors is the trajectory of Margin Income: MI fell $5.5m (-0.7%) to $755.6m as rate cuts across all major markets (-63bps weighted avg yield to 2.36%) were almost entirely offset by average client balance growth of $2.1bn to $32.0bn. The hedge book (WAL 5.07 years) locks in ~$1.9bn of MI over FY26-FY35, providing structural earnings resilience. FY27 guidance for MI of ~$770m implies a recovery driven by balance growth and hedging, even as rates are assumed flat. Net debt collapsed to $144.1m (0.11x EBITDA) from $527.6m, the balance sheet now almost unleveraged.",
-          "Red flag — the statutory effective tax rate surged to 27.0% (FY25: 23.4%), adding ~$43.6m in tax versus a stable-rate scenario; the UK MS disposal generated $19.5m of non-deductible losses under UK Substantial Shareholding Exemption rules (gain is exempt but loss is also not deductible, creating a permanent difference), and the prior period benefited from a one-off US state tax methodology change ($16.3m prior-year over-provision credit). Restructuring costs remain persistent at $61.6m after-tax for the 6th consecutive year, and Technology & Operations absorbed $97.9m management EBIT loss (excluding stranded costs) — the corporate cost sink is not shrinking. Additionally, Issuer Services management EBIT ex-MI fell 4.6% CC to $209.2m as newly acquired businesses diluted margins and stranded costs were reallocated."
+          "GWP grew 7.6% to A$18,412m (FY25: A$17,106m) driven predominantly by the 10-month RACQI acquisition contribution of A$1,272m; underlying organic GWP growth was only 1.9%, exposing the acquisition-dependency of the headline growth narrative",
+          "The one thing investors should focus on: NPAT fell 24.8% to A$1,022m (FY25: A$1,359m) as FY25 was inflated by favourable perils and a BI reserve release — the reported insurance margin contracted 280bps to 14.7%; underlying insurance margin also slipped 50bps to 15.0%, but ex-RACQI improved 50bps to 16.0%, indicating RACQI dilution is the key margin headwind",
+          "Red flag: RACQI posted a A$174m insurance loss in 1H26 (before recovering to A$79m profit in 2H26), natural perils costs came in A$114m above allowance at A$1,579m, and the pending RAC Insurance (WA) acquisition will consume ~0.36x CET1, pushing pro-forma CET1 to ~1.00x — at the lower bound of the 0.9-1.1x target range with limited buffer"
         ],
         "key_numbers": {
-          "revenue": "$3,257.5m vs. $3,114.6m (PCP), up 4.6%; organic CC growth ~3.0% excluding FX and portfolio changes",
-          "ebitda_margin": "Management EBITDA $1,284.9m (actual FX); statutory EBITDA not explicitly disclosed but implied ~$1,023m pre-finance costs and tax. Management EBITDA margin 39.3% of management revenue vs. 39.9% PCP (per segment data). Operating cash to EBITDA conversion 65% (stable vs. 66% PCP)",
-          "npat_statutory": "$618.7m vs. $607.0m (PCP), up 1.9%",
-          "npat_underlying": "Management NPAT $849.8m vs. $793.8m (PCP), up 7.0%. Difference of $231.1m (after-tax) comprises: amortisation of acquisition intangibles $76.3m, acquisitions/disposals $84.9m (UK MS loss $46.3m + disposal costs $32.0m + other), restructuring $61.6m, hedge modification $8.6m and other. These items have recurred for multiple years, making 'underlying' a generous label for persistently recurring costs",
-          "eps": "Basic statutory EPS 106.97 cps vs. 103.45 cps (PCP), up 3.4%. Management EPS 146.92 cps vs. 135.28 cps (PCP), up 8.6% (at reported WANOS of 578.4m)",
-          "operating_cashflow": "$836.6m vs. $823.7m (PCP), up 1.6%; cash conversion to management EBITDA 65% vs. 66% PCP; impacted by $53.0m receivables outflow and higher prepayments (long-term tech contracts)",
-          "free_cashflow": "$801.2m vs. $780.1m (PCP), up 2.7% (defined as operating cash less capex of $35.4m; no capitalised development costs — software expensed)",
-          "net_debt_cash": "Net debt $144.1m at 30 June 2026 vs. $527.6m at 30 June 2025; reduction of $383.5m driven by strong FCF and $562.8m net debt repayment; leverage 0.11x EBITDA vs. 0.42x. Total borrowings $1,197.8m non-current, nil current; cash $1,053.7m"
+          "revenue": "GWP A$18,412m vs A$17,106m (+7.6%); NEP A$10,523m vs A$9,984m (+5.4%); underlying GWP A$17,272m vs A$16,955m (+1.9%)",
+          "ebitda_margin": "Reported insurance margin 14.7% vs 17.5% (-280bps); underlying insurance margin 15.0% vs 15.5% (-50bps); ex-RACQI underlying margin 16.0% vs 15.5% (+50bps)",
+          "npat_statutory": "A$1,022m vs A$1,359m (-24.8%); FY25 elevated by favourable perils and BI reserve release",
+          "npat_underlying": "Underlying insurance profit A$1,578m vs A$1,542m (+2.3%); difference to statutory NPAT reflects perils above allowance (-A$114m net), lower investment income on technical reserves (A$246m vs A$464m due to -A$136m risk-free rate impact), higher non-controlling interests (A$195m vs A$176m), and tax/interest; reconciliation to NPAT not fully bridged in the presentation",
+          "eps": "Not disclosed in presentation; payout ratio of 74% on 32cps total dividend implies NPAT-per-share can be inferred but EPS figure not explicitly stated",
+          "operating_cashflow": "Not disclosed",
+          "free_cashflow": "Not disclosed",
+          "net_debt_cash": "Not disclosed explicitly; CET1 ratio 1.14x PCA at Jun-26 vs 1.18x at Dec-25; completed A$200m on-market buyback at avg ~A$7.30/share; interest expense A$190m (FY26) vs A$192m (FY25); gross debt level not disclosed in this presentation"
         },
-        "quality_of_earnings": "Cash conversion is healthy at 65% of management EBITDA but has edged down from 66% in FY25, partly due to a $53m receivables build and $24.7m in non-current prepayments for long-term technology contracts (a form of off-balance-sheet capex deferral). Receivables rose $19.9m to $566.8m. No material development costs are capitalised (explicitly confirmed), which is a positive quality signal. However, management adjustment items have now totalled $231.1m (FY26), $186.8m (FY25), and $355.7m (FY24) — over $770m across three years — with restructuring costs ($61.6m net of tax in FY26) recurring for the 6th consecutive year and integration charges ($10.8m) still flowing through despite major acquisitions being largely complete. The $8.6m non-cash hedge modification charge (unwinding through FY34) obscures true interest economics. Statutory ETR of 27.0% versus management ETR of 24.6% also flags non-recurring distortions that inflate the gap between statutory and underlying profit.",
-        "management_framing": "Mixed — the presentation leads strongly with management (non-IFRS) metrics: Management EPS 145.2 cps (CC) / 146.92 cps (actual) is the headline number, while statutory EPS of 106.97 cps and NPAT growth of just 1.9% are disclosed only in the appendix. The deck emphasises the 35.4% final dividend increase and 58% payout ratio, ROIC of 36.5%, near-zero leverage, and 10.4% CAGR in management EPS since FY23 — all legitimate positives. Downplayed: the UK MS disposal destroyed $46.3m of value (sold for $13.0m net against $34.2m net assets plus $15.2m FX reserve reclassification plus $9.9m transaction costs), Issuer Services EBIT ex-MI fell 4.6% in CC terms, the effective tax rate step-up, and the Technology & Operations segment running a -$97.9m management EBIT loss (including stranded costs). The segment reclassification — combining four sub-segments into 'Corporate & Other' — reduces visibility into stranded cost progress going forward. Management explicitly note this will be the 'final year' of cost-out reporting, which removes a key tracking mechanism for investors.",
+        "quality_of_earnings": "Investment income on technical reserves collapsed to A$246m from A$464m, driven by a A$136m adverse risk-free rate mark-to-market impact — this is an IFRS 17 accounting artefact that suppresses reported profit but reverses over time (exit yield ~5.5% suggests underlying income recovery). Reserve releases of A$78m in IIA supported reported profit and the underlying margin; without these, IIA underlying profit would have been flat-to-down. The presentation does not disclose operating cashflow or free cashflow, preventing assessment of cash conversion quality. RACQI contributed a net loss in 1H26 of A$174m before recovering, and management confirm all integration/amortisation costs are included in underlying — reducing the risk of hidden below-the-line charges but making the underlying margin look temporarily depressed.",
+        "management_framing": "Mixed — leaning Promotional. The deck leads with '7.6% GWP growth' and 'Strong FY26 results' while burying the fact that organic underlying GWP growth was only 1.9% and NPAT fell 24.8%. The 24.8% NPAT decline is immediately contextualised as a FY25 base effect, which is partially fair but deflects from RACQI's 1H26 A$174m insurance loss. The ex-RACQI underlying margin of 16.0% is prominently featured to offset the total reported margin compression. Operating cashflow and free cashflow are not disclosed, which is a transparency gap for an insurer of this scale. The 'perils upside' slide promoting ~$100m average benefit from reinsurance cover is forward-looking marketing without historical calibration context.",
         "positives": [
-          "Employee Share Plans delivered standout performance: revenue +10.2% CC to $559.7m, management EBIT +24.3% to $260.8m, EBIT margin expanded 530bps to 46.6%, and EBIT ex-MI margin up 710bps to 42.0% CC — driven by transactional revenue +18.6% to $316.9m and AuA of $288.6bn (+8%). This is a high-quality, recurring-revenue growth business benefiting from structural trend of equity-based remuneration.",
-          "Balance sheet transformation: net debt fell to $144.1m (0.11x EBITDA) from $527.6m (0.42x), EBITDA interest coverage rose to 15.6x from 10.7x, average cost of debt declined 122bps to 5.53%, and $1,083m of undrawn bank facilities remain available. Free cash flow of $801.2m supports 55% dividend payout ratio (up from 45%) and positions the company for acquisitions. FY27 interest expense is guided down ~15%, adding ~2 cps to management EPS.",
-          "Margin Income structural protection: $1.9bn of hedged MI locked in over FY26-FY35 (WAL 5.07 years), with exposed balances up $1.3bn to $10.0bn and recapture rate improving to 97%. The hedge book's growing contribution ($331.6m in FY26 vs. $314.9m FY25) increasingly offsets rate cuts, and FY27 MI is guided to ~$770m — a recovery from FY26 — as hedged balances rise from $9.6bn to $11.7bn at yield of 3.64%.",
-          "Corporate Trust synergies ahead of schedule: $80m Wells Fargo synergies delivered one year early; cumulative CCT synergies of $83.4m (cost $29.7m + revenue $53.7m) against a $116m total plan target, with $5m remaining to be delivered in FY27. Revenue grew 5.7% CC to $1,032.0m with structured products mandates won up 21.9%."
+          "Underlying insurance profit rose 2.3% to A$1,578m despite RACQI drag, weaker NZD, and lower investment income — driven by 50bps improvement in underlying claims ratio to 51.6% and 120bps improvement in expense ratio to 22.6%; administration ratio ex-levies improved 60bps to 11.6% with guidance for sub-11% in FY27",
+          "NZ Retail delivered a standout underlying insurance margin of 25.3% (NZD basis), up from 23.0% in FY25, with NZD GWP growing 3.7% and direct customer volumes +80k; tNPS improved materially across all divisions (AU: 45.1 to 54.7, NZ: 54.5 to 63.0); RACQI synergies exceeded A$50m annually and the 2H26 RACQI insurance profit of A$79m signals integration traction",
+          "FY27 guidance of 14.5%-16.5% reported insurance margin with 5%-8% GWP growth is credible and conservative; perils reinsurance cover provides ~A$1bn of additional annual protection for 3 years with modelled average upside of ~A$100m (approximately 1% margin benefit) to the perils allowance; FY27 perils allowance rising only ~2% despite RACQI inclusion is capital-efficient"
         ],
         "negatives": [
-          "UK Mortgage Services disposal was value-destructive: sold for $13.0m gross consideration (net cash outflow $3.4m after deducting $9.8m cash disposed) against net assets of $34.2m plus $15.2m FX reserves reclassified, plus $9.9m transaction costs = $46.3m pre-tax loss. Zero tax benefit under UK Substantial Shareholding Exemption. Additionally, $32.0m of redundancy/provisions were charged as disposal-related expenses below the EBIT line. Total cash and P&L cost ~$78.3m gross. This follows a pattern of loss-making disposals (US MS loss $129.4m in FY24).",
-          "Effective tax rate jumped 360bps to 27.0% from 23.4%, adding ~$30m+ in tax versus PCP normalized rate; the management ETR of 24.6% is more stable but the statutory gap to prior year reflects $19.5m of permanent differences from UK MS disposal and the absence of the $16.3m prior-year US state tax benefit. FY27 guidance assumes ~24% management ETR but statutory rate uncertainty remains elevated.",
-          "Issuer Services EBIT ex-MI fell 4.6% CC to $209.2m (margin down 220bps to 19.3% CC) despite revenue growth of 4.4%, as newly acquired businesses (ingage, CMi2i) dilute margins while scaling, and $13.3m of stranded costs were allocated back. Global managed shareholder accounts continue to shrink (33.9m units in FY26 vs. 35.1m in FY25), indicating structural headwinds in the register maintenance core.",
-          "Restructuring and integration costs remain persistently high and are being excluded from 'underlying' earnings: $61.6m major restructuring (after-tax) in FY26 after $60.7m in FY25 and $47.1m in FY24; total cost-to-achieve post-tax of $609.4m cumulative. FY26 is described as the 'final year' of cost-out reporting, removing future accountability. Technology costs rose to 10.9% of revenue ($356m) from 10.2% ($317m), with maintenance +36% to $64.2m, signalling tech debt rather than transformation progress."
+          "RACQI was materially dilutive in FY26: the division posted a A$174m insurance loss in 1H26 from severe perils before its portfolio was integrated into IAG's group reinsurance program, contributing to A$114m net perils overrun for the year; the underlying RIA margin including RACQI was 14.7% vs 16.4% ex-RACQI, flagging ongoing acquisition earnings drag",
+          "NZ Intermediated (NZI) is deteriorating: NZD GWP declined 11.0%, underlying insurance profit fell 18.9% to NZD$133m, and underlying margin compressed to 14.1% from 16.2%, with a soft commercial market and no clear recovery catalyst disclosed; NZ as a whole saw reported insurance profit fall A$139m in AUD terms",
+          "Balance sheet buffer is thin post-RAC Insurance WA acquisition: pro-forma CET1 of ~1.00x sits at the bottom of the 0.9-1.1x target range; management acknowledge 'comfort to operate at lower end' but this leaves limited room for a severe perils year or adverse reserve development, and the A$200m buyback completed at ~A$7.30 per share may prove capital-destructive if RAC Insurance integration pressures emerge"
         ],
         "bottom_line": {
-          "bull": "CPU is a near-unlevered, cash-generative infrastructure business with a 10.4% management EPS CAGR since FY23, structural MI protection via a $1.9bn hedged book (WAL 5 years), and a powerful growth engine in Employee Share Plans (EBIT margin 46.6% and rising). FY27 management EPS guidance of ~154 cps (+6%) is supported by MI recovery ($770m), lower interest expense (~15% reduction), and EBIT ex-MI expansion to ~19%; the dividend (AUD 120 cps total in FY26 vs. 93 cps FY25) reflects genuine balance sheet strength and management confidence.",
-          "bear": "Statutory earnings growth is just 1.9% after absorbing recurring 'non-recurring' costs that have totalled $770m+ over three years, ongoing value-destructive disposals, and a structurally rising tax rate. Issuer Services core margins are compressing, managed shareholder accounts are declining, technology costs are inflating, and the Technology & Operations segment absorbs ~$98m annually. MI sensitivity remains: a 100bps rate decline would cost ~$72m in annual MI at current exposed balance levels, and the hedge book yield advantage reverses post-FY31 as older higher-rate swaps mature.",
-          "what_changes_mind": "Bull-to-bear: a sustained decline in global interest rates below 3% (MI falls to ~$728m at 3% rates per sensitivity table, and lower still if exposed balances soften); failure to deploy the $1bn+ balance sheet firepower on value-accretive acquisitions (risk of returning to low-quality bolt-ons at high prices); or Issuer Services margin recovery stalling as stranded cost reallocation continues. Bear-to-bull: evidence that management EPS ex-MI can reach the 20% margin target (currently 18.1%), demonstrated by Issuer Services ex-MI margin recovering above 21% and restructuring costs finally ceasing (FY28 per guidance); or a large-scale Corporate Trust or Entity Solutions acquisition that immediately accretive at scale."
+          "bull": "IAG's underlying economics are improving — claims ratio trending down, expense ratio heading below 11%, RACQI integration synergies achieved and 2H26 returning to profit, reinsurance providing structural perils downside protection, and FY27 guidance implies a step-up in reported margin to 14.5-16.5% on growing GWP; if perils are benign and NZI stabilises, NPAT could recover to A$1.2-1.3bn+.",
+          "bear": "Organic GWP growth of only 1.9% strips away the acquisition-driven headline; RACQI integration risk is unresolved and CET1 will be pressured further by the RAC Insurance WA acquisition; NZI is in structural decline; investment income on technical reserves remains rate-sensitive; and A$400m of ongoing technology spend (AI + modernisation) in FY27 may not yield near-term returns — leaving the stock exposed to any perils or macro shock with minimal capital cushion.",
+          "what_changes_mind": "Bull case confirmed by: (1) RACQI delivering a full-year underlying margin above 13% in FY27; (2) NZI GWP stabilising with margin recovery above 15%; (3) operating cashflow conversion above 90% of underlying insurance profit disclosed in the annual report; and (4) RAC Insurance WA regulatory approval and integration costs tracking to plan. Bear case confirmed by: a major perils event exhausting the A$1bn volatility cover, reserve strengthening in IIA long-tail lines, or CET1 falling below 0.95x requiring an equity raise."
+        }
+      },
+      "drive_links": []
+    },
+    {
+      "ticker": "MVP",
+      "title": "FY26 Full Year Results Announcement Details 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 208.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124502",
+      "type": "results",
+      "analysis": {
+        "executive_summary": [
+          "This document is solely a results announcement scheduling notice — no financial results, P&L, balance sheet, cash flow, or operational data have been released yet; actual FY26 results are due 20 August 2026.",
+          "Investors should note that no financial information whatsoever is contained in this filing — it is purely a logistics/calendar notice for the upcoming results webcast.",
+          "Red flag: The bullet-point list for webcast details contains a blank fourth bullet, suggesting a sloppy release process; minor but indicative of execution discipline."
+        ],
+        "key_numbers": {
+          "revenue": "Not disclosed — results not yet released",
+          "ebitda_margin": "Not disclosed — results not yet released",
+          "npat_statutory": "Not disclosed — results not yet released",
+          "npat_underlying": "Not disclosed — results not yet released",
+          "eps": "Not disclosed — results not yet released",
+          "operating_cashflow": "Not disclosed — results not yet released",
+          "free_cashflow": "Not disclosed — results not yet released",
+          "net_debt_cash": "Not disclosed — results not yet released"
+        },
+        "quality_of_earnings": "Cannot be assessed. No financial statements, income statement, cash flow statement, or balance sheet data are contained in this document. This filing contains zero financial content and should not be treated as a results release.",
+        "management_framing": "Neutral/Non-applicable — This is a one-page administrative ASX announcement scheduling the FY26 results webcast for 20 August 2026. There is no financial narrative, no earnings framing, and no investor messaging beyond logistics. The blank bullet point in the webcast details list is a minor presentation error.",
+        "positives": [
+          "Company is providing advance notice and a live webcast with both CEO (Brent MacGregor) and CFO (Anita James) present, suggesting willingness to field investor questions directly.",
+          "Results are scheduled for a specific date (20 August 2026), giving investors a clear timeline for when actual financial data will be available."
+        ],
+        "negatives": [
+          "Zero financial content disclosed — investors cannot perform any analysis from this document; it is purely a scheduling notice.",
+          "A blank fourth bullet point in the official ASX announcement suggests a lack of proofreading discipline in investor communications, a minor but notable governance observation."
+        ],
+        "bottom_line": {
+          "bull": "If MVP's Penthrox international rollout (particularly Europe) has gained traction, FY26 results on 20 August 2026 could show meaningful revenue growth from a low base, potentially re-rating the stock.",
+          "bear": "MVP has a history of high cash burn and slow European commercialisation; if the actual results on 20 August show continued losses without clear revenue inflection, the stock remains uninvestable at any premium valuation.",
+          "what_changes_mind": "Attend or review the 20 August 2026 webcast and results release in full — specifically look for: European Penthrox revenue trajectory, operating cash burn rate, gross margin trends, and any update on regulatory or distribution milestones. This scheduling notice provides no basis for any investment conclusion."
+        }
+      },
+      "drive_links": []
+    },
+    {
+      "ticker": "TWE",
+      "title": "2026 Annual Results Announcement 18\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 856.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124709",
+      "type": "results",
+      "analysis": {
+        "executive_summary": [
+          "EBITS collapsed 36.1% to $492.3m (F25: $770.3m) as all three divisions deteriorated sharply — Treasury Americas EBITS fell 61.4% to $90.2m, Treasury Collective fell 47.8% to $68.0m, and even the crown-jewel Penfolds fell 15.2% to $404.3m — driven by deliberate shipment restrictions, distributor transition disruption, and softer category trends",
+          "The one thing investors must focus on: TWE recognised $1,308.7m in post-tax material items (impairment of US assets $866.3m + Ascent restructuring $478.9m including $458.6m for the decision to reduce US vintage makes), destroying book value by $1.45bn and producing a statutory NPAT loss of $1,078.7m — this is not a one-off in the classic sense; it reflects structural destruction of value in the Americas business that was built through acquisitions (DAOU etc.) at premium prices",
+          "Red flag: The Penfolds China depletion growth figure of +34.7% is materially inflated — management discloses in the footnotes that approximately half of the growth rate was driven by diverting parallel imports into authorised channels, meaning genuine underlying consumer demand growth was closer to ~17%; simultaneously, China customer inventory rebalancing is only half complete (0.2m of 0.4m cases), creating a continued shipment headwind into F27"
+        ],
+        "key_numbers": {
+          "revenue": "NSR $2,561.0m vs F25 $2,938.1m, down 12.8% reported / 11.2% constant currency; volume down 9.9% to 19.2m cases",
+          "ebitda_margin": "EBITDAS $657.5m (F25: $936.8m), implied EBITDAS margin ~25.7% vs ~31.9% pcp; EBITS margin 19.2% vs 26.2% pcp, down 7.0ppts",
+          "npat_statutory": "Loss of $1,078.7m vs profit of $436.8m in F25 — swing of $1,515.5m",
+          "npat_underlying": "NPAT before material items and SGARA $275.3m vs $470.6m, down 41.5%; difference to statutory ($1,354.0m) driven by $1,308.7m post-tax material items (US asset impairments $866.3m + Ascent restructuring $478.9m net of RNDC settlement $19.6m gain) and $60.4m SGARA loss; material items are disclosed but the pre-tax gross charge of ~$1,712.2m is striking",
+          "eps": "Underlying EPS (pre material items/SGARA) 34.1 cents vs 58.0 cents, down 41.3%; Statutory EPS (133.4) cents vs +53.8 cents pcp",
+          "operating_cashflow": "Net operating cash flows before financing costs, tax and material items $535.3m vs $819.2m pcp, down 34.7%; cash conversion 81.4% vs 87.4% pcp — declining but still reasonable",
+          "free_cashflow": "Cash flows after net capex but before financing/tax/material items $436.9m vs $655.5m pcp; cash flows before dividends and material items $194.5m vs $390.9m pcp; no explicit FCF after all items disclosed but total cash flows from activities before debt were negative $(54.8)m vs positive $43.1m pcp",
+          "net_debt_cash": "Net debt (including lease liabilities) $1,782.4m vs $1,778.9m at June 2025 — essentially flat despite large impairments; interest-bearing debt alone $1,531.1m vs $1,682.8m; cash fell sharply to $221.8m from $427.7m; leverage 2.8x EBITDAS (management states this is the peak)"
+        },
+        "quality_of_earnings": "Cash conversion of 81.4% (vs 87.4% pcp) is acceptable at face value but masks significant working capital drag ($106.1m outflow) and the RNDC inventory repurchase — TWE bought back California inventory at original sale value and resold ~40% in 2H26 at nil gross margin, artificially inflating COGS per case by 12.2% in Treasury Americas and depressing margins; this nil-margin resale revenue (~$50-60m estimated) is included in NSR, flattering revenue but not earnings. Non-current inventory rose $7.1m to $1,502.4m despite massive write-downs, suggesting further inventory risk. The $1,712.2m pre-tax material items charge (partially non-cash impairments of PP&E, goodwill and inventory) reflects genuine economic destruction, not timing; ROCE fell to 7.9% (vs 11.9%) even after management helpfully excludes US impairments from the capital employed denominator — on a true IFRS capital base, ROCE would be materially lower.",
+        "management_framing": "Promotional/Mixed — the release leads with 'business momentum improving' and headlines Penfolds depletion growth of +34.7% in China without immediately disclosing that ~half is parallel import channel diversion, a significant qualification buried in footnote 1. Management frames all volume/revenue declines as 'deliberate' or 'strategic' (brand health, channel health) rather than acknowledging structural demand headwinds and distribution missteps. The dividend cancellation (down 100% to nil vs 40 cents pcp) receives no dedicated headline — a $162.3m dividend was paid in F26 from prior year but no F26 final dividend is declared, a major cash preservation move that is downplayed. The F27 EBITS guidance of 'at least equivalent to F26' sounds constructive but relies heavily on $40m Ascent savings and is heavily second-half weighted (~55%), with Americas EBITS guided to ~$50m (vs $109.4m in F26 under new regional reporting) — implying further Americas deterioration that is not prominently highlighted.",
+        "positives": [
+          "Penfolds remains the genuine earnings engine with a 40.5% EBITS margin ($404.3m), and Greater China EBITS grew sequentially — 1H26 $106.2m vs 2H26 $158.6m (full year $264.8m) — demonstrating real underlying demand recovery momentum as inventory rebalancing progresses; China market share gains are independently measured (Nielsen/Smartpath: online +2.4ppts to 15.7%, offline +1.9ppts to 8.1%)",
+          "Balance sheet liquidity is adequate with $1.3bn total liquidity (cash + undrawn facilities) and leverage of 2.8x guided as peak; capex is being cut sharply to ~$75m in F27 from $113.4m in F26, and debt maturities average 3.2 years, providing runway for the deleveraging plan without near-term refinancing pressure"
+        ],
+        "negatives": [
+          "The Americas business has been structurally impaired — Treasury Americas EBITS margin collapsed from 32.0% to 15.7%, the division generated only $90.2m EBITS on $575m NSR, and F27 Americas EBITS is guided at ~$50m (under new regional model equivalent $109.4m in F26), meaning further halving; $1.3bn+ in US asset write-downs across two tranches plus the decision to reduce vintage makes from 2026 signals the DAOU/luxury US strategy has materially underperformed; the strategic review (with advisors appointed) implies potential distressed asset sales",
+          "The nil-dividend in F26, combined with a $30.5m on-market buyback conducted during the period (poor capital allocation given leverage of 2.8x and a statutory loss of $1.08bn), rising working capital drag, and the need to sell through ~60% of remaining RNDC repurchased inventory at nil margin in 1H27 means earnings will be front-loaded with losses — 1H27 EBITS is guided to be only ~45% of the full year (~$221m), implying a very weak first half; the $125m NSR inventory reduction still needed ex-California (0.3m cases) will suppress Americas revenue through 1H28"
+        ],
+        "bottom_line": {
+          "bull": "If Penfolds China depletions normalise into genuine shipment recovery in F27 (China EBITS guided $280-310m, up ~6-17% on F26's $264.8m), Ascent delivers its $40m cost save, and the Americas strategic review crystallises value through asset sales that accelerate deleveraging, TWE could exit F28 with leverage below 2.0x, resumed dividends, and a cleaner, higher-margin portfolio trading on Penfolds' luxury brand premium — a re-rating catalyst.",
+          "bear": "The Americas impairments may not be the last — the strategic review could reveal further write-downs, the 25% depletion growth in China embeds a channel-shift component that fades, parallel import risk re-emerges, the US wine category continues to structurally decline (19 Crimes depletions -9.1% in the US), and TWE is forced to sell Americas brands at distressed valuations to deleverage, permanently reducing the earnings base; leverage stays elevated beyond F28 if free cash flow disappoints, putting refinancing risk back on the table.",
+          "what_changes_mind": "Evidence that Penfolds China shipments (not just depletions) are recovering in 1H27 without reliance on parallel-import channel diversion; a credible Americas strategic review outcome (trade sale of brand portfolio or winery assets at reasonable multiples) that materially reduces net debt toward 2.0x ahead of F28; and Treasury Collective Premium portfolio depletions stabilising — the current -9.1% in the US and -11.9% in the UK signal broader brand erosion beyond manageable."
         }
       },
       "drive_links": []
@@ -48,50 +124,104 @@
   ],
   "material": [
     {
-      "ticker": "CAT",
-      "title": "Canaccord Growth Conference Presentation 22\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 7.0MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124055",
+      "ticker": "CPU",
+      "title": "FY26 Results - CEO and CFO conference call script 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 132.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124433",
       "analysis": {
-        "what_happened": "CAT: Canaccord Growth Conference Presentation 22\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 7.0MB",
+        "what_happened": "CPU: FY26 Results - CEO and CFO conference call script 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 132.7KB",
+        "so_what": "Price-sensitive headline — open link for details."
+      }
+    },
+    {
+      "ticker": "RTH",
+      "title": "FY26 Results and Investor Briefing Details 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 1",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124454",
+      "analysis": {
+        "what_happened": "RTH: FY26 Results and Investor Briefing Details 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n              ",
         "so_what": "Price-sensitive headline — open link for details."
       }
     }
   ],
   "fyi": [
     {
-      "ticker": "CAT",
-      "title": "Canaccord Growth Conference Presentation 22\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 7.0MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124055"
-    },
-    {
       "ticker": "CPU",
-      "title": "CPU - Appointment of Director 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 76.8KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124058"
+      "title": "FY26 Results - CEO and CFO conference call script 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 132.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124433"
     },
     {
-      "ticker": "CPU",
-      "title": "CPU FY26 Results Presentation 52\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.4MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124057"
+      "ticker": "IAG",
+      "title": "2027 Calendar of Key Dates 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 209.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124622"
     },
     {
-      "ticker": "CPU",
-      "title": "CPU FY26 Results Market Announcement 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 198.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124054"
+      "ticker": "IAG",
+      "title": "Dividend/Distribution - IAGPF 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124621"
     },
     {
-      "ticker": "CPU",
-      "title": "Dividend/Distribution - CPU 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124053"
+      "ticker": "IAG",
+      "title": "Dividend/Distribution - IAGPE 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124620"
     },
     {
-      "ticker": "CPU",
-      "title": "CPU FY26 Preliminary Final Report - Appendix 4E 20\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 257.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124052"
+      "ticker": "IAG",
+      "title": "IAG Appendix 4G and 2026 Corporate Governance Statement 38\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 6.5MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124618"
     },
     {
-      "ticker": "RMD",
-      "title": "Statement of changes in beneficial ownership 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124153"
+      "ticker": "IAG",
+      "title": "IAG FY26 Results Presentation 40\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.8MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124617"
+    },
+    {
+      "ticker": "IAG",
+      "title": "IAG Announces FY26 Results 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.1MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124616"
+    },
+    {
+      "ticker": "IAG",
+      "title": "Dividend/Distribution - IAG 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124615"
+    },
+    {
+      "ticker": "IAG",
+      "title": "IAG FY26 Appendix 4E and Annual Report 206\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 16.0MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124614"
+    },
+    {
+      "ticker": "MVP",
+      "title": "FY26 Full Year Results Announcement Details 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page ",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124502"
+    },
+    {
+      "ticker": "RTH",
+      "title": "FY26 Results and Investor Briefing Details 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 1",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124454"
+    },
+    {
+      "ticker": "TWE",
+      "title": "TWE 2026 Fact Book 32\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 6.2MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124714"
+    },
+    {
+      "ticker": "TWE",
+      "title": "2026 Corporate Governance Statement and Appendix 4G 23\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 781.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124712"
+    },
+    {
+      "ticker": "TWE",
+      "title": "2026 Annual Results Investor and Analyst Presentation 33\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.1MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124711"
+    },
+    {
+      "ticker": "TWE",
+      "title": "2026 Annual Results Announcement 18\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 856.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124709"
+    },
+    {
+      "ticker": "TWE",
+      "title": "TWE 2026 Annual Report 199\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.6MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124706"
     }
   ]
 }

@@ -1,52 +1,97 @@
 {
-  "last_run": "2026-08-11T23:14:06.043356+00:00",
+  "last_run": "2026-08-14T22:52:00.561205+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-08-11T23:12:51.845900+00:00",
+      "run_timestamp": "2026-08-14T22:49:43.002163+00:00",
       "total": 74,
-      "flagged_count": 1,
+      "flagged_count": 4,
       "flagged": [
+        {
+          "ticker": "CNU.AX",
+          "company_name": "Chorus Limited",
+          "current_price": 7.900000095367432,
+          "low_52w": 7.550000190734863,
+          "high_52w": 8.90999984741211,
+          "distance_to_low_pct": 4.635760209146456,
+          "below_high_pct": 11.33557541348365
+        },
+        {
+          "ticker": "TLS.AX",
+          "company_name": "TELSTRA FPO [TLS]",
+          "current_price": 4.78000020980835,
+          "low_52w": 4.71999979019165,
+          "high_52w": 5.550000190734863,
+          "distance_to_low_pct": 1.2711953873680781,
+          "below_high_pct": 13.873873053409024
+        },
         {
           "ticker": "RTO.L",
           "company_name": "Rentokil Initial plc",
-          "current_price": 360.29998779296875,
+          "current_price": 351.1000061035156,
           "low_52w": 344.79998779296875,
           "high_52w": 506.79998779296875,
-          "distance_to_low_pct": 4.495359787920526,
-          "below_high_pct": 28.9068673103138
+          "distance_to_low_pct": 1.8271515468642214,
+          "below_high_pct": 30.72217550112839
+        },
+        {
+          "ticker": "UMG.AS",
+          "company_name": "Universal Music Group N.V.",
+          "current_price": 14.649999618530273,
+          "low_52w": 14.345000267028809,
+          "high_52w": 25.309999465942383,
+          "distance_to_low_pct": 2.126171807765588,
+          "below_high_pct": 42.117740309542114
         }
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-08-11T23:13:47.572846+00:00",
+      "run_timestamp": "2026-08-14T22:51:30.311240+00:00",
       "total": 34,
-      "flagged_count": 2,
+      "flagged_count": 3,
       "flagged": [
-        {
-          "ticker": "QOR.AX",
-          "company_name": "Qoria Ltd",
-          "current_price": 0.23499999940395355,
-          "low_52w": 0.23499999940395355,
-          "high_52w": 0.23499999940395355,
-          "distance_to_low_pct": 0.0,
-          "below_high_pct": 0.0
-        },
         {
           "ticker": "FMG.AX",
           "company_name": "Fortescue Ltd",
-          "current_price": 18.020000457763672,
-          "low_52w": 17.799999237060547,
+          "current_price": 17.639999389648438,
+          "low_52w": 17.639999389648438,
           "high_52w": 22.989999771118164,
-          "distance_to_low_pct": 1.235961967038014,
-          "below_high_pct": 21.618092052346142
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 23.27098927678466
+        },
+        {
+          "ticker": "SPZ.AX",
+          "company_name": "Smart Parking Limited",
+          "current_price": 0.6349999904632568,
+          "low_52w": 0.6349999904632568,
+          "high_52w": 1.4199999570846558,
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 55.281689460966646
+        },
+        {
+          "ticker": "TLS.AX",
+          "company_name": "TELSTRA FPO [TLS]",
+          "current_price": 4.78000020980835,
+          "low_52w": 4.71999979019165,
+          "high_52w": 5.550000190734863,
+          "distance_to_low_pct": 1.2711953873680781,
+          "below_high_pct": 13.873873053409024
         }
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-08-11T23:13:58.729880+00:00",
+      "run_timestamp": "2026-08-14T22:51:47.448117+00:00",
       "total": 35,
-      "flagged_count": 1,
+      "flagged_count": 2,
       "flagged": [
+        {
+          "ticker": "AR9.AX",
+          "company_name": "archTIS Limited",
+          "current_price": 0.05000000074505806,
+          "low_52w": 0.05000000074505806,
+          "high_52w": 0.2150000035762787,
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 76.74418608680682
+        },
         {
           "ticker": "QOR.AX",
           "company_name": "Qoria Ltd",
@@ -59,27 +104,36 @@
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-08-11T23:14:06.043356+00:00",
+      "run_timestamp": "2026-08-14T22:52:00.561205+00:00",
       "total": 30,
-      "flagged_count": 2,
+      "flagged_count": 3,
       "flagged": [
         {
           "ticker": "WSO",
           "company_name": "Watsco, Inc.",
-          "current_price": 318.9100036621094,
+          "current_price": 313.05999755859375,
           "low_52w": 309.29998779296875,
           "high_52w": 456.8599853515625,
-          "distance_to_low_pct": 3.1070210955110444,
-          "below_high_pct": 30.1952427685909
+          "distance_to_low_pct": 1.2156514432654224,
+          "below_high_pct": 31.47572394249234
         },
         {
           "ticker": "FIZZ",
           "company_name": "National Beverage Corp.",
-          "current_price": 30.829999923706055,
+          "current_price": 31.309999465942383,
           "low_52w": 30.530000686645508,
           "high_52w": 46.75,
-          "distance_to_low_pct": 0.9826375051205718,
-          "below_high_pct": 34.05347609902448
+          "distance_to_low_pct": 2.5548600122962446,
+          "below_high_pct": 33.02673911028367
+        },
+        {
+          "ticker": "MNST",
+          "company_name": "Monster Beverage Corporation",
+          "current_price": 46.81999969482422,
+          "low_52w": 45.529998779296875,
+          "high_52w": 99.94000244140625,
+          "distance_to_low_pct": 2.833298814218122,
+          "below_high_pct": 53.151892584479086
         }
       ]
     },

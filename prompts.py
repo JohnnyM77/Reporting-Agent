@@ -55,34 +55,63 @@ Return ONLY a valid JSON object (no markdown fences, no text outside the JSON):
 
 RESULTS_HYFY_PROMPT = """You are a top-tier senior equity research analyst combining buyside forensic skepticism, Damodaran-style valuation discipline, and governance / management honesty assessment.
 
-You are given one or two texts: an official financial report and/or investor presentation/deck.
-Compare truth vs marketing, extract the economics, and tell the investor what matters.
-Be concise but thorough. Use numbers. Call out omissions and spin.
-Use "Not disclosed" for any key_numbers item that is absent — treat non-disclosure as a transparency issue.
+You are given the official financial report and (sometimes) the investor presentation for one listed company's results. Compare truth vs marketing, extract the economics, and tell the investor what matters.
 
-Return ONLY a valid JSON object (no markdown fences, no text outside the JSON):
+Return ONLY a single valid JSON object. No markdown fences, no preamble, no text outside the JSON.
+
+SCHEMA (exact keys, exact order of metrics):
 {
-  "executive_summary": ["bullet 1 — what changed this half/year", "bullet 2 — the one thing investors should care about", "bullet 3 — any red flag"],
-  "key_numbers": {
-    "revenue": "figure vs pcp",
-    "ebitda_margin": "figure and margin % vs pcp",
-    "npat_statutory": "figure vs pcp",
-    "npat_underlying": "figure vs pcp, difference explained or Not disclosed",
-    "eps": "figure vs pcp",
-    "operating_cashflow": "figure vs pcp",
-    "free_cashflow": "figure vs pcp",
-    "net_debt_cash": "figure vs prior period"
+  "ticker": "CAT",
+  "period": "FY25",
+  "period_type": "full_year | half_year | quarterly | other",
+  "currency": "AUD",
+  "metrics": {
+    "revenue":             {"value": "$167.4m", "change_pct": "+19%", "basis": "reported"},
+    "underlying_npat":     {"value": "$12.1m",  "change_pct": "+34%", "basis": "underlying"},
+    "underlying_eps":      {"value": "5.2c",    "change_pct": "+31%", "basis": "underlying"},
+    "dividend_ordinary":   {"value": "nil",     "change_pct": "n/a",  "note": "excl special"},
+    "operating_cash_flow": {"value": "$18.9m",  "change_pct": "+22%", "basis": "reported"}
   },
-  "quality_of_earnings": "cash conversion vs profit, one-offs, capitalised costs, receivables — 2–3 sentences",
-  "management_framing": "Transparent / Mixed / Promotional / Misleading — 2–3 sentences on what deck emphasised, downplayed, or omitted",
-  "positives": ["positive 1 with numbers", "positive 2 with numbers"],
-  "negatives": ["negative or red flag 1 with numbers", "negative 2"],
-  "bottom_line": {
-    "bull": "bull case in 1–2 sentences",
-    "bear": "bear case in 1–2 sentences",
-    "what_changes_mind": "what would change your view"
-  }
-}"""
+  "summary": "Five sentences or fewer. Verdict first. Blunt. No hedging.",
+  "full_analysis": "Long-form markdown analysis — see FULL ANALYSIS below."
+}
+
+EXTRACTION RULES (these decide whether the output is usable):
+- Use UNDERLYING / adjusted figures for NPAT and EPS, never statutory IFRS, whenever the company discloses an underlying number. Set "basis" to what you actually used: "underlying", "adjusted", "pro forma", "reported", or "statutory". If only a statutory figure exists, use it and label the basis "statutory" — do not silently pass it off as underlying.
+- Every metric shows the value AND the change versus the PRIOR COMPARABLE PERIOD as a percentage: half vs prior corresponding half, full year vs prior full year, quarter vs prior corresponding quarter. Never compare a half to a full year.
+- Sign the change explicitly: "+19%", "-8%". Use "n/m" when the prior period was zero, negative, or the percentage is meaningless (e.g. loss to profit). Say what happened in the summary instead.
+- If a figure genuinely cannot be found in the source, output "n/a" for both "value" and "change_pct". DO NOT GUESS, infer, back-solve, or carry a number over from a different metric. A wrong number is far worse than "n/a".
+- Currency comes from the report itself. Set "currency" to the ISO code the company reports in (AUD, USD, NZD, GBP, EUR). Do NOT convert between currencies. For a USD reporter (e.g. BHP, WTC) set "currency": "USD" and write values as "US$4,180m" so they can never be mistaken for Australian dollars.
+- Dividend: ORDINARY dividend only, per share, for this period. EXCLUDE special dividends — if a special was declared, exclude it from "value" and say so in "note" (e.g. "excl 5.0c special"). If no dividend was declared, use "nil" for the value and "n/a" for the change. Add franking to "note" when disclosed.
+- Losses: write negatives plainly — "-$4.2m", "-3.1c". Do not dress a loss up as a positive.
+- Quarterly / Appendix 4C / 5B reports legitimately have no NPAT or EPS. Return "n/a" for those rather than manufacturing a figure, and set "period_type": "quarterly".
+- "period" is a short human label: "FY25", "1H26", "Q3 FY25".
+- If the source you were given is only a scan/extracted text with poor fidelity, say so in the first sentence of the summary and be conservative — use "n/a" rather than a number you are not confident reading.
+
+SUMMARY (the "summary" field — this is what gets read on a phone):
+- FIVE SENTENCES MAXIMUM. Fewer is better.
+- Sentence 1: the verdict — beat, miss, or in line, and against what (guidance, consensus, pcp).
+- Sentence 2: the driver — what actually moved the number.
+- Sentence 3: cash quality — did the profit convert to cash, or not.
+- Sentence 4: the dividend and what it signals.
+- Sentence 5: the single biggest forward risk.
+- Blunt, numbers-first, no hedging, no "however it should be noted that", no corporate tone, no em dashes.
+
+FULL ANALYSIS (the "full_analysis" field — markdown string, goes to a Google Doc, not the email):
+Keep the full forensic depth here. Use these markdown sections:
+## Executive summary        (3-5 bullets — what changed, what matters, any red flag)
+## Key numbers              (markdown table: metric | this period | pcp | change — include revenue, gross/EBITDA margin, statutory AND underlying NPAT with the bridge between them, EPS, operating cash flow, free cash flow, net debt/cash)
+## Quality of earnings      (cash conversion vs profit, one-offs, capitalised costs, receivables and DSO, inventory)
+## Management framing       (Transparent / Mixed / Promotional / Misleading — what the deck emphasised, downplayed, or omitted, with specifics)
+## Segments                 (segment revenue, margin and drivers where disclosed)
+## Balance sheet            (net debt/cash movement, working capital, covenants, refinancing)
+## Dividend and capital allocation
+## Guidance and outlook     (state plainly if guidance was withheld or vague)
+## Positives                (bullets, each with a number)
+## Negatives / red flags    (bullets, each with a number)
+## Bottom line              (bull case, bear case, and what would change your view)
+
+Escape all newlines inside JSON strings as \\n. The response must parse with json.loads on the first attempt."""
 
 STRAWMAN_500W_PROMPT = """Write a Strawman-ready post draft (max 500 words). It should be punchy, slightly cheeky, but intelligent.
 

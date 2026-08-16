@@ -108,7 +108,11 @@ def _section_cell(label: str, value) -> str:
     )
 
 
+# Results cards carry the current five-metric schema first; the long-form
+# fields below it are kept so historical bob.json entries still render.
 _RESULTS_FIELDS = [
+    ("summary",           "Summary"),
+    ("metrics",           "Key Metrics"),
     ("executive_summary", "Executive Summary"),
     ("key_numbers",       "Key Numbers"),
     ("quality_of_earnings","Quality of Earnings"),
@@ -117,6 +121,29 @@ _RESULTS_FIELDS = [
     ("negatives",         "Negatives / Red Flags"),
     ("bottom_line",       "Bottom Line"),
 ]
+
+_METRIC_LABELS = [
+    ("revenue",             "Revenue"),
+    ("underlying_npat",     "Underlying NPAT"),
+    ("underlying_eps",      "Underlying EPS"),
+    ("dividend_ordinary",   "Ordinary dividend"),
+    ("operating_cash_flow", "Operating cash flow"),
+]
+
+
+def _flatten_metrics(metrics: dict) -> dict:
+    """Collapse {"revenue": {"value": .., "change_pct": ..}} into a flat
+    label -> "value  change" map that _section_cell can render."""
+    flat = {}
+    for key, label in _METRIC_LABELS:
+        entry = metrics.get(key)
+        if isinstance(entry, dict):
+            value = str(entry.get("value", "") or "n/a")
+            change = str(entry.get("change_pct", entry.get("change", "")) or "")
+            flat[label] = f"{value}  {change}".strip()
+        elif entry:
+            flat[label] = str(entry)
+    return flat
 _ACQUISITION_FIELDS = [
     ("deal_summary",        "Deal Summary"),
     ("what_they_bought",    "What They Bought"),
@@ -171,7 +198,14 @@ _FIELD_MAP = {
 
 def _render_analysis_sections(analysis: dict, kind: str) -> str:
     fields = _FIELD_MAP.get(kind, _DEFAULT_FIELDS)
-    cells = "".join(_section_cell(label, analysis.get(key)) for key, label in fields)
+
+    def _value(key):
+        raw = analysis.get(key)
+        if key == "metrics" and isinstance(raw, dict):
+            return _flatten_metrics(raw)
+        return raw
+
+    cells = "".join(_section_cell(label, _value(key)) for key, label in fields)
     return (
         f"<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));"
         f"gap:8px;padding:12px 14px 14px'>{cells}</div>"
@@ -196,8 +230,13 @@ def _hi_item_card(item: dict) -> str:
         f"font-size:10px;white-space:nowrap'>{type_label}</span>"
         f"<span style='color:#cbd5e1;font-size:12px'>{title}</span>"
         f"</div>"
-        f"<a href='{url}' target='_blank' style='color:#60a5fa;font-size:12px;"
-        f"white-space:nowrap'>Open ↗</a>"
+        f"<div style='display:flex;align-items:center;gap:10px;white-space:nowrap'>"
+        + (
+            f"<a href='{item.get('doc_link')}' target='_blank' style='color:#34d399;"
+            f"font-size:12px'>Full analysis ↗</a>" if item.get("doc_link") else ""
+        )
+        + f"<a href='{url}' target='_blank' style='color:#60a5fa;font-size:12px'>Open ↗</a>"
+        f"</div>"
         f"</div>"
     )
 

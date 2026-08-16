@@ -40,6 +40,9 @@ jobs:
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_MODEL: claude-sonnet-4-6
+          # Reporting season: several portfolio names can report on the same
+          # morning, and each results item costs one structured call.
+          MAX_LLM_CALLS: "25"
           GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
           BROTHER_EMAIL: ${{ secrets.BROTHER_EMAIL }}

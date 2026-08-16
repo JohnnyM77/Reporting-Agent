@@ -1,7 +1,43 @@
 {
-  "last_run": "2026-08-16",
-  "silence": true,
-  "high_impact": [],
+  "last_run": "2026-08-17",
+  "silence": false,
+  "high_impact": [
+    {
+      "ticker": "NHC",
+      "title": "Quarterly Activities Report 10\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 560.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03125654",
+      "type": "trading_update",
+      "analysis": {
+        "what_they_said": "New Hope Corporation Q4 FY26 (quarter ended 31 July 2026) and full-year FY26 results. Group ROM production 4.74Mt for quarter (+11.3% QoQ), full-year 16.93Mt. Group saleable production 11.52Mt for FY26, coal sales 11.79Mt. Average realised price A$155.8/t for quarter (+10.7% QoQ), driven by gC NEWC 6000 at US$135.2/t (+5.9% QoQ) and API-5 at US$97.5/t (+12.7% QoQ). Underlying EBITDA A$169.3M for quarter (+30.1% QoQ), A$514.3M for FY26. Operating cash flow A$564.1M for FY26. Available cash A$778.5M (cash $484.8M + fixed income $293.7M). Bengalla FOB cash cost ex-royalties A$81.3/t FY26, A$84.5/t in Q4. Bengalla sustaining capex A$84M for FY26. FY26 realised pricing in AUD terms was A$143.2/t group average vs A$157.1/t in FY25 — a 9% YoY decline not prominently flagged.",
+        "vs_prior_guidance": "Upgrade — all physical volume metrics met or exceeded guidance. Saleable coal production 11.52Mt beat high end of 10.2–11.5Mt range. Coal sales 11.79Mt beat high end of 10.2–11.5Mt range. Bengalla FOB cost A$81.3/t at low end of A$81–89/t range. Bengalla sustaining capex A$84M materially below revised guidance of A$100–130M (framed as 'capital optimisation' but partially reflects deferred infrastructure spend — not necessarily structurally lower). New Acland coal sales 3.56Mt beat guidance range of 2.8–3.4Mt. Management framing is genuinely positive on volumes, but the 9% YoY decline in group realised AUD price (A$143.2 vs A$157.1) is not called out as a negative — it is buried in the marketing table.",
+        "the_numbers": "Q4 FY26: ROM 4.74Mt, saleable 3.06Mt, coal sales 3.02Mt, realised price A$155.8/t, EBITDA A$169.3M. FY26: ROM 16.93Mt (guidance 15.7–17.7Mt), saleable 11.52Mt (guidance 10.2–11.5Mt, beat high end), coal sales 11.79Mt (beat guidance), EBITDA A$514.3M, operating cash A$564.1M, Bengalla FOB cost A$81.3/t, Bengalla sustaining capex A$84M vs A$100–130M guidance. Available cash A$778.5M. New Acland capex for growth road works forecast A$65–75M (remaining). No FY27 guidance provided — vague language used: 'forward sales book well supported with majority of production for next 4 months sold.'",
+        "why_happening": "Positive: price tailwinds from Middle East geopolitical risk driving gas-to-coal switching in Japan, Taiwan, South Korea; China summer restocking; Indonesian export centralisation curtailing competing supply; Bengalla operational recovery from FY25 weather events driving YoY volume uplift. Negative/watchpoints: FY26 group realised AUD price down 9% YoY reflecting structurally lower coal price environment vs FY25 peak; Bengalla Q4 unit cost jumped 14.2% QoQ to A$84.5/t on lower sales volumes — cost leverage is real; New Acland constrained by Queensland Rail industrial action and CHPP noise approval conditions; sustaining capex undershoot at Bengalla partly reflects deferred projects not eliminated spend.",
+        "balance_sheet": "No material change to funding needs. Cash position of A$778.5M is strong. Senior convertible notes on balance sheet with capped call transactions revised during quarter to manage dilution risk — quantum of notes not disclosed in this release, which is a gap. New Acland growth capex of A$65–75M remaining for road realignment plus fleet capex described as 'committed or on site' — manageable within cash position. No new debt drawdowns flagged. Malabar investment (25.97%) still in ramp-up; NHC's equity exposure is unquantified in this release.",
+        "red_flags": [
+          "FY26 group realised AUD price A$143.2/t vs A$157.1/t in FY25 — 9% YoY revenue-per-tonne decline not highlighted in highlights section or management commentary; buried in marketing table",
+          "Bengalla Q4 unit cost spiked 14.2% QoQ to A$84.5/t — if coal sales volumes disappoint in FY27, cost per tonne will move sharply toward top of any guidance range",
+          "Bengalla sustaining capex A$84M vs A$100–130M guidance — framed positively but likely represents deferred spend that will recur in FY27, not structural savings; no FY27 capex guidance provided",
+          "Safety deterioration: High Potential Event Frequency Rate spiked to 4.65 from 1.21 QoQ (nearly 4x); 14 notifiable events in quarter; Group-wide safety pauses implemented — operational continuity risk and potential regulatory intervention",
+          "New Acland rail disruption risk is structural — Queensland Rail industrial action is ongoing; Cross River Rail possessions recurring; no resolution timeline given",
+          "No FY27 guidance provided — 'majority of production for next 4 months sold' is vague and provides no earnings visibility beyond near term",
+          "Convertible notes outstanding — capped call terms revised during quarter but size, coupon, and conversion price not disclosed in this release; dilution risk management acknowledged implicitly"
+        ],
+        "bottom_line": "Operationally NHC delivered a clean beat on all FY26 volume metrics with cost discipline at Bengalla, and a strong cash position; however, the 9% YoY decline in realised AUD price is the structural headwind management is not drawing attention to, and the combination of deferred sustaining capex, a safety blowout, ongoing rail disruptions at New Acland, and no FY27 guidance means the forward earnings picture is materially less clear than the headline numbers suggest.",
+        "key_questions": [
+          "What is the FY27 guidance for saleable coal production, coal sales, FOB unit cost, and sustaining capex at both Bengalla and New Acland — specifically, how much of the FY26 sustaining capex undershoot at Bengalla (A$46M below midpoint) is deferred into FY27?",
+          "What is the total face value, coupon, maturity, and conversion price of the senior convertible notes, and what are the scenarios under which dilution risk crystallises despite the capped call transactions?",
+          "Given the near-quadrupling of the High Potential Event Frequency Rate in Q4, has the Queensland mining regulator been engaged formally, are there any stop-work or compliance orders pending, and what is the quantified production risk if a safety-driven operational pause is imposed at Bengalla?"
+        ]
+      },
+      "drive_links": []
+    }
+  ],
   "material": [],
-  "fyi": []
+  "fyi": [
+    {
+      "ticker": "NHC",
+      "title": "Quarterly Activities Report 10\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 560.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03125654"
+    }
+  ]
 }

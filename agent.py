@@ -63,7 +63,26 @@ SEEN_STATE_RETENTION_HOURS = 72
 
 MAX_ANNOUNCEMENTS_PER_TICKER = 12
 MAX_PDFS_PER_RUN = 10
-MAX_LLM_CALLS_PER_RUN = 15
+
+
+def _int_env(name: str, default: int) -> int:
+    """Read a positive integer from the environment, falling back on junk."""
+    raw = (os.environ.get(name) or "").strip()
+    if not raw:
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        print(f"[agent] Ignoring non-integer {name}={raw!r} — using {default}", flush=True)
+        return default
+    return value if value > 0 else default
+
+
+# Reporting season regularly puts several portfolio names on the same morning,
+# and each results item now costs exactly one call (see deep_results_analysis),
+# so the run budget is sized for that rather than for a quiet day. Override
+# with the MAX_LLM_CALLS env var.
+MAX_LLM_CALLS_PER_RUN = _int_env("MAX_LLM_CALLS", 25)
 
 MIN_RESULTS_TEXT_CHARS = 2500
 MODEL_DEFAULT = "claude-sonnet-4-6"
@@ -77,6 +96,51 @@ COLOR_FYI = "#10B981"
 COLOR_BG = "#0B1220"
 COLOR_PANEL = "#111B2E"
 COLOR_TEXT = "#E5E7EB"
+
+# Results card ("dark-green finance theme") — a light, high-contrast card that
+# reads on a phone against the dark digest background.
+COLOR_RESULTS_HEADER = "#14532D"
+COLOR_RESULTS_HEADER_SUB = "#A7F3D0"
+COLOR_RESULTS_CARD = "#FFFFFF"
+COLOR_RESULTS_ROW_SHADE = "#F1F5F2"
+COLOR_RESULTS_LABEL = "#374151"
+COLOR_RESULTS_VALUE = "#111827"
+COLOR_RESULTS_MUTED = "#6B7280"
+COLOR_CHANGE_UP = "#15803D"
+COLOR_CHANGE_DOWN = "#B91C1C"
+COLOR_CHANGE_NEUTRAL = "#9CA3AF"
+COLOR_FAILURE = "#B91C1C"
+
+# The five locked results metrics, in the order they are rendered.
+RESULTS_METRIC_ROWS: List[Tuple[str, str]] = [
+    ("revenue", "Revenue"),
+    ("underlying_npat", "Underlying NPAT"),
+    ("underlying_eps", "Underlying EPS"),
+    ("dividend_ordinary", "Ordinary dividend"),
+    ("operating_cash_flow", "Operating cash flow"),
+]
+
+# Rendered prefix per reporting currency. Values are never converted — the
+# prefix only makes the reporting currency unmistakable (US$4,180m can't be
+# misread as A$4,180m).
+CURRENCY_PREFIXES = {
+    "AUD": "A$", "USD": "US$", "NZD": "NZ$", "SGD": "S$",
+    "HKD": "HK$", "CAD": "C$", "GBP": "£", "EUR": "€", "JPY": "¥",
+}
+
+PERIOD_TYPE_LABELS = {
+    "full_year": "Full-year",
+    "half_year": "Half-year",
+    "quarterly": "Quarterly",
+    "other": "Results",
+}
+
+# deep_results_analysis outcome, carried on the analysis dict as "_status".
+RESULTS_STATUS_OK = "ok"
+RESULTS_STATUS_SKIPPED = "skipped"
+RESULTS_STATUS_FAILED = "failed"
+RESULTS_STATUS_PARSE_ERROR = "parse_error"
+RESULTS_STATUS_NO_CONTENT = "no_content"
 
 _JOKES_FILE = Path(__file__).resolve().parent / "config" / "daily_jokes.txt"
 
@@ -581,10 +645,25 @@ def _html_block(b: str) -> str:
     )
 
 
-def _html_section(title: str, color: str, blocks: List[str]) -> str:
+def _block_text(block) -> str:
+    """Digest blocks are either a plain string (rendered as escaped pre-wrap
+    text) or a {"text": ..., "html": ...} pair for blocks that build their own
+    email-safe HTML, e.g. the results card."""
+    if isinstance(block, dict):
+        return str(block.get("text", "") or "")
+    return str(block or "")
+
+
+def _block_html(block) -> str:
+    if isinstance(block, dict) and block.get("html"):
+        return str(block["html"])
+    return _html_block(_block_text(block))
+
+
+def _html_section(title: str, color: str, blocks: List) -> str:
     if not blocks:
         return ""
-    items_html = "".join(_html_block(b) for b in blocks)
+    items_html = "".join(_block_html(b) for b in blocks)
     return f"""
     <div style="margin:18px 0;">
       <div style="padding:10px 12px; background:{color}; color:#0B1220; font-weight:800; border-radius:10px; letter-spacing:0.6px;">
@@ -596,9 +675,9 @@ def _html_section(title: str, color: str, blocks: List[str]) -> str:
 
 
 def build_email(
-    high_impact: List[str],
-    material: List[str],
-    fyi: List[str],
+    high_impact: List,
+    material: List,
+    fyi: List,
 ) -> Tuple[str, str]:
     no_announcements = not high_impact and not material and not fyi
     no_announcements_msg = f"No reportable announcements found in the last {HOURS_BACK} hours."
@@ -616,17 +695,17 @@ def build_email(
     if high_impact:
         lines.append("HIGH IMPACT")
         lines.append("-" * 60)
-        lines.extend(high_impact)
+        lines.extend(_block_text(b) for b in high_impact)
         lines.append("")
     if material:
         lines.append("MATERIAL")
         lines.append("-" * 60)
-        lines.extend(material)
+        lines.extend(_block_text(b) for b in material)
         lines.append("")
     if fyi:
         lines.append("FYI (ALL ANNOUNCEMENTS)")
         lines.append("-" * 60)
-        lines.extend(fyi)
+        lines.extend(_block_text(b) for b in fyi)
         lines.append("")
     if no_announcements:
         lines.append(no_announcements_msg)
@@ -827,6 +906,8 @@ def _analysis_to_email_text(analysis: dict, kind: str) -> str:
 
 LLM_FAILURE_FLAG = "⚠️ Analysis failed — manual review needed"
 LLM_SKIP_MESSAGE = "Analysis skipped — LLM call-cap reached for this run (not an error)."
+RESULTS_SKIP_MESSAGE = "Analysis skipped: run-call cap reached"
+RESULTS_FAILURE_BADGE = "ANALYSIS FAILED"
 
 
 def _skip_marker(key: str, as_list: bool = False) -> dict:
@@ -880,6 +961,535 @@ def build_high_impact_block(
         lines.extend(drive_links)
     lines.append("")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Results output: five-metric table + <=5-sentence summary + two links.
+#
+# The long-form analysis no longer lives in the email — it goes to a Google
+# Doc (create_analysis_doc) and the email links to it. Everything below is
+# built for a phone: table layout, inline styles only, ~360px card.
+# ---------------------------------------------------------------------------
+
+EMAIL_FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif"
+
+_NA_TOKENS = {"", "n/a", "na", "n.a.", "none", "null", "not disclosed", "unknown", "-", "--", "—"}
+_NEUTRAL_CHANGE_TOKENS = _NA_TOKENS | {"n/m", "nm", "n.m.", "not meaningful", "nil"}
+
+
+def _is_na(value: object) -> bool:
+    return str(value or "").strip().lower() in _NA_TOKENS
+
+
+def _apply_currency_prefix(value: str, currency: str) -> str:
+    """Make a non-AUD reporting currency explicit without ever converting it.
+
+    A USD reporter's "$4,180m" becomes "US$4,180m" so it can't be misread as
+    Australian dollars. AUD is left as a bare "$" — it is the digest's implied
+    default and the card's context line already says "reported in A$", so
+    prefixing every row would just add noise. Values that already carry a
+    prefix are left alone.
+    """
+    code = str(currency or "").strip().upper()
+    prefix = "" if code in ("", "AUD") else CURRENCY_PREFIXES.get(code, "")
+    text = str(value or "").strip()
+    if not prefix or not text:
+        return text
+    sign = ""
+    if text[0] in "+-−":
+        sign, text = text[0], text[1:].lstrip()
+    if text.startswith("$") and not text.startswith(prefix):
+        text = prefix + text[1:]
+    return sign + text
+
+
+def _change_colour(change: str) -> str:
+    """Green for a rise, red for a fall, muted grey for n/a and n/m."""
+    text = str(change or "").strip()
+    if text.lower() in _NEUTRAL_CHANGE_TOKENS:
+        return COLOR_CHANGE_NEUTRAL
+    if text.startswith("+"):
+        return COLOR_CHANGE_UP
+    if text.startswith("-") or text.startswith("−"):
+        return COLOR_CHANGE_DOWN
+    if re.match(r"^\d", text):
+        return COLOR_CHANGE_UP
+    return COLOR_CHANGE_NEUTRAL
+
+
+def _results_metric(analysis: dict, key: str, label: str = "") -> Dict[str, str]:
+    """Normalise one metric into {value, change, sub} with "n/a" for anything
+    the model could not find. Never invents or infers a figure.
+
+    *label* is only used to drop a basis note the row label already states
+    (no "Underlying NPAT (underlying)").
+    """
+    metrics = analysis.get("metrics")
+    raw = metrics.get(key) if isinstance(metrics, dict) else None
+
+    value = change = note = basis = ""
+    if isinstance(raw, dict):
+        value = str(raw.get("value", "") or "").strip()
+        change = str(raw.get("change_pct", raw.get("change", "")) or "").strip()
+        note = str(raw.get("note", "") or "").strip()
+        basis = str(raw.get("basis", "") or "").strip()
+    elif raw not in (None, ""):
+        value = str(raw).strip()
+
+    value = _apply_currency_prefix(value, analysis.get("currency", ""))
+    if _is_na(value):
+        value = "n/a"
+    if _is_na(change):
+        change = "n/a"
+
+    sub = note
+    if not sub and basis and basis.lower() not in ("reported", "n/a", ""):
+        if basis.lower() not in label.lower():
+            sub = basis
+    return {"value": value, "change": change, "sub": sub}
+
+
+def _results_period_label(analysis: dict) -> str:
+    return str(analysis.get("period") or "").strip()
+
+
+def _results_title(ticker: str, analysis: dict) -> str:
+    period = _results_period_label(analysis)
+    return f"{ticker} — {period} results" if period else f"{ticker} — Results"
+
+
+def _results_context_line(analysis: dict) -> str:
+    """e.g. 'Full-year, reported in A$'."""
+    label = PERIOD_TYPE_LABELS.get(
+        str(analysis.get("period_type") or "").strip().lower(), "Results"
+    )
+    currency = str(analysis.get("currency") or "").strip().upper()
+    if not currency:
+        return label
+    return f"{label}, reported in {CURRENCY_PREFIXES.get(currency, currency)}"
+
+
+def _results_summary_text(analysis: dict) -> str:
+    summary = str(analysis.get("summary") or "").strip()
+    if summary:
+        return summary
+    exec_summary = analysis.get("executive_summary")
+    if isinstance(exec_summary, list) and exec_summary:
+        return " ".join(str(b).strip() for b in exec_summary if str(b).strip())
+    if isinstance(exec_summary, str):
+        return exec_summary.strip()
+    return ""
+
+
+def _results_status(analysis: dict) -> str:
+    status = str(analysis.get("_status") or "").strip()
+    if status:
+        return status
+    return RESULTS_STATUS_FAILED if _is_llm_failure(analysis) else RESULTS_STATUS_OK
+
+
+def build_results_block(
+    ticker: str,
+    analysis: dict,
+    asx_url: str,
+    doc_link: str = "",
+    drive_links: Optional[List[str]] = None,
+) -> Dict[str, str]:
+    """Render the RESULTS_HY_FY digest block as {"text": ..., "html": ...}.
+
+    The HTML is deliberately table-based with inline styles only: email
+    clients strip <style> blocks and mishandle flexbox/grid, so a two-column
+    table is the only reliable way to get label-left / value-right rows.
+    """
+    analysis = analysis or {}
+    status = _results_status(analysis)
+    failed = status in (RESULTS_STATUS_FAILED, RESULTS_STATUS_PARSE_ERROR)
+    title = _results_title(ticker, analysis)
+    context = _results_context_line(analysis)
+    summary = _results_summary_text(analysis) or "No summary returned."
+    rows = [(label, _results_metric(analysis, key, label)) for key, label in RESULTS_METRIC_ROWS]
+    esc = htmlmod.escape
+
+    # ---- plain text ----------------------------------------------------
+    text_lines: List[str] = []
+    if failed:
+        text_lines.append(f"{RESULTS_FAILURE_BADGE} — {title}")
+    else:
+        text_lines.append(title)
+    text_lines.append(context)
+    text_lines.append("")
+    for label, metric in rows:
+        text_lines.append(f"  {label:<22} {metric['value']:>12}   {metric['change']}")
+        if metric["sub"]:
+            # Its own line so a long note can't break the value column.
+            text_lines.append(f"      ({metric['sub']})")
+    text_lines.append("")
+    text_lines.append(summary)
+    text_lines.append("")
+    if doc_link:
+        text_lines.append(f"Full analysis (Google Drive): {doc_link}")
+    if asx_url:
+        text_lines.append(f"Source announcement (ASX): {asx_url}")
+    for link in drive_links or []:
+        text_lines.append(f"Source PDF (Drive): {link}")
+    text_lines.append("")
+
+    # ---- html ----------------------------------------------------------
+    badge = RESULTS_FAILURE_BADGE if failed else "HIGH IMPACT"
+    badge_bg = COLOR_FAILURE if failed else COLOR_HIGH_IMPACT
+    badge_fg = "#FFFFFF" if failed else "#0B1220"
+
+    metric_rows_html = ""
+    for i, (label, metric) in enumerate(rows):
+        bg = COLOR_RESULTS_ROW_SHADE if i % 2 == 0 else COLOR_RESULTS_CARD
+        sub_html = (
+            f'<div style="font-size:11px; color:{COLOR_RESULTS_MUTED}; margin-top:2px;">'
+            f'{esc(metric["sub"])}</div>'
+            if metric["sub"] else ""
+        )
+        metric_rows_html += (
+            f'<tr>'
+            f'<td style="background:{bg}; padding:11px 14px; font-size:15px; line-height:1.3;'
+            f' color:{COLOR_RESULTS_LABEL}; font-family:{EMAIL_FONT};">{esc(label)}{sub_html}</td>'
+            f'<td align="right" style="background:{bg}; padding:11px 14px; font-size:15px;'
+            f' line-height:1.3; color:{COLOR_RESULTS_VALUE}; font-weight:700; white-space:nowrap;'
+            f' font-family:{EMAIL_FONT};">{esc(metric["value"])}'
+            f'&nbsp;&nbsp;<span style="color:{_change_colour(metric["change"])}; font-weight:700;">'
+            f'{esc(metric["change"])}</span></td>'
+            f'</tr>'
+        )
+
+    def _link_row(label: str, href: str) -> str:
+        return (
+            f'<tr><td colspan="2" style="padding:0 14px 10px 14px; font-family:{EMAIL_FONT};">'
+            f'<a href="{esc(href)}" style="display:block; padding:11px 12px; background:{COLOR_RESULTS_ROW_SHADE};'
+            f' border:1px solid #D5E0D8; border-radius:8px; color:{COLOR_RESULTS_HEADER};'
+            f' font-size:14px; font-weight:700; text-decoration:none;">{esc(label)} &rsaquo;</a>'
+            f'</td></tr>'
+        )
+
+    links_html = ""
+    if doc_link:
+        links_html += _link_row("Full analysis (Google Drive)", doc_link)
+    if asx_url:
+        links_html += _link_row("Source announcement (ASX)", asx_url)
+
+    html = (
+        f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"'
+        f' style="border-collapse:collapse; margin:14px 0;"><tr><td align="center">'
+        f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="360"'
+        f' style="width:100%; max-width:360px; border-collapse:collapse;'
+        f' background:{COLOR_RESULTS_CARD}; border-radius:10px; overflow:hidden;">'
+        # header bar
+        f'<tr><td colspan="2" style="background:{COLOR_RESULTS_HEADER}; padding:13px 14px;'
+        f' font-family:{EMAIL_FONT};">'
+        f'<span style="display:inline-block; background:{badge_bg}; color:{badge_fg};'
+        f' font-size:10px; font-weight:800; letter-spacing:0.8px; padding:3px 7px;'
+        f' border-radius:4px;">{esc(badge)}</span>'
+        f'<div style="color:#FFFFFF; font-size:17px; font-weight:800; margin-top:7px;">{esc(title)}</div>'
+        f'<div style="color:{COLOR_RESULTS_HEADER_SUB}; font-size:12px; margin-top:3px;">{esc(context)}</div>'
+        f'</td></tr>'
+        # metric rows
+        f'{metric_rows_html}'
+        # summary
+        f'<tr><td colspan="2" style="padding:13px 14px; font-family:{EMAIL_FONT}; font-size:15px;'
+        f' line-height:1.5; color:{COLOR_RESULTS_VALUE}; border-top:2px solid {COLOR_RESULTS_HEADER};">'
+        f'{esc(summary)}</td></tr>'
+        # links
+        f'{links_html}'
+        f'</table></td></tr></table>'
+    )
+
+    return {"text": "\n".join(text_lines), "html": html}
+
+
+# ---------------------------------------------------------------------------
+# Markdown -> simple HTML (for the Google Doc body Drive converts to a Doc)
+# ---------------------------------------------------------------------------
+
+def _md_inline(text: str) -> str:
+    out = htmlmod.escape(text)
+    out = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", out)
+    out = re.sub(r"(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])", r"<em>\1</em>", out)
+    out = re.sub(r"`(.+?)`", r"<code>\1</code>", out)
+    out = re.sub(r"(https?://[^\s<]+)", r'<a href="\1">\1</a>', out)
+    return out
+
+
+def _md_table_to_html(rows: List[str]) -> str:
+    """Render a markdown pipe-table as a shaded HTML table."""
+    parsed: List[List[str]] = []
+    for row in rows:
+        cells = [c.strip() for c in row.strip().strip("|").split("|")]
+        if all(re.fullmatch(r":?-{2,}:?", c or "") for c in cells if c != ""):
+            continue  # separator row
+        parsed.append(cells)
+    if not parsed:
+        return ""
+    header, body = parsed[0], parsed[1:]
+    head_html = "".join(
+        f'<td style="background:{COLOR_RESULTS_HEADER}; color:#FFFFFF; font-weight:700;'
+        f' padding:6px 9px; border:1px solid #D5E0D8;">{_md_inline(c)}</td>'
+        for c in header
+    )
+    body_html = ""
+    for i, cells in enumerate(body):
+        bg = COLOR_RESULTS_ROW_SHADE if i % 2 == 0 else "#FFFFFF"
+        body_html += "<tr>" + "".join(
+            f'<td style="background:{bg}; padding:6px 9px; border:1px solid #D5E0D8;">'
+            f'{_md_inline(c)}</td>' for c in cells
+        ) + "</tr>"
+    return (
+        '<table cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:100%;'
+        ' margin:10px 0; font-size:11pt;">'
+        f'<tr>{head_html}</tr>{body_html}</table>'
+    )
+
+
+def _markdown_to_html(md: str) -> str:
+    """Convert the model's markdown analysis to the simple HTML subset Google
+    Drive converts cleanly into a native Doc (headings, paragraphs, lists,
+    tables). Not a general markdown engine — just what the prompt emits."""
+    lines = str(md or "").replace("\r\n", "\n").split("\n")
+    parts: List[str] = []
+    para: List[str] = []
+    items: List[str] = []
+    list_tag = ""
+    table: List[str] = []
+
+    def flush_para():
+        if para:
+            parts.append(f'<p style="margin:8px 0; line-height:1.5;">{_md_inline(" ".join(para))}</p>')
+            para.clear()
+
+    def flush_list():
+        nonlocal list_tag
+        if items:
+            body = "".join(f'<li style="margin:3px 0; line-height:1.45;">{_md_inline(i)}</li>' for i in items)
+            parts.append(f'<{list_tag} style="margin:8px 0 8px 22px; padding:0;">{body}</{list_tag}>')
+            items.clear()
+            list_tag = ""
+
+    def flush_table():
+        if table:
+            parts.append(_md_table_to_html(table))
+            table.clear()
+
+    def flush_all():
+        flush_para()
+        flush_list()
+        flush_table()
+
+    for raw_line in lines:
+        line = raw_line.rstrip()
+        stripped = line.strip()
+
+        if stripped.startswith("|") and stripped.count("|") >= 2:
+            flush_para()
+            flush_list()
+            table.append(stripped)
+            continue
+        flush_table()
+
+        if not stripped:
+            flush_para()
+            flush_list()
+            continue
+
+        heading = re.match(r"^(#{1,4})\s+(.*)$", stripped)
+        if heading:
+            flush_all()
+            # The Doc's own title is the h1, so the prompt's "## Section"
+            # headings stay h2 rather than being demoted a level.
+            level = min(max(len(heading.group(1)), 2), 4)
+            size = {2: "15pt", 3: "13pt", 4: "12pt"}[level]
+            parts.append(
+                f'<h{level} style="color:{COLOR_RESULTS_HEADER}; font-size:{size};'
+                f' margin:16px 0 6px 0;">{_md_inline(heading.group(2).strip())}</h{level}>'
+            )
+            continue
+
+        bullet = re.match(r"^[-*•]\s+(.*)$", stripped)
+        if bullet:
+            flush_para()
+            if list_tag and list_tag != "ul":
+                flush_list()
+            list_tag = "ul"
+            items.append(bullet.group(1).strip())
+            continue
+
+        numbered = re.match(r"^\d+[.)]\s+(.*)$", stripped)
+        if numbered:
+            flush_para()
+            if list_tag and list_tag != "ol":
+                flush_list()
+            list_tag = "ol"
+            items.append(numbered.group(1).strip())
+            continue
+
+        if re.fullmatch(r"[-*_]{3,}", stripped):
+            flush_all()
+            parts.append('<hr style="border:0; border-top:1px solid #D5E0D8; margin:14px 0;">')
+            continue
+
+        flush_list()
+        para.append(stripped)
+
+    flush_all()
+    return "".join(parts)
+
+
+def build_analysis_doc_html(
+    ticker: str,
+    analysis: dict,
+    asx_url: str = "",
+) -> str:
+    """Build the HTML body Drive converts into the native Google Doc.
+
+    On a parse failure the raw model text is preserved verbatim so nothing is
+    lost — the Doc is the place the unusable output goes, and the email block
+    is flagged ANALYSIS FAILED rather than looking clean.
+    """
+    analysis = analysis or {}
+    status = _results_status(analysis)
+    esc = htmlmod.escape
+    title = _results_title(ticker, analysis)
+    context = _results_context_line(analysis)
+
+    parts: List[str] = [
+        f'<h1 style="color:{COLOR_RESULTS_HEADER}; font-size:19pt; margin:0 0 2px 0;">{esc(title)}</h1>',
+        f'<p style="color:{COLOR_RESULTS_MUTED}; font-size:10pt; margin:0 0 14px 0;">'
+        f'{esc(context)} &nbsp;|&nbsp; Generated by {esc(BOB_NAME)} {esc(VERSION_LABEL)} '
+        f'on {today_sgt_date().isoformat()} (SGT)</p>',
+    ]
+
+    if status in (RESULTS_STATUS_FAILED, RESULTS_STATUS_PARSE_ERROR):
+        parts.append(
+            f'<p style="background:#FEE2E2; border:1px solid {COLOR_FAILURE}; color:{COLOR_FAILURE};'
+            f' padding:10px 12px; font-weight:700;">{esc(RESULTS_FAILURE_BADGE)}: '
+            f'{esc(_results_summary_text(analysis))}</p>'
+        )
+    elif status == RESULTS_STATUS_SKIPPED:
+        parts.append(
+            f'<p style="background:{COLOR_RESULTS_ROW_SHADE}; padding:10px 12px;">'
+            f'{esc(RESULTS_SKIP_MESSAGE)}</p>'
+        )
+
+    if isinstance(analysis.get("metrics"), dict):
+        rows_html = ""
+        for i, (key, label) in enumerate(RESULTS_METRIC_ROWS):
+            metric = _results_metric(analysis, key, label)
+            bg = COLOR_RESULTS_ROW_SHADE if i % 2 == 0 else "#FFFFFF"
+            sub = f' <span style="color:{COLOR_RESULTS_MUTED}; font-size:9pt;">({esc(metric["sub"])})</span>' if metric["sub"] else ""
+            rows_html += (
+                f'<tr>'
+                f'<td style="background:{bg}; padding:7px 10px; border:1px solid #D5E0D8;">{esc(label)}{sub}</td>'
+                f'<td style="background:{bg}; padding:7px 10px; border:1px solid #D5E0D8; text-align:right;'
+                f' font-weight:700;">{esc(metric["value"])}</td>'
+                f'<td style="background:{bg}; padding:7px 10px; border:1px solid #D5E0D8; text-align:right;'
+                f' color:{_change_colour(metric["change"])}; font-weight:700;">{esc(metric["change"])}</td>'
+                f'</tr>'
+            )
+        parts.append(
+            '<table cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:100%;'
+            ' margin:10px 0 16px 0; font-size:11pt;">'
+            f'<tr>'
+            f'<td style="background:{COLOR_RESULTS_HEADER}; color:#FFFFFF; font-weight:700; padding:7px 10px; border:1px solid #D5E0D8;">Metric</td>'
+            f'<td style="background:{COLOR_RESULTS_HEADER}; color:#FFFFFF; font-weight:700; padding:7px 10px; border:1px solid #D5E0D8; text-align:right;">Value</td>'
+            f'<td style="background:{COLOR_RESULTS_HEADER}; color:#FFFFFF; font-weight:700; padding:7px 10px; border:1px solid #D5E0D8; text-align:right;">vs pcp</td>'
+            f'</tr>{rows_html}</table>'
+        )
+
+    summary = _results_summary_text(analysis)
+    if summary:
+        parts.append(f'<h2 style="color:{COLOR_RESULTS_HEADER}; font-size:15pt; margin:16px 0 6px 0;">Summary</h2>')
+        parts.append(f'<p style="margin:8px 0; line-height:1.5;">{esc(summary)}</p>')
+
+    full_analysis = str(analysis.get("full_analysis") or "").strip()
+    if full_analysis:
+        parts.append(_markdown_to_html(full_analysis))
+
+    raw_text = str(analysis.get("_raw_text") or "").strip()
+    if raw_text:
+        parts.append(
+            f'<h2 style="color:{COLOR_FAILURE}; font-size:15pt; margin:16px 0 6px 0;">'
+            'Raw model output (unparseable)</h2>'
+            f'<p style="color:{COLOR_RESULTS_MUTED}; font-size:10pt;">The model did not return valid JSON. '
+            'Its full response is preserved verbatim below.</p>'
+            f'<pre style="white-space:pre-wrap; font-size:10pt; background:{COLOR_RESULTS_ROW_SHADE};'
+            f' padding:10px; border:1px solid #D5E0D8;">{esc(raw_text)}</pre>'
+        )
+
+    if asx_url:
+        parts.append(
+            f'<p style="margin:16px 0 0 0; font-size:10pt;">Source announcement (ASX): '
+            f'<a href="{esc(asx_url)}">{esc(asx_url)}</a></p>'
+        )
+
+    return (
+        '<html><head><meta charset="utf-8">'
+        f'<title>{esc(title)}</title></head>'
+        '<body style="font-family:Arial, sans-serif; font-size:11pt; color:#111827;">'
+        + "".join(parts) +
+        "</body></html>"
+    )
+
+
+def _share_drive_file(service, file_id: str) -> None:
+    """Grant reader access to the human recipients.
+
+    A file created by the service account is owned by the service account, so
+    without this the webViewLink 404s for Johnny's Google account. Non-fatal:
+    the Doc still exists if sharing fails.
+    """
+    recipients = os.environ.get("GDRIVE_SHARE_EMAIL", "").strip() or os.environ.get("EMAIL_TO", "").strip()
+    for addr in [a.strip() for a in recipients.split(",") if a.strip()]:
+        try:
+            service.permissions().create(
+                fileId=file_id,
+                body={"type": "user", "role": "reader", "emailAddress": addr},
+                sendNotificationEmail=False,
+                fields="id",
+            ).execute()
+        except Exception as e:
+            log(f"WARNING: could not share Doc {file_id} with {addr}: {e}")
+
+
+def create_analysis_doc(
+    ticker: str,
+    period: str,
+    body_html: str,
+    folder_id: str,
+) -> str:
+    """Create a native Google Doc from *body_html* and return its webViewLink.
+
+    Uploading HTML with mimeType application/vnd.google-apps.document makes
+    Drive convert it to a real Doc, which reflows on a phone — a PDF or docx
+    would not. Returns "" if Drive isn't configured; raises only on a genuine
+    API error (callers treat Doc creation as non-fatal).
+    """
+    if not folder_id:
+        return ""
+    from googleapiclient.http import MediaInMemoryUpload
+
+    service = drive_service()
+    name = f"{ticker} {period or 'results'} analysis {today_sgt_date().isoformat()}"
+    metadata = {
+        "name": name,
+        "parents": [folder_id],
+        "mimeType": "application/vnd.google-apps.document",
+    }
+    media = MediaInMemoryUpload(body_html.encode("utf-8"), mimetype="text/html", resumable=False)
+    created = service.files().create(
+        body=metadata, media_body=media, fields="id,webViewLink",
+    ).execute()
+    file_id = created.get("id") or ""
+    if not file_id:
+        return ""
+    _share_drive_file(service, file_id)
+    link = created.get("webViewLink") or f"https://docs.google.com/document/d/{file_id}/view"
+    log(f"Analysis Doc created for {ticker}: {link}")
+    return link
 
 
 def deep_acquisition_memo(
@@ -996,20 +1606,53 @@ def deep_results_analysis(
         user = f"Ticker: {ticker}\n\nPlease analyse the attached financial results PDF(s) as the primary source."
         out = llm_chat_with_pdfs(RESULTS_HYFY_PROMPT, user, counters, attachments)
     elif is_meaningful_text(report_text, min_chars=MIN_RESULTS_TEXT_CHARS) or is_meaningful_text(deck_text, min_chars=MIN_RESULTS_TEXT_CHARS):
+        # Text-only fallback: no PDF could be attached natively, so table
+        # fidelity is degraded. Tell the model so it can be conservative
+        # (n/a beats a misread number) rather than guessing off broken tables.
         user = (
             f"Ticker: {ticker}\n\n"
+            "NOTE: no PDF could be attached — the text below was extracted with pypdf, "
+            "so table layout may be mangled. Prefer \"n/a\" over any figure you cannot "
+            "read with confidence, and flag the lower confidence in the summary.\n\n"
             f"=== OFFICIAL REPORT TEXT ===\n{report_text}\n\n"
             f"=== INVESTOR DECK TEXT ===\n{deck_text}\n"
         )
         out = llm_chat(RESULTS_HYFY_PROMPT, user, counters)
     else:
-        return {"executive_summary": ["No meaningful report text or PDF available for analysis."]}
+        return {
+            "executive_summary": ["No meaningful report text or PDF available for analysis."],
+            "summary": "No meaningful report text or PDF available for analysis. Open the announcement manually.",
+            "_status": RESULTS_STATUS_NO_CONTENT,
+        }
+
     if out == LLM_SKIPPED:
-        return _skip_marker("executive_summary", as_list=True)
+        marker = _skip_marker("executive_summary", as_list=True)
+        marker["summary"] = RESULTS_SKIP_MESSAGE
+        marker["_status"] = RESULTS_STATUS_SKIPPED
+        return marker
+
     if out == LLM_FAILED:
-        return _failed_marker("executive_summary", counters, as_list=True)
+        marker = _failed_marker("executive_summary", counters, as_list=True)
+        marker["summary"] = marker["executive_summary"][0]
+        marker["_status"] = RESULTS_STATUS_FAILED
+        return marker
+
     parsed = _parse_analysis_json(out)
-    return parsed if parsed else {"executive_summary": [out]}
+    if not parsed:
+        # The model answered, but not with parseable JSON. Never dress this up
+        # as a clean (if terse) analysis: flag it loudly and keep the raw text
+        # so it can be written to the Doc for manual reading.
+        log(f"ERROR: results JSON parse failed for {ticker} — {len(out)} chars of unparseable model output")
+        detail = "model returned unparseable output (not valid JSON)"
+        return {
+            "executive_summary": [f"{LLM_FAILURE_FLAG} ({detail})."],
+            "summary": f"{LLM_FAILURE_FLAG} ({detail}). Raw model output saved to the analysis Doc.",
+            "_status": RESULTS_STATUS_PARSE_ERROR,
+            "_raw_text": out,
+        }
+
+    parsed["_status"] = RESULTS_STATUS_OK
+    return parsed
 
 
 def strawman_post(ticker: str, kind: str, analysis_text: str, counters: Dict) -> str:
@@ -1240,21 +1883,35 @@ def main():
                     ticker, report_text, deck_text, counters,
                     report_pdf=report_pdf, deck_pdf=deck_pdf,
                 )
-                block = build_high_impact_block(
+
+                # The long-form analysis leaves the email and goes to a native
+                # Google Doc; the email links to it. Doc creation is non-fatal
+                # — if Drive is down the digest still ships, just without the
+                # "Full analysis" link.
+                doc_link = ""
+                if drive_folder_id:
+                    try:
+                        doc_link = create_analysis_doc(
+                            ticker,
+                            _results_period_label(analysis),
+                            build_analysis_doc_html(ticker, analysis, any_results_link),
+                            drive_folder_id,
+                        )
+                    except Exception as e:
+                        log(f"ERROR: analysis Doc creation failed for {ticker}: {e}")
+
+                block = build_results_block(
                     ticker=ticker,
-                    heading="Results (HY/FY)",
-                    memo=analysis,
-                    url=any_results_link,
-                    analysed_via_pdf=bool(has_pdf),
+                    analysis=analysis,
+                    asx_url=any_results_link,
+                    doc_link=doc_link,
                     drive_links=drive_links,
-                    kind="results",
-                    failed=_is_llm_failure(analysis),
                 )
                 high_impact_blocks.append(block)
                 high_impact_items.append({
                     "ticker": ticker, "title": bundle[0]["title"] if bundle else "Results (HY/FY)",
                     "url": any_results_link, "type": "results", "analysis": analysis,
-                    "drive_links": drive_links or [],
+                    "drive_links": drive_links or [], "doc_link": doc_link,
                 })
                 if ticker == "AR9":
                     brother_blocks.append(block)
@@ -1433,7 +2090,7 @@ def main():
     brother_email = os.environ.get("BROTHER_EMAIL", "").strip()
     if brother_email and brother_blocks:
         bro_subject = f"{BOB_NAME} {VERSION_LABEL} — AR9 Digest — {today_sgt_date().isoformat()} (SGT)"
-        bro_text = "\n".join([bro_subject, "", *brother_blocks])
+        bro_text = "\n".join([bro_subject, "", *(_block_text(b) for b in brother_blocks)])
         bro_html = "<div style='padding:18px; background:%s; color:%s; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Arial, sans-serif;'>" % (COLOR_BG, COLOR_TEXT)
         bro_html += f"<div style='font-size:20px; font-weight:900; margin-bottom:8px;'>{htmlmod.escape(bro_subject)}</div>"
         bro_html += _html_section("AR9 ONLY", COLOR_MATERIAL, brother_blocks)

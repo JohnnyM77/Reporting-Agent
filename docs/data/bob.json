@@ -1,7 +1,104 @@
 {
   "last_run": "2026-08-19",
-  "silence": true,
-  "high_impact": [],
+  "silence": false,
+  "high_impact": [
+    {
+      "ticker": "PME",
+      "title": "Annual Report FY26 98\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.4MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126343",
+      "type": "results",
+      "analysis": {
+        "ticker": "PME",
+        "period": "FY26",
+        "period_type": "full_year",
+        "currency": "AUD",
+        "metrics": {
+          "revenue": {
+            "value": "$261.7m",
+            "change_pct": "+22.9%",
+            "basis": "reported"
+          },
+          "underlying_npat": {
+            "value": "$144.7m",
+            "change_pct": "+24.1%",
+            "basis": "underlying"
+          },
+          "underlying_eps": {
+            "value": "138.42c",
+            "change_pct": "+24.0%",
+            "basis": "underlying"
+          },
+          "dividend_ordinary": {
+            "value": "69.0c",
+            "change_pct": "+25.5%",
+            "note": "fully franked; comprises 32.0c interim + 37.0c final declared 18 Aug 2026"
+          },
+          "operating_cash_flow": {
+            "value": "$127.5m",
+            "change_pct": "+14.5%",
+            "basis": "reported"
+          }
+        },
+        "summary": "PME delivered underlying NPAT of $144.7m (+24.1% on pcp) and revenue of $261.7m (+22.9%), consistent with its multi-year growth trajectory and broadly in line with consensus expectations, though underlying EBIT of $199.5m missed its own internal STI target of $210m due to go-live timing. North America drove the result, with 24% reported revenue growth (30.3% constant currency) underpinned by transaction volume ramp from previously contracted clients. Cash conversion was solid at $127.5m operating cash flow but below the 88% implied ratio against underlying NPAT, with a $33.6m blowout in trade receivables the key drag. The 69.0c fully franked dividend (up 25.5%) signals confidence, though statutory NPAT of $265.3m is distorted by a $174.2m unrealised fair value gain on the 4D Medical investment that will reverse if the share price falls — it has already dropped ~18% post balance date. The single biggest forward risk is AUD/USD appreciation eroding reported revenue and earnings, given 93% of sales are denominated in foreign currencies and FX cost the business $11.8m in revenue versus constant currency in FY26.",
+        "full_analysis": "## Executive summary\n- Underlying operating performance was solid but not exceptional: revenue +22.9% reported (+28.4% constant currency), underlying NPAT +24.1% (+32.5% constant currency), with the gap highlighting meaningful AUD tailwind reversal risk.\n- Statutory NPAT of $265.3m (+130%) is entirely misleading as a measure of business performance — $174.2m of the pre-tax profit is an unrealised fair value gain on the 4D Medical debt instrument, which has already declined ~$33m post balance date.\n- Underlying EBIT of $199.5m missed management's own STI target of $210m, triggering a nil payout on the EBIT component of executive bonuses — an honest signal that go-live timing (primarily Trinity Health cohorts and new contract ramp) was slower than budgeted.\n- Minimum contracted revenue backlog grew to $1.3b (+41%), providing strong forward revenue visibility; ten new contracts worth $407m TCV won in FY26 including the $170m UCHealth deal.\n- Receivables blowout ($97.6m vs $64.1m pcp, +52%) and $33.6m working capital drag warrant monitoring — partially timing-driven but DSO has extended materially.\n\n## Key numbers\n\n| Metric | FY26 | FY25 | Change |\n|---|---|---|---|\n| Revenue | $261.7m | $213.0m | +22.9% |\n| Gross profit | $270.4m | $220.2m | +22.8% |\n| Gross margin (incl. interest income) | ~99.8% | ~99.9% | flat |\n| Underlying PBT | $205.2m | $165.2m | +24.2% |\n| Underlying NPAT | $144.7m | $116.6m (restated) | +24.1% |\n| Statutory NPAT | $265.3m | $115.2m | +130.3% |\n| Bridge: statutory to underlying | Statutory $265.3m less fair value gains net of tax ($174.2m x ~70%) ~$122m, add back FX loss net of tax ~$1.3m = approx. $144.7m underlying |\n| Underlying EPS (basic) | 138.42c | ~111.6c | +24.0% |\n| Statutory EPS (basic) | 254.0c | 110.3c | +130.3% |\n| Operating cash flow | $127.5m | $111.3m | +14.5% |\n| Free cash flow (OCF less capex/dev costs) | ~$119.2m | ~$103.9m | +14.7% |\n| Net cash + term deposits | $216.1m | $174.5m | +23.8% |\n| Total liquidity (incl. other fin. assets) | $252.3m | $210.8m | +19.7% |\n| Net debt | nil (debt-free) | nil | — |\n\n## Quality of earnings\n- **Cash conversion**: Operating cash flow of $127.5m against underlying NPAT of $144.7m implies ~88% cash conversion — acceptable but below PME's historical near-100% levels. The gap is driven by the $33.6m increase in trade receivables and $6.4m increase in capitalised contract costs, partially offset by $16.8m deferred revenue growth.\n- **Receivables / DSO**: Trade receivables jumped from $64.1m to $97.6m (+52%), with $6.7m in 91+ day buckets (vs $1.0m pcp) and $7.1m in 61-90 days. Revenue-weighted DSO has extended to approximately 136 days (annualised) — elevated relative to prior years. Management attributes this to billing timing on new go-lives and quarter-end invoicing cycles, but the magnitude of the aging deterioration deserves monitoring over H1 FY27.\n- **One-offs**: The $174.2m fair value gain on the 4D Medical structured instrument is the dominant distortion. This is a mark-to-market of a complex equity-linked debt instrument tied directly to 4DX's share price. The 4DX share price fell from $4.53 to $3.71 post balance date (-18%), implying a $32.9m reversal of this gain in FY27 opening numbers. This is explicitly disclosed in the subsequent events note — credit to management for transparency.\n- **Capitalised development costs**: $8.2m capitalised in FY26 (vs $6.9m pcp, +19%), amortised over 5 years. The capitalisation rate is rising but remains proportionate to staff cost growth. Gross wages capitalised: $7.2m (FY25: $6.0m). The capitalisation policy is conservative relative to peers.\n- **Deferred revenue**: Up $16.8m to $65.3m total — a healthy leading indicator of future recognised revenue, confirming contracted but not-yet-recognised income is building.\n- **Interest income**: $9.1m (FY25: $7.6m), now formally included in underlying PBT after a definitional change mid-year (FY25 restated). The restatement is minor but flagged appropriately.\n\n## Management framing\n**Rating: Transparent / Mixed**\n- Positives: Management clearly disclosed the $174.2m fair value gain and its exclusion from underlying metrics. The post-balance date 4DX share price decline and its ~$33m impact on the asset value was explicitly disclosed in subsequent events — this is commendable.\n- Mixed: The CEO/Chairman letter leads with the 130% statutory profit growth before pivoting to underlying. The highlights page lists the statutory figure first. A less diligent reader would be misled.\n- The definition of underlying PBT was changed mid-year (interest income now included) with prior period restatement — a legitimate and minor change, but changing definitions mid-stream always warrants scrutiny.\n- The STI target miss (underlying EBIT $199.5m vs $210m target) is buried in the remuneration section rather than the financial review — management would prefer investors focus on the revenue beat and constant currency numbers.\n- Constant currency presentation is legitimate given 93% of revenue is in foreign currencies; the $11.8m FX headwind is real and clearly quantified.\n- The EchoIQ investment ($10m committed via convertible note, not yet funded at 30 June) generated a $2.4m fair value gain in FY26 via an option pricing model with significant unobservable inputs (73% illiquidity discount, 60% assumed FDA clearance probability). Level 3 valuation — inherently subjective.\n\n## Segments\n\n| Segment | Revenue FY26 | Revenue FY25 | Growth | Segment Result FY26 | Segment Result FY25 |\n|---|---|---|---|---|---|\n| North America (PACS) | $236.8m | $190.9m | +24.0% (+30.3% CC) | $5.4m* | $4.2m* |\n| Australia (RIS + PACS) | $18.9m | $17.7m | +7.3% | $190.2m† | $152.1m† |\n| Europe (PACS) | $5.9m | $4.4m | +37.2% (+34.9% CC) | -$1.4m | -$0.8m |\n\n*North America segment result is small because most development costs and IP licensing flow through Australia via intercompany, with the Australia segment capturing the bulk of group profitability.\n†Australia segment profit is inflated by intercompany royalty/licensing income from North America and Europe.\n\n- North America is the growth engine: 91% of group PACS revenue and accelerating with new go-lives from UCHealth, Trinity Health, and others.\n- Europe remains loss-making at the segment level but the Heidelberg contract win is strategically important as a beachhead for academic European hospitals.\n- Australia (RIS) grew 7.3% — a mature, high-margin business with limited upside but zero attrition.\n\n## Balance sheet\n- Debt-free. Cash + term deposits of $216.1m. Total liquid financial assets (including investment portfolio) of $252.3m.\n- The non-current financial assets line jumped from $7.3m to $189.4m entirely due to the 4D Medical instrument fair value ($182.0m). Strip this out and the balance sheet is essentially unchanged in character.\n- Deferred tax liability surged from $7.5m to $62.7m, driven by the $52.2m deferred tax on the unrealised 4DX gain — this will partially reverse as/when the 4DX gain reverses.\n- Working capital deteriorated modestly: receivables +$33.6m, deferred revenue +$16.8m. Net working capital excluding deferred revenue worsened by approximately $17m.\n- No covenants, no refinancing risk, no leverage. Capital structure is immaculate.\n- Share buyback: $10.1m in FY26 (40,876 shares at ~$248 average). Modest relative to cash generation.\n\n## Dividend and capital allocation\n- FY26 total dividend: 69.0c fully franked (interim 32.0c + final 37.0c), up 25.5% vs FY25's 55.0c.\n- Payout ratio vs underlying NPAT: ~50% — disciplined and sustainable. PME retains the majority of earnings to fund organic growth and strategic investments.\n- Capital allocation priorities: (1) organic R&D ($8.2m capex + staff costs), (2) strategic investments (4D Medical $10m, Elucid $7.3m, EchoIQ $10m committed), (3) dividends, (4) buybacks.\n- The strategic investment portfolio is growing in complexity and subjectivity of valuation. The 4D Medical instrument is now PME's largest single asset at $182m carrying value — larger than the company's entire intangible asset base. This is a governance consideration.\n\n## Guidance and outlook\n- No quantitative guidance provided for FY27. PME has never provided explicit guidance.\n- Qualitative outlook: FY27 expected to benefit from revenue ramp from previously won contracts (UCHealth, Beth Israel Lahey Health, TidalHealth, etc.) coming on stream. North America pipeline described as active with \"a number of sales opportunities being actively pursued.\"\n- New products (digital pathology, AI-optimised reporting via Visage 7 Reporting, Visage Chat) are in production in Europe with North America release of reporting scheduled for H1 CY2027.\n- The $1.3b minimum contracted revenue backlog (+41%) over 5 years provides strong forward visibility — equivalent to approximately 5x FY26 revenue.\n- EBIT target for STI purposes was set at $210m for FY26 (37.9% growth on FY25); the miss suggests management itself expected a higher FY26 EBIT. FY27 EBIT target has not been disclosed.\n\n## Positives\n- **$1.3b contracted backlog (+41%)**: provides unmatched earnings visibility for a company of this size; minimum contracted revenue locks in growth regardless of new sales.\n- **10 new contracts, $407m TCV in FY26**: including the $170m UCHealth 10-year deal (second largest ever) and $90m Beth Israel Lahey deal — demonstrates continued pipeline conversion at scale.\n- **100% client retention maintained**: all six renewals executed at increased per-transaction fees and increased minimums — pricing power is real and documented.\n- **Constant currency underlying NPAT +32.5% to $154.5m**: the underlying business is compounding at >30% in local currency terms; FX is a headwind not a business problem.\n- **$252.3m liquidity, zero debt**: fortress balance sheet with no external funding constraints; company can self-fund growth and strategic investments indefinitely.\n- **Voluntary staff turnover 2.1% (FY25: 5.6%)**: retention of specialists is the most critical operational risk; the step-down is significant and suggests the culture investments are working.\n- **Gross margin ~99.8%**: essentially all revenue falls through to gross profit given the SaaS/transaction fee model with negligible direct cost of sales ($401k on $261.7m revenue).\n\n## Negatives / red flags\n- **4D Medical fair value gain is not a business**: $174.2m pre-tax fair value gain dominates statutory profit and will be volatile. 4DX share price has already fallen 18% post balance date erasing ~$33m. A 10% move in 4DX share price moves PME's pre-tax profit by $18.2m — this is now a material P&L risk unrelated to the imaging software business.\n- **Receivables deterioration**: 91+ day receivables jumped from $1.0m to $6.7m. Total trade receivables up 52% vs revenue growth of 23%. This needs to resolve in H1 FY27 or it signals a structural DSO problem.\n- **AUD strength is the core financial risk**: 93% of revenue is non-AUD; a 5% AUD/USD appreciation reduces post-tax profit by ~$3.4m. The AUD has been strengthening through 2025-26 — constant currency growth at 28.4% vs reported 22.9% illustrates the magnitude of the drag.\n- **Underlying EBIT missed internal target by $10.5m**: the STI trigger was not met on the EBIT component. Go-live timing for new contracts is inherently lumpy, but investors should note that management's own internal expectations for FY26 were not achieved on the profitability metric.\n- **EchoIQ valuation is highly subjective**: the $2.4m fair value gain on the EchoIQ receivable uses a 73% illiquidity discount and a 60% assumed FDA clearance probability — both are management assumptions with wide sensitivity ranges. The note explicitly states the Master Agreement was only signed 14 August 2026, after balance date.\n- **Concentration of founder shareholding**: Hupert (23.16%) and Hall (23.14%) together own 46.3% of the company. Corporate governance effectiveness is constrained when founders hold near-majority control and sit on the board.\n- **Related party lease**: $215,120 paid annually to Champagne Properties Pty Ltd (controlled by Hupert and Hall) for the Richmond office. Arm's length as assessed independently, but it is a recurring related-party transaction that warrants ongoing scrutiny.\n- **Europe remains loss-making**: segment result of -$1.4m despite winning the Heidelberg contract. The European growth thesis is still unproven at a profit contribution level.\n\n## Bottom line\n**Bull case**: The $1.3b backlog converts to revenue over FY27-FY31 at improving per-transaction rates, constant currency growth sustains at 25-30%, new products (digital pathology, AI reporting, cardiology) add incremental revenue streams, and North America market share grows from 11% toward 20%+. PME is a genuinely rare asset — a high-quality, asset-light SaaS business with demonstrated pricing power, zero churn, and a long runway.\n\n**Bear case**: AUD strengthens materially (reducing reported earnings), go-live timing slips again (as it did in FY26 relative to budget), the 4D Medical investment becomes a recurring P&L distraction with downside volatility, and the market re-rates the stock on a realistic underlying EPS of ~140c — currently implying a P/E well north of 100x at recent share prices, leaving minimal margin of safety for execution risk.\n\n**What would change the view**: (1) A sustained reacceleration in underlying EBIT growth above 30% in H1 FY27 as new contracts ramp; (2) resolution of the receivables blowout confirming it was timing not credit quality; (3) disposal or realisation of the 4D Medical position to remove P&L noise; (4) disclosure of a major new contract win in Europe or a new market segment (e.g. Veterans Affairs, oncology).",
+        "_status": "ok"
+      },
+      "doc_link": "",
+      "doc_error": "",
+      "pdf_path": "/tmp/PME_FY26_2026-08-19.pdf"
+    }
+  ],
   "material": [],
-  "fyi": []
+  "fyi": [
+    {
+      "ticker": "PME",
+      "title": "Annual Report FY26 98\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.4MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126343"
+    },
+    {
+      "ticker": "PME",
+      "title": "PME FY26 results presentation 67\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.0MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126318"
+    },
+    {
+      "ticker": "PME",
+      "title": "CEO Interview FY26 Results 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 313.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126309"
+    },
+    {
+      "ticker": "PME",
+      "title": "Appendix 4G 11\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 466.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126305"
+    },
+    {
+      "ticker": "PME",
+      "title": "Dividend/Distribution - PME 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126302"
+    },
+    {
+      "ticker": "PME",
+      "title": "2026 Corporate Governance Statement 19\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 853.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126300"
+    },
+    {
+      "ticker": "PME",
+      "title": "PME Full Year Results 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 439.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126298"
+    },
+    {
+      "ticker": "PME",
+      "title": "Preliminary Final Report FY26 (Appendix 4E) 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 373.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126297"
+    },
+    {
+      "ticker": "PME",
+      "title": "PME signs Convertible Note agreement with Echo IQ 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                               ",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03125723"
+    },
+    {
+      "ticker": "PME",
+      "title": "PME signs A$23M, 7-year contract with St Luke's Health 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 181.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124295"
+    }
+  ]
 }

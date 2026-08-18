@@ -2057,6 +2057,13 @@ def main():
         manual_ticker_from_date = cutoff_dt_sgt(7 * 24).date()
         asx_tickers = list(asx_tickers) + [manual_ticker]
 
+    # Add force_rerun_tickers that aren't already in the portfolio
+    asx_ticker_set = set(asx_tickers)
+    for t in force_rerun_tickers:
+        if t not in asx_ticker_set:
+            asx_tickers = list(asx_tickers) + [t]
+            asx_ticker_set.add(t)
+
     counters = {
         "MAX_LLM_CALLS_PER_RUN": MAX_LLM_CALLS_PER_RUN,
         "llm_calls": 0,

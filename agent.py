@@ -1583,7 +1583,7 @@ def generate_analysis_pdf(
             font-size: 11pt;
             line-height: 1.5;
             color: #1f2937;
-            margin: 36pt;
+            margin: 12pt;
         }
         h1 {
             font-size: 24pt;

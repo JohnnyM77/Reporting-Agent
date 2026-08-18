@@ -2047,15 +2047,20 @@ def main():
     if force_rerun_tickers:
         log(f"FORCE_RERUN_TICKERS active: {sorted(force_rerun_tickers)}")
 
-    # MANUAL_TICKER allows one-off analysis of a ticker not in the portfolio,
-    # limited to the last 7 days to avoid overwhelming result counts
-    manual_ticker = os.environ.get("MANUAL_TICKER", "").strip().upper()
+    # MANUAL_TICKER allows one-off analysis of tickers not in the portfolio,
+    # limited to the last 7 days to avoid overwhelming result counts.
+    # Comma-separated: e.g. "PME,SPZ,XYZ"
+    manual_tickers = frozenset(
+        t.strip().upper()
+        for t in os.environ.get("MANUAL_TICKER", "").split(",")
+        if t.strip()
+    )
     manual_ticker_from_date = None
-    if manual_ticker:
-        log(f"MANUAL_TICKER: analyzing {manual_ticker} (one-off, not saved to state)")
+    if manual_tickers:
+        log(f"MANUAL_TICKER: analyzing {sorted(manual_tickers)} (one-off, not saved to state)")
         # Restrict to 7 days to avoid 50+ results
         manual_ticker_from_date = cutoff_dt_sgt(7 * 24).date()
-        asx_tickers = list(asx_tickers) + [manual_ticker]
+        asx_tickers = list(asx_tickers) + list(manual_tickers)
 
     # Add force_rerun_tickers that aren't already in the portfolio
     asx_ticker_set = set(asx_tickers)
@@ -2094,7 +2099,7 @@ def main():
             # 7 days to avoid overwhelming result counts.
             if t in force_rerun_tickers:
                 fetch_from = None
-            elif t == manual_ticker:
+            elif t in manual_tickers:
                 fetch_from = manual_ticker_from_date
             else:
                 fetch_from = from_date

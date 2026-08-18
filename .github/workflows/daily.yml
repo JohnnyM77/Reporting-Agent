@@ -8,7 +8,7 @@ on:
         required: false
         default: ""
       manual_ticker:
-        description: "Optional: analyze a single ticker not in your portfolio (limited to last 7 days). Leave blank to skip. Example: COH"
+        description: "Optional: analyze tickers not in your portfolio (comma-separated, limited to last 7 days). Leave blank to skip. Example: PME,SPZ,COH"
         required: false
         default: ""
   schedule:

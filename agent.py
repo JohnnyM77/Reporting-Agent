@@ -33,6 +33,10 @@ from bs4 import BeautifulSoup
 import yaml
 from pypdf import PdfReader
 import anthropic
+try:
+    from weasyprint import HTML, CSS
+except ImportError:
+    HTML = CSS = None
 
 import asyncio
 from playwright_fetch import fetch_pdf_with_playwright
@@ -233,7 +237,13 @@ def _get_daily_joke() -> str:
     return lines[today_sgt_date().toordinal() % len(lines)]
 
 
-def send_email(subject: str, body_text: str, body_html: Optional[str] = None, to_addr: Optional[str] = None):
+def send_email(
+    subject: str,
+    body_text: str,
+    body_html: Optional[str] = None,
+    to_addr: Optional[str] = None,
+    attachments: Optional[List[Path]] = None,
+):
     email_from = os.environ["EMAIL_FROM"]
     email_to = to_addr or os.environ["EMAIL_TO"]
     app_password = os.environ["EMAIL_APP_PASSWORD"]
@@ -244,6 +254,23 @@ def send_email(subject: str, body_text: str, body_html: Optional[str] = None, to
     msg.set_content(body_text)
     if body_html:
         msg.add_alternative(body_html, subtype="html")
+
+    # Attach any PDF files
+    if attachments:
+        for pdf_path in attachments:
+            if pdf_path and pdf_path.exists():
+                try:
+                    with open(pdf_path, "rb") as f:
+                        msg.add_attachment(
+                            f.read(),
+                            maintype="application",
+                            subtype="pdf",
+                            filename=pdf_path.name,
+                        )
+                    log(f"[Email] Attached {pdf_path.name}")
+                except Exception as e:
+                    log(f"[Email] Failed to attach {pdf_path}: {e}")
+
     context = ssl.create_default_context()
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
         server.login(email_from, app_password)
@@ -1261,6 +1288,13 @@ def build_results_block(
     links_html = ""
     if doc_link:
         links_html += _link_row("Full analysis (Google Drive)", doc_link)
+    else:
+        # PDF is attached to the email instead of linking to Drive
+        links_html += (
+            f'<tr><td colspan="2" style="padding:10px 14px; background:{COLOR_RESULTS_ROW_SHADE};'
+            f' color:{COLOR_RESULTS_MUTED}; font-family:{EMAIL_FONT};'
+            f' font-size:13px;">📎 Full analysis PDF attached to this email</td></tr>'
+        )
     if asx_url:
         links_html += _link_row("Source announcement (ASX)", asx_url)
 
@@ -1525,6 +1559,132 @@ def build_analysis_doc_html(
         + "".join(parts) +
         "</body></html>"
     )
+
+
+def generate_analysis_pdf(
+    ticker: str,
+    period: str,
+    body_html: str,
+) -> Optional[Path]:
+    """Generate a professional PDF from the analysis HTML and return its file path.
+
+    Returns None if weasyprint is not installed; raises on actual errors.
+    The PDF is saved to a temporary file and should be attached to the email.
+    """
+    if HTML is None:
+        log(f"[PDF] weasyprint not installed — skipping PDF generation for {ticker}")
+        return None
+
+    try:
+        # Add CSS for professional styling
+        css_string = """
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #1f2937;
+            margin: 36pt;
+        }
+        h1 {
+            font-size: 24pt;
+            color: #1e3a8a;
+            margin: 0 0 4pt 0;
+            font-weight: 700;
+        }
+        h2 {
+            font-size: 14pt;
+            color: #1e3a8a;
+            margin: 20pt 0 8pt 0;
+            font-weight: 700;
+        }
+        h3 {
+            font-size: 12pt;
+            color: #1e3a8a;
+            margin: 14pt 0 6pt 0;
+            font-weight: 700;
+        }
+        h4 {
+            font-size: 11pt;
+            color: #374151;
+            margin: 10pt 0 4pt 0;
+            font-weight: 700;
+        }
+        p {
+            margin: 8pt 0;
+            line-height: 1.6;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 12pt 0;
+            font-size: 10pt;
+        }
+        table td, table th {
+            border: 1px solid #d1d5db;
+            padding: 6pt 8pt;
+        }
+        table th {
+            background-color: #1e3a8a;
+            color: white;
+            font-weight: 700;
+        }
+        table tr:nth-child(even) {
+            background-color: #f3f4f6;
+        }
+        ul, ol {
+            margin: 8pt 0;
+            padding-left: 24pt;
+            line-height: 1.6;
+        }
+        li {
+            margin: 4pt 0;
+        }
+        code {
+            background-color: #f3f4f6;
+            padding: 2pt 4pt;
+            font-family: 'Courier New', monospace;
+            font-size: 10pt;
+        }
+        pre {
+            background-color: #f3f4f6;
+            padding: 10pt;
+            border: 1px solid #d1d5db;
+            font-family: 'Courier New', monospace;
+            font-size: 9pt;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        a {
+            color: #1e3a8a;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        """
+
+        # Create HTML document with embedded CSS
+        full_html = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>{css_string}</style>
+</head>
+<body>
+{body_html}
+</body>
+</html>"""
+
+        # Generate PDF to temporary file
+        temp_pdf = Path(tempfile.gettempdir()) / f"{ticker}_{period}_{today_sgt_date().isoformat()}.pdf"
+        HTML(string=full_html).write_pdf(str(temp_pdf))
+
+        log(f"[PDF] Generated {ticker} analysis PDF: {temp_pdf} ({temp_pdf.stat().st_size} bytes)")
+        return temp_pdf
+
+    except Exception as e:
+        log(f"[PDF] Error generating PDF for {ticker}: {type(e).__name__}: {e}")
+        return None
 
 
 def create_analysis_doc(
@@ -2007,39 +2167,32 @@ def main():
                 )
 
                 # The long-form analysis leaves the email and goes to a native
-                # Google Doc; the email links to it. Doc creation is non-fatal
-                # for the digest — if Drive is broken the email still ships —
-                # but a Drive failure gets surfaced as a visible warning in
-                # the results block instead of vanishing into the workflow
-                # log the way it did the first weeks after launch.
-                doc_link = ""
-                doc_error = ""
-                if drive_folder_id:
-                    try:
-                        doc_link = create_analysis_doc(
-                            ticker,
-                            _results_period_label(analysis),
-                            build_analysis_doc_html(ticker, analysis, any_results_link),
-                            drive_folder_id,
-                        )
-                    except Exception as e:
-                        doc_error = f"{type(e).__name__}: {e}"
-                        log(f"ERROR: analysis Doc creation failed for {ticker}: {doc_error}")
-                elif os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON") or os.environ.get("GDRIVE_CLIENT_ID"):
-                    doc_error = "GDRIVE_FOLDER_ID is not set"
+                # Generate a professional PDF of the full analysis and attach it to
+                # the email. This avoids Google Drive auth issues and gives the user
+                # a clean, downloadable file. PDF generation is non-fatal — if
+                # weasyprint isn't available, the email still ships without it.
+                analysis_pdf_path = None
+                try:
+                    analysis_pdf_path = generate_analysis_pdf(
+                        ticker,
+                        _results_period_label(analysis),
+                        build_analysis_doc_html(ticker, analysis, any_results_link),
+                    )
+                except Exception as e:
+                    log(f"ERROR: analysis PDF generation failed for {ticker}: {type(e).__name__}: {e}")
 
                 block = build_results_block(
                     ticker=ticker,
                     analysis=analysis,
                     asx_url=any_results_link,
-                    doc_link=doc_link,
-                    doc_error=doc_error,
+                    doc_link="",
+                    doc_error="",
                 )
                 high_impact_blocks.append(block)
                 high_impact_items.append({
                     "ticker": ticker, "title": bundle[0]["title"] if bundle else "Results (HY/FY)",
                     "url": any_results_link, "type": "results", "analysis": analysis,
-                    "doc_link": doc_link, "doc_error": doc_error,
+                    "doc_link": "", "doc_error": "", "pdf_path": analysis_pdf_path,
                 })
                 if ticker == "AR9":
                     brother_blocks.append(block)
@@ -2192,7 +2345,14 @@ def main():
                     brother_blocks.append(block)
 
     body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks)
-    send_email(subject, body_text, body_html)
+
+    # Collect PDF attachments from results items
+    attachments = [
+        item["pdf_path"] for item in high_impact_items
+        if item.get("pdf_path") and item["pdf_path"].exists()
+    ]
+
+    send_email(subject, body_text, body_html, attachments=attachments if attachments else None)
 
     brother_email = os.environ.get("BROTHER_EMAIL", "").strip()
     if brother_email and brother_blocks:

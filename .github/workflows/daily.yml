@@ -53,6 +53,14 @@ jobs:
           # the shared 4096 default and truncate mid-JSON. Sized so no real
           # results announcement can be cut off.
           CLAUDE_RESULTS_MAX_TOKENS: "50000"
+          # Drive auth: OAuth is preferred and required on personal Gmail —
+          # a service account has no storage quota of its own, so writes to
+          # a plain My Drive folder fail with 403 even when the folder is
+          # shared with the service account. See drive_service() and the
+          # architecture note in CLAUDE.md.
+          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
           GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
           BROTHER_EMAIL: ${{ secrets.BROTHER_EMAIL }}

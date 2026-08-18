@@ -44,12 +44,32 @@ small HTML subset first (`_markdown_to_html`: headings, paragraphs, lists,
 pipe tables) — enough for what `RESULTS_HYFY_PROMPT` emits, deliberately not a
 general markdown engine.
 
-**Permissions gotcha**: a file created by the service account is *owned by the
-service account*, so its `webViewLink` 404s for a human until the file is
-shared. `_share_drive_file` adds a reader permission for `GDRIVE_SHARE_EMAIL`
-(falling back to `EMAIL_TO`, comma-separated allowed) with
-`sendNotificationEmail=False`. The `drive.file` scope is sufficient because the
-service account only ever touches files it created itself.
+**Drive auth is OAuth, not service account**: a service account has zero Drive
+storage quota of its own. Writing into a plain My Drive folder — even one
+that's been *shared with* the service account as Editor — returns HTTP 403
+"Service Accounts do not have storage quota". This silently killed every Bob
+upload for several weeks after the redesign landed: the try/except in `main()`
+swallowed the 403, the digest looked fine, and nothing landed in Drive.
+
+`drive_service()` now prefers OAuth2 user credentials (`GDRIVE_CLIENT_ID` +
+`GDRIVE_CLIENT_SECRET` + `GDRIVE_REFRESH_TOKEN`) — same pattern Sunday Sally
+uses. Authenticated as the human user, files are owned by *them* and use
+*their* quota, so plain My Drive folders work. Falls back to service account
+with a loud warning only when OAuth secrets aren't set.
+
+Every Drive API call also passes `supportsAllDrives=True`. Without it the
+Drive v3 API silently refuses to touch Shared Drive contents; passing it costs
+nothing for My Drive writes and future-proofs the code.
+
+**Raw PDF uploads were removed.** The ASX link in the email already points at
+the same PDF ASX hosts, so copying it to Drive was pure duplication. Drive is
+used only for the analysis Doc now — one file per results item, and that
+file is worth opening.
+
+**Drive failures are visible.** When `create_analysis_doc` raises, the results
+card renders a red "⚠️ Drive save failed" warning row with the actual error
+text, and the failure is stashed on the item's dashboard JSON as `doc_error`.
+No more silent Drive.
 
 ### The five metrics are locked
 Revenue, Underlying NPAT, Underlying EPS, Ordinary dividend, Operating cash
@@ -82,6 +102,17 @@ not need a 50k ceiling. When the API reports `stop_reason=max_tokens`,
 `_call_anthropic` logs a warning and stashes it on `counters` so the
 parse-error path names truncation as the cause instead of the generic
 "not valid JSON" — the two need different fixes and shouldn't look identical.
+
+**Long calls must stream, not `.create()`.** The Anthropic Python SDK refuses
+non-streaming `messages.create` calls whose expected duration exceeds ~10
+minutes — a client-side check to avoid HTTP read-timeouts on long
+generations. At Sonnet's output rate, the 50k results budget hits that
+threshold, so the first attempt after raising `max_tokens` came back with
+"Streaming is required for operations that may take longer than 10 minutes".
+`_call_anthropic` now routes any call with `max_tokens >= _STREAMING_MIN_TOKENS`
+(8192) through `client.messages.stream`; below that threshold the short
+`.create` path stays. Streaming keeps the connection alive with periodic
+events, so the SDK-side ceiling doesn't apply.
 
 `strawman_post` was left as the existing no-op shim — folding a Strawman draft
 into the same JSON would save a call but Strawman output is not currently in

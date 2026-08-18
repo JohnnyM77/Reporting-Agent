@@ -82,14 +82,27 @@ def _analysis(**overrides) -> dict:
 
 
 def _mock_claude(payload, stop_reason: str = "end_turn") -> mock.MagicMock:
+    """Mock the Anthropic client for both the non-streaming and streaming paths.
+
+    Above ``_STREAMING_MIN_TOKENS`` (i.e. results calls) the agent routes
+    through ``client.messages.stream`` to avoid the SDK's 10-minute
+    non-streaming ceiling. Below it, plain ``.create`` is used. The mock
+    wires both so tests don't need to know which one a caller hits.
+    """
     text = payload if isinstance(payload, str) else json.dumps(payload)
     client = mock.MagicMock()
+
     response = mock.MagicMock()
     response.content = [mock.MagicMock(text=text)]
-    # Explicit stop_reason so counters["last_stop_reason"] tracks the real
-    # API's contract — pass "max_tokens" to simulate a truncated response.
     response.stop_reason = stop_reason
     client.messages.create.return_value = response
+
+    stream_cm = mock.MagicMock()
+    stream_cm.text_stream = iter([text])
+    stream_cm.get_final_message.return_value = response
+    stream_cm.__enter__.return_value = stream_cm
+    stream_cm.__exit__.return_value = False
+    client.messages.stream.return_value = stream_cm
     return client
 
 
@@ -107,7 +120,10 @@ def test_results_analysis_is_a_single_llm_call():
             "CAT", "official report text " * 300, "deck text " * 300, counters,
         )
 
-    assert client.messages.create.call_count == 1
+    # Results calls go through the streaming API (SDK requires it above
+    # ~10-minute expected duration, i.e. above _STREAMING_MIN_TOKENS).
+    assert client.messages.stream.call_count == 1
+    assert client.messages.create.call_count == 0
     assert counters["llm_calls"] == 1
     assert analysis["_status"] == agent.RESULTS_STATUS_OK
     assert analysis["metrics"]["revenue"]["value"] == "$167.4m"
@@ -149,7 +165,8 @@ def test_results_call_uses_the_results_max_tokens_budget():
     with mock.patch("agent._anthropic_client", return_value=client):
         agent.deep_results_analysis("CAT", "official report text " * 300, "", counters)
 
-    kwargs = client.messages.create.call_args.kwargs
+    # Streaming path — the results budget is well above the streaming threshold.
+    kwargs = client.messages.stream.call_args.kwargs
     assert kwargs["max_tokens"] == agent.RESULTS_MAX_TOKENS
     assert kwargs["max_tokens"] >= 32000, (
         "the results budget must be big enough to hold metrics JSON + the 11-section "
@@ -166,8 +183,25 @@ def test_non_results_calls_keep_the_shorter_default_budget():
     with mock.patch("agent._anthropic_client", return_value=client):
         agent.summarise_two_lines_llm("CAT", "Title", "some body text " * 100, counters)
 
+    # Short-call path uses .create(), not streaming.
     assert client.messages.create.call_args.kwargs["max_tokens"] == agent.DEFAULT_MAX_TOKENS
+    assert client.messages.stream.call_count == 0
     assert agent.DEFAULT_MAX_TOKENS < agent.RESULTS_MAX_TOKENS
+
+
+def test_results_max_tokens_triggers_streaming_not_create():
+    """The Anthropic SDK refuses non-streaming .create() for requests that
+    may take longer than 10 minutes, which the 50k results budget does hit.
+    The results path must route through .stream() so the SDK-side ceiling
+    doesn't kill the request before Bob even sees a response."""
+    counters = _counters()
+    client = _mock_claude(_analysis())
+    with mock.patch("agent._anthropic_client", return_value=client):
+        agent.deep_results_analysis("CAT", "report text " * 300, "", counters)
+
+    assert client.messages.stream.call_count == 1
+    assert client.messages.create.call_count == 0
+    assert agent._STREAMING_MIN_TOKENS <= agent.RESULTS_MAX_TOKENS
 
 
 def test_results_max_tokens_is_env_overridable():
@@ -435,7 +469,10 @@ def test_cap_skip_says_skipped_and_is_not_a_failure():
 
 def test_api_failure_surfaces_the_real_error_and_flags_the_block():
     counters = _counters()
+    # Results calls hit stream(), not create() — the failure must be injected
+    # on the same path the code actually uses.
     client = mock.MagicMock()
+    client.messages.stream.side_effect = RuntimeError("429 rate_limit_error")
     client.messages.create.side_effect = RuntimeError("429 rate_limit_error")
 
     with mock.patch("agent._anthropic_client", return_value=client), \
@@ -551,30 +588,155 @@ def test_create_analysis_doc_converts_to_a_native_google_doc():
         "webViewLink": "https://docs.google.com/document/d/doc123/edit",
     }
 
-    with mock.patch("agent.drive_service", return_value=service), \
-         mock.patch.dict("os.environ", {"EMAIL_TO": "johnny@example.com"}):
+    with mock.patch("agent.drive_service", return_value=service):
         link = agent.create_analysis_doc("CAT", "FY25", "<html><body>hi</body></html>", "folder-1")
 
     assert link == "https://docs.google.com/document/d/doc123/edit"
 
     create_kwargs = [c.kwargs for c in service.files().create.call_args_list if c.kwargs.get("body")]
     assert create_kwargs, "files().create must be called with a metadata body"
-    body = create_kwargs[-1]["body"]
+    kwargs = create_kwargs[-1]
+    body = kwargs["body"]
     assert body["mimeType"] == "application/vnd.google-apps.document", (
         "uploading with the Docs mimeType is what makes Drive convert it to a "
         "native Doc that reflows on mobile"
     )
     assert body["parents"] == ["folder-1"]
     assert body["name"].startswith("CAT FY25 analysis ")
+    assert kwargs.get("supportsAllDrives") is True, (
+        "the v3 API silently refuses Shared Drive writes without this flag, "
+        "and passing it costs nothing on My Drive — it must always be set"
+    )
 
-    # The service account owns the file, so the human recipient needs reader access.
-    perm_kwargs = service.permissions().create.call_args.kwargs
-    assert perm_kwargs["body"]["emailAddress"] == "johnny@example.com"
-    assert perm_kwargs["body"]["role"] == "reader"
-    assert perm_kwargs["fileId"] == "doc123"
+    # With OAuth auth (the new default) the file is owned by the user directly,
+    # so no per-file permission grant is needed. The old service-account
+    # workaround called permissions().create; the current path must not.
+    assert service.permissions().create.call_count == 0
 
 
 def test_create_analysis_doc_without_a_folder_is_a_noop():
     with mock.patch("agent.drive_service") as svc:
         assert agent.create_analysis_doc("CAT", "FY25", "<html></html>", "") == ""
     svc.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# 7. Drive auth: OAuth preferred over service account
+# ---------------------------------------------------------------------------
+
+def test_drive_service_prefers_oauth_when_secrets_are_set():
+    """Service accounts have no personal Drive quota, so writes to a plain My
+    Drive folder fail with 403. OAuth authenticates as the folder's owner
+    and uses the owner's quota, which is what actually works. When both are
+    configured, OAuth wins."""
+    env = {
+        "GDRIVE_CLIENT_ID": "cid",
+        "GDRIVE_CLIENT_SECRET": "secret",
+        "GDRIVE_REFRESH_TOKEN": "refresh",
+        "GDRIVE_SERVICE_ACCOUNT_JSON": '{"client_email": "x@y.iam.gserviceaccount.com"}',
+    }
+    fake_user_creds = mock.MagicMock(name="UserCredentials")
+    sa_creds_cls = mock.MagicMock(name="SACredentials")
+
+    google_oauth2_credentials = types.ModuleType("google.oauth2.credentials")
+    google_oauth2_credentials.Credentials = mock.MagicMock(return_value=fake_user_creds)
+
+    google_oauth2_service_account = types.ModuleType("google.oauth2.service_account")
+    google_oauth2_service_account.Credentials = sa_creds_cls
+
+    googleapiclient_discovery = types.ModuleType("googleapiclient.discovery")
+    googleapiclient_discovery.build = mock.MagicMock(return_value="drive-service")
+
+    with mock.patch.dict("os.environ", env, clear=False), \
+         mock.patch.dict(sys.modules, {
+             "google.oauth2.credentials": google_oauth2_credentials,
+             "google.oauth2.service_account": google_oauth2_service_account,
+             "googleapiclient.discovery": googleapiclient_discovery,
+         }):
+        service = agent.drive_service()
+
+    assert service == "drive-service"
+    google_oauth2_credentials.Credentials.assert_called_once()
+    # Service account path must NOT have been touched at all.
+    assert sa_creds_cls.from_service_account_info.call_count == 0
+
+
+def test_drive_service_falls_back_to_service_account_with_a_loud_warning(capsys):
+    """When OAuth isn't configured, fall back to service account — but log a
+    warning so a broken configuration doesn't look silently normal."""
+    env = {
+        "GDRIVE_CLIENT_ID": "",
+        "GDRIVE_CLIENT_SECRET": "",
+        "GDRIVE_REFRESH_TOKEN": "",
+        "GDRIVE_SERVICE_ACCOUNT_JSON": '{"client_email": "x@y.iam.gserviceaccount.com"}',
+    }
+    sa_creds_cls = mock.MagicMock(name="SACredentials")
+    google_oauth2_service_account = types.ModuleType("google.oauth2.service_account")
+    google_oauth2_service_account.Credentials = sa_creds_cls
+    googleapiclient_discovery = types.ModuleType("googleapiclient.discovery")
+    googleapiclient_discovery.build = mock.MagicMock(return_value="sa-drive-service")
+
+    with mock.patch.dict("os.environ", env, clear=False), \
+         mock.patch.dict(sys.modules, {
+             "google.oauth2.service_account": google_oauth2_service_account,
+             "googleapiclient.discovery": googleapiclient_discovery,
+         }):
+        service = agent.drive_service()
+
+    assert service == "sa-drive-service"
+    sa_creds_cls.from_service_account_info.assert_called_once()
+    out = capsys.readouterr().out
+    assert "WARNING" in out and "service account" in out.lower()
+
+
+def test_drive_service_raises_when_no_credentials_at_all():
+    env = {
+        "GDRIVE_CLIENT_ID": "",
+        "GDRIVE_CLIENT_SECRET": "",
+        "GDRIVE_REFRESH_TOKEN": "",
+        "GDRIVE_SERVICE_ACCOUNT_JSON": "",
+    }
+    googleapiclient_discovery = types.ModuleType("googleapiclient.discovery")
+    googleapiclient_discovery.build = mock.MagicMock()
+
+    with mock.patch.dict("os.environ", env, clear=False), \
+         mock.patch.dict(sys.modules, {"googleapiclient.discovery": googleapiclient_discovery}):
+        try:
+            agent.drive_service()
+        except RuntimeError as e:
+            assert "OAuth" in str(e) or "service account" in str(e)
+        else:
+            raise AssertionError("expected RuntimeError when no Drive credentials are set")
+
+
+# ---------------------------------------------------------------------------
+# 8. Drive failures are visible in the results block
+# ---------------------------------------------------------------------------
+
+def test_drive_failure_surfaces_a_visible_warning_in_the_block():
+    """The bug that hid for weeks: the try/except in main() swallowed every
+    Drive 403 and the digest looked identical to a successful run. A Drive
+    failure must be *visible* to the reader now — a warning row in the card
+    and a plain-text line in the fallback text."""
+    block = agent.build_results_block(
+        "CAT", _analysis(), "https://asx.example/cat",
+        doc_link="",
+        doc_error="HttpError 403: Service Accounts do not have storage quota",
+    )
+    assert "Drive save failed" in block["html"]
+    assert "Drive save failed" in block["text"]
+    assert "Service Accounts do not have storage quota" in block["html"]
+    # The metric card itself is still complete — a Drive failure must not
+    # cause the whole card to look failed.
+    assert agent.RESULTS_FAILURE_BADGE not in block["html"]
+
+
+def test_drive_success_hides_the_warning():
+    block = agent.build_results_block(
+        "CAT", _analysis(), "https://asx.example/cat",
+        doc_link="https://docs.google.com/document/d/doc123/edit",
+        doc_error="",
+    )
+    assert "Drive save failed" not in block["html"]
+    assert "Drive save failed" not in block["text"]
+    assert "Full analysis (Google Drive)" in block["html"]

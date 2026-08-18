@@ -471,6 +471,16 @@ def _llm_cap_reached(counters: Dict) -> bool:
     return False
 
 
+# Anthropic's Python SDK refuses non-streaming create() calls whose expected
+# duration exceeds ~10 minutes (a hard client-side check to avoid the HTTP
+# read-timeout that kills long requests). At Sonnet's output rate a large
+# max_tokens hits that threshold quickly — the results path's 50k budget
+# came back as ``Streaming is required for operations that may take longer
+# than 10 minutes.`` So above this threshold ``_call_anthropic`` routes
+# through ``client.messages.stream`` instead of ``.create``.
+_STREAMING_MIN_TOKENS = 8192
+
+
 def _call_anthropic(
     system_prompt: str,
     content: object,
@@ -499,13 +509,19 @@ def _call_anthropic(
     last_err: Optional[Exception] = None
     for attempt in range(max_retries + 1):
         try:
-            resp = client.messages.create(
-                model=model,
-                max_tokens=max_tokens,
-                system=system_prompt,
-                messages=[{"role": "user", "content": content}],
-            )
-            stop_reason = getattr(resp, "stop_reason", None)
+            if max_tokens >= _STREAMING_MIN_TOKENS:
+                text, stop_reason = _stream_message(
+                    client, model, max_tokens, system_prompt, content,
+                )
+            else:
+                resp = client.messages.create(
+                    model=model,
+                    max_tokens=max_tokens,
+                    system=system_prompt,
+                    messages=[{"role": "user", "content": content}],
+                )
+                text = (resp.content[0].text or "")
+                stop_reason = getattr(resp, "stop_reason", None)
             if stop_reason:
                 counters["last_stop_reason"] = str(stop_reason)
                 if stop_reason == "max_tokens":
@@ -513,7 +529,7 @@ def _call_anthropic(
                         f"WARNING: Claude response was truncated at max_tokens={max_tokens} "
                         f"(model={model}); downstream JSON parsing will likely fail"
                     )
-            return (resp.content[0].text or "").strip()
+            return text.strip()
         except Exception as e:
             last_err = e
             if attempt < max_retries:
@@ -524,6 +540,34 @@ def _call_anthropic(
 
     counters["last_llm_error"] = str(last_err) if last_err else "unknown error"
     return LLM_FAILED
+
+
+def _stream_message(
+    client: "anthropic.Anthropic",
+    model: str,
+    max_tokens: int,
+    system_prompt: str,
+    content: object,
+) -> Tuple[str, Optional[str]]:
+    """Drive the Anthropic streaming API and return (text, stop_reason).
+
+    Streaming keeps the HTTP connection alive with periodic events instead
+    of forcing one long read, so the SDK's 10-minute non-streaming ceiling
+    doesn't apply. The generated text is identical to what .create() would
+    have returned — we just accumulate it as it comes in.
+    """
+    parts: List[str] = []
+    with client.messages.stream(
+        model=model,
+        max_tokens=max_tokens,
+        system=system_prompt,
+        messages=[{"role": "user", "content": content}],
+    ) as stream:
+        for chunk in stream.text_stream:
+            parts.append(chunk)
+        final = stream.get_final_message()
+    stop_reason = getattr(final, "stop_reason", None)
+    return "".join(parts), stop_reason
 
 
 def llm_chat(
@@ -976,7 +1020,6 @@ def build_high_impact_block(
     memo,
     url: str,
     analysed_via_pdf: bool = False,
-    drive_links: Optional[List[str]] = None,
     kind: Optional[str] = None,
     failed: bool = False,
 ) -> str:
@@ -989,11 +1032,7 @@ def build_high_impact_block(
         memo_text = _analysis_to_email_text(memo, kind or "generic")
     else:
         memo_text = memo or ""
-    lines.extend(["", "Key analysis:", _prettify_analysis_text(memo_text), "", f"Open: {url}"])
-    if drive_links:
-        lines.append("Drive links:")
-        lines.extend(drive_links)
-    lines.append("")
+    lines.extend(["", "Key analysis:", _prettify_analysis_text(memo_text), "", f"Open: {url}", ""])
     return "\n".join(lines)
 
 
@@ -1127,13 +1166,18 @@ def build_results_block(
     analysis: dict,
     asx_url: str,
     doc_link: str = "",
-    drive_links: Optional[List[str]] = None,
+    doc_error: str = "",
 ) -> Dict[str, str]:
     """Render the RESULTS_HY_FY digest block as {"text": ..., "html": ...}.
 
     The HTML is deliberately table-based with inline styles only: email
     clients strip <style> blocks and mishandle flexbox/grid, so a two-column
     table is the only reliable way to get label-left / value-right rows.
+
+    *doc_error* — if the Google Doc failed to save, this is a short
+    description of why. It is surfaced as a visible warning in the card so
+    a broken Drive stops looking like a normal quiet day. That silent-fail
+    mode is exactly how the storage-quota bug hid for weeks.
     """
     analysis = analysis or {}
     status = _results_status(analysis)
@@ -1160,12 +1204,12 @@ def build_results_block(
     text_lines.append("")
     text_lines.append(summary)
     text_lines.append("")
+    if doc_error and not doc_link:
+        text_lines.append(f"⚠️ Drive save failed — {doc_error}")
     if doc_link:
         text_lines.append(f"Full analysis (Google Drive): {doc_link}")
     if asx_url:
         text_lines.append(f"Source announcement (ASX): {asx_url}")
-    for link in drive_links or []:
-        text_lines.append(f"Source PDF (Drive): {link}")
     text_lines.append("")
 
     # ---- html ----------------------------------------------------------
@@ -1202,6 +1246,18 @@ def build_results_block(
             f'</td></tr>'
         )
 
+    warning_row = ""
+    if doc_error and not doc_link:
+        warning_row = (
+            f'<tr><td colspan="2" style="padding:10px 14px; background:#FEE2E2;'
+            f' border-top:1px solid #FCA5A5; color:{COLOR_FAILURE}; font-family:{EMAIL_FONT};'
+            f' font-size:13px; line-height:1.4;">'
+            f'<strong>⚠️ Drive save failed.</strong> The card is complete but the '
+            f'full analysis Doc was not written to Google Drive: '
+            f'<span style="font-family:monospace; font-size:12px;">{esc(doc_error)}</span>'
+            f'</td></tr>'
+        )
+
     links_html = ""
     if doc_link:
         links_html += _link_row("Full analysis (Google Drive)", doc_link)
@@ -1229,6 +1285,8 @@ def build_results_block(
         f'<tr><td colspan="2" style="padding:13px 14px; font-family:{EMAIL_FONT}; font-size:15px;'
         f' line-height:1.5; color:{COLOR_RESULTS_VALUE}; border-top:2px solid {COLOR_RESULTS_HEADER};">'
         f'{esc(summary)}</td></tr>'
+        # visible Drive warning if the Doc failed to write
+        f'{warning_row}'
         # links
         f'{links_html}'
         f'</table></td></tr></table>'
@@ -1469,26 +1527,6 @@ def build_analysis_doc_html(
     )
 
 
-def _share_drive_file(service, file_id: str) -> None:
-    """Grant reader access to the human recipients.
-
-    A file created by the service account is owned by the service account, so
-    without this the webViewLink 404s for Johnny's Google account. Non-fatal:
-    the Doc still exists if sharing fails.
-    """
-    recipients = os.environ.get("GDRIVE_SHARE_EMAIL", "").strip() or os.environ.get("EMAIL_TO", "").strip()
-    for addr in [a.strip() for a in recipients.split(",") if a.strip()]:
-        try:
-            service.permissions().create(
-                fileId=file_id,
-                body={"type": "user", "role": "reader", "emailAddress": addr},
-                sendNotificationEmail=False,
-                fields="id",
-            ).execute()
-        except Exception as e:
-            log(f"WARNING: could not share Doc {file_id} with {addr}: {e}")
-
-
 def create_analysis_doc(
     ticker: str,
     period: str,
@@ -1501,6 +1539,11 @@ def create_analysis_doc(
     Drive convert it to a real Doc, which reflows on a phone — a PDF or docx
     would not. Returns "" if Drive isn't configured; raises only on a genuine
     API error (callers treat Doc creation as non-fatal).
+
+    Uses OAuth-preferred auth (see drive_service): with OAuth the file is
+    owned by the human user and lives on the user's Drive quota, so no
+    per-file permission grant is needed and the webViewLink resolves for the
+    owner immediately.
     """
     if not folder_id:
         return ""
@@ -1515,12 +1558,17 @@ def create_analysis_doc(
     }
     media = MediaInMemoryUpload(body_html.encode("utf-8"), mimetype="text/html", resumable=False)
     created = service.files().create(
-        body=metadata, media_body=media, fields="id,webViewLink",
+        body=metadata,
+        media_body=media,
+        fields="id,webViewLink",
+        # Works for both My Drive (with OAuth) and Shared Drives — safe to
+        # always pass. Without it the v3 API silently refuses to touch
+        # anything outside plain My Drive.
+        supportsAllDrives=True,
     ).execute()
     file_id = created.get("id") or ""
     if not file_id:
         return ""
-    _share_drive_file(service, file_id)
     link = created.get("webViewLink") or f"https://docs.google.com/document/d/{file_id}/view"
     log(f"Analysis Doc created for {ticker}: {link}")
     return link
@@ -1708,33 +1756,62 @@ def deep_results_analysis(
     return parsed
 
 
-def strawman_post(ticker: str, kind: str, analysis_text: str, counters: Dict) -> str:
-    # Legacy compatibility shim. Strawman output has been removed from Bob digest.
-    return ""
-
-
 def drive_service():
-    from google.oauth2.service_account import Credentials
+    """Build a Google Drive API service, preferring OAuth over service-account.
+
+    History that motivated this: service accounts have NO Drive storage
+    quota of their own. Writing into a plain "My Drive" folder — even one
+    that has been *shared with* the service account as Editor — returns
+    HTTP 403 ``Service Accounts do not have storage quota``, because
+    Google needs to charge every new file against some owner's quota. That
+    is exactly what silently killed every Bob upload for weeks: the
+    try/except in ``main()`` swallowed the 403 and the digest looked fine.
+
+    So this function prefers OAuth2 user credentials (client_id +
+    client_secret + refresh_token). Authenticated as the human user, every
+    file created is owned by *them* and lives on *their* quota — no Shared
+    Drive required, works on plain personal Gmail. This is the same
+    pattern Sunday Sally already uses (sunday-sally/src/main.py).
+
+    Falls back to the service account only if OAuth secrets aren't set,
+    with a loud warning so nobody mistakes it for a working configuration.
+    """
     from googleapiclient.discovery import build
+
+    client_id = os.environ.get("GDRIVE_CLIENT_ID", "").strip()
+    client_secret = os.environ.get("GDRIVE_CLIENT_SECRET", "").strip()
+    refresh_token = os.environ.get("GDRIVE_REFRESH_TOKEN", "").strip()
+    if client_id and client_secret and refresh_token:
+        from google.oauth2.credentials import Credentials as UserCredentials
+        creds = UserCredentials(
+            token=None,
+            refresh_token=refresh_token,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=client_id,
+            client_secret=client_secret,
+            scopes=["https://www.googleapis.com/auth/drive"],
+        )
+        return build("drive", "v3", credentials=creds, cache_discovery=False)
+
     sa_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
     if not sa_json:
-        raise RuntimeError("Missing GDRIVE_SERVICE_ACCOUNT_JSON")
+        raise RuntimeError(
+            "No Drive credentials set: need either OAuth2 "
+            "(GDRIVE_CLIENT_ID/SECRET/REFRESH_TOKEN) or a service account "
+            "(GDRIVE_SERVICE_ACCOUNT_JSON)"
+        )
+    log(
+        "WARNING: Drive auth is using a service account. Uploads to a plain "
+        "My Drive folder will fail with 403 'Service Accounts do not have "
+        "storage quota'. Set GDRIVE_CLIENT_ID/SECRET/REFRESH_TOKEN to use "
+        "OAuth against the folder's owner instead."
+    )
+    from google.oauth2.service_account import Credentials as SACredentials
     info = json.loads(sa_json)
-    scopes = ["https://www.googleapis.com/auth/drive.file"]
-    creds = Credentials.from_service_account_info(info, scopes=scopes)
-    return build("drive", "v3", credentials=creds)
-
-
-def upload_to_drive(local_path: Path, folder_id: str, drive_filename: str) -> str:
-    from googleapiclient.http import MediaFileUpload
-    service = drive_service()
-    file_metadata = {"name": drive_filename, "parents": [folder_id]}
-    media = MediaFileUpload(str(local_path), resumable=False)
-    created = service.files().create(body=file_metadata, media_body=media, fields="id").execute()
-    file_id = created.get("id") or ""
-    if not file_id:
-        return ""
-    return f"https://drive.google.com/file/d/{file_id}/view"
+    creds = SACredentials.from_service_account_info(
+        info, scopes=["https://www.googleapis.com/auth/drive"],
+    )
+    return build("drive", "v3", credentials=creds, cache_discovery=False)
 
 
 def likely_results_bundle_items(items_for_ticker: List[Dict]) -> List[Dict]:
@@ -1884,9 +1961,11 @@ def main():
                 bundle = likely_results_bundle_items(fresh_items)
                 downloaded_texts: List[Tuple[str, str]] = []
                 pdf_map: Dict[str, Path] = {}
-                drive_links: List[str] = []
                 any_results_link = bundle[0]["url"] if bundle else fresh_items[0]["url"]
 
+                # Raw PDFs are no longer copied to Drive — the ASX link in the
+                # email points at the same PDF and the Google Doc is the
+                # actual archive. See CLAUDE.md for the rationale.
                 for b in bundle:
                     title = b["title"]
                     url = b["url"]
@@ -1897,14 +1976,6 @@ def main():
                     downloaded_texts.append((title, text))
                     if got_pdf:
                         pdf_map[url] = pdf_path
-                    if got_pdf and drive_folder_id:
-                        try:
-                            drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
-                            link = upload_to_drive(pdf_path, drive_folder_id, drive_name)
-                            if link:
-                                drive_links.append(link)
-                        except Exception as e:
-                            log(f"Drive upload failed for {ticker}: {e}")
 
                 report_text, deck_text = pick_report_and_deck_text(downloaded_texts)
                 report_pdf, deck_pdf = pick_report_and_deck_pdfs(bundle, pdf_map)
@@ -1922,8 +1993,6 @@ def main():
                         f"{ticker} — Results detected, but Bob couldn't extract meaningful content.\n"
                         f"Open manually: {any_results_link}\n"
                     )
-                    if drive_links:
-                        block += "Drive links:\n" + "\n".join(drive_links) + "\n"
                     high_impact_blocks.append(block)
                     high_impact_items.append({
                         "ticker": ticker, "title": "Results (HY/FY)", "url": any_results_link, "type": "results",
@@ -1939,9 +2008,12 @@ def main():
 
                 # The long-form analysis leaves the email and goes to a native
                 # Google Doc; the email links to it. Doc creation is non-fatal
-                # — if Drive is down the digest still ships, just without the
-                # "Full analysis" link.
+                # for the digest — if Drive is broken the email still ships —
+                # but a Drive failure gets surfaced as a visible warning in
+                # the results block instead of vanishing into the workflow
+                # log the way it did the first weeks after launch.
                 doc_link = ""
+                doc_error = ""
                 if drive_folder_id:
                     try:
                         doc_link = create_analysis_doc(
@@ -1951,20 +2023,23 @@ def main():
                             drive_folder_id,
                         )
                     except Exception as e:
-                        log(f"ERROR: analysis Doc creation failed for {ticker}: {e}")
+                        doc_error = f"{type(e).__name__}: {e}"
+                        log(f"ERROR: analysis Doc creation failed for {ticker}: {doc_error}")
+                elif os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON") or os.environ.get("GDRIVE_CLIENT_ID"):
+                    doc_error = "GDRIVE_FOLDER_ID is not set"
 
                 block = build_results_block(
                     ticker=ticker,
                     analysis=analysis,
                     asx_url=any_results_link,
                     doc_link=doc_link,
-                    drive_links=drive_links,
+                    doc_error=doc_error,
                 )
                 high_impact_blocks.append(block)
                 high_impact_items.append({
                     "ticker": ticker, "title": bundle[0]["title"] if bundle else "Results (HY/FY)",
                     "url": any_results_link, "type": "results", "analysis": analysis,
-                    "drive_links": drive_links or [], "doc_link": doc_link,
+                    "doc_link": doc_link, "doc_error": doc_error,
                 })
                 if ticker == "AR9":
                     brother_blocks.append(block)
@@ -2000,16 +2075,6 @@ def main():
                                 pass
                         continue
 
-                    drive_links_item: List[str] = []
-                    if got_pdf and drive_folder_id:
-                        try:
-                            drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
-                            link = upload_to_drive(pdf_path, drive_folder_id, drive_name)
-                            if link:
-                                drive_links_item.append(link)
-                        except Exception as e:
-                            log(f"Drive upload failed for {ticker}: {e}")
-
                     current_pdf = pdf_path if got_pdf else None
                     if cls_title == "ACQUISITION":
                         memo = deep_acquisition_memo(ticker, title, text, counters, pdf_path=current_pdf)
@@ -2032,7 +2097,6 @@ def main():
                         memo=memo,
                         url=url,
                         analysed_via_pdf=got_pdf,
-                        drive_links=drive_links_item,
                         kind=item_kind,
                         failed=_is_llm_failure(memo),
                     )
@@ -2044,7 +2108,7 @@ def main():
                     high_impact_blocks.append(block)
                     high_impact_items.append({
                         "ticker": ticker, "title": title[:200], "url": url,
-                        "type": item_type, "analysis": memo, "drive_links": drive_links_item,
+                        "type": item_type, "analysis": memo,
                     })
                     if ticker == "AR9":
                         brother_blocks.append(block)
@@ -2073,22 +2137,12 @@ def main():
 
                     current_pdf = pdf_path if got_pdf else None
                     memo = deep_price_sensitive_memo(ticker, title, text, counters, pdf_path=current_pdf)
-                    drive_links_item: List[str] = []
-                    if got_pdf and drive_folder_id:
-                        try:
-                            drive_name = f"{today_sgt_date().isoformat()}_{ticker}_{safe_name}.pdf"
-                            link = upload_to_drive(pdf_path, drive_folder_id, drive_name)
-                            if link:
-                                drive_links_item.append(link)
-                        except Exception as e:
-                            log(f"Drive upload failed for {ticker}: {e}")
                     block = build_high_impact_block(
                         ticker=ticker,
                         heading="ASX Price Sensitive",
                         memo=memo,
                         url=url,
                         analysed_via_pdf=got_pdf,
-                        drive_links=drive_links_item,
                         kind="price_sensitive",
                         failed=_is_llm_failure(memo),
                     )
@@ -2100,7 +2154,7 @@ def main():
                     high_impact_blocks.append(block)
                     high_impact_items.append({
                         "ticker": ticker, "title": title[:200], "url": url,
-                        "type": "price_sensitive", "analysis": memo, "drive_links": drive_links_item,
+                        "type": "price_sensitive", "analysis": memo,
                     })
                     if ticker == "AR9":
                         brother_blocks.append(block)

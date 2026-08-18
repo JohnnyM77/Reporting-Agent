@@ -887,6 +887,35 @@ def _prettify_analysis_text(text: str, width: int = 140) -> str:
     return "\n\n".join(wrapped)
 
 
+def _fix_incomplete_json(text: str) -> Optional[dict]:
+    """Try to fix incomplete JSON by closing unclosed braces and brackets."""
+    if not text:
+        return None
+
+    # Count unclosed braces and brackets
+    open_braces = text.count("{") - text.count("}")
+    open_brackets = text.count("[") - text.count("]")
+
+    # Only attempt fix if we're reasonably close (not wildly malformed)
+    if open_braces < 0 or open_brackets < 0 or open_braces > 10:
+        return None
+
+    # Try adding closing braces/brackets
+    fixed = text.strip()
+    fixed += "]" * open_brackets
+    fixed += "}" * open_braces
+
+    try:
+        result = json.loads(fixed)
+        if isinstance(result, dict):
+            log("[parse] Fixed incomplete JSON by closing unclosed braces")
+            return result
+    except json.JSONDecodeError:
+        pass
+
+    return None
+
+
 def _parse_analysis_json(text: str) -> Optional[dict]:
     """Parse structured JSON from LLM output, stripping any markdown code fences."""
     if not text or text in (LLM_SKIPPED, LLM_FAILED):
@@ -907,7 +936,10 @@ def _parse_analysis_json(text: str) -> Optional[dict]:
             if isinstance(result, dict):
                 return result
         except json.JSONDecodeError:
-            pass
+            # Try fixing incomplete JSON as last resort
+            fixed = _fix_incomplete_json(m.group())
+            if fixed:
+                return fixed
     return None
 
 

@@ -2049,6 +2049,7 @@ def main():
 
     # MANUAL_TICKER allows one-off analysis of tickers not in the portfolio,
     # limited to the last 7 days to avoid overwhelming result counts.
+    # When set, ONLY these tickers are analyzed (exclusive mode).
     # Comma-separated: e.g. "PME,SPZ,XYZ"
     manual_tickers = frozenset(
         t.strip().upper()
@@ -2057,17 +2058,18 @@ def main():
     )
     manual_ticker_from_date = None
     if manual_tickers:
-        log(f"MANUAL_TICKER: analyzing {sorted(manual_tickers)} (one-off, not saved to state)")
+        log(f"MANUAL_TICKER: analyzing {sorted(manual_tickers)} (exclusive mode, one-off, not saved to state)")
         # Restrict to 7 days to avoid 50+ results
         manual_ticker_from_date = cutoff_dt_sgt(7 * 24).date()
-        asx_tickers = list(asx_tickers) + list(manual_tickers)
-
-    # Add force_rerun_tickers that aren't already in the portfolio
-    asx_ticker_set = set(asx_tickers)
-    for t in force_rerun_tickers:
-        if t not in asx_ticker_set:
-            asx_tickers = list(asx_tickers) + [t]
-            asx_ticker_set.add(t)
+        # Use ONLY manual tickers, skip the portfolio
+        asx_tickers = list(manual_tickers)
+    else:
+        # Add force_rerun_tickers that aren't already in the portfolio
+        asx_ticker_set = set(asx_tickers)
+        for t in force_rerun_tickers:
+            if t not in asx_ticker_set:
+                asx_tickers = list(asx_tickers) + [t]
+                asx_ticker_set.add(t)
 
     counters = {
         "MAX_LLM_CALLS_PER_RUN": MAX_LLM_CALLS_PER_RUN,

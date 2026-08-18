@@ -81,11 +81,14 @@ def _analysis(**overrides) -> dict:
     return base
 
 
-def _mock_claude(payload) -> mock.MagicMock:
+def _mock_claude(payload, stop_reason: str = "end_turn") -> mock.MagicMock:
     text = payload if isinstance(payload, str) else json.dumps(payload)
     client = mock.MagicMock()
     response = mock.MagicMock()
     response.content = [mock.MagicMock(text=text)]
+    # Explicit stop_reason so counters["last_stop_reason"] tracks the real
+    # API's contract — pass "max_tokens" to simulate a truncated response.
+    response.stop_reason = stop_reason
     client.messages.create.return_value = response
     return client
 
@@ -131,6 +134,102 @@ def test_call_cap_is_env_overridable():
         assert agent._int_env("MAX_LLM_CALLS", 25) == 40
     with mock.patch.dict("os.environ", {"MAX_LLM_CALLS": "not-a-number"}):
         assert agent._int_env("MAX_LLM_CALLS", 25) == 25
+
+
+# ---------------------------------------------------------------------------
+# 1b. Output-token budget — the fix for the BHP/CSL parse_error regression
+# ---------------------------------------------------------------------------
+
+def test_results_call_uses_the_results_max_tokens_budget():
+    """The shared 4096 default truncated large reporters mid-JSON. The results
+    path must send its own, generously-sized budget so no realistic results
+    announcement can be cut off."""
+    counters = _counters()
+    client = _mock_claude(_analysis())
+    with mock.patch("agent._anthropic_client", return_value=client):
+        agent.deep_results_analysis("CAT", "official report text " * 300, "", counters)
+
+    kwargs = client.messages.create.call_args.kwargs
+    assert kwargs["max_tokens"] == agent.RESULTS_MAX_TOKENS
+    assert kwargs["max_tokens"] >= 32000, (
+        "the results budget must be big enough to hold metrics JSON + the 11-section "
+        "markdown full_analysis for a large reporter like BHP or CSL"
+    )
+
+
+def test_non_results_calls_keep_the_shorter_default_budget():
+    """The other paths (two-liners, acquisition, capital, trading update)
+    return short JSON. Bumping their budget along with the results one would
+    waste tokens on every FYI item — that's why the override is per-caller."""
+    counters = _counters()
+    client = _mock_claude({"what_happened": "x", "so_what": "y"})
+    with mock.patch("agent._anthropic_client", return_value=client):
+        agent.summarise_two_lines_llm("CAT", "Title", "some body text " * 100, counters)
+
+    assert client.messages.create.call_args.kwargs["max_tokens"] == agent.DEFAULT_MAX_TOKENS
+    assert agent.DEFAULT_MAX_TOKENS < agent.RESULTS_MAX_TOKENS
+
+
+def test_results_max_tokens_is_env_overridable():
+    with mock.patch.dict("os.environ", {"CLAUDE_RESULTS_MAX_TOKENS": "80000"}):
+        assert agent._int_env("CLAUDE_RESULTS_MAX_TOKENS", 50000) == 80000
+    with mock.patch.dict("os.environ", {"CLAUDE_RESULTS_MAX_TOKENS": "not-a-number"}):
+        assert agent._int_env("CLAUDE_RESULTS_MAX_TOKENS", 50000) == 50000
+
+
+# ---------------------------------------------------------------------------
+# 1c. Truncation is named in the failure text
+# ---------------------------------------------------------------------------
+
+def test_truncated_response_produces_parse_error_that_names_the_cap():
+    """The BHP/CSL regression: Claude returned a well-formed JSON that got
+    cut off mid-string when the response hit max_tokens. The parse failure
+    must say so plainly — 'not valid JSON' sends whoever's reading looking
+    for the wrong bug."""
+    counters = _counters()
+    truncated_json = (
+        '{"ticker":"BHP","period":"FY26","period_type":"full_year","currency":"USD",'
+        '"metrics":{"revenue":{"value":"US$58,800m","change_pct":"+3%","basis":"reported"}},'
+        '"summary":"Beat. Iron ore drove it. Cash conversion held.",'
+        '"full_analysis":"## Executive summary\\n\\n- Revenue up 3% to US$58.8bn'
+        # ... no closing brace, response was cut off here
+    )
+    client = _mock_claude(truncated_json, stop_reason="max_tokens")
+
+    with mock.patch("agent._anthropic_client", return_value=client):
+        analysis = agent.deep_results_analysis(
+            "BHP", "report text " * 300, "deck text " * 300, counters,
+        )
+
+    assert analysis["_status"] == agent.RESULTS_STATUS_PARSE_ERROR
+    assert analysis["_raw_text"] == truncated_json
+    assert "truncated" in analysis["summary"].lower()
+    assert str(agent.RESULTS_MAX_TOKENS) in analysis["summary"]
+    assert "CLAUDE_RESULTS_MAX_TOKENS" in analysis["summary"]
+    assert counters["last_stop_reason"] == "max_tokens"
+
+    # The block still flags ANALYSIS FAILED and the Doc still preserves the
+    # raw text — nothing about how the failure is named should regress those.
+    block = agent.build_results_block("BHP", analysis, "https://asx.example/bhp")
+    assert agent.RESULTS_FAILURE_BADGE in block["html"]
+    doc_html = agent.build_analysis_doc_html("BHP", analysis, "https://asx.example/bhp")
+    # The raw text is HTML-escaped in the Doc; pick a fragment that survives escaping.
+    assert "US$58,800m" in doc_html
+    assert "Raw model output" in doc_html
+
+
+def test_normal_parse_failure_still_uses_the_generic_message():
+    """When the stop_reason is not max_tokens, the failure message should not
+    misdiagnose the problem — a model that returned prose instead of JSON is
+    a prompt/model bug, not a truncation."""
+    counters = _counters()
+    with mock.patch("agent._anthropic_client",
+                    return_value=_mock_claude("Here's a plain-prose answer.", stop_reason="end_turn")):
+        analysis = agent.deep_results_analysis("CAT", "report text " * 300, "", counters)
+
+    assert analysis["_status"] == agent.RESULTS_STATUS_PARSE_ERROR
+    assert "truncated" not in analysis["summary"].lower()
+    assert "not valid JSON" in analysis["summary"]
 
 
 # ---------------------------------------------------------------------------

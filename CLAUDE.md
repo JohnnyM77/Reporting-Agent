@@ -72,6 +72,17 @@ season, when several portfolio names report on the same morning. The cap is now
 env-driven (`MAX_LLM_CALLS`, default 25, set in `daily.yml`) rather than a
 hardcoded 15.
 
+**Output-token budget is per-caller.** The first live run of the redesign hit
+`parse_error` for both BHP and CSL — `full_analysis` for a large reporter blew
+past the shared `max_tokens=4096` and the JSON was truncated mid-string. The
+results path now sends its own budget (`CLAUDE_RESULTS_MAX_TOKENS`, default
+50000, plumbed through `llm_chat_with_pdfs` / `llm_chat`), while every other
+path keeps the smaller `CLAUDE_MAX_TOKENS` default (4096) — a two-liner does
+not need a 50k ceiling. When the API reports `stop_reason=max_tokens`,
+`_call_anthropic` logs a warning and stashes it on `counters` so the
+parse-error path names truncation as the cause instead of the generic
+"not valid JSON" — the two need different fixes and shouldn't look identical.
+
 `strawman_post` was left as the existing no-op shim — folding a Strawman draft
 into the same JSON would save a call but Strawman output is not currently in
 the digest, so there is nothing to save.

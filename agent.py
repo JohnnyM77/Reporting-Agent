@@ -2214,7 +2214,7 @@ def main():
                 high_impact_items.append({
                     "ticker": ticker, "title": bundle[0]["title"] if bundle else "Results (HY/FY)",
                     "url": any_results_link, "type": "results", "analysis": analysis,
-                    "doc_link": "", "doc_error": "", "pdf_path": analysis_pdf_path,
+                    "doc_link": "", "doc_error": "", "pdf_path": str(analysis_pdf_path) if analysis_pdf_path else None,
                 })
                 if ticker == "AR9":
                     brother_blocks.append(block)
@@ -2369,10 +2369,13 @@ def main():
     body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks)
 
     # Collect PDF attachments from results items
-    attachments = [
-        item["pdf_path"] for item in high_impact_items
-        if item.get("pdf_path") and item["pdf_path"].exists()
-    ]
+    attachments = []
+    for item in high_impact_items:
+        pdf_path_str = item.get("pdf_path")
+        if pdf_path_str:
+            pdf_path = Path(pdf_path_str)
+            if pdf_path.exists():
+                attachments.append(pdf_path)
 
     send_email(subject, body_text, body_html, attachments=attachments if attachments else None)
 

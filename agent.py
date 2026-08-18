@@ -84,6 +84,17 @@ def _int_env(name: str, default: int) -> int:
 # with the MAX_LLM_CALLS env var.
 MAX_LLM_CALLS_PER_RUN = _int_env("MAX_LLM_CALLS", 25)
 
+# Per-call output-token budgets. The default (4096) is enough for the terse
+# two-liners and the short structured memos on the other paths. The results
+# path is different: the model returns metrics JSON *plus* a full markdown
+# analysis with ~11 sections, which for a large reporter (BHP, CSL) blows
+# past 4096 mid-string and leaves the JSON truncated — the caller then sees
+# a parse_error and the digest shows ANALYSIS FAILED. The results ceiling is
+# sized so no realistic results announcement can be truncated; override with
+# CLAUDE_RESULTS_MAX_TOKENS.
+DEFAULT_MAX_TOKENS = _int_env("CLAUDE_MAX_TOKENS", 4096)
+RESULTS_MAX_TOKENS = _int_env("CLAUDE_RESULTS_MAX_TOKENS", 50000)
+
 MIN_RESULTS_TEXT_CHARS = 2500
 MODEL_DEFAULT = "claude-sonnet-4-6"
 
@@ -460,15 +471,28 @@ def _llm_cap_reached(counters: Dict) -> bool:
     return False
 
 
-def _call_anthropic(system_prompt: str, content: object, counters: Dict, max_retries: int = 1) -> str:
+def _call_anthropic(
+    system_prompt: str,
+    content: object,
+    counters: Dict,
+    max_retries: int = 1,
+    max_tokens: int = DEFAULT_MAX_TOKENS,
+) -> str:
     """Send *content* to Claude, incrementing the run's call counter once.
 
     Retries a genuine exception (timeout, transient 5xx, rate limit, etc.)
     once before giving up. On final failure this logs at ERROR level and
     returns LLM_FAILED — callers must surface this distinctly from
     LLM_SKIPPED rather than substituting the same placeholder text for both.
+
+    *max_tokens* caps the response length. The API's ``stop_reason`` for the
+    last successful call is stashed on ``counters["last_stop_reason"]`` so a
+    caller doing JSON parsing can tell the difference between "model
+    genuinely returned bad JSON" and "model was cut off at max_tokens
+    mid-string" — those need different remedies and different failure text.
     """
     counters["llm_calls"] += 1
+    counters.pop("last_stop_reason", None)
     model = os.environ.get("CLAUDE_MODEL", MODEL_DEFAULT)
     client = _anthropic_client()
 
@@ -477,10 +501,18 @@ def _call_anthropic(system_prompt: str, content: object, counters: Dict, max_ret
         try:
             resp = client.messages.create(
                 model=model,
-                max_tokens=4096,
+                max_tokens=max_tokens,
                 system=system_prompt,
                 messages=[{"role": "user", "content": content}],
             )
+            stop_reason = getattr(resp, "stop_reason", None)
+            if stop_reason:
+                counters["last_stop_reason"] = str(stop_reason)
+                if stop_reason == "max_tokens":
+                    log(
+                        f"WARNING: Claude response was truncated at max_tokens={max_tokens} "
+                        f"(model={model}); downstream JSON parsing will likely fail"
+                    )
             return (resp.content[0].text or "").strip()
         except Exception as e:
             last_err = e
@@ -500,6 +532,7 @@ def llm_chat(
     counters: Dict,
     pdf_path: Optional[Path] = None,
     fallback_text: str = "",
+    max_tokens: int = DEFAULT_MAX_TOKENS,
 ) -> str:
     """Call Claude with an optional single native PDF attachment.
 
@@ -513,7 +546,7 @@ def llm_chat(
     content, _used_native = build_single_pdf_content(
         pdf_path, user_content, fallback_text=fallback_text, log=log,
     )
-    return _call_anthropic(system_prompt, content, counters)
+    return _call_anthropic(system_prompt, content, counters, max_tokens=max_tokens)
 
 
 def llm_chat_with_pdfs(
@@ -521,6 +554,7 @@ def llm_chat_with_pdfs(
     user_content: str,
     counters: Dict,
     pdf_attachments: List[PdfAttachment],
+    max_tokens: int = DEFAULT_MAX_TOKENS,
 ) -> str:
     """Call Claude with zero or more native PDF attachments (e.g. the primary
     financial report plus the investor presentation deck, sent together so
@@ -536,7 +570,7 @@ def llm_chat_with_pdfs(
     else:
         prefix = "\n\n".join(batch.fallback_sections)
         content = (f"{prefix}\n\n{user_content}" if prefix else user_content)[:100_000]
-    return _call_anthropic(system_prompt, content, counters)
+    return _call_anthropic(system_prompt, content, counters, max_tokens=max_tokens)
 
 
 def download_pdf_requests(session: requests.Session, url: str, out_path: Path) -> bool:
@@ -1604,7 +1638,10 @@ def deep_results_analysis(
             except Exception as e:
                 log(f"Could not read deck PDF {deck_pdf}: {e}")
         user = f"Ticker: {ticker}\n\nPlease analyse the attached financial results PDF(s) as the primary source."
-        out = llm_chat_with_pdfs(RESULTS_HYFY_PROMPT, user, counters, attachments)
+        out = llm_chat_with_pdfs(
+            RESULTS_HYFY_PROMPT, user, counters, attachments,
+            max_tokens=RESULTS_MAX_TOKENS,
+        )
     elif is_meaningful_text(report_text, min_chars=MIN_RESULTS_TEXT_CHARS) or is_meaningful_text(deck_text, min_chars=MIN_RESULTS_TEXT_CHARS):
         # Text-only fallback: no PDF could be attached natively, so table
         # fidelity is degraded. Tell the model so it can be conservative
@@ -1617,7 +1654,7 @@ def deep_results_analysis(
             f"=== OFFICIAL REPORT TEXT ===\n{report_text}\n\n"
             f"=== INVESTOR DECK TEXT ===\n{deck_text}\n"
         )
-        out = llm_chat(RESULTS_HYFY_PROMPT, user, counters)
+        out = llm_chat(RESULTS_HYFY_PROMPT, user, counters, max_tokens=RESULTS_MAX_TOKENS)
     else:
         return {
             "executive_summary": ["No meaningful report text or PDF available for analysis."],
@@ -1642,8 +1679,24 @@ def deep_results_analysis(
         # The model answered, but not with parseable JSON. Never dress this up
         # as a clean (if terse) analysis: flag it loudly and keep the raw text
         # so it can be written to the Doc for manual reading.
-        log(f"ERROR: results JSON parse failed for {ticker} — {len(out)} chars of unparseable model output")
-        detail = "model returned unparseable output (not valid JSON)"
+        #
+        # Truncation at max_tokens is by far the most common cause on large
+        # reporters (BHP, CSL) — the JSON ends mid-string somewhere inside
+        # full_analysis and no bracket-balancing can save it. Naming the
+        # cause in the failure text is the difference between "raise the
+        # budget" and "read the raw output to find out what's wrong".
+        stop_reason = (counters.get("last_stop_reason") or "").lower()
+        if stop_reason == "max_tokens":
+            detail = (
+                f"model output was truncated at max_tokens="
+                f"{RESULTS_MAX_TOKENS} — raise CLAUDE_RESULTS_MAX_TOKENS"
+            )
+        else:
+            detail = "model returned unparseable output (not valid JSON)"
+        log(
+            f"ERROR: results JSON parse failed for {ticker} — "
+            f"{len(out)} chars, stop_reason={stop_reason or 'unknown'}"
+        )
         return {
             "executive_summary": [f"{LLM_FAILURE_FLAG} ({detail})."],
             "summary": f"{LLM_FAILURE_FLAG} ({detail}). Raw model output saved to the analysis Doc.",

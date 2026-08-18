@@ -2,6 +2,11 @@ name: Daily Announcement Digest
 
 on:
   workflow_dispatch:
+    inputs:
+      force_rerun_tickers:
+        description: "Comma-separated tickers to re-process even if already seen (also drops the 24h window). Example: BHP,CSL"
+        required: false
+        default: ""
   schedule:
     - cron: "13 23 * * *"
 
@@ -43,10 +48,16 @@ jobs:
           # Reporting season: several portfolio names can report on the same
           # morning, and each results item costs one structured call.
           MAX_LLM_CALLS: "25"
+          # The results structured call returns metrics JSON plus an ~11
+          # section markdown analysis; large reporters (BHP, CSL) blow past
+          # the shared 4096 default and truncate mid-JSON. Sized so no real
+          # results announcement can be cut off.
+          CLAUDE_RESULTS_MAX_TOKENS: "50000"
           GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
           BROTHER_EMAIL: ${{ secrets.BROTHER_EMAIL }}
           SEEN_STATE_PATH: state_seen.json
+          FORCE_RERUN_TICKERS: ${{ inputs.force_rerun_tickers }}
         run: |
           python agent.py
 

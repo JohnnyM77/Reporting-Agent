@@ -1576,52 +1576,61 @@ def generate_analysis_pdf(
         return None
 
     try:
-        # Add CSS for professional styling
+        # CSS for professional, mobile-friendly PDF rendering
         css_string = """
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             font-size: 11pt;
-            line-height: 1.5;
+            line-height: 1.6;
             color: #1f2937;
-            margin: 36pt;
+            margin: 0;
+            padding: 28pt;
+            max-width: 800px;
         }
         h1 {
-            font-size: 24pt;
+            font-size: 20pt;
             color: #1e3a8a;
-            margin: 0 0 4pt 0;
+            margin: 0 0 6pt 0;
             font-weight: 700;
+            line-height: 1.3;
         }
         h2 {
-            font-size: 14pt;
-            color: #1e3a8a;
-            margin: 20pt 0 8pt 0;
-            font-weight: 700;
-        }
-        h3 {
-            font-size: 12pt;
+            font-size: 13pt;
             color: #1e3a8a;
             margin: 14pt 0 6pt 0;
             font-weight: 700;
+            line-height: 1.3;
         }
-        h4 {
+        h3 {
             font-size: 11pt;
-            color: #374151;
+            color: #1e3a8a;
             margin: 10pt 0 4pt 0;
             font-weight: 700;
         }
+        h4 {
+            font-size: 10pt;
+            color: #374151;
+            margin: 8pt 0 3pt 0;
+            font-weight: 700;
+        }
         p {
-            margin: 8pt 0;
+            margin: 6pt 0;
             line-height: 1.6;
+            text-align: justify;
         }
         table {
             border-collapse: collapse;
             width: 100%;
-            margin: 12pt 0;
-            font-size: 10pt;
+            margin: 10pt 0;
+            font-size: 9pt;
         }
         table td, table th {
             border: 1px solid #d1d5db;
-            padding: 6pt 8pt;
+            padding: 5pt 6pt;
         }
         table th {
             background-color: #1e3a8a;
@@ -1632,27 +1641,29 @@ def generate_analysis_pdf(
             background-color: #f3f4f6;
         }
         ul, ol {
-            margin: 8pt 0;
-            padding-left: 24pt;
+            margin: 6pt 0;
+            padding-left: 20pt;
             line-height: 1.6;
         }
         li {
-            margin: 4pt 0;
+            margin: 2pt 0;
         }
         code {
             background-color: #f3f4f6;
-            padding: 2pt 4pt;
+            padding: 1pt 3pt;
             font-family: 'Courier New', monospace;
-            font-size: 10pt;
+            font-size: 9pt;
+            word-break: break-word;
         }
         pre {
             background-color: #f3f4f6;
-            padding: 10pt;
+            padding: 8pt;
             border: 1px solid #d1d5db;
             font-family: 'Courier New', monospace;
-            font-size: 9pt;
+            font-size: 8pt;
             white-space: pre-wrap;
             word-wrap: break-word;
+            overflow-x: auto;
         }
         a {
             color: #1e3a8a;
@@ -2047,6 +2058,13 @@ def main():
     if force_rerun_tickers:
         log(f"FORCE_RERUN_TICKERS active: {sorted(force_rerun_tickers)}")
 
+    # MANUAL_TICKER allows one-off analysis of a ticker not in the portfolio
+    manual_ticker = os.environ.get("MANUAL_TICKER", "").strip().upper()
+    if manual_ticker:
+        log(f"MANUAL_TICKER: analyzing {manual_ticker} (one-off, not saved to state)")
+        # Add to asx_tickers for processing, but mark it so we don't save to seen state
+        asx_tickers = list(asx_tickers) + [manual_ticker]
+
     counters = {
         "MAX_LLM_CALLS_PER_RUN": MAX_LLM_CALLS_PER_RUN,
         "llm_calls": 0,
@@ -2192,7 +2210,7 @@ def main():
                 high_impact_items.append({
                     "ticker": ticker, "title": bundle[0]["title"] if bundle else "Results (HY/FY)",
                     "url": any_results_link, "type": "results", "analysis": analysis,
-                    "doc_link": "", "doc_error": "", "pdf_path": analysis_pdf_path,
+                    "doc_link": "", "doc_error": "", "pdf_path": str(analysis_pdf_path) if analysis_pdf_path else None,
                 })
                 if ticker == "AR9":
                     brother_blocks.append(block)
@@ -2347,10 +2365,13 @@ def main():
     body_text, body_html = build_email(high_impact_blocks, material_blocks, fyi_blocks)
 
     # Collect PDF attachments from results items
-    attachments = [
-        item["pdf_path"] for item in high_impact_items
-        if item.get("pdf_path") and item["pdf_path"].exists()
-    ]
+    attachments = []
+    for item in high_impact_items:
+        pdf_path_str = item.get("pdf_path")
+        if pdf_path_str:
+            pdf_path = Path(pdf_path_str)
+            if pdf_path.exists():
+                attachments.append(pdf_path)
 
     send_email(subject, body_text, body_html, attachments=attachments if attachments else None)
 

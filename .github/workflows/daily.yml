@@ -7,6 +7,10 @@ on:
         description: "Comma-separated tickers to re-process even if already seen (also drops the 24h window). Example: BHP,CSL"
         required: false
         default: ""
+      manual_ticker:
+        description: "Optional: analyze a single ticker not in your portfolio (limited to last 7 days). Leave blank to skip. Example: COH"
+        required: false
+        default: ""
   schedule:
     - cron: "13 23 * * *"
 
@@ -66,6 +70,7 @@ jobs:
           BROTHER_EMAIL: ${{ secrets.BROTHER_EMAIL }}
           SEEN_STATE_PATH: state_seen.json
           FORCE_RERUN_TICKERS: ${{ inputs.force_rerun_tickers }}
+          MANUAL_TICKER: ${{ inputs.manual_ticker }}
         run: |
           python agent.py
 

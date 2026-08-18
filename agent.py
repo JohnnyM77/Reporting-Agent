@@ -2047,6 +2047,16 @@ def main():
     if force_rerun_tickers:
         log(f"FORCE_RERUN_TICKERS active: {sorted(force_rerun_tickers)}")
 
+    # MANUAL_TICKER allows one-off analysis of a ticker not in the portfolio,
+    # limited to the last 7 days to avoid overwhelming result counts
+    manual_ticker = os.environ.get("MANUAL_TICKER", "").strip().upper()
+    manual_ticker_from_date = None
+    if manual_ticker:
+        log(f"MANUAL_TICKER: analyzing {manual_ticker} (one-off, not saved to state)")
+        # Restrict to 7 days to avoid 50+ results
+        manual_ticker_from_date = cutoff_dt_sgt(7 * 24).date()
+        asx_tickers = list(asx_tickers) + [manual_ticker]
+
     counters = {
         "MAX_LLM_CALLS_PER_RUN": MAX_LLM_CALLS_PER_RUN,
         "llm_calls": 0,
@@ -2072,10 +2082,15 @@ def main():
     by_ticker: Dict[str, List[Dict]] = {}
     for t in asx_tickers:
         try:
-            # Forced tickers get the full ASX history window (no from_date
-            # filter) so a past result-day PDF can be found regardless of
-            # how long ago it was released.
-            fetch_from = None if t in force_rerun_tickers else from_date
+            # Forced tickers get the full ASX history window (no from_date filter)
+            # so a past result-day PDF can be found. Manual tickers are limited to
+            # 7 days to avoid overwhelming result counts.
+            if t in force_rerun_tickers:
+                fetch_from = None
+            elif t == manual_ticker:
+                fetch_from = manual_ticker_from_date
+            else:
+                fetch_from = from_date
             by_ticker[t] = fetch_asx_announcements_html(session, t, from_date=fetch_from)
         except Exception as e:
             log(f"Fetch failed for {t}: {e}")

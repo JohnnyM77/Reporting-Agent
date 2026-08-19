@@ -1,0 +1,425 @@
+# TII Portfolio Targets - August 2026
+# Buy/Sell price ranges and maximum portfolio weightings
+# Used by Wally to provide detailed portfolio guidance in emails
+
+holdings:
+  - ticker: COH.AX
+    company: Cochlear Limited
+    buy_below: 120
+    sell_above: 250
+    max_weight: 0.07
+    currency: AUD
+
+  - ticker: JBH.AX
+    company: JB Hi-Fi Limited
+    buy_below: 70
+    sell_above: 120
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: TAH.AX
+    company: Tabcorp Holdings Limited
+    buy_below: null
+    sell_above: null
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: REH.AX
+    company: Reece Limited
+    buy_below: 10
+    sell_above: 20
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: PNI.AX
+    company: Pinnacle Investment Management Group Limited
+    buy_below: 15
+    sell_above: 30
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: LOV.AX
+    company: Lovisa Holdings Limited
+    buy_below: 25
+    sell_above: 55
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: FDC.AX
+    company: FDC Consolidated Holdings Limited
+    buy_below: 3
+    sell_above: 5
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: ORI.AX
+    company: Orica Limited
+    buy_below: 25
+    sell_above: 40
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: AUB.AX
+    company: AUB Group Limited
+    buy_below: 25
+    sell_above: 40
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: HLS.AX
+    company: Healius Limited
+    buy_below: 0.7
+    sell_above: 1.8
+    max_weight: 0.03
+    currency: AUD
+
+  - ticker: EVT.AX
+    company: EVT Limited
+    buy_below: 12
+    sell_above: 18
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: IFT.AX
+    company: Infratil Limited
+    buy_below: 9
+    sell_above: 18
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: GTK.AX
+    company: Gentrack Group Limited
+    buy_below: null
+    sell_above: null
+    max_weight: 0.03
+    currency: AUD
+
+  - ticker: MIN.AX
+    company: Mineral Resources Limited
+    buy_below: 50
+    sell_above: 80
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: HSN.AX
+    company: Hansen Technologies Limited
+    buy_below: 5.5
+    sell_above: 8
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: CCL.AX
+    company: Cuscal Limited
+    buy_below: 4
+    sell_above: 6
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: AWC.AX
+    company: Alumina Limited
+    buy_below: 1.4
+    sell_above: 3
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: RHC.AX
+    company: Ramsay Health Care Limited
+    buy_below: 25
+    sell_above: 55
+    max_weight: 0.07
+    currency: AUD
+
+  - ticker: COL.AX
+    company: Coles Group Limited
+    buy_below: 18
+    sell_above: 30
+    max_weight: 0.07
+    currency: AUD
+
+  - ticker: WPR.AX
+    company: Waypoint REIT Limited
+    buy_below: 2.2
+    sell_above: 3
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: AIA.AX
+    company: Auckland International Airport Limited
+    buy_below: 6
+    sell_above: 10
+    max_weight: 0.07
+    currency: AUD
+
+  - ticker: SHL.AX
+    company: Sonic Healthcare Limited
+    buy_below: 25
+    sell_above: 40
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: ANN.AX
+    company: Ansell Limited
+    buy_below: 25
+    sell_above: 45
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: PLS.AX
+    company: PLS Group Limited
+    buy_below: null
+    sell_above: null
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: GMG.AX
+    company: Goodman Group
+    buy_below: 23
+    sell_above: 40
+    max_weight: 0.07
+    currency: AUD
+
+  - ticker: FPH.AX
+    company: Fisher & Paykel Healthcare Corporation Limited
+    buy_below: 22
+    sell_above: 44
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: RUL.AX
+    company: RPMGlobal Holdings Limited
+    buy_below: null
+    sell_above: null
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: ANZ.AX
+    company: ANZ Group Holdings Limited
+    buy_below: 20
+    sell_above: 35
+    max_weight: 0.08
+    currency: AUD
+
+  - ticker: NAB.AX
+    company: National Australia Bank Limited
+    buy_below: 24
+    sell_above: 36
+    max_weight: 0.08
+    currency: AUD
+
+  - ticker: WBC.AX
+    company: Westpac Banking Corporation
+    buy_below: 20
+    sell_above: 35
+    max_weight: 0.08
+    currency: AUD
+
+  - ticker: SIG.AX
+    company: Sigma Healthcare Limited
+    buy_below: 2
+    sell_above: 3.5
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: CNU.AX
+    company: Chorus Limited
+    buy_below: 8
+    sell_above: 11
+    max_weight: 0.06
+    currency: AUD
+
+  - ticker: BKW.AX
+    company: Brickworks Limited
+    buy_below: null
+    sell_above: null
+    max_weight: 0.06
+    currency: AUD
+
+  - ticker: HUB.AX
+    company: HUB24 Limited
+    buy_below: 40
+    sell_above: 100
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: NWL.AX
+    company: Netwealth Group Limited
+    buy_below: 15
+    sell_above: 35
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: JHX.AX
+    company: James Hardie Industries Plc
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: FDV.AX
+    company: Frontier Digital Ventures Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: EDV.AX
+    company: Endeavour Group Limited
+    buy_below: 2.2
+    sell_above: 5.5
+    max_weight: 0.03
+    currency: AUD
+
+  - ticker: KAR.AX
+    company: Karoon Energy Ltd
+    buy_below: 1
+    sell_above: 2
+    max_weight: 0.03
+    currency: AUD
+
+  - ticker: APE.AX
+    company: Eagers Automotive Limited
+    buy_below: 20
+    sell_above: 40
+    max_weight: 0.05
+    currency: AUD
+
+  # International holdings
+  - ticker: MA
+    company: Mastercard
+    buy_below: 500
+    sell_above: 700
+    max_weight: 0.06
+    currency: USD
+
+  - ticker: V
+    company: VISA
+    buy_below: 315
+    sell_above: 450
+    max_weight: 0.06
+    currency: USD
+
+  - ticker: AMZN
+    company: Amazon.com
+    buy_below: 200
+    sell_above: 350
+    max_weight: 0.07
+    currency: USD
+
+  - ticker: MSFT
+    company: Microsoft Corp
+    buy_below: 400
+    sell_above: 600
+    max_weight: 0.05
+    currency: USD
+
+  - ticker: FFH
+    company: FAIRFAX FINANCIAL HOLDINGS LTD.
+    buy_below: 1800
+    sell_above: 3200
+    max_weight: 0.05
+    currency: CAD
+
+  - ticker: FERG
+    company: Ferguson Enterprises Inc.
+    buy_below: 190
+    sell_above: 300
+    max_weight: 0.04
+    currency: USD
+
+  - ticker: CME
+    company: CME Group
+    buy_below: 230
+    sell_above: 330
+    max_weight: 0.07
+    currency: USD
+
+  - ticker: CPNG
+    company: Coupang
+    buy_below: 16
+    sell_above: 30
+    max_weight: 0.03
+    currency: USD
+
+  - ticker: AUTO
+    company: Autotrader Group PLC
+    buy_below: 500.00p
+    sell_above: 800.00p
+    max_weight: 0.06
+    currency: GBX
+
+  - ticker: LSEG
+    company: London Stock Exchange Group PLC
+    buy_below: 9500.00p
+    sell_above: 15000.00p
+    max_weight: 0.05
+    currency: GBX
+
+  - ticker: BATRK
+    company: Atlanta Braves Holdings
+    buy_below: 45
+    sell_above: 70
+    max_weight: 0.04
+    currency: USD
+
+  - ticker: KKR
+    company: KKR & Co
+    buy_below: 80
+    sell_above: 160
+    max_weight: 0.04
+    currency: USD
+
+  - ticker: AJG
+    company: Arthur J Gallagher & Co
+    buy_below: 225
+    sell_above: 400
+    max_weight: 0.04
+    currency: USD
+
+  - ticker: CSU
+    company: CONSTELLATION SOFTWARE INC.
+    buy_below: 3500
+    sell_above: 6000
+    max_weight: 0.05
+    currency: USD
+
+  - ticker: RMV
+    company: Rightmove PLC
+    buy_below: 550.00p
+    sell_above: 850.00p
+    max_weight: 0.05
+    currency: GBX
+
+  - ticker: MAF
+    company: MA Financial Group Limited
+    buy_below: 3
+    sell_above: 12
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: DMP
+    company: Domino's Pizza Enterprises Limited
+    buy_below: null
+    sell_above: null
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: TCL
+    company: Transurban Group
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: ORG
+    company: Origin Energy Limited
+    buy_below: null
+    sell_above: null
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: RIO
+    company: Rio Tinto Limited
+    buy_below: 70
+    sell_above: 110
+    max_weight: 0.06
+    currency: AUD

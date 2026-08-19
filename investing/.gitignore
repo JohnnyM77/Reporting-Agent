@@ -1,7 +1,0 @@
-# Live database lives in Google Drive, not in the repo
-*.sqlite
-!tests/fixtures/*.sqlite
-
-# Exported CSV dumps
-*.csv
-!tests/fixtures/*.csv

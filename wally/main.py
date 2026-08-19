@@ -14,6 +14,7 @@ from .config import STANDARD_WATCHLISTS, TII75_WATCHLIST, LOW_THRESHOLD_PCT, NEW
 from .data_fetch import fetch_price_snapshot, fetch_valuation_snapshot
 from .drive_upload import upload_to_drive
 from .email_report import build_html, build_combined_html, send_email
+from .portfolio_targets import load_portfolio_targets, PortfolioTargets
 from .screening import TickerScreenResult, screen_snapshot
 from .utils import safe_slug, write_json
 from .watchlist_loader import load_watchlist
@@ -41,6 +42,7 @@ class WatchlistProcessResult:
     chart_notes: dict[str, str]
     inline_images: list[tuple[str, Path]]
     news: dict[str, list[NewsItem]]  # flagged ASX ticker -> significant announcements
+    portfolio_targets: PortfolioTargets | None = None  # buy/sell targets and weightings
 
 
 def _log_screen_result(row: TickerScreenResult) -> None:
@@ -57,15 +59,38 @@ def _log_screen_result(row: TickerScreenResult) -> None:
     )
 
 
+def _load_portfolio_targets(watchlist_name: str) -> PortfolioTargets | None:
+    """Load portfolio targets file based on watchlist name."""
+    # Map watchlist names to their portfolio targets files
+    targets_map = {
+        "TII Watchlist": Path("config/tii_portfolio_targets.yaml"),
+        "JM Watch List": Path("config/jm_portfolio_targets.yaml"),
+    }
+
+    targets_path = targets_map.get(watchlist_name)
+    if not targets_path:
+        return None
+
+    if not targets_path.exists():
+        print(f"[wally] Portfolio targets file not found: {targets_path}", flush=True)
+        return None
+
+    try:
+        return load_portfolio_targets(targets_path)
+    except Exception as e:
+        print(f"[wally] Failed to load portfolio targets for {watchlist_name}: {e}", flush=True)
+        return None
+
+
 def _process_watchlist(watchlist_path: str, force: bool = False, send_individual_email: bool = True, is_tii75: bool = False) -> WatchlistProcessResult:
     """Process a watchlist and optionally send individual email.
-    
+
     Args:
         watchlist_path: Path to the watchlist YAML file
         force: Force processing even if gated
         send_individual_email: If True, send email immediately. If False, return data for combined email.
         is_tii75: If True, apply TII75 canonical validation when loading.
-    
+
     Returns:
         WatchlistProcessResult with all processed data
     """
@@ -74,6 +99,9 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
         print(f"[wally] TII75 watchlist loaded: {watchlist_path}", flush=True)
     ctx = build_run_context()
     ctx.output_root.mkdir(parents=True, exist_ok=True)
+
+    # Load portfolio targets (buy/sell prices, weightings)
+    portfolio_targets = _load_portfolio_targets(wl.name)
 
     results: list[TickerScreenResult] = []
     flagged: list[TickerScreenResult] = []
@@ -298,7 +326,16 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
         png_cids = {r.ticker: f"chart_{r.ticker.lower().replace('.', '_')}"
                     for r in flagged
                     if any(cid == f"chart_{r.ticker.lower().replace('.', '_')}" for cid, _ in inline_images)}
-        html = build_html(wl.name, ctx.run_dt.date().isoformat(), results, flagged, chart_notes, inline_pngs=png_cids, news=news_by_ticker)
+        html = build_html(
+            wl.name,
+            ctx.run_dt.date().isoformat(),
+            results,
+            flagged,
+            chart_notes,
+            inline_pngs=png_cids,
+            news=news_by_ticker,
+            portfolio_targets=portfolio_targets,
+        )
         text = (
             f"Wally the Watcher report\nWatchlist: {wl.name}\nChecked: {len(results)}\nFlagged: {len(flagged)}\n"
             f"Flagged tickers: {', '.join([r.ticker for r in flagged]) if flagged else 'None'}"
@@ -318,6 +355,7 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
         chart_notes=chart_notes,
         inline_images=inline_images,
         news=news_by_ticker,
+        portfolio_targets=portfolio_targets,
     )
 
 
@@ -358,6 +396,7 @@ def _process_watchlists_combined(watchlist_paths: list[str], force: bool = False
             "chart_notes": result.chart_notes,
             "inline_pngs": png_cids,
             "news": result.news,
+            "portfolio_targets": result.portfolio_targets,
         })
     
     html = build_combined_html(watchlist_data)

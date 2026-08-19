@@ -1,0 +1,278 @@
+# JM Portfolio Targets - August 2026
+# Buy/Sell price ranges and maximum portfolio weightings
+# Used by Wally to provide detailed portfolio guidance in emails
+# NOTE: These are template values - update with your own targets
+
+holdings:
+  - ticker: ARB.AX
+    company: ARB Corporation Limited
+    buy_below: 22
+    sell_above: 35
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: PNV.AX
+    company: Polynovo Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: DRO.AX
+    company: Droneshield Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: TWE.AX
+    company: Treasury Wine Estates Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: MVP.AX
+    company: MVP Group Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: AVA.AX
+    company: Avagen Holdings Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: EOS.AX
+    company: EOS Energy Enterprises, Inc.
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: CSL.AX
+    company: CSL Limited
+    buy_below: null
+    sell_above: null
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: RTH.AX
+    company: Rethink Wealth Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: COH.AX
+    company: Cochlear Limited
+    buy_below: 120
+    sell_above: 250
+    max_weight: 0.07
+    currency: AUD
+
+  - ticker: SDV.AX
+    company: SDV Holdings Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: AHC.AX
+    company: Assetinsure Holdings Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: ASX.AX
+    company: ASX Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: XRG.AX
+    company: Xero Limited Growth
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: RMD.AX
+    company: ResMed Inc.
+    buy_below: 32
+    sell_above: 55
+    max_weight: 0.05
+    currency: USD
+
+  - ticker: LAU.AX
+    company: Laurion Mineral Exploration Corp
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: ABB.AX
+    company: Aussie Broadband Limited
+    buy_below: 3.5
+    sell_above: 7
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: ABV.AX
+    company: AusNet Services Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: XRF.AX
+    company: Xero Finance Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: SOL.AX
+    company: Washington H. Soul Pattinson and Co. Limited
+    buy_below: 35
+    sell_above: 50
+    max_weight: 0.08
+    currency: AUD
+
+  - ticker: ATP.AX
+    company: Airtasker Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: TLC.AX
+    company: The Lottery Corporation Limited
+    buy_below: 5
+    sell_above: 7.5
+    max_weight: 0.07
+    currency: AUD
+
+  - ticker: PWH.AX
+    company: PWR Holdings Limited
+    buy_below: 8
+    sell_above: 20
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: BXB.AX
+    company: Boart Longyear Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: MFT.NZ
+    company: Mainfreight Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: NZD
+
+  - ticker: SHA.AX
+    company: Shareholder Advocacy Counsel
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: WHC.AX
+    company: Whitehaven Coal Limited
+    buy_below: 6
+    sell_above: 10
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: S32.AX
+    company: South32 Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: FMG.AX
+    company: Fortescue Ltd
+    buy_below: 8
+    sell_above: 16
+    max_weight: 0.05
+    currency: AUD
+
+  - ticker: LYL.AX
+    company: LYL Holdings Limited
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: CBA.AX
+    company: Commonwealth Bank of Australia
+    buy_below: 80
+    sell_above: 120
+    max_weight: 0.08
+    currency: AUD
+
+  - ticker: WES.AX
+    company: Wesfarmers Limited
+    buy_below: 50
+    sell_above: 70
+    max_weight: 0.08
+    currency: AUD
+
+  - ticker: MSV.AX
+    company: Magellan Strategic Opportunities Fund
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: WDS.AX
+    company: Woodside Energy Group Ltd
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: WOW.AX
+    company: Woolworths Group Limited
+    buy_below: 25
+    sell_above: 45
+    max_weight: 0.07
+    currency: AUD
+
+  - ticker: SPZ.AX
+    company: Sezzle Inc.
+    buy_below: null
+    sell_above: null
+    max_weight: null
+    currency: AUD
+
+  - ticker: TLS.AX
+    company: Telstra Group Limited
+    buy_below: 3.5
+    sell_above: 4.5
+    max_weight: 0.06
+    currency: AUD
+
+  - ticker: NHC.AX
+    company: New Hope Corporation Limited
+    buy_below: 4
+    sell_above: 9
+    max_weight: 0.04
+    currency: AUD
+
+  - ticker: DBI.AX
+    company: Dalrymple Bay Infrastructure Limited
+    buy_below: 4.3
+    sell_above: 7
+    max_weight: 0.06
+    currency: AUD

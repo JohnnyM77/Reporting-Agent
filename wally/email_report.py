@@ -13,6 +13,7 @@ from typing import TypedDict
 
 from .asx_news import NewsItem
 from .config import EmailSettings, NEWS_LOOKBACK_DAYS
+from .portfolio_targets import PortfolioTargets
 from .screening import TickerScreenResult
 
 
@@ -25,6 +26,7 @@ class WatchlistEmailData(TypedDict):
     chart_notes: dict[str, str]
     inline_pngs: dict[str, str] | None  # ticker -> content-id
     news: dict[str, list[NewsItem]] | None  # ticker -> significant ASX announcements
+    portfolio_targets: PortfolioTargets | None  # ticker targets (buy/sell/weight)
 
 
 def _fmt(n: float) -> str:
@@ -35,6 +37,33 @@ _PS_BADGE = (
     "<span style='background:#C0392B;color:white;padding:1px 6px;"
     "border-radius:3px;font-size:11px;white-space:nowrap'>PRICE SENSITIVE</span>"
 )
+
+
+def build_portfolio_targets_html(ticker: str, portfolio_targets: PortfolioTargets | None) -> str:
+    """Render portfolio target guidance (buy/sell/weight) if available."""
+    if not portfolio_targets:
+        return ""
+
+    target = portfolio_targets.get(ticker)
+    if not target:
+        return ""
+
+    parts = []
+    if target.buy_below is not None:
+        parts.append(f"<strong>Buy Below:</strong> {target.currency}{_fmt(target.buy_below)}")
+    if target.sell_above is not None:
+        parts.append(f"<strong>Sell Above:</strong> {target.currency}{_fmt(target.sell_above)}")
+    if target.max_weight is not None:
+        parts.append(f"<strong>Max Position:</strong> {_fmt(target.max_weight * 100)}%")
+
+    if not parts:
+        return ""
+
+    return (
+        "<div style='background:#f0f0f0;padding:8px;border-left:3px solid #1F2D4E;margin:8px 0'>"
+        f"Portfolio Targets: {' | '.join(parts)}"
+        "</div>"
+    )
 
 
 def build_news_html(ticker: str, items: list[NewsItem] | None) -> str:
@@ -101,10 +130,11 @@ def build_combined_html(
         chart_notes = wl_data.get("chart_notes", {})
         inline_pngs = wl_data.get("inline_pngs")
         news = wl_data.get("news") or {}
-        
+        portfolio_targets = wl_data.get("portfolio_targets")
+
         html_parts.append(f"<h2>{watchlist_name}</h2>")
         html_parts.append(f"<p>Checked: <strong>{len(results)}</strong> | Flagged: <strong>{len(flagged)}</strong></p>")
-        
+
         # Build table for this watchlist
         if flagged:
             rows = []
@@ -113,7 +143,7 @@ def build_combined_html(
                     f"<tr><td>{r.ticker}</td><td>{r.company_name}</td><td>{_fmt(r.current_price)}</td><td>{_fmt(r.low_52w)}</td>"
                     f"<td>{_fmt(r.high_52w)}</td><td>{_fmt(r.distance_to_low_pct)}%</td><td>{_fmt(r.below_high_pct)}%</td></tr>"
                 )
-            
+
             flagged_table = (
                 "<table border='1' cellspacing='0' cellpadding='6' style='border-collapse:collapse'>"
                 "<tr style='background:#1F2D4E;color:white'>"
@@ -122,7 +152,7 @@ def build_combined_html(
                 + "</table>"
             )
             html_parts.append(flagged_table)
-            
+
             # Add details for each flagged ticker
             for r in flagged:
                 cid = (inline_pngs or {}).get(r.ticker)
@@ -131,14 +161,16 @@ def build_combined_html(
                     if cid
                     else f"<p><em>Value chart: {chart_notes.get(r.ticker, 'No valuation config found yet for this ticker')}</em></p>"
                 )
+                targets_html = build_portfolio_targets_html(r.ticker, portfolio_targets)
                 html_parts.append(
                     f"<h3>{r.ticker} — {r.company_name}</h3>"
                     f"{chart_img}"
+                    f"{targets_html}"
                     f"{build_news_html(r.ticker, news.get(r.ticker))}"
                 )
         else:
             html_parts.append("<p><strong>No stocks within 5% of 52-week low.</strong></p>")
-        
+
         html_parts.append("<hr>")
     
     return "".join(html_parts)
@@ -152,6 +184,7 @@ def build_html(
     chart_notes: dict[str, str],
     inline_pngs: dict[str, str] | None = None,  # ticker -> content-id
     news: dict[str, list[NewsItem]] | None = None,  # ticker -> significant announcements
+    portfolio_targets: PortfolioTargets | None = None,  # portfolio targets (buy/sell/weight)
 ) -> str:
     rows = []
     for r in flagged:
@@ -176,9 +209,11 @@ def build_html(
             if cid
             else f"<p><em>Value chart: {chart_notes.get(r.ticker, 'No valuation config found yet for this ticker')}</em></p>"
         )
+        targets_html = build_portfolio_targets_html(r.ticker, portfolio_targets)
         details.append(
             f"<h3>{r.ticker} — {r.company_name}</h3>"
             f"{chart_img}"
+            f"{targets_html}"
             f"{build_news_html(r.ticker, (news or {}).get(r.ticker))}"
         )
 

@@ -24,7 +24,6 @@ portfolio:
   - CSL.AX
   - DRO.AX
   - IAG.AX
-  - LAU.AX
   - MSV.AX
   - MVP.AX
   - NHC.AX
@@ -43,6 +42,7 @@ high_conviction:
   - ARB.AX
   - QOR.AX
   - TNE.AX
+  - DOC.AX
 
 # ---------------------------------------------------------------------------
 # TII75 watchlist

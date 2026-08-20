@@ -66,7 +66,6 @@ SEEN_STATE_PATH = Path(os.environ.get("SEEN_STATE_PATH", "state_seen.json"))
 SEEN_STATE_RETENTION_HOURS = 72
 
 MAX_ANNOUNCEMENTS_PER_TICKER = 12
-MAX_PDFS_PER_RUN = 10
 
 
 def _int_env(name: str, default: int) -> int:
@@ -87,6 +86,16 @@ def _int_env(name: str, default: int) -> int:
 # so the run budget is sized for that rather than for a quiet day. Override
 # with the MAX_LLM_CALLS env var.
 MAX_LLM_CALLS_PER_RUN = _int_env("MAX_LLM_CALLS", 25)
+
+# One results item downloads its whole bundle — release, accounts and deck —
+# so a single reporter can spend 3-4 of these. At the old hardcoded 10, two
+# reporters on the same morning plus a few price-sensitive items elsewhere
+# exhausted the budget, and every ticker after that silently degraded: the
+# PDF is skipped, the HTML fallback hits the ASX consent gate, and the item
+# renders as "couldn't extract meaningful content" — indistinguishable from a
+# genuine fetch failure. Sized for a full reporting-season morning; override
+# with MAX_PDFS.
+MAX_PDFS_PER_RUN = _int_env("MAX_PDFS", 30)
 
 # Per-call output-token budgets. The default (4096) is enough for the terse
 # two-liners and the short structured memos on the other paths. The results
@@ -735,6 +744,11 @@ def fetch_announcement_text(
 ) -> Tuple[str, bool]:
     got_pdf = False
     text = ""
+    if pdf_url and counters["pdfs_downloaded"] >= counters["MAX_PDFS_PER_RUN"]:
+        log(
+            f"PDF download skipped: run cap reached "
+            f"({counters['pdfs_downloaded']}/{counters['MAX_PDFS_PER_RUN']}) — {url}"
+        )
     if pdf_url and counters["pdfs_downloaded"] < counters["MAX_PDFS_PER_RUN"]:
         try:
             got_pdf = download_pdf_requests(session, pdf_url, pdf_path)
@@ -918,73 +932,133 @@ def _prettify_analysis_text(text: str, width: int = 140) -> str:
     return "\n\n".join(wrapped)
 
 
-def _fix_incomplete_json(text: str) -> Optional[dict]:
-    """Try to fix incomplete JSON by closing unclosed braces and brackets.
+def _sanitise_json_string_bodies(text: str) -> str:
+    """Escape what a model most often gets wrong *inside* a JSON string.
 
-    Only ever a rescue for output that is *complete but malformed* — a stray
-    missing brace on a response the model finished writing. Callers must NOT
-    use it on a response the API truncated at max_tokens: balancing brackets
-    there yields an object whose ``full_analysis`` stops mid-sentence, and the
-    card would render as a clean result. A half-broken digest must never look
-    like a clean one (see CLAUDE.md), so truncation stays a parse_error.
+    ``full_analysis`` is a multi-thousand-character markdown blob living in a
+    single JSON string, and a long generation only has to slip once for
+    ``json.loads`` to reject the whole object. The two recurring slips are a
+    raw control character (a literal newline instead of ``\\n``) and an
+    invalid escape (``\\%``, ``\\$`` — legal in markdown, illegal in JSON).
+    Both are recoverable without losing a single character of content, which
+    is what separates this from bracket-balancing a truncated response.
+    """
+    out: List[str] = []
+    in_string = False
+    escaped = False
+    control_map = {"\n": "\\n", "\r": "\\r", "\t": "\\t"}
+    for ch in text:
+        if escaped:
+            if ch in '"\\/bfnrtu':
+                out.append(ch)
+            else:
+                # Invalid escape: drop the backslash, keep the character.
+                out.pop()
+                out.append(ch)
+            escaped = False
+            continue
+        if in_string and ch == "\\":
+            out.append(ch)
+            escaped = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            out.append(ch)
+            continue
+        if in_string and ch in control_map:
+            out.append(control_map[ch])
+            continue
+        if in_string and ord(ch) < 0x20:
+            out.append("\\u%04x" % ord(ch))
+            continue
+        out.append(ch)
+    return "".join(out)
+
+
+def _close_unbalanced_json(text: str) -> Optional[str]:
+    """Close unclosed brackets/braces, or None if the damage is too broad.
+
+    ONLY valid for output that is complete but malformed — a stray missing
+    brace on a response the model finished writing. Never call this on a
+    response the API truncated at max_tokens: balancing brackets there yields
+    an object whose ``full_analysis`` stops mid-sentence and the card renders
+    as a clean result. A half-broken digest must never look like a clean one
+    (see CLAUDE.md), so truncation stays a parse_error.
     """
     if not text:
         return None
-
-    # Count unclosed braces and brackets
     open_braces = text.count("{") - text.count("}")
     open_brackets = text.count("[") - text.count("]")
-
-    # Only attempt fix if we're reasonably close (not wildly malformed)
     if open_braces < 0 or open_brackets < 0 or open_braces > 10:
         return None
-
-    # Try adding closing braces/brackets
-    fixed = text.strip()
-    fixed += "]" * open_brackets
-    fixed += "}" * open_braces
-
-    try:
-        result = json.loads(fixed)
-        if isinstance(result, dict):
-            log("[parse] Fixed incomplete JSON by closing unclosed braces")
-            return result
-    except json.JSONDecodeError:
-        pass
-
-    return None
+    if not open_braces and not open_brackets:
+        return None
+    return text.strip() + ("]" * open_brackets) + ("}" * open_braces)
 
 
 def _parse_analysis_json(text: str, allow_repair: bool = True) -> Optional[dict]:
-    """Parse structured JSON from LLM output, stripping any markdown code fences.
+    """Parse structured JSON from LLM output.
 
-    *allow_repair* enables the bracket-balancing last resort. Pass False when
-    the API reported the response was cut off at max_tokens — see
-    ``_fix_incomplete_json``.
+    Tries progressively harder, cheapest first, and every step short of the
+    last preserves the model's content exactly:
+
+      1. straight parse (after stripping markdown code fences)
+      2. the outermost ``{...}`` span, ignoring any prose either side
+      3. the same span with string bodies sanitised (control chars, bad
+         escapes) and trailing commas dropped
+      4. that, plus unclosed brackets closed — *only* when ``allow_repair``
+
+    *allow_repair* must be False when the API reported the response was cut
+    off at max_tokens; see ``_close_unbalanced_json``.
     """
     if not text or text in (LLM_SKIPPED, LLM_FAILED):
         return None
+
     cleaned = re.sub(r"^```(?:json)?\s*", "", text.strip(), flags=re.MULTILINE)
     cleaned = re.sub(r"\s*```\s*$", "", cleaned.strip(), flags=re.MULTILINE)
     cleaned = cleaned.strip()
-    try:
-        result = json.loads(cleaned)
-        if isinstance(result, dict):
-            return result
-    except json.JSONDecodeError:
-        pass
+
+    def _load(candidate: str) -> Optional[dict]:
+        try:
+            result = json.loads(candidate)
+        except (json.JSONDecodeError, ValueError):
+            return None
+        return result if isinstance(result, dict) else None
+
+    parsed = _load(cleaned)
+    if parsed is not None:
+        return parsed
+
     m = re.search(r"\{.*\}", cleaned, re.DOTALL)
     if m:
-        try:
-            result = json.loads(m.group())
-            if isinstance(result, dict):
-                return result
-        except json.JSONDecodeError:
-            # Try fixing incomplete JSON as last resort
-            if allow_repair:
-                fixed = _fix_incomplete_json(m.group())
-                if fixed:
-                    return fixed
+        span = m.group()
+    elif allow_repair and "{" in cleaned:
+        # No closing brace anywhere: the object is unclosed rather than
+        # merely malformed. Worth one repair attempt, but only on a response
+        # the API did not report as truncated.
+        span = cleaned[cleaned.index("{"):]
+    else:
+        return None
+
+    parsed = _load(span)
+    if parsed is not None:
+        return parsed
+
+    # Content-preserving repairs: nothing the model wrote is discarded.
+    repaired = _sanitise_json_string_bodies(span)
+    repaired = re.sub(r",(\s*[}\]])", r"\1", repaired)
+    parsed = _load(repaired)
+    if parsed is not None:
+        log("[parse] Recovered JSON after escaping string bodies")
+        return parsed
+
+    if allow_repair:
+        closed = _close_unbalanced_json(repaired)
+        if closed:
+            parsed = _load(closed)
+            if parsed is not None:
+                log("[parse] Recovered JSON by closing unclosed brackets")
+                return parsed
     return None
 
 

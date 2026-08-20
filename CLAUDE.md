@@ -139,6 +139,26 @@ Real headlines from that morning are pinned as tests in
 governance statement / dividend notice / substantial-holding notice that
 must not.
 
+### JSON repair recovers content, it never invents it
+`_parse_analysis_json` tries four things, cheapest first: a straight parse, the
+outermost `{...}` span (ignoring prose either side), that span with string
+bodies sanitised, and finally unclosed brackets closed.
+
+The sanitising step exists because `full_analysis` is a multi-thousand-character
+markdown blob inside one JSON string, and one slip in a long generation fails
+the whole item — a raw newline instead of `\n`, or a markdown escape like `\%`
+that JSON rejects. SPZ died this way on 2026-08-19 with the generic
+"not valid JSON". Re-encoding those characters loses nothing the model wrote.
+
+Bracket-closing is different and is deliberately fenced off: it only runs when
+the API did **not** report `stop_reason=max_tokens`. Balancing brackets on a
+truncated response yields an object whose `full_analysis` stops mid-sentence,
+which would render as a clean card — the one outcome this design forbids.
+Truncation stays a `parse_error` that names the cap. In practice a truncated
+response ends inside an unterminated string, so there is nothing to close
+anyway; the guard is there so a future change can't quietly turn truncation
+into a plausible-looking result.
+
 ### Four distinct outcomes, none of which can look clean
 `deep_results_analysis` tags its return with `_status`:
 

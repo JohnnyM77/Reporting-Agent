@@ -740,3 +740,104 @@ def test_drive_success_hides_the_warning():
     assert "Drive save failed" not in block["html"]
     assert "Drive save failed" not in block["text"]
     assert "Full analysis (Google Drive)" in block["html"]
+
+
+# ---------------------------------------------------------------------------
+# Two reporters on the same morning
+# ---------------------------------------------------------------------------
+
+def test_two_reporters_same_morning_both_get_analysed():
+    """BXB and MVP both reported FY26 on 2026-08-20 and only MVP came through.
+
+    The gate was the cause (see looks_like_results_title), but the run-level
+    budgets are the other way a second reporter can be silently dropped, so
+    pin both: two results items must each cost one LLM call and each produce
+    its own card, with the PDF budget sized for both bundles.
+    """
+    counters = _counters()
+    counters["MAX_PDFS_PER_RUN"] = agent.MAX_PDFS_PER_RUN
+
+    payload = {
+        "ticker": "BXB", "period": "FY26", "period_type": "full_year",
+        "currency": "USD",
+        "metrics": {"revenue": _metric("US$6,900m", "+5%", basis="reported")},
+        "summary": "Brambles FY26.",
+        "full_analysis": "## Executive summary\n\n- Solid.",
+    }
+    blocks = []
+    for ticker in ("MVP", "BXB"):
+        # A fresh client per call: _mock_claude's text_stream is a one-shot
+        # iterator, so reusing one client would starve the second reporter
+        # for reasons that have nothing to do with the agent.
+        client = _mock_claude(json.dumps({**payload, "ticker": ticker}))
+        with mock.patch("agent._anthropic_client", return_value=client):
+            analysis = agent.deep_results_analysis(
+                ticker, "report text " * 300, "deck text " * 300, counters,
+            )
+        assert analysis["_status"] == agent.RESULTS_STATUS_OK, ticker
+        blocks.append(
+            agent.build_results_block(
+                ticker, analysis, f"https://asx.example/{ticker.lower()}"
+            )
+        )
+
+    # One structured call each — the second reporter is not served from a cache
+    # or skipped for budget.
+    assert counters["llm_calls"] == 2
+    assert len(blocks) == 2
+
+    # Two distinct cards, neither flagged as failed.
+    for block, ticker in zip(blocks, ("MVP", "BXB")):
+        html = block["html"] if isinstance(block, dict) else block
+        assert ticker in html
+        assert "ANALYSIS FAILED" not in html
+
+
+def test_pdf_budget_covers_several_reporters_bundles():
+    """A results bundle is 3-4 PDFs; the cap must clear a whole morning."""
+    assert agent.MAX_PDFS_PER_RUN >= 24, (
+        "MAX_PDFS_PER_RUN too low: at ~4 PDFs per reporter, later reporters "
+        "silently degrade to 'couldn't extract meaningful content'"
+    )
+
+
+# ---------------------------------------------------------------------------
+# JSON repair ladder — recover content, never invent it
+# ---------------------------------------------------------------------------
+
+def test_parser_recovers_from_malformed_string_bodies():
+    """A single slip inside full_analysis must not lose the whole analysis.
+
+    full_analysis is a multi-thousand-character markdown blob in one JSON
+    string. A raw newline instead of \\n, or a markdown escape like \\% that
+    JSON rejects, used to fail the entire item — that is what SPZ hit.
+    """
+    raw_newline = '{"ticker":"SPZ","summary":"ok","full_analysis":"## Exec\nRevenue up"}'
+    parsed = agent._parse_analysis_json(raw_newline)
+    assert parsed is not None
+    assert parsed["full_analysis"] == "## Exec\nRevenue up"
+
+    bad_escape = '{"ticker":"SPZ","summary":"ok","full_analysis":"Revenue up 63\\% on pcp"}'
+    parsed = agent._parse_analysis_json(bad_escape)
+    assert parsed is not None
+    assert "63% on pcp" in parsed["full_analysis"]
+
+
+def test_parser_repairs_never_discard_content():
+    """Repairs re-encode what the model wrote; they must not drop any of it."""
+    parsed = agent._parse_analysis_json(
+        '{"ticker":"SPZ","summary":"s","full_analysis":"line1\nline2 with 63\\% growth"}'
+    )
+    assert parsed["full_analysis"] == "line1\nline2 with 63% growth"
+
+
+def test_parser_will_not_rescue_a_truncated_response():
+    """Truncation stays a parse_error — a cut-off analysis must never render
+    as a clean card, whatever the repair ladder can technically salvage."""
+    truncated = (
+        '{"ticker":"BHP","summary":"x",'
+        '"full_analysis":"## Executive summary\\n\\n- Revenue up 3% to US$58.8bn'
+    )
+    assert agent._parse_analysis_json(truncated, allow_repair=False) is None
+    # Even with repair allowed the unterminated string cannot be closed.
+    assert agent._parse_analysis_json(truncated) is None

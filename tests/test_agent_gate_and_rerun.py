@@ -234,3 +234,41 @@ def test_results_title_false_positives_unchanged():
     assert looks_like_results_title("Conference Call Transcript") is False
     assert looks_like_results_title("Random Corporate Update") is False
 
+
+def test_results_title_brambles_fy26_headlines():
+    """BXB's real FY26 headlines must match.
+
+    Brambles styles the release "Full-Year Result" (singular), ships the
+    accounts as "Full Year Statutory Accounts" and the announcement itself as
+    an "ASX & Media Release" — none of which contain a phrase the old
+    fixed-list matcher looked for, so all five BXB documents were downloaded
+    on 2026-08-20 and none reached deep_results_analysis.
+    """
+    assert looks_like_results_title("2026 Full-Year Result presentation") is True
+    assert looks_like_results_title("2026 Full-Year ASX & Media Release") is True
+    assert looks_like_results_title("Full Year Statutory Accounts") is True
+
+
+def test_results_title_same_day_non_results_still_rejected():
+    """The other BXB/TWE documents from that same morning must stay out."""
+    assert looks_like_results_title(
+        "2026 Corporate Governance Statement & Appendix 4G"
+    ) is False
+    assert looks_like_results_title("Dividend/Distribution - BXB") is False
+    assert looks_like_results_title("Change in substantial holding") is False
+    assert looks_like_results_title("Appendix 4C Quarterly Report") is False
+
+
+def test_results_title_meeting_results_are_not_financial_results():
+    """Loosening 'results' must not pull in AGM voting results."""
+    assert looks_like_results_title("Results of Annual General Meeting") is False
+    assert looks_like_results_title("Notice of Annual General Meeting") is False
+
+
+def test_results_title_mvp_headlines_unchanged():
+    """MVP reported the same morning and did work — keep it working."""
+    assert looks_like_results_title("MVP Announces FY26 Full Year Results") is True
+    assert looks_like_results_title(
+        "FY26 Full year Results Investor Presentation"
+    ) is True
+

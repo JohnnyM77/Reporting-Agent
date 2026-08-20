@@ -117,6 +117,28 @@ request past Claude's 32MB / 100-page whole-request limit. When that fallback
 fires, the prompt is told the text came from pypdf so the model prefers `n/a`
 over a misread figure.
 
+### Results detection is pattern-based, not a phrase list
+`looks_like_results_title` gates the entire results path: no match, no
+`deep_results_analysis`, no card, no PDF. It used to be a list of literal
+phrases (`"full year results"`, `"results presentation"`, …), which silently
+lost Brambles' FY26 report on 2026-08-20 — BXB styles its headlines
+"2026 Full-Year Result **presentation**" (singular "Result"), "Full Year
+Statutory Accounts" and "2026 Full-Year ASX & Media Release". All five BXB
+documents downloaded, none was recognised, and the digest showed BXB only
+under MATERIAL/FYI while MVP the same morning analysed fine. Nothing in the
+run looked like an error, which is what made it expensive to spot.
+
+It is now a regex list: a reporting period (`half`/`full year`, `FY26`,
+`1H FY2026`, `interim`, `annual`) beside a results-document noun (`result(s)`,
+`report`, `accounts`, `release`, `presentation`), plus standalone hard yeses
+(Appendix 4D/4E, `preliminary final report`, `statutory accounts`). Loosening
+`results` to match the singular means AGM **voting** results now need an
+explicit hard-no, alongside the existing transcript/webcast exclusions.
+Real headlines from that morning are pinned as tests in
+`tests/test_agent_gate_and_rerun.py` — both the ones that must match and the
+governance statement / dividend notice / substantial-holding notice that
+must not.
+
 ### Four distinct outcomes, none of which can look clean
 `deep_results_analysis` tags its return with `_status`:
 

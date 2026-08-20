@@ -316,18 +316,49 @@ def is_price_sensitive_title(title: str) -> bool:
     return any(k in t for k in keywords)
 
 
+# Results-title matching is pattern-based, not a fixed phrase list. The list
+# version missed Brambles' FY26 release entirely: BXB styles its headlines
+# "2026 Full-Year Result presentation" (singular "Result"), "Full Year
+# Statutory Accounts" and "2026 Full-Year ASX & Media Release", none of which
+# contain any of the literal phrases the list looked for. Five BXB documents
+# were downloaded and none reached deep_results_analysis. Anything that pairs
+# a reporting period with a results-document noun now matches.
+_RESULTS_TITLE_HARD_NO = (
+    "transcript", "webcast", "conference call", "investor call",
+    # Meeting/voting "results" are not financial results.
+    "results of meeting", "result of meeting",
+    "results of annual general meeting", "results of general meeting",
+    "voting results", "proxy",
+    "notice of meeting", "notice of annual general meeting",
+)
+
+_RESULTS_TITLE_PATTERNS = tuple(re.compile(p) for p in (
+    # Appendix 4D (half-year) / 4E (preliminary final). Not 4C, 4G, etc.
+    r"appendix\s*4[de]\b",
+    r"preliminary\s+final\s+report",
+    r"\bstatutory\s+accounts?\b",
+    r"\bfinancial\s+report\b",
+    r"\bannual\s+report\b",
+    # "Half-Year Report", "Full Year Financial Results", "Annual Accounts"
+    r"\b(?:annual|interim|half[\s\-]?year|full[\s\-]?year)\s+"
+    r"(?:financial\s+)?(?:report|results?|accounts?)\b",
+    # "Results Announcement", "Result presentation", "Results Release"
+    r"\bresults?\s+(?:announcement|presentation|release|briefing|report)\b",
+    # Period first: "2026 Full-Year ASX & Media Release", "Full-Year Result …"
+    r"(?:half|full)[\s\-]?year[\s\-\w&]*"
+    r"\b(?:results?|report|accounts?|release|presentation)\b",
+    # "FY26 Full Year Results", "1H FY2026 Results", "1HFY26 Results"
+    r"\b(?:[12]h\s?)?(?:fy|hy)\s?\d{2,4}\b[\s\-\w&]*\bresults?\b",
+    # Reverse order: "Results — 1H FY26", "Report for the Full Year"
+    r"\bresults?\b[\s\-\w&]*\b(?:(?:half|full)[\s\-]?year|(?:[12]h\s?)?fy\s?\d{2,4})\b",
+))
+
+
 def looks_like_results_title(title: str) -> bool:
     t = title.lower()
-    hard_yes = [
-        "appendix 4e", "appendix 4d", "half year results", "half-year results",
-        "interim financial report", "annual report", "full year results",
-        "full-year results", "financial report", "results announcement",
-        "results presentation",
-    ]
-    hard_no = ["investor call transcript", "transcript", "webcast", "conference call"]
-    if any(x in t for x in hard_no):
+    if any(x in t for x in _RESULTS_TITLE_HARD_NO):
         return False
-    return any(x in t for x in hard_yes)
+    return any(p.search(t) for p in _RESULTS_TITLE_PATTERNS)
 
 
 def classify_from_title_only(title: str) -> str:
@@ -888,7 +919,15 @@ def _prettify_analysis_text(text: str, width: int = 140) -> str:
 
 
 def _fix_incomplete_json(text: str) -> Optional[dict]:
-    """Try to fix incomplete JSON by closing unclosed braces and brackets."""
+    """Try to fix incomplete JSON by closing unclosed braces and brackets.
+
+    Only ever a rescue for output that is *complete but malformed* — a stray
+    missing brace on a response the model finished writing. Callers must NOT
+    use it on a response the API truncated at max_tokens: balancing brackets
+    there yields an object whose ``full_analysis`` stops mid-sentence, and the
+    card would render as a clean result. A half-broken digest must never look
+    like a clean one (see CLAUDE.md), so truncation stays a parse_error.
+    """
     if not text:
         return None
 
@@ -916,8 +955,13 @@ def _fix_incomplete_json(text: str) -> Optional[dict]:
     return None
 
 
-def _parse_analysis_json(text: str) -> Optional[dict]:
-    """Parse structured JSON from LLM output, stripping any markdown code fences."""
+def _parse_analysis_json(text: str, allow_repair: bool = True) -> Optional[dict]:
+    """Parse structured JSON from LLM output, stripping any markdown code fences.
+
+    *allow_repair* enables the bracket-balancing last resort. Pass False when
+    the API reported the response was cut off at max_tokens — see
+    ``_fix_incomplete_json``.
+    """
     if not text or text in (LLM_SKIPPED, LLM_FAILED):
         return None
     cleaned = re.sub(r"^```(?:json)?\s*", "", text.strip(), flags=re.MULTILINE)
@@ -937,9 +981,10 @@ def _parse_analysis_json(text: str) -> Optional[dict]:
                 return result
         except json.JSONDecodeError:
             # Try fixing incomplete JSON as last resort
-            fixed = _fix_incomplete_json(m.group())
-            if fixed:
-                return fixed
+            if allow_repair:
+                fixed = _fix_incomplete_json(m.group())
+                if fixed:
+                    return fixed
     return None
 
 
@@ -1914,7 +1959,10 @@ def deep_results_analysis(
         marker["_status"] = RESULTS_STATUS_FAILED
         return marker
 
-    parsed = _parse_analysis_json(out)
+    # A response the API cut off at max_tokens must never be bracket-balanced
+    # back into a "clean" card — its full_analysis stops mid-sentence.
+    truncated = (counters.get("last_stop_reason") or "").lower() == "max_tokens"
+    parsed = _parse_analysis_json(out, allow_repair=not truncated)
     if not parsed:
         # The model answered, but not with parseable JSON. Never dress this up
         # as a clean (if terse) analysis: flag it loudly and keep the raw text

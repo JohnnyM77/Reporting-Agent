@@ -3,6 +3,51 @@
   "silence": false,
   "high_impact": [
     {
+      "ticker": "BXB",
+      "title": "2026 Full-Year Result presentation 26\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.3MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127222",
+      "type": "results",
+      "analysis": {
+        "ticker": "BXB",
+        "period": "FY26",
+        "period_type": "full_year",
+        "currency": "USD",
+        "metrics": {
+          "revenue": {
+            "value": "US$7,042.9m",
+            "change_pct": "+6%",
+            "basis": "reported"
+          },
+          "underlying_npat": {
+            "value": "US$948.5m",
+            "change_pct": "+10%",
+            "basis": "underlying"
+          },
+          "underlying_eps": {
+            "value": "US 69.9c",
+            "change_pct": "+12%",
+            "basis": "underlying"
+          },
+          "dividend_ordinary": {
+            "value": "US 23.15c",
+            "change_pct": "+16%",
+            "note": "final dividend only; total FY26 dividends 46.15 US cents (up 16% on FY25); 20% franked; full-year payout ratio 64%"
+          },
+          "operating_cash_flow": {
+            "value": "US$1,472.5m",
+            "change_pct": "+1%",
+            "basis": "reported"
+          }
+        },
+        "summary": "Result in line with the revised (downgraded) guidance Brambles issued in May 2026, not the original guidance — that distinction matters. The ~US$90m earnings hole from US repair capacity constraints was the sole negative driver, masking what would have been ~11% Underlying Profit growth at constant FX. Cash conversion remained solid with US$1,048m Free Cash Flow before dividends despite higher tax and financing payments, though FCF fell US$47m year-on-year. The dividend rose 16%, signalling management confidence, but FY27 guidance embeds a further US$35-55m year-on-year drag from the same US issue plus a 1H27 mid-to-high single-digit Underlying Profit decline. The single biggest forward risk is that US repair capacity constraints prove stickier or more expensive than guided, particularly given 3.4 million unrepaired excess pallets still sitting idle and a ~US$100m capex cash outflow landing in FY27.",
+        "full_analysis": "## Executive summary\n- FY26 delivered in line with the May 2026 revised guidance — the original FY26 guidance had already been cut; framing this as a 'beat' would be misleading.\n- The US repair capacity crisis (~US$90m Underlying Profit drag, ~US$40m extra pooling capex) is the defining event: without it, Underlying Profit grew ~11% at constant FX and margins expanded ~1.8pts, demonstrating the underlying quality of the business.\n- Free Cash Flow of US$1,048m is strong in absolute terms but declined US$47m; a normalised figure excluding ~US$20m capex holiday from excess pallet utilisation is closer to US$1,028m.\n- The FY27 outlook explicitly warns of a 1H27 mid-to-high single-digit Underlying Profit decline, meaning earnings are back-weighted and consensus estimates will need careful half-by-half modelling.\n- Red flag: 3.4 million unrepaired excess pallets remain in the US network at 30 June 2026, optimal plant stock levels not expected until end of FY28, and a further ~US$100m cash outflow for new pallet purchases is baked into FY27.\n\n## Key numbers\n\n| Metric | FY26 | FY25 | Change |\n|---|---|---|---|\n| Sales revenue (continuing) | US$7,042.9m | US$6,669.7m | +6% actual FX / +2% constant FX |\n| EBITDA (continuing) | US$2,504.8m | US$2,288.4m | +9% actual FX |\n| EBITDA margin | 35.6% | 34.3% | +1.3pts |\n| Underlying Profit (= Operating profit, no Significant Items) | US$1,494.4m | US$1,371.8m | +9% actual FX / +4% constant FX |\n| Underlying Profit margin | 21.2% | 20.6% | +0.6pts actual FX |\n| Operating profit after tax (continuing) | US$948.5m | US$863.3m | +10% actual FX / +5% constant FX |\n| Profit after tax (incl. discontinued ops.) | US$954.0m | US$901.0m | +6% actual FX |\n| Basic EPS — continuing ops. | US 69.9c | US 62.5c | +12% actual FX / +6% constant FX |\n| Basic EPS — incl. discontinued ops. | US 70.3c | US 65.1c | +8% actual FX |\n| Cash Flow from Operations | US$1,472.5m | US$1,459.9m | +US$12.6m |\n| Free Cash Flow before dividends | US$1,048.2m | US$1,094.9m | -US$46.7m |\n| Free Cash Flow after dividends | US$442.1m | US$563.4m | -US$121.3m |\n| Net debt | US$2,926m | US$2,574m | +US$352m |\n| Net debt / EBITDA | 1.17x | 1.12x | +0.05x |\n| ROCI | 22.6% | 21.9% | +0.7pts actual FX |\n| Pooling capex to sales | 12.9% | 12.3% | +0.6pts |\n| IPEP to sales | 1.7% | 1.4% | +0.3pts |\n\nNote: Underlying Profit equals Operating profit in both FY26 and FY25 as there are no Significant Items in either period. The company therefore reports no statutory vs underlying bridge to reconcile.\n\n## Quality of earnings\n- **Cash conversion is healthy**: Cash Flow from Operations of US$1,472.5m vs Underlying Profit of US$1,494.4m implies near-100% conversion at the EBIT level once D&A/IPEP are added back. EBITDA of US$2,504.8m vs operating cash flow of US$1,472.5m gives a cash conversion of ~59%, reduced by the step-up in pooling capex (US$1,105.1m accruals basis vs US$968.6m in FY25).\n- **FCF decline driven by financing and tax**: Higher interest payments (new bond at higher rate plus overlap with maturing 144A notes) and tax payments broadly in line with earnings growth together consumed an additional US$61m vs FY25. This is largely non-recurring (bond overlap was temporary).\n- **Capex holiday masking true capex intensity**: Brambles utilised ~0.6 million excess pallets in the US, reducing pooling capex-to-sales by ~0.3pts. Normalised ratio is ~13.2%, still below historical averages but trending up. FY27 guidance of 13%-15% capex-to-sales is a meaningful step-up.\n- **IPEP up**: The Irrecoverable Pooling Equipment Provision rose to US$117m (1.7% of sales) from US$94m (1.4%), driven by higher unauthorised pallet use in the US during the repair crisis and uncompensated losses in Europe. This is a real economic cost and signals some deterioration in asset control.\n- **No one-off adjustments**: Management explicitly notes Underlying Profit equals Operating profit (zero Significant Items). This is genuinely clean — no restructuring carve-outs in the headline profit metric, though ~US$21m of restructuring costs sit inside plant costs and approximately US$40m of restructuring savings also run through costs.\n- **Pallet purchases deferred to FY27**: ~US$40m cash outflow for Q4 FY26 pallet purchases (payment terms) falls into 1H27 — a known working capital headwind for FCF in the next period.\n- **Serialisation+ capitalisation**: US$32m of Serialisation+ equipment was capitalised in FY26 (FY25: nil/minimal), reducing digital transformation costs in the P&L. This is a legitimate accounting policy change driven by increased confidence in scaling, but investors should note it improves reported earnings quality optically.\n\n## Management framing\n**Assessment: Mixed — transparent on the US problem, promotional on the underlying normalised numbers.**\n\n- **Transparent**: Management quantified the US repair constraint impact with unusual granularity (US$90m breakdown by revenue, plant, transport, IPEP; US$30m worse than May guidance; FY27 year-on-year bridge split by 1H/2H). This level of disclosure is commendable and above average for a large-cap.\n- **Promotional**: The headline presentation leads with 'earnings growth, margin expansion and US$1 billion+ of Free Cash Flow, in line with revised guidance.' The phrase 'in line with revised guidance' is doing a lot of work — the revision itself was a profit warning. The deck repeatedly leads with 'normalised' +11% Underlying Profit growth before the US impact, which is not how investors experienced the year.\n- **Omitted**: No explicit disclosure of whether any customer relationships have been permanently damaged or contracts lost as a result of the Q4 service failures. The statement 'no missed customer orders since June 2026' is encouraging but forward-looking; the deck is silent on any contract losses or pricing concessions made to retain affected customers.\n- **Downplayed**: The FY27 FCF guidance midpoint of US$875m represents a ~US$175m decline versus FY26, attributed to the US$100m pallet cash outflow plus the earnings drag. The deck framing of 'strong Free Cash Flow' without prominently flagging this step-down is selective.\n- **FY28 margin target reaffirmed** (~3pts+ vs FY24 baseline) despite being currently 1.9pts into the journey with the US headwind pushing in the wrong direction. Confidence here seems high relative to the execution risk visible in FY26.\n\n## Segments\n\n| Segment | FY26 Revenue | Change (const. FX) | FY26 ULP | Change (const. FX) | ULP Margin | Change (actual FX) |\n|---|---|---|---|---|---|---|\n| CHEP Americas | US$3,867.1m | +2% | US$750.6m | 0% | 19.4% | -0.2pts |\n| CHEP EMEA | US$2,579.9m | +2% | US$727.5m | 0% | 28.2% | -0.6pts |\n| CHEP Asia-Pacific | US$595.9m | +3% | US$214.6m | +8% | 36.0% | +1.8pts |\n| Corporate | n/a | n/a | -US$198.3m | improvement | n/a | n/a |\n\n**CHEP Americas**: The entire US$90m repair constraint impact sits here. Excluding the constraint, Underlying Profit grew ~13% and ROCI improved 2.0pts to ~23.7%. Americas margin would have been ~21.7% normalised. North America pooling capex-to-sales jumped to 14.0% (FY25: 11.6%) due to emergency pallet purchases.\n\n**CHEP EMEA**: Flat underlying profit at constant FX despite +2% revenue growth, due to higher relocation costs, uncompensated losses in Europe, and depreciation step-up from new leases. ROCI fell 0.8pts to 29.7% — still the highest-returning segment but declining. European consumer demand remains subdued; automotive contract loss is a structural headwind.\n\n**CHEP Asia-Pacific**: The standout — +8% ULP at constant FX, margin +1.8pts, ROCI +2.9pts. Productivity and pricing discipline offsetting inventory optimisation headwinds in Australia. Small segment (8.5% of group revenue) but demonstrating what the model can do when execution is clean.\n\n**Corporate**: Costs fell US$43.5m at constant FX driven by lower digital transformation costs (R&D incentives and Serialisation+ capitalisation) and restructuring savings. This tailwind partially reverses in FY27 as Serialisation+ capex (expected ~US$110m) moves to balance sheet.\n\n## Balance sheet\n- Net debt increased US$352m to US$2,926m, driven by share buybacks (US$509m in FY26) and lease capitalisations, partly offset by FCF after dividends of US$442m.\n- Net debt/EBITDA of 1.17x remains well within the <2.0x financial policy. Interest cover of 20.7x is very strong.\n- S&P upgraded to A- in October 2025 — a genuine credit quality signal.\n- Cash fell sharply from US$609m to US$77m due to US$500m 144A loan note repayment in July 2025 (funded from existing cash). Total liquidity of US$1.5b (US$1.4b undrawn facilities + US$77m cash) is adequate.\n- Debt maturity profile is reasonable: nothing callable in 12 months (bank facilities US$0.3b with headroom); EMTN maturities staggered at 1-2 years (US$0.6b) and 4-5 years (US$0.6b) and >5 years (US$0.6b). Average facility term of 3.5 years is acceptable but shortening.\n- FY27 net finance costs expected to increase ~US$30m vs FY26 — higher interest burden on the refinanced debt stack is a real earnings headwind.\n- **Key watch**: US$1,048m of lease liabilities are embedded in net debt; these are structural and will grow with new service centre leases as the 8-site expansion programme rolls out.\n\n## Dividend and capital allocation\n- Final dividend: US 23.15c per share (AUD 32.82c, 20% franked). Total FY26 dividends: US 46.15c, up 16% on FY25. Payout ratio: 64% (within 50-70% policy).\n- FY27 dividend expected to remain within 50-70% policy, fully funded by FCF.\n- DRP remains suspended due to ongoing buyback programme.\n- FY26 buybacks: US$509m completed (US$400m FY26 programme + US$109m of FY27 programme purchased in FY26).\n- Current buyback: up to US$400m (FY27 programme announced May 2026); US$109m already purchased, remainder to complete in FY27.\n- Total FY26 capital returned to shareholders: ~US$1.2b (dividends + buybacks). This is aggressive given FCF after dividends was only US$442m — the company is net borrowing to fund buybacks, hence net debt rising US$352m.\n- Capital allocation is shareholder-friendly but leverage is modestly increasing. Given the US repair investment programme (US$100m cash outflow FY27) and non-pooling capex rising to US$350-400m (from US$237m), FCF headroom for buybacks in FY27 is materially tighter.\n\n## Guidance and outlook\nFY27 guidance provided and is explicit:\n- Sales revenue growth: 2-4% at constant FX\n- Underlying Profit growth: 2-6% at constant FX (1H27: mid-to-high single digit decline; 2H27: low double-digit growth)\n- Free Cash Flow before dividends: US$800-950m (midpoint ~US$875m, down ~US$175m vs FY26)\n- Dividend payout: 50-70% of Underlying Profit after finance costs and tax\n- On-market share buyback: up to US$400m to complete in FY27\n- FY27 non-pooling capex: ~US$350-400m vs US$237m in FY26 (includes ~US$110m Serialisation+ capex)\n- FY27 net finance costs: +~US$30m vs FY26\n- FY27 pooling capex/sales ratio: ~13-15% (vs 12.9% in FY26)\n\nFY28 medium-term target of ~3pts+ margin expansion vs FY24 baseline reaffirmed, with FY26 already +1.9pts into the journey (or +3.1pts ex-US constraints).\n\nThe Serialisation+ North America rollout decision is expected in 3Q27 — a binary event that could add material capex (beyond the ~US$110m already budgeted) or be shelved entirely.\n\n## Positives\n- **Normalised earnings quality is excellent**: Excluding the US crisis, Underlying Profit grew ~11% at constant FX with ~1.8pts margin expansion, demonstrating strong pricing power and cost efficiency.\n- **Net new business wins of +3%**: Momentum across all segments and regions; structural tailwind from whitewood alternative scarcity in the US supports conversion pipeline.\n- **CHEP Asia-Pacific performing strongly**: +8% Underlying Profit growth, 37% ROCI — highest in the group and improving.\n- **Cash generation**: US$1,048m FCF before dividends; US$1,472m operating cash flow. The business is a cash machine.\n- **Balance sheet strength**: A-/Baa1 credit ratings, 1.17x net debt/EBITDA, US$1.5b liquidity. Well-positioned to absorb FY27 investment surge.\n- **Corporate costs declining**: Down US$43.5m at constant FX including lower digital transformation costs — overhead discipline is improving.\n- **Serialisation+ Chile success**: Full rollout complete, +9pts NPS improvement, customer queries down >50%, 15 net new customers attributable — provides genuine optionality.\n- **US service recovery on track**: No missed customer orders since June 2026 (approximately 8 weeks post-report date); order fulfilment improving materially since mid-April 2026.\n- **S&P upgrade to A-**: Reduces cost of debt and strengthens negotiating position with banks.\n\n## Negatives / red flags\n- **US repair crisis is not over**: 3.4m unrepaired excess pallets remain at 30 June 2026; optimal stock levels not expected until end of FY28. The crisis has 2+ years of tail.\n- **FY27 earnings back-weighted and uncertain**: 1H27 mid-to-high single digit Underlying Profit decline guided — this is a real earnings miss in the near-term. The 2H27 recovery relies on cycling FY26 costs and structural efficiency gains not yet locked in.\n- **FCF step-down in FY27**: Guided US$800-950m vs FY26's US$1,048m. US$100m pallet cash outflow, higher capex (non-pooling +US$113-163m), and higher finance costs (~+US$30m) are all headwinds. Buyback continuation at US$400m will stretch the balance sheet further.\n- **IPEP rising**: US$117m in FY26 vs US$94m in FY25 — uncompensated pallet losses accelerating in both the US (capacity crisis) and Europe (higher FIFO unit costs). At 1.7% of sales vs a trough of 1.4%, there is clear leakage in the asset pool.\n- **FY26 US constraint was US$30m worse than May 2026 announcement**: The company missed its own downgraded guidance within a single quarter. Execution credibility on the US recovery plan needs to be demonstrated, not assumed.\n- **Serialisation+ capex commitment before rollout decision**: ~US$110m capex budgeted in FY27 for Serialisation+ in North America before the go/no-go decision in 3Q27. If the decision is 'no,' a significant portion of this investment may be stranded or impaired.\n- **Non-pooling capex surge**: US$350-400m guided in FY27 vs US$237m in FY26 — a US$113-163m step-up. Much of this is discretionary (Serialisation+, automation), but it crowds out FCF and buyback capacity simultaneously.\n- **Consumer demand headwinds persist**: Like-for-like volumes were -2% in FY26 across the group; FY27 guidance assumes broadly flat like-for-like. Any further softening in US/European consumer demand would pressure both revenue growth and pallet utilisation rates.\n- **2H27 recovery assumptions may be optimistic**: The bridge relies on cycling Q4 FY26 costs (~US$55m), structural supply chain efficiencies materialising, and pricing recovery from 2H27 — three simultaneous dependencies in the same half.\n\n## Bottom line\n**Bull case**: The US repair crisis is genuinely a one-off, not a structural failure. The business without the US problem prints double-digit earnings growth on a sticky recurring-revenue model with ~22% ROCI, strong new business momentum, and pricing power. FY28 targets are achievable; Serialisation+ provides a free option on a structural re-rating of the asset base. At a normalised FCF yield, the stock is cheap relative to its quality.\n\n**Bear case**: The US crisis reveals that Brambles' US network is more fragile than the market assumed — reliant on a subcontractor base that exits without notice, capacity-constrained in a tight labour market, and sitting on 3.4m unrepaired pallets it cannot economically process before FY28. The earnings recovery is back-end loaded with execution risk, FCF drops ~US$175m in FY27, capex is surging, and Serialisation+ is about to consume US$110m before a rollout decision is made. If consumer demand softens further, the 2H27 recovery thesis breaks.\n\n**What would change the view**: (1) Evidence by the 1H27 result that US repair throughput is genuinely normalising and the excess pallet backlog is being worked down ahead of schedule; (2) A positive Serialisation+ North America rollout decision in 3Q27 with credible economics; (3) Like-for-like volume turning positive in a recovering consumer demand environment. Conversely, any further US capacity setback or Serialisation+ deferral would be materially negative for the FY28 margin target narrative.",
+        "_status": "ok"
+      },
+      "doc_link": "",
+      "doc_error": "",
+      "pdf_path": "/tmp/BXB_FY26_2026-08-20.pdf"
+    },
+    {
       "ticker": "MVP",
       "title": "MVP Announces FY26 Full Year Results 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 247.8KB",
       "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127420",
@@ -39,8 +84,8 @@
             "basis": "reported"
           }
         },
-        "summary": "MVP delivered a modest improvement on a very low base, with statutory NPAT rising from $0.1m to $0.6m on 9% revenue growth — no external consensus available but directionally constructive. The result was driven by Pain Management revenue up 21%, boosted by Penthrox volume growth in Australia (+28% hospital segment) and Europe (+18% in-market), though circa $2m of that revenue uplift was a one-off partner inventory stocking benefit that will not recur. Cash conversion was outstanding, with operating cash flow swinging from breakeven to $5.8m, aided substantially by a $5.2m working capital tailwind from lower Respiratory inventory and receivables timing — not purely earnings-driven. No dividend was declared, and management flagged a ~$1m amortisation headwind in FY27 plus non-recurrence of stocking benefits, meaning FY27 reported earnings will face a structural drag even if volumes keep growing. The single biggest forward risk is that FY26 Pain Management revenue was inflated by ~$2m of partner inventory builds that reverse in FY27, colliding simultaneously with $1m of new amortisation and an unquantified Middle East/US tariff exposure.",
-        "full_analysis": "## Executive summary\n- MVP reported statutory NPAT of $0.6m (pcp $0.1m) on revenue of $42.6m (+9%), with EBIT of $0.2m — profitability exists but remains razor-thin and any single headwind tips it negative.\n- The headline 9% revenue growth flatters underlying demand: ~$2m of Pain Management revenue was a one-off timing benefit from European partner inventory stocking related to the France/Switzerland supply transition; strip this out and organic growth is closer than the deck implies.\n- Free cash flow improved by $5.8m to $4.2m, but the majority of the swing was a $5.2m working capital release (lower Respiratory inventory + receivables timing) rather than structural earnings improvement — this reverses partially as Respiratory stabilises.\n- RED FLAG: FY26 EBITDA was $2.9m versus $3.2m in FY25 — lower than the prior year despite higher revenue, meaning cost growth outpaced the gross profit gain; the EBIT improvement to $0.2m was partly rescued by lower D&A.\n- Paediatric label approval in UK/Europe is a genuine strategic milestone; the $1m amortisation drag it generates in FY27 is the price for that option.\n\n## Key numbers\n| Metric | FY26 | FY25 (pcp) | Change |\n|---|---|---|---|\n| Revenue | $42.6m | $39.1m | +9% |\n| EBITDA | $2.9m | $3.2m | -9% |\n| EBIT | $0.2m | ($0.05m) | +$0.25m |\n| Statutory NPAT | $0.6m | $0.1m | +$0.5m |\n| Underlying NPAT | n/a (no adjustment disclosed) | n/a | n/a |\n| EPS | n/a (not disclosed in source) | n/a | n/a |\n| Operating cash flow | $5.8m | ~($0.0m) | n/m |\n| Free cash flow | $4.2m | ($1.6m) | +$5.8m |\n| Capital expenditure | ($0.8m) | ($1.0m) | +$0.2m |\n| Cash balance | $21.4m | n/a | n/a |\n| Net debt / (cash) | Net cash ~$21.4m | n/a | n/a |\n| Pain Management revenue | $31.6m | $26.2m | +21% |\n| Respiratory revenue | $10.9m | $12.9m | -15% |\n| Pain Management EBIT | $9.4m | $6.3m | +49% |\n| Respiratory EBIT | $0.7m | $0.4m | +63% |\n\nNote: No underlying/adjusted NPAT bridge was provided; statutory figures used throughout. EPS not disclosed in the source documents.\n\n## Quality of earnings\n- **Cash conversion**: Operating cash flow of $5.8m versus NPAT of $0.6m looks spectacular, but the $5.2m working capital release is the dominant driver. Lower Respiratory inventory (demand fell 15%) and lower receivables (timing) are largely non-recurring tailwinds.\n- **One-off revenue**: ~$2m of Pain Management revenue was explicitly flagged as a timing benefit from partner inventory stocking during the France/Switzerland supply transition; management has disclosed this will not recur in FY27 (\"non-recurrence of Penthrox inventory stocking benefits\"). This is material relative to group EBIT of $0.2m.\n- **Capitalised costs**: The company capitalised registration costs for the European paediatric indication; amortisation of ~$1m will hit P&L from FY27. The FY26 result benefited from lower intangible capex spend ($0.8m vs $1.0m pcp) as the MAGPIE study was completed in FY25.\n- **FX drag**: FX losses on monetary items were $0.9m in FY26 versus a $1.6m gain in FY25 — a $2.5m swing that is visible in the EBIT bridge and suppressed the reported result meaningfully.\n- **Lower transfer prices**: Transition to partner supply in France and Switzerland reduced European transfer prices by ~$1.4m revenue impact, partially offsetting the volume growth story.\n- **EBITDA declined** despite revenue growth: cost inflation, higher medical/commercial spend to drive Penthrox adoption, and the FX reversal more than offset gross profit expansion.\n\n## Management framing\n**Rating: Mixed — leaning Promotional**\n- The deck leads with \"strong cashflow generation\" which is technically accurate but obscures that most of the cash improvement came from working capital, not earnings power.\n- \"Pain Management revenue up 21%\" is front and centre; the ~$2m partner stocking one-off is disclosed but buried in the commentary, not the headline metrics.\n- EBITDA declining year-on-year ($3.2m to $2.9m) is not mentioned in the headline bullets or CEO commentary — management chose to highlight EBIT improvement instead (which benefited from lower D&A).\n- The company honestly discloses the non-recurrence of stocking benefits, the ~$1m FY27 amortisation headwind, and the Middle East/US tariff uncertainty in the outlook — these are meaningful negatives and deserve credit for transparency.\n- Volume metrics (in-market units) are sensibly distinguished from revenue units for Europe, which improves transparency.\n- No EPS disclosure makes per-share tracking difficult for retail investors.\n\n## Segments\n**Pain Management ($31.6m revenue, $9.4m EBIT, +21%/+49%)**\n- Australia: revenue +16% on 9% volume growth and 7% ASP increase; hospital segment volumes +28% is the strategic highlight.\n- Europe: revenue +12% in-market demand +18%; ~$1.2m timing benefit from partner stocking; ~$1.4m revenue headwind from lower transfer prices post-transition.\n- Rest of World: revenue +66% but ~$1.1m timing/stocking benefit; high growth rate overstates sustainable demand.\n- EBIT margin: $9.4m/$31.6m = 29.7% (pcp: $6.3m/$26.2m = 24.0%) — genuine margin expansion driven by pricing and mix.\n\n**Respiratory ($10.9m revenue, $0.7m EBIT, -15%/+63%)**\n- US volumes soft throughout the year; higher pricing partially offset; reduced commercial investment in US.\n- US tariff refund received (covering FY25 and FY26 tariffs paid) boosted segment earnings — a non-recurring item not separately quantified.\n- Australia -13%, USA -16%, Europe -52% — broad-based demand weakness.\n- Segment EBIT of $0.7m improved from $0.4m despite revenue falling $2m — cost discipline and the tariff refund are doing the work.\n- Management has paused US growth investment, signalling limited near-term confidence in segment recovery.\n\n## Balance sheet\n- Cash balance of $21.4m (inclusive of short-term deposits) at 30 June 2026 — the company is ungeared and debt-free.\n- Working capital released $5.2m year-on-year, primarily from lower Respiratory inventory and receivables timing; this is a one-directional release and normalisation in FY27 will consume cash.\n- Capital expenditure of $0.8m in FY26; guided at ~$1.5m in FY27 (increase, likely related to ongoing Penthrox initiatives).\n- No disclosed covenants or refinancing requirements.\n- Management flagged it \"continues to assess capital management alternatives\" — language consistent with potential capital return or buyback but no commitment made.\n\n## Dividend and capital allocation\n- No ordinary dividend declared for FY26 (nil in pcp also).\n- With $21.4m cash on hand and free cash flow now positive ($4.2m), the absence of any dividend or buyback announcement is notable — the company is preserving optionality.\n- The \"capital management alternatives\" language is non-committal but signals management is aware of the accumulating cash balance relative to the company's market capitalisation.\n- Capex is expected to increase to ~$1.5m in FY27, absorbing some free cash flow.\n\n## Guidance and outlook\nManagement provided directional (not quantified) FY27 guidance:\n- Higher in-market Penthrox demand (paediatric indication + health economic data support)\n- Stable Respiratory demand\n- **Non-recurrence of ~$2m partner inventory stocking benefit** (explicit headwind to reported revenue and earnings)\n- **~$1m new amortisation expense** from capitalised paediatric registration costs (explicit P&L headwind)\n- Middle East supply chain disruption and US tariffs remain unquantified risks\n- Capex ~$1.5m (up from $0.8m)\n\nNet reading: FY27 faces a ~$3m combined headwind (stocking reversal + amortisation) against which volume growth and pricing must work harder. The company has deliberately withheld earnings guidance in dollar terms.\n\n## Positives\n- Pain Management EBIT of $9.4m is +49% and at a 29.7% margin — structurally improving as Penthrox pricing power asserts itself.\n- Australian hospital segment volume growth of 28% demonstrates genuine clinical adoption acceleration.\n- European in-market demand +18% is real end-user pull, confirmed by the separate in-market vs. sell-in disclosure.\n- Paediatric indication now approved across UK and all EU member states — opens a material new patient cohort.\n- Free cash flow positive at $4.2m versus ($1.6m) pcp; balance sheet with $21.4m cash and no debt provides genuine resilience.\n- Respiratory segment improved EBIT to $0.7m despite -15% revenue — cost discipline is real.\n- Nurse Practitioners added to PBS Prescriber Bag criteria in Australia expands access channel.\n\n## Negatives / red flags\n- EBITDA declined from $3.2m to $2.9m despite 9% revenue growth — underlying cost inflation is absorbing gross profit gains.\n- ~$2m of FY26 Pain Management revenue was a one-off inventory stocking timing benefit that management has explicitly flagged will not recur — this is a material headwind to FY27 versus FY26 comparisons.\n- ~$1m amortisation headwind hits FY27 P&L from capitalised paediatric registration costs.\n- FX losses of $0.9m versus $1.6m gain pcp — a $2.5m swing that obscures the underlying operating improvement; FX remains a recurring P&L volatility source.\n- Respiratory revenue down 15% with no clear recovery catalyst; US commercial investment paused, signalling management has low conviction on near-term US recovery.\n- No EPS disclosed, making per-share return assessment opaque.\n- Operating cash flow swing is dominated by a $5.2m working capital release that will partially reverse as Respiratory demand stabilises and inventory is rebuilt.\n- No dividend despite $21.4m cash — shareholders are waiting for capital returns with no clear timeline.\n- Middle East supply chain disruption unquantified — MVP manufactures in Australia but sourcing/distribution exposure unclear.\n\n## Bottom line\n**Bull case**: Penthrox volume growth is accelerating across all geographies with genuine clinical pull (hospital segment +28% AUS, in-market Europe +18%); the paediatric label is a structural TAM expansion; pricing power is demonstrated (Australia ASP +7%); and the business is now cash generative with a fortress balance sheet. If Penthrox hospital adoption continues at current rates and the European paediatric indication converts, FY28+ earnings could be materially higher than FY26's $0.6m NPAT.\n\n**Bear case**: FY26 earnings were heavily assisted by one-offs (partner stocking ~$2m, FX tailwind reversal partially hidden, tariff refund) and working capital release; FY27 faces a structural ~$3m combined headwind (stocking reversal + amortisation) before any volume benefit registers. Respiratory is structurally declining with US growth investment paused. EBITDA is already contracting. If Penthrox European volume growth slows or the paediatric label ramp takes longer than expected, FY27 could print a loss.\n\n**What would change the view**: A quantified FY27 earnings guidance range; evidence that the ~$2m stocking one-off is more than offset by organic demand in H1 FY27; announcement of a capital return that signals management confidence in the free cash flow trajectory; or a material new market partnership/approval that accelerates the revenue ramp beyond current consensus.",
+        "summary": "MVP delivered a modest FY26 beat on the prior corresponding period, with NPAT rising from $0.1m to $0.6m on revenue of $42.6m (+9%), though absolute profitability remains negligible for a company of this vintage. The result was driven by 21% Pain Management revenue growth, aided by a one-off ~$2m partner inventory stocking benefit and a ~$1m Australian pricing uplift, which together likely account for the entirety of the earnings improvement. Cash quality was the genuine highlight: operating cash flow swung from near-zero to $5.8m, though $5.2m of that swing came from working capital release rather than underlying earnings growth. No dividend was declared, consistent with the company's capital preservation posture and a $21.4m cash balance being actively assessed for deployment. The single biggest forward risk is the explicit non-recurrence of the ~$2m FY26 partner stocking benefit combined with ~$1m of new paediatric registration amortisation hitting FY27 EBIT, creating a structural earnings headwind before any volume upside from the paediatric indication materialises.",
+        "full_analysis": "## Executive summary\n- Revenue grew 9% to $42.6m but EBIT of $0.2m and NPAT of $0.6m remain immaterially small; the business is barely profitable on a statutory basis.\n- The Pain Management revenue beat (+21%) was substantially inflated by two non-recurring items: ~$2m partner inventory stocking (France/Switzerland transition) and a ~$1m Australian pricing catch-up on ~25% of volume that had not received an FY25 increase.\n- EBITDA actually declined from $3.2m to $2.9m despite the revenue growth, a significant red flag management did not headline — it signals cost growth outpaced revenue growth at the gross/EBITDA level, with the FX swing ($0.9m loss vs $1.6m gain pcp = $2.5m headwind) doing most of the damage.\n- Free cashflow improvement of $5.8m is genuine but primarily a working capital and capex story, not an earnings story.\n- Paediatric label approval in UK/Europe is a real strategic milestone; near-term revenue contribution will be modest and is explicitly uncertain.\n\n## Key numbers\n\n| Metric | FY26 | FY25 (pcp) | Change |\n|---|---|---|---|\n| Group revenue | $42.6m | $39.1m | +9% |\n| Pain Management revenue | $31.6m | $26.2m | +21% |\n| Respiratory revenue | $10.9m | $12.9m | -15% |\n| EBITDA | $2.9m | $3.2m | -9% |\n| EBIT | $0.2m | $(0.0)m | +$0.3m |\n| Statutory NPAT | $0.6m | $0.1m | +$0.5m |\n| Underlying NPAT | n/a (no adjustment disclosed) | n/a | n/a |\n| EPS | n/a (not disclosed) | n/a | n/a |\n| Operating cash flow | $5.8m | ~$(0.0)m | n/m |\n| Free cash flow | $4.2m | $(1.6)m | +$5.8m |\n| Capex | $(0.8)m | $(1.0)m | +$0.2m |\n| Net cash (closing) | $21.4m | n/a | n/a |\n\nNote: No underlying/adjusted NPAT was disclosed; statutory NPAT used throughout. EPS not disclosed in materials provided.\n\n## Quality of earnings\n- **Cash conversion**: Operating cash flow of $5.8m dramatically exceeds NPAT of $0.6m. However, $5.2m of the $5.8m operating cash improvement was working capital release (lower Respiratory inventory on softer demand, lower receivables on timing). This is not repeatable and in fact partially reverses the direction of the structural business.\n- **Non-recurring items in revenue**: ~$2m partner stocking benefit (inventory load-in ahead of France/Switzerland transition) and ~$1m Australian pricing benefit on previously un-repriced volume; together ~$3m of the $3.5m revenue uplift is arguably non-recurring or pull-forward in nature.\n- **FX impact**: $0.9m FX loss on monetary items vs $1.6m gain in pcp — a $2.5m swing that suppressed EBIT; without this, EBIT would have been ~$2.7m. Equally, FX gains flattered FY25. Both years require adjustment to understand the underlying run-rate.\n- **Capitalised costs**: Lower capex in FY26 due to MAGPIE study completion in pcp. ~$1m amortisation charge on paediatric registration costs flagged to hit FY27 EBIT — not in FY26, so FY26 EBIT is marginally overstated on a normalised basis.\n- **Receivables/DSO**: Receivables fell (credited to working capital release); no DSO figures disclosed to assess quality.\n- **Inventory**: Respiratory inventory reduced materially (softer demand), which aided cash but signals demand weakness in that segment.\n\n## Management framing\n**Rating: Mixed — leaning Promotional**\n- The headline \"Solid financial performance with strong cashflow generation\" is technically true but the framing obscures the key issue: EBITDA declined 9% despite 9% revenue growth, meaning the cost base expanded faster than revenue.\n- The ~$2m stocking timing benefit and ~$1m Australian pricing one-off are disclosed (credit to management) but are buried in commentary rather than called out in headlines.\n- The EBITDA decline is not mentioned once in the ASX announcement text; management led with EBIT and NPAT improvement, which are flattered by the $2.5m FX swing.\n- The FY27 outlook is admirably specific and honest about headwinds (non-recurrence of stocking, new amortisation) but stops short of providing earnings guidance, leaving investors to draw their own (likely negative) conclusions.\n- \"Strong cashflow generation\" is repeated multiple times; the source of that cash (working capital rundown in a declining Respiratory segment) is less prominently featured.\n- Respiratory segment decline of 15% and US investment being paused are disclosed but not emphasised relative to the Penthrox growth narrative.\n\n## Segments\n\n**Pain Management** (74% of revenue)\n- Revenue: $31.6m (+21%); EBIT: $9.4m (+49%)\n- Australia: $17.9m (+16%) — volume +9%, price +7%\n- Europe: $9.0m (+12%) — in-market demand +18% but revenue growth constrained by lower transfer prices post France/Switzerland transition (~$1.4m revenue headwind) and inflated by $1.2m stocking benefit\n- Rest of World: $4.1m (+66%) — $1.1m timing stocking benefit; not organic\n- EBIT margin expanded materially but is partly inflated by the stocking/pricing items\n- Paediatric label approval is a genuine TAM expansion for future periods; no FY26 revenue contribution\n\n**Respiratory** (26% of revenue)\n- Revenue: $10.9m (-15%); EBIT: $0.7m (+63%)\n- US revenue -16% ($6.1m) on soft demand; Australia -13% ($3.0m) seasonal softness; Europe -52% ($0.6m)\n- EBIT improvement despite revenue decline driven by: US tariff refunds, reduced commercial investment (US growth initiatives paused), cost discipline\n- EBIT improvement is therefore also partly non-recurring (tariff refunds) and reflects a deliberate decision to harvest rather than invest in the segment\n- \"Stable demand\" expected in FY27 — management is not forecasting a recovery\n\n## Balance sheet\n- Closing cash of $21.4m (inclusive of short-term deposits); company is net cash with no debt disclosed\n- No net debt/covenant/refinancing risk evident from materials\n- The company is \"assessing capital management alternatives\" — language that suggests a buyback or special dividend may be forthcoming but no commitment made\n- Capex of ~$1.5m expected in FY27 vs $0.8m in FY26 — modest step-up\n- ~$1m amortisation of paediatric registration costs commencing FY27 — balance sheet intangible will begin unwinding\n\n## Dividend and capital allocation\n- No ordinary dividend declared for FY26\n- No special dividend declared\n- $21.4m cash on balance sheet with a business generating sub-$1m NPAT is a capital allocation question the market will continue to press\n- \"Assessing a range of capital management alternatives\" is deliberately vague; no timeline or quantum provided\n- Given the paediatric indication ramp-up investment needs are modest (partners execute in Europe), the case for a capital return is strengthening\n\n## Guidance and outlook\n- FY27 qualitative guidance provided but no earnings or revenue numbers given\n- Explicit headwinds called out: non-recurrence of ~$2m stocking benefit; ~$1m new amortisation charge\n- These two items alone represent ~$3m of EBIT headwind against a FY26 EBIT base of $0.2m, implying FY27 EBIT is likely to be negative on a like-for-like basis unless volume growth is strong\n- Middle East supply chain disruption and US tariffs flagged as uncertain earnings risks\n- \"Stable\" Respiratory demand (not growth) effectively concedes that segment is ex-growth\n- No quantified revenue guidance; investors must model themselves\n\n## Positives\n- Penthrox in-market volume growth 18% in Europe and 28% in Australian hospital segment — genuine underlying demand acceleration\n- Paediatric label approved UK and all EU markets — meaningful TAM expansion with no incremental fixed cost burden (partner-distributed)\n- Pain Management EBIT of $9.4m (+49%) shows strong segment-level economics when volume grows\n- Free cashflow $4.2m vs -$1.6m pcp — balance sheet now in genuine accumulation mode\n- $21.4m net cash with no debt; no financial distress risk\n- PBS Nurse Practitioner access to Penthrox prescriber bag — incremental prescriber pool\n- Australia Penthrox revenue +16% with both volume and price contributing\n- US tariff refund and capital-light European model transition de-risks future cost structure\n\n## Negatives / red flags\n- EBITDA declined 9% to $2.9m despite 9% revenue growth — costs expanding faster than revenue, not disclosed in headlines\n- ~$3m of FY26 revenue/earnings is non-recurring (stocking benefit + one-off pricing); organic EBIT likely still negative\n- $2.5m FX swing between years (loss vs gain) distorts year-on-year comparisons in both directions\n- FY27 faces ~$3m structural EBIT headwind (stocking non-recurrence + new amortisation) before any volume benefit from paediatrics\n- Respiratory segment in structural volume decline; US growth initiatives paused; this segment is being managed for margin not growth\n- No EPS disclosed — makes per-share value assessment impossible without going to the full accounts\n- No dividend despite $21.4m cash hoard and a market cap likely below $100m; capital allocation remains unresolved\n- \"Middle East supply chain disruption\" introduced as a new risk without quantification\n- Revenue growth of 9% is partly a timing artefact; underlying organic growth rate is materially lower\n- Company has been near-breakeven for multiple years; the path to material profitability requires sustained Penthrox volume compounding\n\n## Bottom line\n**Bull case**: Penthrox paediatric indication drives sustained 15-20%+ European volume CAGR over 3-5 years; Australian hospital penetration continues at 25%+ per annum; capital-light partner model means incremental revenue drops at high margins; $21.4m cash returned to shareholders via buyback; by FY28 NPAT could reach $5-8m on $50m+ revenue.\n\n**Bear case**: FY27 EBIT turns negative as ~$3m of one-off tailwinds reverse; paediatric indication adoption is slow (physicians need re-education, formulary inclusion takes 2-3 years); Respiratory segment continues declining; FX remains a structural headwind; the business grinds along near breakeven for another 2-3 years burning management credibility.\n\n**What would change the view**: (1) A FY27 interim result showing Penthrox European volume growth above 20% with stocking effects excluded — that would confirm the paediatric TAM is converting to sales; (2) a capital management announcement — buyback or special dividend — that signals the board has discipline on the $21.4m cash pile; (3) a Respiratory stabilisation with US volumes inflecting positive, removing the drag that has weighed on group earnings for two years.",
         "_status": "ok"
       },
       "doc_link": "",
@@ -48,26 +93,7 @@
       "pdf_path": "/tmp/MVP_FY26_2026-08-20.pdf"
     }
   ],
-  "material": [
-    {
-      "ticker": "BXB",
-      "title": "2026 Full-Year Result presentation 26\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.3MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127222",
-      "analysis": {
-        "what_happened": "BXB: 2026 Full-Year Result presentation 26\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.3MB",
-        "so_what": "Price-sensitive headline — open link for details."
-      }
-    },
-    {
-      "ticker": "BXB",
-      "title": "Full Year Statutory Accounts 202\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 12.0MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127208",
-      "analysis": {
-        "what_happened": "BXB: Full Year Statutory Accounts 202\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 12.0MB",
-        "so_what": "Price-sensitive headline — open link for details."
-      }
-    }
-  ],
+  "material": [],
   "fyi": [
     {
       "ticker": "BXB",
@@ -95,6 +121,891 @@
       "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127208"
     },
     {
+      "ticker": "BXB",
+      "title": "End of Financial Year Key Dates 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 168.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03122017"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification regarding unquoted securities - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03121368"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 411.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03121367"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03111493"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification regarding unquoted securities - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03111488"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Amendment to Appendix 3H dated 1 April 2026 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page ",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110146"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Brambles to appeal class action judgment 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 177.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110138"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 409.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03109868"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03106716"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03106604"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03106238"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03106130"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105715"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105656"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105427"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105426"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105425"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105295"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03105247"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104918"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104820"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104549"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104547"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104407"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03104364"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03103412"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03103383"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03103002"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03102935"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03102565"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03102502"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03102243"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101490"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101390"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03101139"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100973"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100909"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100534"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100404"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099931"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 417.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099669"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification regarding unquoted securities - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099647"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03096655"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03096654"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03096271"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03096269"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03096262"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03096144"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03096093"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 475.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03095991"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 473.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03095904"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03095829"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03095827"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03095826"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03095678"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03095572"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 503.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03095380"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03095330"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03095329"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of buy-back - BXB 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03094682"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Brambles FY26 Trading Update 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 263.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03094628"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03092437"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03092391"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03091907"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03091869"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03091405"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03091316"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03090844"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03090805"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03090343"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03090299"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03089780"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03089756"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification regarding unquoted securities - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03089343"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03089223"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 415.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03089183"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03089169"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03088178"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03088083"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03087667"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03087662"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03087416"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03087361"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03086406"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03086349"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03086055"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03085866"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03085460"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03085406"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03084967"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03084927"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03084509"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03084493"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03084089"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03084028"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03083786"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03083614"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03083552"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Brambles Limited Class Action Judgment 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 263.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03081653"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 375.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03081003"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 21.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03080903"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03080881"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03080880"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03080185"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03080079"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03079684"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03079559"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03079081"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03079079"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03078955"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03078795"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 411.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03078608"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03078607"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification regarding unquoted securities - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03078532"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03078531"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03078530"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03078298"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03078246"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 21.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03077660"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03077630"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03077582"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03076611"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03076508"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03076091"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03076016"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03075628"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03075540"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03075336"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03075286"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03075285"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03075283"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03075154"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03075106"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03074695"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03074644"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03074187"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03074149"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073774"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073684"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 398.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03073075"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072946"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072826"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072312"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03072260"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03071614"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03071593"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03071136"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03071079"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03070615"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03070573"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03070343"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03070156"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03070002"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03069621"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03069586"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03069053"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03069028"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03068567"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03068537"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03067757"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03067756"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 404.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03067321"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03067269"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification regarding unquoted securities - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03067244"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03067078"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03067050"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03065468"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03065253"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03064521"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03064423"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03063822"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03063702"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03063424"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03063423"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03062747"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03062745"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03062744"
+    },
+    {
       "ticker": "MVP",
       "title": "MVP Announces FY26 Full Year Results 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 247.8KB",
       "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127420"
@@ -110,9 +1021,54 @@
       "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127416"
     },
     {
-      "ticker": "TWE",
-      "title": "Change in substantial holding 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.0MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127084"
+      "ticker": "MVP",
+      "title": "Change in substantial holding 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 181.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03125967"
+    },
+    {
+      "ticker": "MVP",
+      "title": "FY26 Full Year Results Announcement Details 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page ",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124502"
+    },
+    {
+      "ticker": "MVP",
+      "title": "Appendix 4C and Quarterly Activity Report 30 June 2026 8\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 375.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03117758"
+    },
+    {
+      "ticker": "MVP",
+      "title": "Change in substantial holding 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 148.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03110260"
+    },
+    {
+      "ticker": "MVP",
+      "title": "Becoming a substantial holder 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 221.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100714"
+    },
+    {
+      "ticker": "MVP",
+      "title": "Change in substantial holding 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 389.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03100167"
+    },
+    {
+      "ticker": "MVP",
+      "title": "Notification of cessation of securities - MVP 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03093985"
+    },
+    {
+      "ticker": "MVP",
+      "title": "Appendix 4C and Quarterly Activity Report 31 March 2026 8\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 401.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03085952"
+    },
+    {
+      "ticker": "MVP",
+      "title": "Notification of cessation of securities - MVP 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03084267"
+    },
+    {
+      "ticker": "MVP",
+      "title": "Change in substantial holding 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 186.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03083449"
     }
   ]
 }

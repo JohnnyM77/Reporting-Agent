@@ -1,0 +1,23 @@
+{
+  "annual_div_cents": {
+    "2023": 15.0,
+    "2024": 18.5,
+    "2025": 16.5,
+    "2026": 8.0
+  },
+  "annual_eps_cents": {
+    "2022": 15.6,
+    "2023": 11.9,
+    "2024": 18.6,
+    "2025": 16.4
+  },
+  "last_updated": "2026-08-21",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2022": "yfinance",
+    "2023": "yfinance",
+    "2024": "yfinance",
+    "2025": "yfinance"
+  },
+  "ticker": "TLC.AX"
+}

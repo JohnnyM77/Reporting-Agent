@@ -1,99 +1,28 @@
 {
-  "last_run": "2026-08-21",
+  "last_run": "2026-08-22",
   "silence": false,
-  "high_impact": [
-    {
-      "ticker": "PWH",
-      "title": "FY26 Full Year Results Announcement 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 176.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127819",
-      "type": "results",
-      "analysis": {
-        "ticker": "PWH",
-        "period": "FY26",
-        "period_type": "full_year",
-        "currency": "AUD",
-        "metrics": {
-          "revenue": {
-            "value": "$170.7m",
-            "change_pct": "+31%",
-            "basis": "reported"
-          },
-          "underlying_npat": {
-            "value": "$17.9m",
-            "change_pct": "+83%",
-            "basis": "statutory"
-          },
-          "underlying_eps": {
-            "value": "17.79c",
-            "change_pct": "+83%",
-            "basis": "statutory"
-          },
-          "dividend_ordinary": {
-            "value": "5.00c",
-            "change_pct": "+150%",
-            "note": "Final only; fully franked. Total FY26 dividend 8.00cps (up 100% on FY25 total of 4.00cps)."
-          },
-          "operating_cash_flow": {
-            "value": "n/a",
-            "change_pct": "n/a",
-            "basis": "n/a"
-          }
-        },
-        "summary": "PWH delivered a strong beat on every headline metric with revenue +31% to $170.7m and NPAT +83% to $17.9m, ahead of what the market had flagged as achievable given the Stapylton transition drag in FY25. Motorsport (+45%) and A&D (+31%) drove the lift while OEM declined 7% on project phasing and Aftermarket was deliberately shrunk for margin. Cash conversion of 104.9% confirms profit quality despite a conscious inventory build for supply-chain risk. The final dividend of 5.00cps (fully franked, total 8.00cps) doubled year-on-year, signalling board confidence in the trajectory. The single biggest forward risk is execution on the Poland facility and A&D growth ramp while absorbing ~$16m of phased capex without margin dilution.",
-        "full_analysis": "## Executive summary\n- PWH delivered record revenue of $170.7m (+31% pcp) and NPAT of $17.9m (+83%), with NPAT margin expanding 3pps to 10.5% — the operating leverage the market was waiting for finally materialising post-Stapylton.\n- Growth was concentrated in Motorsport ($101.9m, +45%) on new F1 regulation complexity, and A&D ($35.2m, +31%) on US defence program shipments; OEM (-7%) and Aftermarket (intentionally rationalised) were the only weak spots.\n- No separate underlying/adjusted NPAT was disclosed; the statutory figure is used throughout — no normalisation bridge is provided in this announcement.\n- A&D order book of ~$40m provides strong FY27 revenue visibility; Poland facility (~$16m over 4 years, $4m in FY27) is the next growth vector but carries execution risk.\n- Cash conversion at 104.9% is solid, though the company flagged a deliberate raw material inventory build which will have absorbed some working capital — full cash flow statement not provided in this release.\n\n## Key numbers\n\n| Metric | FY26 | FY25 (pcp) | Change |\n|---|---|---|---|\n| Revenue | $170.7m | $130.1m | +31% |\n| EBITDA | $40.7m | $25.5m | +60% |\n| EBITDA margin | 23.8% | 19.6% | +4.2pps |\n| Statutory NPAT | $17.9m | $9.8m | +83% |\n| Underlying NPAT | n/a (no adjustment disclosed) | n/a | n/a |\n| NPAT margin | 10.5% | 7.5% | +3.0pps |\n| Basic EPS | 17.79c | 9.71c | +83% |\n| Cash conversion ratio | 104.9% | 136.3% | -31.3pps |\n| Operating cash flow | n/a (not disclosed in this release) | n/a | n/a |\n| Free cash flow | n/a (not disclosed in this release) | n/a | n/a |\n| Capex | $22.7m | n/a | n/a |\n| Net debt | $5.6m | ~$13.4m (at 31 Dec 25) | improving |\n| Final dividend (fully franked) | 5.00cps | 2.00cps | +150% |\n| Total dividend (fully franked) | 8.00cps | 4.00cps | +100% |\n\n*Note: No full P&L, cash flow statement, or balance sheet is included in this release. The Appendix 4E and full financial statements were lodged separately and are not available here. Numbers above are sourced solely from the results announcement.*\n\n## Quality of earnings\n- Cash conversion of 104.9% (EBITDA-to-operating-cash proxy) indicates profit is converting to cash at better than 1:1, which is a positive quality signal.\n- However, the prior year cash conversion of 136.3% was unusually high, suggesting FY26's 104.9% is a normalisation rather than deterioration — still acceptable.\n- Management explicitly flagged a deliberate increase in raw material inventory to hedge supply chain risk; this is a working capital headwind that the 104.9% figure absorbs — the underlying operating conversion is therefore strong.\n- No one-off items, restructuring charges, or non-cash adjustments were disclosed; no underlying vs statutory bridge was provided, suggesting no material adjustments exist.\n- Capex of $22.7m is significant relative to EBITDA of $40.7m (~56% capex/EBITDA ratio), reflecting the Stapylton HQ transition completion and US A&D expansion. Free cash flow after capex is therefore materially lower than EBITDA; full FCF figure not disclosed.\n- Receivables, DSO, and detailed working capital movements cannot be assessed without the full financial statements.\n\n## Management framing\n**Rating: Transparent / Mixed**\n- Positives: Management clearly disclosed segment revenues, acknowledged OEM's -7% decline, and was explicit that Aftermarket rationalisation was deliberate. The Poland investment is quantified with phased capex and a candid \"no material contribution in early years\" caveat — this is commendable.\n- The 2% NPAT margin improvement target for FY27 is specific and measurable, building on the stated 2-4 year horizon to return to FY24 margin levels — this is genuine guidance rather than vague optimism.\n- Caution: The cash conversion ratio of 104.9% is presented without defining the exact calculation basis (EBITDA-to-OCF vs NPAT-to-OCF), making forensic verification impossible from this release alone.\n- The 31.3pps decline in cash conversion vs pcp is buried in a table with no narrative explanation beyond the raw material inventory comment; this deserved more prominence.\n- Motorsport being described as driven by \"complexity of F1 regulations\" is accurate but implicitly dependent on those regulations remaining complex — a regulatory simplification risk not called out.\n\n## Segments\n\n| Segment | FY26 Revenue | FY25 Revenue | Change | Notes |\n|---|---|---|---|---|\n| Motorsport | $101.9m | ~$70.3m (implied) | +45% | F1 regulation complexity; hybrid/EV platform adoption |\n| Aerospace & Defence | $35.2m | ~$26.9m (implied) | +31% | US defence primes; H2 stable at higher baseline; ~$40m order book |\n| OEM | n/a | n/a | -7% | Project phasing; hypercar pipeline intact; FY27 new projects |\n| Automotive Aftermarket | n/a | n/a | negative/flat | Deliberate margin rationalisation; discount structure revision |\n\n*Note: OEM and Aftermarket absolute revenue figures not disclosed in this release. Motorsport and A&D imply total of ~$137.1m; the remaining ~$33.6m splits across OEM and Aftermarket.*\n- Segment margins not disclosed in this release.\n- A&D order book of ~$40m provides strong FY27 revenue coverage for that segment.\n\n## Balance sheet\n- Net debt of $5.6m at 30 June 2026, down from $13.4m at 31 December 2025 (H2 debt repayment of $11.1m).\n- External borrowings of $12.9m at year end, down from $24.0m at 31 December 2025.\n- Leverage is minimal — net debt/EBITDA is approximately 0.14x on FY26 EBITDA of $40.7m, leaving substantial headroom to fund Poland capex ($4m FY27, $16m over 4 years) and any further growth investment without balance sheet stress.\n- No covenant or refinancing detail disclosed; not a concern at this leverage level.\n- Full balance sheet (receivables, inventory, payables) not available in this release.\n\n## Dividend and capital allocation\n- Final dividend: 5.00cps fully franked (up 150% on FY25 final of 2.00cps).\n- Total FY26 dividend: 8.00cps fully franked (up 100% on FY25 total of 4.00cps).\n- Payout ratio: 8.00cps / 17.79cps EPS = ~45% — a moderate payout that retains capital for growth capex.\n- The doubling of total dividend signals board confidence; the 150% jump in the final (vs 100% for the full year) suggests H2 earnings were weighted toward the back half.\n- Poland investment ($16m over 4 years) is funded comfortably within operating cash flow given the net debt position.\n- Capex of $22.7m in FY26 was described as \"in line with expectations\" — the market will want to see this step down in FY27 as Stapylton transition costs normalise, offset partially by Poland ramp.\n\n## Guidance and outlook\n- A&D: Revenue growth trajectory to continue in FY27; order book of ~$40m provides visibility.\n- Motorsport: Expected to maintain FY26 record revenue levels (i.e., flat, not growth) in FY27 on stable F1 regulations.\n- OEM: New hypercar projects commencing early FY27.\n- NPAT margin: +2pps improvement guided for FY27, as part of a 2-4 year plan to return to FY24 margin levels.\n- Poland: ~$4m capex in FY27, no material earnings contribution expected in early years.\n- No quantitative revenue or NPAT dollar guidance provided for FY27 — guidance is directional only.\n- The absence of a revenue number for FY27 is notable given the strong order book; management appears deliberately conservative on top-line guidance.\n\n## Positives\n- Revenue +31% to record $170.7m, demonstrating the Stapylton capacity investment is translating to revenue.\n- NPAT +83% to $17.9m; 3pps NPAT margin improvement on track with communicated plan.\n- EBITDA +60% to $40.7m — operating leverage clearly visible as fixed cost base is absorbed.\n- A&D order book of ~$40m provides strong FY27 forward revenue visibility in the highest-growth segment.\n- Debt repayment of $11.1m in H2 FY26 reduces net debt to just $5.6m; balance sheet is essentially ungeared.\n- Cash conversion of 104.9% confirms profit quality despite inventory build.\n- Poland investment is funded, scoped, and timeline-defined — not a vague aspiration.\n- Total dividend doubled to 8.00cps (fully franked), returning capital while retaining growth funding.\n- Northrop Grumman supplier excellence award and CMMC 2.0 certification strengthen A&D competitive positioning.\n\n## Negatives / red flags\n- OEM revenue declined 7% — while framed as \"project phasing,\" this is a real revenue miss in a segment that should benefit from hypercar demand tailwinds; needs monitoring.\n- Aftermarket deliberately shrunk — correct strategically, but a revenue headwind that will persist.\n- Motorsport guided flat for FY27 — after a 45% surge, the world's most visible segment has run out of near-term upside, meaning all FY27 growth must come from A&D and a recovering OEM.\n- Cash conversion fell 31.3pps pcp — even if explained by inventory build, this warrants scrutiny in the full financial statements.\n- Capex/EBITDA ~56% leaves free cash flow materially below EBITDA; FCF yield will be modest at current market cap levels.\n- Poland facility carries execution risk: startup costs, local hiring, customer relationship development, and FX exposure (EUR manufacturing vs AUD reporting) are all new risks for management.\n- No segment margin data disclosed — investors cannot assess where the profitability improvement is coming from (Motorsport mix? A&D pricing? Aftermarket rationalisation?).\n- Full financial statements not included in this release; several key metrics (OCF, FCF, DSO, inventory days) cannot be verified.\n- Leadership transition (new CEO, new CFO, founder moved to Chairman) in FY26 introduces execution continuity risk even if the transition appears well-managed.\n- FY27 guidance is directional only; no revenue or NPAT number given despite strong order book visibility.\n\n## Bottom line\n**Bull case:** A&D continues to compound at 20-30%+ as sovereign defence spending accelerates globally, Motorsport holds its record base, OEM recovers with hypercar launches, and the 2%/year NPAT margin improvement plan is delivered — taking NPAT margin back above 12% by FY28-29. Poland becomes a second A&D growth engine from FY28. At that trajectory, PWH could be a $35m+ NPAT business by FY28 on a modest revenue assumption of ~$210-220m.\n\n**Bear case:** F1 regulation stabilisation means Motorsport revenue plateaus or declines in FY27-28 as the complexity cycle unwinds. A&D order book converts slower than expected due to US defence budget uncertainty or program delays. Poland absorbs capital and management bandwidth without near-term returns. OEM hypercar projects slip again. NPAT margin improvement stalls as fixed cost inflation offsets volume gains. In this scenario, FY27 NPAT is flat to marginally up on FY26.\n\n**What would change the view:** (1) Full financial statements — particularly FCF, DSO, and segment margins — to verify quality of the NPAT expansion. (2) Confirmation that Motorsport does not decline in H1 FY27 when F1 regulation certainty reduces development spend. (3) The pace of A&D order book conversion to revenue. (4) Whether the Poland setup cost is contained within the guided $4m in FY27 or surprises to the upside.",
-        "_status": "ok"
-      },
-      "doc_link": "",
-      "doc_error": "",
-      "pdf_path": "/tmp/PWH_FY26_2026-08-21.pdf"
-    }
-  ],
+  "high_impact": [],
   "material": [],
   "fyi": [
     {
-      "ticker": "BHP",
-      "title": "Application for quotation of securities - BHP 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 21.1KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127685"
+      "ticker": "AR9",
+      "title": "Notification of cessation of securities - AR9 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03128302"
     },
     {
-      "ticker": "LAU",
-      "title": "Updated Notification Release from Escrow 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 271",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127877"
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03128255"
     },
     {
-      "ticker": "LAU",
-      "title": "Notification of Escrow release 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 270.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127815"
+      "ticker": "DRO",
+      "title": "Change in substantial holding 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 167.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03128477"
     },
     {
-      "ticker": "PWH",
-      "title": "Ceasing to be a substantial holder 12\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.3MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127849"
-    },
-    {
-      "ticker": "PWH",
-      "title": "Dividend/Distribution - PWH 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127825"
-    },
-    {
-      "ticker": "PWH",
-      "title": "FY26 Corporate Governance Statement and Appendix 4G 32\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.7MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127824"
-    },
-    {
-      "ticker": "PWH",
-      "title": "FY26 Investor Presentation 32\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.9MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127822"
-    },
-    {
-      "ticker": "PWH",
-      "title": "FY26 Full Year Results Announcement 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 176.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127819"
-    },
-    {
-      "ticker": "PWH",
-      "title": "FY26 Annual Report and Appendix 4E 149\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.6MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127816"
+      "ticker": "NHC",
+      "title": "Notification regarding unquoted securities - NHC 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03128351"
     }
   ]
 }

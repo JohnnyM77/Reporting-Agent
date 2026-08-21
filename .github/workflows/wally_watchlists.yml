@@ -3,8 +3,11 @@ name: Wally Watchlist Screening
 on:
   workflow_dispatch:
   schedule:
-    # Tue/Fri (UTC) — all watchlists including TII75 run every scheduled execution
-    - cron: "30 22 * * 2,5"
+    # Fri 22:30 UTC = Sat 06:30 SGT — all watchlists including TII75 run every
+    # scheduled execution. Wally produces a lot of material in one go, so it
+    # runs once a week rather than twice, and lands on a Saturday morning
+    # where there is time to read it. Was Tue+Fri ("30 22 * * 2,5").
+    - cron: "30 22 * * 5"
 
 jobs:
   wally:
@@ -103,7 +106,7 @@ jobs:
             # Manual trigger: run all with combined email (force TII75)
             python -m wally.main --all-combined --force
           else
-            # Scheduled run (Tue or Fri): run all watchlists including TII75
+            # Scheduled run (weekly, Fri UTC): all watchlists including TII75
             python -m wally.main --all-combined
           fi
 

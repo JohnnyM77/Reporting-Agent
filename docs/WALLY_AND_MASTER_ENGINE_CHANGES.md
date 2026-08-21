@@ -40,8 +40,9 @@ This document describes the recent enhancements to the Wally agent and the addit
 
 #### Updated Workflow:
 The `wally_watchlists.yml` workflow now uses combined email mode:
-- **Tuesday runs**: Standard watchlists (TII, JM, Aussie Tech) in one email
-- **Friday runs**: All watchlists including TII75 (if gate allows) in one email
+- **Weekly scheduled run** (Fri 22:30 UTC = Sat 06:30 SGT): all watchlists
+  including TII75 (if gate allows) in one email. Was Tue+Fri; cut to once a
+  week because a single run already produces a lot to read.
 - **Manual triggers**: All watchlists including forced TII75 in one email
 
 #### Email Format:

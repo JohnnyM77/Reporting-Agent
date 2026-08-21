@@ -1,114 +1,150 @@
 {
-  "last_run": "2026-08-18T22:54:23.429445+00:00",
+  "last_run": "2026-08-21T22:54:22.221343+00:00",
   "watchlists": {
     "TII Watchlist": {
-      "run_timestamp": "2026-08-18T22:51:51.449196+00:00",
+      "run_timestamp": "2026-08-21T22:51:43.775657+00:00",
       "total": 74,
-      "flagged_count": 7,
+      "flagged_count": 9,
       "flagged": [
         {
           "ticker": "WPR.AX",
           "company_name": "Waypoint REIT",
-          "current_price": 2.4200000762939453,
+          "current_price": 2.4000000953674316,
           "low_52w": 2.3299999237060547,
           "high_52w": 2.7899999618530273,
-          "distance_to_low_pct": 3.86266761952241,
-          "below_high_pct": 13.261644825017852
+          "distance_to_low_pct": 3.004299311307958,
+          "below_high_pct": 13.978490029317795
+        },
+        {
+          "ticker": "HSN.AX",
+          "company_name": "Hansen Technologies Limited",
+          "current_price": 3.259999990463257,
+          "low_52w": 3.2200000286102295,
+          "high_52w": 6.489999771118164,
+          "distance_to_low_pct": 1.242234829118668,
+          "below_high_pct": 49.76887356805576
+        },
+        {
+          "ticker": "TLC.AX",
+          "company_name": "The Lottery Corporation Limited",
+          "current_price": 5.199999809265137,
+          "low_52w": 5.010000228881836,
+          "high_52w": 5.96999979019165,
+          "distance_to_low_pct": 3.792406620821774,
+          "below_high_pct": 12.897822579350457
         },
         {
           "ticker": "PMV.AX",
           "company_name": "Premier Investments Limited",
-          "current_price": 11.640000343322754,
+          "current_price": 11.550000190734863,
           "low_52w": 11.270000457763672,
           "high_52w": 22.899999618530273,
-          "distance_to_low_pct": 3.283051202577341,
-          "below_high_pct": 49.17030333090542
+          "distance_to_low_pct": 2.484469579398334,
+          "below_high_pct": 49.56331710421162
         },
         {
           "ticker": "JBH.AX",
           "company_name": "JB Hi-Fi Limited",
-          "current_price": 72.0999984741211,
+          "current_price": 69.19999694824219,
           "low_52w": 68.88999938964844,
-          "high_52w": 121.0,
-          "distance_to_low_pct": 4.659600976792863,
-          "below_high_pct": 40.41322440155282
+          "high_52w": 120.0,
+          "distance_to_low_pct": 0.44998920211970694,
+          "below_high_pct": 42.333335876464844
         },
         {
-          "ticker": "CNU.AX",
-          "company_name": "Chorus Limited",
-          "current_price": 7.889999866485596,
-          "low_52w": 7.550000190734863,
-          "high_52w": 8.90999984741211,
-          "distance_to_low_pct": 4.503306849819289,
-          "below_high_pct": 11.447811429792228
+          "ticker": "MAQ.AX",
+          "company_name": "Macquarie Technology Group Limited",
+          "current_price": 60.29999923706055,
+          "low_52w": 58.0,
+          "high_52w": 78.30000305175781,
+          "distance_to_low_pct": 3.9655159259664603,
+          "below_high_pct": 22.98850972304422
         },
         {
           "ticker": "TLS.AX",
           "company_name": "Telstra Group Limited",
-          "current_price": 4.739999771118164,
-          "low_52w": 4.71999979019165,
+          "current_price": 4.730000019073486,
+          "low_52w": 4.710000038146973,
           "high_52w": 5.550000190734863,
-          "distance_to_low_pct": 0.4237284282951545,
-          "below_high_pct": 14.594601653688391
+          "distance_to_low_pct": 0.42462804170978624,
+          "below_high_pct": 14.774777360013072
         },
         {
           "ticker": "RTO.L",
           "company_name": "Rentokil Initial plc",
-          "current_price": 345.70001220703125,
-          "low_52w": 344.79998779296875,
+          "current_price": 344.20001220703125,
+          "low_52w": 341.1000061035156,
           "high_52w": 506.79998779296875,
-          "distance_to_low_pct": 0.26102797155634166,
-          "below_high_pct": 31.787683399027216
+          "distance_to_low_pct": 0.9088261647743413,
+          "below_high_pct": 32.08365814964477
         },
         {
           "ticker": "UMG.AS",
           "company_name": "Universal Music Group N.V.",
-          "current_price": 14.805000305175781,
+          "current_price": 14.899999618530273,
           "low_52w": 14.345000267028809,
           "high_52w": 25.309999465942383,
-          "distance_to_low_pct": 3.2066924334902756,
-          "below_high_pct": 41.50533142010662
+          "distance_to_low_pct": 3.8689392901379045,
+          "below_high_pct": 41.12998841197133
         }
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-08-18T22:53:50.527070+00:00",
+      "run_timestamp": "2026-08-21T22:53:48.036091+00:00",
       "total": 34,
-      "flagged_count": 2,
+      "flagged_count": 4,
       "flagged": [
+        {
+          "ticker": "QOR.AX",
+          "company_name": "Qoria Ltd",
+          "current_price": 0.23499999940395355,
+          "low_52w": 0.23499999940395355,
+          "high_52w": 0.23499999940395355,
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 0.0
+        },
+        {
+          "ticker": "TLC.AX",
+          "company_name": "The Lottery Corporation Limited",
+          "current_price": 5.199999809265137,
+          "low_52w": 5.010000228881836,
+          "high_52w": 5.96999979019165,
+          "distance_to_low_pct": 3.792406620821774,
+          "below_high_pct": 12.897822579350457
+        },
         {
           "ticker": "FMG.AX",
           "company_name": "Fortescue Ltd",
-          "current_price": 17.68000030517578,
+          "current_price": 17.75,
           "low_52w": 17.639999389648438,
           "high_52w": 22.989999771118164,
-          "distance_to_low_pct": 0.22676256752490148,
-          "below_high_pct": 23.096996602032245
+          "distance_to_low_pct": 0.6235862480591321,
+          "below_high_pct": 22.792517717642877
         },
         {
           "ticker": "TLS.AX",
           "company_name": "Telstra Group Limited",
-          "current_price": 4.739999771118164,
-          "low_52w": 4.71999979019165,
+          "current_price": 4.730000019073486,
+          "low_52w": 4.710000038146973,
           "high_52w": 5.550000190734863,
-          "distance_to_low_pct": 0.4237284282951545,
-          "below_high_pct": 14.594601653688391
+          "distance_to_low_pct": 0.42462804170978624,
+          "below_high_pct": 14.774777360013072
         }
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-08-18T22:54:06.861883+00:00",
+      "run_timestamp": "2026-08-21T22:54:05.971317+00:00",
       "total": 35,
-      "flagged_count": 2,
+      "flagged_count": 4,
       "flagged": [
         {
           "ticker": "AR9.AX",
           "company_name": "archTIS Limited",
-          "current_price": 0.050999999046325684,
-          "low_52w": 0.05000000074505806,
-          "high_52w": 0.2150000035762787,
-          "distance_to_low_pct": 1.9999965727329765,
-          "below_high_pct": 76.2790706055818
+          "current_price": 0.04500000178813934,
+          "low_52w": 0.04500000178813934,
+          "high_52w": 0.18101300299167633,
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 75.13990650151878
         },
         {
           "ticker": "QOR.AX",
@@ -118,40 +154,49 @@
           "high_52w": 0.23499999940395355,
           "distance_to_low_pct": 0.0,
           "below_high_pct": 0.0
+        },
+        {
+          "ticker": "AIM.AX",
+          "company_name": "Ai-Media Technologies Limited",
+          "current_price": 0.19499999284744263,
+          "low_52w": 0.19499999284744263,
+          "high_52w": 0.949999988079071,
+          "distance_to_low_pct": 0.0,
+          "below_high_pct": 79.47368470585579
+        },
+        {
+          "ticker": "MAQ.AX",
+          "company_name": "Macquarie Technology Group Limited",
+          "current_price": 60.29999923706055,
+          "low_52w": 58.0,
+          "high_52w": 78.30000305175781,
+          "distance_to_low_pct": 3.9655159259664603,
+          "below_high_pct": 22.98850972304422
         }
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-08-18T22:54:23.429445+00:00",
+      "run_timestamp": "2026-08-21T22:54:22.221343+00:00",
       "total": 30,
-      "flagged_count": 3,
+      "flagged_count": 2,
       "flagged": [
         {
           "ticker": "WSO",
           "company_name": "Watsco, Inc.",
-          "current_price": 313.6499938964844,
+          "current_price": 311.94000244140625,
           "low_52w": 309.29998779296875,
           "high_52w": 456.8599853515625,
-          "distance_to_low_pct": 1.406403580729308,
-          "below_high_pct": 31.34658233306979
-        },
-        {
-          "ticker": "FIZZ",
-          "company_name": "National Beverage Corp.",
-          "current_price": 31.479999542236328,
-          "low_52w": 30.530000686645508,
-          "high_52w": 46.75,
-          "distance_to_low_pct": 3.111689597853074,
-          "below_high_pct": 32.6631025834517
+          "distance_to_low_pct": 0.8535450218655052,
+          "below_high_pct": 31.720874569182843
         },
         {
           "ticker": "MNST",
           "company_name": "Monster Beverage Corporation",
-          "current_price": 47.380001068115234,
+          "current_price": 47.790000915527344,
           "low_52w": 45.52000045776367,
           "high_52w": 99.94000244140625,
-          "distance_to_low_pct": 4.086117292721445,
-          "below_high_pct": 52.59155502233091
+          "distance_to_low_pct": 4.98681993615075,
+          "below_high_pct": 52.18130903734357
         }
       ]
     },

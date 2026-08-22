@@ -1,28 +1,7 @@
 {
   "last_run": "2026-08-22",
-  "silence": false,
+  "silence": true,
   "high_impact": [],
   "material": [],
-  "fyi": [
-    {
-      "ticker": "AR9",
-      "title": "Notification of cessation of securities - AR9 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03128302"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03128255"
-    },
-    {
-      "ticker": "DRO",
-      "title": "Change in substantial holding 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 167.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03128477"
-    },
-    {
-      "ticker": "NHC",
-      "title": "Notification regarding unquoted securities - NHC 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.8KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03128351"
-    }
-  ]
+  "fyi": []
 }

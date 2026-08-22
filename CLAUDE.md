@@ -1,5 +1,17 @@
 # Reporting-Agent — Claude Notes
 
+## Agent behaviour — no polling loops
+
+Do not subscribe to PR activity and do not schedule self check-ins
+(`send_later`, routines, `/loop`) unless I explicitly ask. This repo has no CI
+that runs on `pull_request`, so there is nothing for a watcher to catch — open
+the PR, tell me, and stop. If you think something genuinely needs watching, ask
+first and say what signal you expect.
+
+Every scheduled wake-up replays the whole conversation to the model, so a
+"nothing changed" check-in on a long session costs nearly as much as a useful
+turn. Ten of them cost real money and caught nothing.
+
 ## Environment
 
 ### User's Windows PC (self-hosted GitHub Actions runner)

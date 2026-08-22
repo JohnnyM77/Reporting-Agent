@@ -1,7 +1,89 @@
 {
   "last_run": "2026-08-22",
-  "silence": true,
-  "high_impact": [],
+  "silence": false,
+  "high_impact": [
+    {
+      "ticker": "CGS",
+      "title": "FY26 Results Investor Briefing 20\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 689.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126179",
+      "type": "results",
+      "analysis": {
+        "ticker": "CGS",
+        "period": "FY26",
+        "period_type": "full_year",
+        "currency": "USD",
+        "metrics": {
+          "revenue": {
+            "value": "US$60.9m",
+            "change_pct": "+15%",
+            "basis": "reported"
+          },
+          "underlying_npat": {
+            "value": "US$11.9m",
+            "change_pct": "+17%",
+            "basis": "reported"
+          },
+          "underlying_eps": {
+            "value": "n/a",
+            "change_pct": "n/a",
+            "basis": "n/a"
+          },
+          "dividend_ordinary": {
+            "value": "A$0.04",
+            "change_pct": "n/a",
+            "note": "fully franked; prior year comparator not disclosed in this document"
+          },
+          "operating_cash_flow": {
+            "value": "n/a",
+            "change_pct": "n/a",
+            "basis": "n/a"
+          }
+        },
+        "summary": "Cogstate delivered record FY26 results — revenue US$60.9m (+15%), NPAT US$11.9m (+17%) — consistent with a strong growth trajectory versus pcp, though no formal guidance or consensus was disclosed against which to benchmark a beat or miss. Growth was driven by an explosion in clinical trial starts (90 vs 35 pcp) and expansion beyond Alzheimer's into mood, sleep, rare disease and eCOA, diversifying the revenue base substantially. Operating cash flow is not disclosed in the investor presentation, so cash conversion quality cannot be independently assessed from this document alone. The ordinary dividend was increased to A$0.04 per share fully franked (~40% payout), signalling management confidence; EPS was not disclosed in the presentation. The single biggest forward risk is that FY27 revenue growth still depends materially on in-period conversion of new contracts and enrolment rates — factors outside Cogstate's control — while gross margin already slipped 3 percentage points to 58% and CapEx is set to rise significantly over FY27-FY28.",
+        "full_analysis": "## Executive summary\n- Record FY26 on every measure: revenue US$60.9m (+15%), gross profit US$35.4m, EBITDA US$18.3m (+15%), NPBT US$16.1m (+16%), NPAT US$11.9m (+17%) — all reported, no underlying adjustments disclosed.\n- The standout operational story is trial starts: 90 new starts vs 35 in FY25 (+157%), with 171 active trials vs 110 — a step-change that underpins the contracted revenue backlog of US$118.5m and FY27 contracted base of US$48.3m (+54%).\n- Red flag: gross margin contracted 3 percentage points (61% to 58%) despite revenue scaling, driven by lower software licence mix (23% vs 25%) and intentional investment in new-indication expertise — management frames this as temporary, but central rating revenue has a slower yield profile that could keep margins suppressed.\n- EPS was not disclosed in the investor presentation; operating cash flow and free cash flow figures were not provided — limits forensic assessment.\n- Increasing CapEx over FY27-FY28 for AI platform build-out will compress near-term free cash flow even if EBITDA margins hold.\n\n## Key numbers\n\n| Metric | FY26 | FY25 | Change |\n|---|---|---|---|\n| Total Revenue | US$60.9m | US$53.1m | +15% |\n| Gross Profit | US$35.4m | US$32.4m | +9% |\n| Gross Margin | 58% | 61% | -3 pts |\n| Operating Costs | US$17.0m | US$16.5m | +3% |\n| EBITDA | US$18.3m | US$16.0m | +15% |\n| EBITDA Margin | 30% | 30% | flat |\n| Net Profit Before Tax | US$16.1m | US$13.9m | +16% |\n| NPBT Margin | 26% | 26% | flat |\n| Net Profit After Tax (NPAT) | US$11.9m | US$10.1m | +17% |\n| NPAT Margin | 20% | 19% | +1 pt |\n| Statutory vs Underlying NPAT | No adjustment disclosed — single NPAT figure used | — | — |\n| EPS | Not disclosed | Not disclosed | n/a |\n| Operating Cash Flow | Not disclosed | Not disclosed | n/a |\n| Free Cash Flow | Not disclosed | Not disclosed | n/a |\n| Net Cash | US$34.8m | Not disclosed | n/a |\n| Debt | Nil | Nil | — |\n\n## Quality of earnings\n- **Cash conversion**: Operating cash flow is not provided in the investor presentation. The US$34.8m net cash balance with no debt is healthy, but without a cash flow statement we cannot assess whether NPAT of US$11.9m converted to operating cash at a reasonable rate.\n- **One-offs / adjustments**: Management does not disclose any non-recurring items or reconcile from statutory to underlying profit. A single NPAT line of US$11.9m is presented. This is either a genuinely clean result or one where adjustments are not being called out — cannot be verified from this document alone.\n- **Revenue mix quality**: Software licence revenue fell to 23% of mix (from ~25%), replaced by central rating revenue which has a 'slower yield over first two quarters, then accelerates' — this creates inherent H1 weakness and H2 skew, which management flags will persist into FY27.\n- **Capitalised costs**: Management explicitly states the AI platform build-out over FY27-FY28 will be 'predominantly CapEx' — this means future R&D spend will be capitalised rather than expensed, which will flatter EBITDA and NPAT in the investment phase but defer the P&L hit.\n- **Receivables/DSO/Inventory**: Not disclosed in the investor presentation.\n\n## Management framing\n**Rating: Mixed — leaning Promotional**\n- **Emphasised**: Record everything — sales ($89m, +116%), trial starts (90 vs 35), contracted backlog ($118.5m), net cash ($34.8m). The '2H26 EBIT margin of 30%' headline is used rather than the full-year gross margin decline.\n- **Downplayed**: The 3-percentage-point gross margin decline from 61% to 58% is acknowledged but buried. The 'lower SW licence mix' explanation is offered without quantifying the dollar impact. Operating cash flow is entirely absent from the presentation — unusual for a profitable, cash-generative business.\n- **Omitted**: EPS is not disclosed. No reconciliation of statutory vs reported NPAT. No detail on the quantum of AI CapEx investment planned (just 'predominantly CapEx' over two years). No disclosure of what the FY26 buyback actually cost in shares/dollars.\n- **Potentially misleading**: Presenting '2H26 EBIT margin 30%' as if it represents the annual run-rate when 1H26 EBITDA margin was only 24% — this cherry-picks the best half for the margin narrative.\n\n## Segments\n| Segment | Key FY26 Data | Commentary |\n|---|---|---|\n| Clinical Trials | 2H26 revenue US$32.7m (+17% pcp, +27% vs 1H26); Backlog US$107.1m | Core engine; central rating growing but lower yield H1 |\n| Healthcare | ~US$2.3m contracted for FY27 (consistent with FY26) | Stable but not a growth driver; very small relative to clinical trials |\n\n- Full-year segment revenue split between Clinical Trials and Healthcare is not explicitly stated, but the backlog data implies Healthcare is a small fraction of total revenue.\n- 2H26 clinical trials revenue of US$32.7m vs implied 1H26 of ~US$25.5m confirms the strong H2 skew. This is structural, not exceptional.\n\n## Balance sheet\n- Net cash of US$34.8m, zero debt — fortress balance sheet relative to the business size.\n- No covenant disclosures (none applicable given no debt).\n- Working capital detail not provided.\n- CapEx set to increase materially in FY27 and FY28 for the AI platform build. No quantum disclosed. This will reduce free cash flow relative to EBITDA for at least two years.\n- Share buyback remains open but management says it will be 'selective' — implies they are not aggressively buying at current prices, which is honest but reduces the capital return case.\n\n## Dividend and capital allocation\n- Ordinary dividend: A$0.04 per share, fully franked — increased from prior year (prior year figure not stated in this document).\n- Payout ratio ~40% of after-tax profits, within stated 20%-50% target band.\n- Record date 24 August 2026, payment date 22 September 2026.\n- Capital allocation priority order: organic investment (AI platform CapEx) > dividend > selective buyback.\n- The dividend increase signals genuine management confidence but at ~40% payout the balance sheet remains conservatively managed.\n\n## Guidance and outlook\n- **FY27 contracted revenue**: US$48.3m already under contract (+54% on the equivalent figure 12 months ago) — provides genuine forward visibility.\n- **EBITDA margin**: Management 'expects to maintain FY26 annual EBITDA margins' subject to contract timing/conversion — a soft commitment, not hard guidance.\n- **Revenue growth**: 'Expected, subject to level and timing of sales contracts executed throughout FY27' — standard caveat but a real risk given the lumpiness of trial contract timing.\n- **H2 bias**: Explicitly flagged — H1 FY27 expected to be weaker than H2 FY27, consistent with recent history.\n- **No quantitative revenue guidance** for FY27 was provided.\n\n## Positives\n- Trial starts surged to 90 (vs 35 in FY25, +157%), the largest single-year jump in the company's history, and 171 active trials (vs 110, +55%) create a multi-year revenue pipeline.\n- Contracted backlog of US$118.5m (US$48.3m for FY27 alone) provides revenue visibility not previously seen.\n- EBITDA margin held flat at 30% despite gross margin compression — operating cost discipline is real ($17.0m opex, only +3%).\n- Net cash US$34.8m, zero debt — fully self-funded growth with capital return capacity.\n- Portfolio diversification is genuine: Alzheimer's now only 14% of new trial starts; mood/sleep/rare disease are the growth engines, reducing single-program risk.\n- 2H26 gross margin of 62% and EBITDA margin of 35% suggest the underlying margin potential when revenue scale is achieved in H2.\n- Partner-sourced contracts (Medidata, eCOA, CROs) now ~40% of new sales value — structurally lowers customer acquisition cost.\n\n## Negatives / red flags\n- Gross margin declined 3 percentage points (61% to 58%) despite 15% revenue growth — a warning sign that the cost of delivering central rating services is dilutive to the margin profile that the market has priced in.\n- No operating cash flow disclosed — investors cannot independently verify the quality of reported profit. This is a meaningful omission for a company trading on a growth multiple.\n- No EPS disclosed — makes per-share value assessment impossible from this document.\n- AI platform CapEx over FY27-FY28 is 'predominantly CapEx' with no quantum given. Capitalised development costs create amortisation drag in outer years and inflate near-term EBITDA — a mechanism that has historically been misused in Australian small-cap tech.\n- Revenue growth of only +15% on a +116% jump in sales contracts ($89m) implies a long lag between signing and revenue recognition — central rating contracts in particular have a slow yield profile, meaning FY27 revenue growth may underwhelm relative to the sales headline.\n- H1/H2 skew is structural and worsening as central rating mix grows — creates earnings volatility and risk of H1 FY27 disappointment.\n- Healthcare segment appears stagnant — FY27 contracted revenue of US$2.3m, described as 'consistent with FY26', suggesting this division is not contributing to growth.\n- Buyback language ('selective', 'exploit market mispricing') implies management does not view the stock as cheap at current prices.\n\n## Bottom line\n**Bull case**: 90 trial starts in FY26 compounds into 200+ active trials within 2 years, the central rating business reaches scale and the H2 margin profile (62% gross, 35% EBITDA) becomes the annual run-rate; the AI platform drives operating leverage from FY28 onwards; FY27 revenue grows 20%+ as contracted backlog converts.\n\n**Bear case**: Central rating revenue yields more slowly than modelled, FY27 H1 disappoints badly (structural H2 skew), the AI CapEx programme balloons and gets capitalised, inflating reported profits while free cash flow stagnates; a broader biopharma R&D spending pullback reduces trial-start momentum; gross margin continues to erode as people-intensive central rating scales faster than technology revenue.\n\n**What would change the view**: (1) Release of the full financial statements to assess operating cash flow conversion and capitalised cost balances; (2) Disclosure of FY27 EPS guidance or a quantitative revenue target; (3) Clarity on the quantum and capitalisation policy for the AI CapEx build-out; (4) Evidence that 1H27 gross margins are holding above 58% as central rating scales.",
+        "_status": "ok"
+      },
+      "doc_link": "",
+      "doc_error": "",
+      "pdf_path": "/tmp/CGS_FY26_2026-08-22.pdf"
+    }
+  ],
   "material": [],
-  "fyi": []
+  "fyi": [
+    {
+      "ticker": "CGS",
+      "title": "Change in substantial shareholding from AEF 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 410.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03127522"
+    },
+    {
+      "ticker": "CGS",
+      "title": "FY26 Results Investor Briefing 20\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 689.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126179"
+    },
+    {
+      "ticker": "CGS",
+      "title": "FY26 Financial Results and Operational Update 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 278.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126166"
+    },
+    {
+      "ticker": "CGS",
+      "title": "Dividend/Distribution - CGS 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126164"
+    },
+    {
+      "ticker": "CGS",
+      "title": "FY26 Annual Report 88\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 22.9MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126163"
+    },
+    {
+      "ticker": "CGS",
+      "title": "FY26 Appendix 4E 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.6MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126159"
+    },
+    {
+      "ticker": "CGS",
+      "title": "FY26 App 4G and Corporate Governance Statement 30\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 731.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03126157"
+    }
+  ]
 }

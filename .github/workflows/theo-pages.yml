@@ -1,0 +1,82 @@
+name: Publish Theo
+
+# Theo's site is rebuilt whenever a thesis, the code that renders one, or the
+# transaction ledger changes. `check` runs first: a malformed thesis fails the
+# build rather than publishing a slide with a hole in it.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "theses/**"
+      - "theo/**"
+      - "data/**"
+      - ".github/workflows/theo-pages.yml"
+  workflow_dispatch:
+    inputs:
+      show_amounts:
+        description: "Include dollar amounts in the published site (default: suppressed)"
+        type: boolean
+        required: false
+        default: false
+
+# Only one Pages deploy at a time; a queued run supersedes the one behind it.
+concurrency:
+  group: theo-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pyyaml jinja2 openpyxl
+
+      - name: Validate every thesis
+        run: python -m theo.cli check
+
+      - name: Run Theo's tests
+        run: python tests/test_theo.py
+
+      - name: Build the site
+        run: |
+          python -m theo.cli publish ${{ inputs.show_amounts && '--show-amounts' || '' }}
+
+      # The Pages root already belongs to the existing agent dashboard in
+      # docs/. Publishing Theo over the top of it would take that URL away, so
+      # the artifact keeps docs/ at the root and mounts Theo at /theo/.
+      # docs/ is only read here, never written.
+      - name: Stage the Pages artifact
+        run: |
+          mkdir -p _pages/theo
+          if [ -d docs ]; then cp -r docs/. _pages/; fi
+          cp -r site/. _pages/theo/
+          touch _pages/.nojekyll
+          find _pages -maxdepth 2 -type f | sort
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

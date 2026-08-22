@@ -1,0 +1,149 @@
+{# One slide. Reused verbatim by the standalone renderer and by the site, so
+   it must never assume a surrounding page. Everything it needs arrives in
+   `s` (see render.slide_context). #}
+<div class="slide" id="slide-{{ s.ticker }}-{{ s.version }}">
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="ticker">{{ s.ticker }}</div>
+      <div class="coname">{{ s.name }}</div>
+    </div>
+    <div class="tags">
+      <span class="tag kind">{{ s.kind_label }}</span>
+      {% if s.draft %}<span class="tag draft">Draft</span>{% endif %}
+      {% if s.exited %}<span class="tag exited">Exited</span>{% endif %}
+      {% if s.archetype %}<span class="tag">{{ s.archetype.replace('_', ' ') }}</span>{% endif %}
+      {% if s.conviction %}<span class="tag">{{ s.conviction }} conviction</span>{% endif %}
+      {% if s.horizon %}<span class="tag">{{ s.horizon }}</span>{% endif %}
+      <span class="tag">Grade {{ s.evidence_grade }} · {{ s.evidence_grade_label }}</span>
+    </div>
+  </div>
+
+  <div class="bet">
+    <div class="bet-label">{{ s.bet_label }}</div>
+    <div class="bet-text">{{ s.bet }}</div>
+  </div>
+
+  {% if s.show_drift %}
+  <div class="drift {{ s.drift_verdict }}">
+    <div class="drift-verdict">Drift · {{ s.drift_verdict }}</div>
+    <div class="drift-list">
+      {%- if s.drift_findings -%}
+        {%- for f in s.drift_findings[:4] -%}
+          <b>{{ f.code.replace('_', ' ') }}</b> — {{ f.message }}{% if not loop.last %} · {% endif %}
+        {%- endfor -%}
+        {%- if s.drift_findings|length > 4 %} · +{{ s.drift_findings|length - 4 }} more{% endif -%}
+      {%- else -%}
+        Kill conditions intact, reviewed on schedule, no amendments.
+      {%- endif -%}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="cols">
+
+    <div class="col-l">
+      <div class="sec-label">Pillars — what has to be true</div>
+      {% for p in s.pillars %}
+      <div class="pillar {{ p.status }}">
+        <div class="pillar-head">
+          <span class="pillar-id">{{ p.id }}</span>
+          <span class="pillar-claim">{{ p.claim }}</span>
+          <span class="pillar-status">{{ p.symbol }} {{ p.status }}</span>
+        </div>
+        {% if p.evidence %}<div class="pillar-evidence">{{ p.evidence }}</div>{% endif %}
+        <div class="pillar-kill"><b>Kill</b> &nbsp;{{ p.kill_condition }}</div>
+      </div>
+      {% else %}
+      <div class="no-ledger">No pillars recorded.</div>
+      {% endfor %}
+    </div>
+
+    <div class="col-r">
+
+      <div class="block">
+        <div class="sec-label">Decisions</div>
+        {% if s.decisions %}
+        <table class="dec">
+          <tr>
+            <th>#</th><th>Date</th>
+            {% for h in s.decision_headers %}<th>{{ h }}</th>{% endfor %}
+          </tr>
+          {% for d in s.decisions %}
+          <tr>
+            <td>{{ d.index }}</td>
+            <td>{{ d.date }}</td>
+            {% for cell in d.cells %}<td{% if d.scrip %} class="scrip"{% endif %}>{{ cell }}</td>{% endfor %}
+          </tr>
+          {% endfor %}
+        </table>
+        {% else %}
+        <div class="no-ledger">{{ s.no_ledger_note }}</div>
+        {% endif %}
+      </div>
+
+      {% if s.valuation_note %}
+      <div class="block">
+        <div class="sec-label">Valuation anchor</div>
+        <div class="block-body">{{ s.valuation_note }}</div>
+      </div>
+      {% endif %}
+
+      {% if s.what_i_know %}
+      <div class="block">
+        <div class="sec-label">The business, and what I know</div>
+        <div class="block-body">{{ s.what_i_know }}</div>
+      </div>
+      {% endif %}
+
+      {% if s.resolution_criterion or s.resolution_date %}
+      <div class="block">
+        <div class="sec-label">Resolves by {{ s.resolution_date or 'no date set' }}</div>
+        <div class="block-body">{{ s.resolution_criterion or 'No criterion written — this thesis cannot be marked right or wrong.' }}</div>
+      </div>
+      {% endif %}
+
+      {% if s.exit_block %}
+      <div class="block">
+        <div class="sec-label">Exit — {{ s.exit_block.reason.replace('_', ' ') }}</div>
+        <div class="block-body">
+          <b>{{ s.exit_block.date }}</b> · {{ s.exit_block.sell_thesis }}
+          {% if s.exit_block.pillar_failed %}<br>Pillar failed: {{ s.exit_block.pillar_failed }}{% endif %}
+          {% if s.exit_block.capital_went_to %}<br>Capital went to: {{ s.exit_block.capital_went_to }}{% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  <div class="strip">
+    {% for m in s.metrics %}
+    <div class="metric">
+      <div class="metric-label">{{ m.label }}</div>
+      <div class="metric-value{% if m.muted %} muted{% endif %}{% if m.long %} long{% endif %}">{{ m.value }}</div>
+      {% if m.note %}<div class="metric-note">{{ m.note }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="ftr">
+    <div>
+      <b>Provenance</b>
+      <span>{{ s.provenance }}</span>
+    </div>
+    <div>
+      <b>Alternative rejected</b>
+      <span>{{ s.alternative }}</span>
+    </div>
+    <div>
+      <b>Management</b>
+      <span>{{ s.management }}</span>
+    </div>
+    <div>
+      <b>Record</b>
+      <span>{{ s.record_note }}</span>
+    </div>
+  </div>
+
+</div>

@@ -52,3 +52,7 @@ data/sws.db
 data/sws_debug/*
 !data/sws_debug/.gitkeep
 storage_state.json
+
+# Theo — generated slides and published site
+slides/
+site/

@@ -1,0 +1,77 @@
+name: Theo Season Pack
+
+# The ASX reports in February and August, so this fires on the 1st of January
+# and the 1st of July — a month ahead. A thesis reviewed after the result is
+# reviewed with the answer in front of you, which is worthless.
+#
+# 23:00 UTC on the 1st is 09:00/10:00 AEST on the 2nd, depending on daylight
+# saving. Close enough for something that is answered over a week.
+
+on:
+  schedule:
+    - cron: "0 23 1 1,7 *"
+  workflow_dispatch:
+    inputs:
+      today:
+        description: "Pretend it is this date (YYYY-MM-DD). Blank = actually today."
+        required: false
+        default: ""
+      show_amounts:
+        description: "Include dollar amounts in the pack"
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  season-pack:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pyyaml jinja2 openpyxl
+
+      - name: Build the pack
+        run: |
+          mkdir -p outputs
+          python -m theo.cli season \
+            ${{ inputs.today && format('--today {0}', inputs.today) || '' }} \
+            ${{ inputs.show_amounts && '--show-amounts' || '' }} \
+            --out "outputs/theo-season-pack.txt"
+          echo "----- pack preview -----"
+          head -40 outputs/theo-season-pack.txt
+
+      - name: Email the pack
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+        run: |
+          python - <<'PY'
+          import datetime as dt
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, ".")
+          from email_sender import send_summary_email
+          from theo.season import season_label
+
+          pack = Path("outputs/theo-season-pack.txt")
+          subject = f"Theo — pre-season review pack, {season_label(dt.date.today())} results"
+          ok = send_summary_email(subject, pack.read_text(encoding="utf-8"), [pack])
+          print("sent" if ok else "not sent — check the email secrets")
+          # A missing secret should not fail the run; the artifact is still there.
+          PY
+
+      - name: Upload the pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: theo-season-pack
+          path: outputs/theo-season-pack.txt
+          retention-days: 90

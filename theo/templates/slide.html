@@ -1,0 +1,13 @@
+{# Standalone wrapper — one slide, one file. The site pulls _slide.html
+   directly instead, so the fragment stays the single source of layout. #}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ s.ticker }} — {{ s.kind_label }}</title>
+  {% include "_styles.html" %}
+</head>
+<body>
+{% include "_slide.html" %}
+</body>
+</html>

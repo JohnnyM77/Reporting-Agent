@@ -1,8 +1,8 @@
 {
   "last_run": "2026-08-23",
-  "thesis_count": 2,
+  "thesis_count": 3,
   "drifting": 0,
-  "watch": 2,
+  "watch": 3,
   "clean": 0,
   "theses": [
     {
@@ -94,6 +94,46 @@
           "message": "grade C \u2014 reconstructed from memory, so treat the confident bits with suspicion"
         }
       ]
+    },
+    {
+      "ticker": "PWH",
+      "name": "PWR Holdings Limited",
+      "archetype": "COMPOUNDING_MACHINE",
+      "grade": "B",
+      "draft": false,
+      "exited": false,
+      "verdict": "WATCH",
+      "pillars": [
+        {
+          "id": "P1",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P2",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P3",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        }
+      ],
+      "irr": null,
+      "multiple": null,
+      "findings": [
+        {
+          "code": "NEVER_REVIEWED",
+          "severity": "WARN",
+          "message": "never reviewed since it was written"
+        },
+        {
+          "code": "SIGNAL_UNANSWERED",
+          "severity": "WARN",
+          "message": "Sally: sally trim on 2026-08-23 and nothing was written down either way"
+        }
+      ]
     }
   ],
   "open_questions": [
@@ -104,13 +144,15 @@
       "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 24x \u00b7 99th valuation percentile",
       "question": "Sally says trim. You are not going to. What would have to be true about the price for you to change that answer \u2014 and is that written down as a kill condition anywhere?",
       "date": "2026-08-23"
-    }
-  ],
-  "no_thesis": [
+    },
     {
       "ticker": "PWH",
       "source": "Sally",
-      "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 67x \u00b7 98th valuation percentile"
+      "kind": "SALLY_TRIM",
+      "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 67x \u00b7 98th valuation percentile",
+      "question": "Sally says trim. You are not going to. What would have to be true about the price for you to change that answer \u2014 and is that written down as a kill condition anywhere?",
+      "date": "2026-08-23"
     }
-  ]
+  ],
+  "no_thesis": []
 }

@@ -163,6 +163,75 @@ it as an artifact so a missing secret never loses the pack.
 
 ---
 
+## Signals — what happens when Sally says trim and you say no
+
+Sally flags a holding. You decline. **That decline is the single most
+important thing in the system and it is the one thing that never gets written
+down** — a year later it is remembered as conviction rather than as "I waved
+off a valuation flag three times running."
+
+So a signal from another agent opens a **question** against the thesis:
+
+- **It never blocks.** A blocking prompt gets clicked through, and then you
+  have trained yourself to ignore it.
+- **The question stays open until answered**, and an open question is a drift
+  finding (`SIGNAL_UNANSWERED`, warn). Silence gets recorded.
+- **Declining is a fine answer.** It just has to be written down — a dated
+  `reviews[]` entry with `trigger: SALLY_TRIM` and `decision: DECLINED`.
+- **Declining three times without ever tightening a kill condition is an
+  alert** (`SIGNAL_REFUSED_REPEATEDLY`). Not "you were wrong to hold", but
+  "you have refused this question three times and still have not said what
+  would change your mind." Writing the kill condition clears it.
+
+```
+python -m theo.cli signals
+```
+
+prints each open question plus a paste-ready `reviews:` block. Theo does not
+edit your thesis files — a tool that rewrites your prose to add a field is a
+tool you stop trusting with your prose.
+
+The value is not in any single answer, it is in the **diff between answers over
+time**. Four declines with four different reasons is a thesis being edited to
+survive, which is why `amendments[].direction` exists.
+
+**Coupling is one-way.** `theo/signals.py` only ever *reads*
+`docs/data/sally.json`. Sally is not modified and does not know Theo exists.
+Adding Bob is a new `from_bob()` function and nothing else. The step in Sally's
+workflow is `continue-on-error` so a bug in Theo can never take down a working
+agent's weekly run.
+
+### The worked example, on the day this shipped
+
+Sally flagged BHP and PWH, both Tier 3 trim candidates.
+
+- **BHP** — Sally says trim on valuation. Gaurav Sodhi has published a formal
+  sell, also on valuation. Two independent valuation-based sell signals, and
+  BHP's three pillars contain **no valuation kill condition at all**: the entry
+  case was cost curve, capital discipline, cash release. Nothing says at what
+  price you stop holding. That gap is what both signals are pointing at.
+- **PWH** — no thesis exists. Capital committed, a signal raised, and no
+  written reason to own it.
+
+---
+
+## The combined dashboard
+
+Two surfaces, deliberately:
+
+- **`/`** — the existing agent dashboard (`scripts/build_dashboard.py`). Bob,
+  Wally, Sally and now Theo, one card each. Theo's card is a glance: open
+  questions first, then drift verdicts, then holdings flagged with no thesis.
+- **`/theo/`** — Theo's own site. The slides are a page each; that is not a
+  dashboard thing.
+
+`python -m theo.cli dashboard` writes `docs/data/theo.json`, the same pattern
+every other agent uses. `build_dashboard.py` reads it. Both Sally's workflow
+and `theo-pages.yml` regenerate it, and both commit with `[skip ci]` so the
+push cannot re-trigger the workflow that made it.
+
+---
+
 ## Slides and the site
 
 Three kinds, and the difference between them is the point.
@@ -217,11 +286,12 @@ served from first.
    produces the list the moment the ledger is present. Biggest positions first,
    because an unwritten thesis on the largest holding is the most expensive gap
    in the system. Grade C is fine — an honest C beats a flattering B.
-2. **Feed Bob's announcement output into pillar-level observations.** Bob
-   already reads and analyses every results announcement for these tickers. The
-   missing link is mapping a result back to the pillar it bears on: BHP's WAIO
-   unit costs land on P1, not on "BHP". Once that exists, a pillar can be marked
-   strained by evidence rather than by memory.
+2. **Feed Bob's announcement output into pillar-level observations.** Sally is
+   wired in; Bob is not. Bob already reads and analyses every results
+   announcement for these tickers. The missing link is mapping a result back to
+   the pillar it bears on: BHP's WAIO unit costs land on P1, not on "BHP". The
+   signal plumbing exists — this is a `from_bob()` in `theo/signals.py` plus a
+   way to say which pillar a finding hits.
 3. **Capture season pack answers back into the files as dated review blocks.**
    Right now the pack is a text file you answer somewhere else, which means the
    answers are lost. The answers *are* the review — they should land in
@@ -245,6 +315,7 @@ theo/
   thesis.py        parse + validate the markdown files
   ledger.py        OPTIONAL — rebuild every BUY as a Decision, XIRR by bisection
   drift.py         the honesty mechanism
+  signals.py       Sally's flags become questions that will not go away
   season.py        the January/July review pack
   render.py        slide contexts + Playwright rendering
   publish.py       build the self-contained site

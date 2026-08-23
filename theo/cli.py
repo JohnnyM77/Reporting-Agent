@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import sys
 from pathlib import Path
 from typing import Sequence
@@ -21,6 +22,7 @@ from . import ledger as ledger_mod
 from . import publish as publish_mod
 from . import render as render_mod
 from . import season as season_mod
+from . import signals as signals_mod
 from . import thesis as thesis_mod
 from .render import DASH, fmt_money, fmt_mult, fmt_pct, fmt_price, fmt_years
 
@@ -183,6 +185,122 @@ def cmd_irr(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_signals(args: argparse.Namespace) -> int:
+    """Open questions the other agents have put to your theses."""
+    theses, _, today = _load(args)
+    sigs = signals_mod.load_all(args.dashboard)
+    if not sigs:
+        print(f"No agent signals found in {args.dashboard or signals_mod.DASHBOARD_DIR}/.")
+        return EXIT_OK
+
+    questions = signals_mod.open_questions(theses, sigs)
+    orphans = signals_mod.orphans(theses, sigs)
+    answered = len(sigs) - len(questions) - len(orphans)
+
+    print(
+        f"{len(sigs)} signal(s): {len(questions)} unanswered, "
+        f"{answered} answered, {len(orphans)} against holdings with no thesis.\n"
+    )
+
+    for thesis, signal in questions:
+        print("=" * 74)
+        print(f"{thesis.ticker} — {signal.label}"
+              + (f"  ({signal.date.isoformat()})" if signal.date else ""))
+        print("=" * 74)
+        if signal.detail:
+            print(f"  {signal.detail}")
+        print(f"\n  Q: {signal.question}\n")
+
+        missing = [p.id for p in thesis.pillars if p.kill_needs_work]
+        if missing:
+            print(f"  Note: {', '.join(missing)} still carry NEEDS WORK kill conditions.\n")
+
+        print("  Paste into this file's reviews: block when you have answered —")
+        print("  declining is a fine answer, but it has to be written down.\n")
+        for line in signals_mod.answer_block(signal, today).rstrip().splitlines():
+            print(f"    {line}")
+        print()
+
+    if orphans:
+        print("=" * 74)
+        print("SIGNALS AGAINST HOLDINGS WITH NO THESIS")
+        print("=" * 74)
+        for signal in orphans:
+            print(f"  {signal.ticker:<6} {signal.label} — {signal.detail}")
+        print(
+            "\n  Capital committed, a signal raised, and no written reason to own it.\n"
+            "  Start one with: python -m theo.cli new "
+            + orphans[0].ticker
+        )
+    return EXIT_OK
+
+
+def cmd_dashboard(args: argparse.Namespace) -> int:
+    """Emit docs/data/theo.json for the combined agent dashboard."""
+    theses, ledger, today = _load(args)
+    sigs = signals_mod.load_all(args.dashboard)
+
+    rows = []
+    for thesis in sorted(theses, key=lambda t: t.ticker):
+        verdict, findings = season_mod.assess(thesis, today, sigs)
+        holding = ledger.get(thesis.ticker)
+        rows.append(
+            {
+                "ticker": thesis.ticker,
+                "name": thesis.name or thesis.ticker,
+                "archetype": thesis.archetype,
+                "grade": thesis.evidence_grade,
+                "draft": thesis.draft,
+                "exited": thesis.is_exited,
+                "verdict": verdict,
+                "pillars": [
+                    {"id": p.id, "status": p.status, "symbol": p.symbol}
+                    for p in thesis.pillars
+                ],
+                "irr": holding.irr if holding else None,
+                "multiple": holding.multiple if holding else None,
+                "findings": [
+                    {"code": f.code, "severity": f.severity, "message": f.message}
+                    for f in findings
+                ],
+            }
+        )
+
+    questions = signals_mod.open_questions(theses, sigs)
+    payload = {
+        "last_run": today.isoformat(),
+        "thesis_count": len(theses),
+        "drifting": sum(1 for r in rows if r["verdict"] == "DRIFTING"),
+        "watch": sum(1 for r in rows if r["verdict"] == "WATCH"),
+        "clean": sum(1 for r in rows if r["verdict"] == "CLEAN"),
+        "theses": rows,
+        "open_questions": [
+            {
+                "ticker": t.ticker,
+                "source": s.source,
+                "kind": s.kind,
+                "detail": s.detail,
+                "question": s.question,
+                "date": s.date.isoformat() if s.date else None,
+            }
+            for t, s in questions
+        ],
+        "no_thesis": [
+            {"ticker": s.ticker, "source": s.source, "detail": s.detail}
+            for s in signals_mod.orphans(theses, sigs)
+        ],
+    }
+
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    print(
+        f"Wrote {out} — {len(theses)} thesis file(s), "
+        f"{len(questions)} open question(s), {len(payload['no_thesis'])} with no thesis"
+    )
+    return EXIT_OK
+
+
 def cmd_show(args: argparse.Namespace) -> int:
     theses, ledger, today = _load(args)
     thesis = _pick(theses, args.ticker)
@@ -306,6 +424,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--theses", default=str(thesis_mod.THESES_DIR), help="thesis directory")
     parser.add_argument("--ledger", default=None, help="path to the transaction spreadsheet (optional)")
     parser.add_argument("--as-at", default=None, help="value and date everything as at YYYY-MM-DD")
+    parser.add_argument(
+        "--dashboard",
+        default=None,
+        help="directory holding the other agents' JSON (default docs/data)",
+    )
     subs = parser.add_subparsers(dest="command", required=True)
 
     p = subs.add_parser("check", help="validate every thesis file (non-zero exit on problems)")
@@ -325,6 +448,13 @@ def build_parser() -> argparse.ArgumentParser:
     p = subs.add_parser("irr", help="decision-level IRR ladder")
     p.add_argument("--top", type=int, default=0)
     p.set_defaults(func=cmd_irr)
+
+    p = subs.add_parser("signals", help="open questions from Bob/Wally/Sally")
+    p.set_defaults(func=cmd_signals)
+
+    p = subs.add_parser("dashboard", help="emit docs/data/theo.json for the combined site")
+    p.add_argument("--out", default="docs/data/theo.json")
+    p.set_defaults(func=cmd_dashboard)
 
     p = subs.add_parser("show", help="render one slide")
     p.add_argument("ticker")

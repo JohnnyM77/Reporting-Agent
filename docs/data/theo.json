@@ -3,7 +3,7 @@
   "thesis_count": 4,
   "drifting": 1,
   "watch": 3,
-  "clean": 0,
+  "clean": 1,
   "theses": [
     {
       "ticker": "AR9",
@@ -99,6 +99,35 @@
           "message": "held against Gaurav Sodhi, who has diverged \u2014 the disagreement is still open"
         }
       ]
+    },
+    {
+      "ticker": "LAU",
+      "name": "Lindsay Australia Limited",
+      "archetype": "VALUE_TRAP",
+      "grade": "A",
+      "draft": false,
+      "exited": true,
+      "verdict": "CLEAN",
+      "pillars": [
+        {
+          "id": "P1",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P2",
+          "status": "BREACHED",
+          "symbol": "\u25cb"
+        },
+        {
+          "id": "P3",
+          "status": "BREACHED",
+          "symbol": "\u25cb"
+        }
+      ],
+      "irr": null,
+      "multiple": null,
+      "findings": []
     },
     {
       "ticker": "NHC",

@@ -319,6 +319,47 @@ def test_missing_dashboard_json_is_not_an_error():
           "a missing dashboard directory yields no signals")
 
 
+def test_an_exited_thesis_is_not_drifting():
+    print("\na closed position is not drifting")
+    base = {
+        "ticker": "AAA",
+        "the_bet": "A short, testable reason to own the thing.",
+        "evidence_grade": "A",
+        "pillars": [{"id": "P1", "claim": "c", "kill_condition": "k", "status": "BREACHED"}],
+    }
+    today = dt.date(2026, 8, 23)
+
+    held = thesis_mod.from_dict(base)
+    verdict, findings = season_mod.assess(held, today)
+    check(verdict == "DRIFTING", "a breached pillar you still hold is an alert", verdict)
+    check(any(f.code == "PILLAR_BREACHED" for f in findings), "and it names the breach")
+
+    exited = thesis_mod.from_dict({
+        **base,
+        "status": "EXITED",
+        "exit": {"date": "2026-05-06", "reason": "THESIS_BROKEN", "pillar_failed": "P1",
+                 "sell_thesis": "The pillar broke, so I sold."},
+    })
+    verdict, findings = season_mod.assess(exited, today)
+    check(
+        not any(f.code == "PILLAR_BREACHED" for f in findings),
+        "the same breach on a closed position is the record, not an alert",
+        str([f.code for f in findings]),
+    )
+    check(verdict == "CLEAN", "so an honestly-closed thesis reads CLEAN", verdict)
+
+    # And a closed position does not go stale or nag for review.
+    stale_exit = thesis_mod.from_dict({
+        **base,
+        "pillars": [{"id": "P1", "claim": "c", "kill_condition": "k"}],
+        "status": "EXITED",
+        "exit": {"date": "2020-01-01", "reason": "BETTER_USE", "sell_thesis": "Moved on."},
+    })
+    codes = [f.code for f in season_mod.assess(stale_exit, today)[1]]
+    check("NEVER_REVIEWED" not in codes, "a closed position is not nagged for review", str(codes))
+    check("STALE" not in codes, "and does not go stale", str(codes))
+
+
 def test_site_builds(theses, ledger, tmp_dir: Path):
     print("\nthe site builds to one self-contained file")
     out = publish_mod.build(theses, ledger, tmp_dir, dt.date(2026, 8, 22))
@@ -406,6 +447,7 @@ def main() -> int:
     test_signals_open_questions_and_orphans()
     test_three_refusals_without_a_kill_condition_is_an_alert()
     test_signals_fold_into_the_drift_verdict()
+    test_an_exited_thesis_is_not_drifting()
     test_missing_dashboard_json_is_not_an_error()
     test_site_builds(theses, ledger, tmp_dir)
     test_ledger_is_optional()

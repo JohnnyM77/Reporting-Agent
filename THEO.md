@@ -124,6 +124,12 @@ Drift is not the price going the wrong way. Drift is the *reasoning* moving.
 | `DIVERGENCE_OPEN` | INFO | Held against a source who has since diverged |
 | `GRADE_C` | INFO | Reconstructed from memory, so treat the confident parts with suspicion |
 
+**Exited theses are quieter.** A breached pillar on a position you still hold
+is the alarm; on a closed one it is the record of *why* you sold, so
+`PILLAR_BREACHED` does not fire once `status: EXITED`. Nor do `NEVER_REVIEWED`
+and `STALE` — a closed position is not going stale. An honestly-closed thesis
+should read `CLEAN`, and LAU does.
+
 **Verdict** — `DRIFTING` if any alert, `WATCH` if any warning, `CLEAN` if
 neither. It appears on the site table, on every non-entry slide, and orders the
 season pack worst-first.
@@ -244,7 +250,11 @@ Three kinds, and the difference between them is the point.
   and the amendments made.
 - **current** — live pillar status, drift check, today's numbers, and the
   `hold_thesis` in place of `the_bet` where one exists.
-- **exit** — the sell thesis, which pillar failed, and where the capital went.
+- **exit** — the sell thesis leads, and the exit block sits at the top of the
+  right column: which pillar failed, and where the capital went. No drift
+  banner (the exit *is* the verdict) and no resolution criterion (the exit
+  supersedes it). A sell thesis long enough to be an argument rather than a
+  sentence drops a type size instead of pushing the pillars off the page.
 
 Rendered from Jinja2 (`theo/templates/`) to a one-page A4-landscape HTML slide,
 then to PNG or PDF via Playwright at `device_scale_factor=3`, screenshotting the

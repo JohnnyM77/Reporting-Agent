@@ -21,7 +21,7 @@
 
   <div class="bet">
     <div class="bet-label">{{ s.bet_label }}</div>
-    <div class="bet-text">{{ s.bet }}</div>
+    <div class="bet-text{% if s.bet_long %} long{% endif %}">{{ s.bet }}</div>
   </div>
 
   {% if s.show_drift %}
@@ -61,6 +61,16 @@
 
     <div class="col-r">
 
+      {% if s.exit_block %}
+      <div class="block">
+        <div class="sec-label">Exit {{ s.exit_block.date }} — {{ s.exit_block.reason.replace('_', ' ') }}</div>
+        <div class="block-body">
+          {% if s.exit_block.pillar_failed %}<b>Pillar failed: {{ s.exit_block.pillar_failed }}.</b> {% endif %}
+          {% if s.exit_block.capital_went_to %}Capital went to: {{ s.exit_block.capital_went_to }}{% endif %}
+        </div>
+      </div>
+      {% endif %}
+
       <div class="block">
         <div class="sec-label">Decisions</div>
         {% if s.decisions %}
@@ -96,21 +106,10 @@
       </div>
       {% endif %}
 
-      {% if s.resolution_criterion or s.resolution_date %}
+      {% if (s.resolution_criterion or s.resolution_date) and not s.exit_block %}
       <div class="block">
         <div class="sec-label">Resolves by {{ s.resolution_date or 'no date set' }}</div>
         <div class="block-body">{{ s.resolution_criterion or 'No criterion written — this thesis cannot be marked right or wrong.' }}</div>
-      </div>
-      {% endif %}
-
-      {% if s.exit_block %}
-      <div class="block">
-        <div class="sec-label">Exit — {{ s.exit_block.reason.replace('_', ' ') }}</div>
-        <div class="block-body">
-          <b>{{ s.exit_block.date }}</b> · {{ s.exit_block.sell_thesis }}
-          {% if s.exit_block.pillar_failed %}<br>Pillar failed: {{ s.exit_block.pillar_failed }}{% endif %}
-          {% if s.exit_block.capital_went_to %}<br>Capital went to: {{ s.exit_block.capital_went_to }}{% endif %}
-        </div>
       </div>
       {% endif %}
 

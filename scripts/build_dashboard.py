@@ -691,7 +691,7 @@ def build_dashboard() -> None:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Reporting Agent Dashboard</title>
+  <title>Jzx Portfolio Management</title>
   <link rel="icon" type="image/png" href="{favicon_data_uri()}">
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -778,7 +778,7 @@ def build_dashboard() -> None:
 </head>
 <body>
   <header>
-    <div class="logo">🤖 <span>Reporting</span> Agent</div>
+    <div class="logo"><img src="{favicon_data_uri()}" alt="" width="26" height="26" style="vertical-align:-6px;border-radius:50%;margin-right:6px"> <span>Jzx</span> Portfolio Management</div>
     <div class="meta">Auto-updated by GitHub Actions &nbsp;·&nbsp; Generated: {generated_at}</div>
   </header>
   <main>

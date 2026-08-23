@@ -1,9 +1,9 @@
 {
   "last_run": "2026-08-23",
-  "thesis_count": 5,
+  "thesis_count": 6,
   "drifting": 1,
   "watch": 2,
-  "clean": 2,
+  "clean": 3,
   "theses": [
     {
       "ticker": "AR9",
@@ -99,6 +99,40 @@
           "message": "held against Gaurav Sodhi, who has diverged \u2014 the disagreement is still open"
         }
       ]
+    },
+    {
+      "ticker": "DRO",
+      "name": "DroneShield Limited",
+      "archetype": "STRUCTURAL_WINNER",
+      "grade": "B",
+      "draft": false,
+      "exited": false,
+      "verdict": "CLEAN",
+      "pillars": [
+        {
+          "id": "P1",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P2",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P3",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P4",
+          "status": "STRAINED",
+          "symbol": "\u25d0"
+        }
+      ],
+      "irr": null,
+      "multiple": null,
+      "findings": []
     },
     {
       "ticker": "LAU",

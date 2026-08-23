@@ -360,6 +360,32 @@ def test_an_exited_thesis_is_not_drifting():
     check("STALE" not in codes, "and does not go stale", str(codes))
 
 
+def test_favicon_is_inlined_not_linked():
+    print("\nthe favicon is embedded, so the pages stay self-contained")
+    uri = render_mod.favicon_data_uri()
+    check(uri.startswith("data:image/png;base64,"), "the favicon resolves to a PNG data URI")
+
+    import base64 as _b64
+    try:
+        raw = _b64.b64decode(uri.split(",", 1)[1])
+        ok = raw[:8] == b"\x89PNG\r\n\x1a\n"
+    except Exception:
+        ok = False
+    check(ok, "and it decodes to a real PNG")
+    check(len(uri) < 60000, f"and stays small enough to inline ({len(uri)} chars)")
+
+    html = render_mod.render_html(
+        thesis_mod.from_dict({
+            "ticker": "AAA",
+            "the_bet": "A short, testable reason to own the thing.",
+            "pillars": [{"id": "P1", "claim": "c", "kill_condition": "k"}],
+        }),
+        "current", ledger_mod.EMPTY, dt.date(2026, 8, 23),
+    )
+    check('rel="icon"' in html, "a standalone slide carries the icon")
+    check('href="data:image/png' in html, "and links it as data, never as a file")
+
+
 def test_site_builds(theses, ledger, tmp_dir: Path):
     print("\nthe site builds to one self-contained file")
     out = publish_mod.build(theses, ledger, tmp_dir, dt.date(2026, 8, 22))
@@ -390,6 +416,8 @@ def test_site_builds(theses, ledger, tmp_dir: Path):
             )
     check("http://" not in html.replace("http://www.w3.org", ""), "no external http assets")
     check("cdn." not in html, "no CDN references")
+    check('rel="icon" type="image/png"' in html, "the site carries the favicon")
+    check('href="data:image/png' in html, "inlined as data, so the file stays standalone")
     for thesis in theses:
         check(f'"{thesis.ticker}"' in html, f"{thesis.ticker} is in the payload")
 
@@ -449,6 +477,7 @@ def main() -> int:
     test_signals_fold_into_the_drift_verdict()
     test_an_exited_thesis_is_not_drifting()
     test_missing_dashboard_json_is_not_an_error()
+    test_favicon_is_inlined_not_linked()
     test_site_builds(theses, ledger, tmp_dir)
     test_ledger_is_optional()
     test_bhp_irr_ladder(ledger)

@@ -5,6 +5,7 @@ Run from repo root: python scripts/build_dashboard.py
 """
 from __future__ import annotations
 
+import base64
 import json
 from datetime import datetime
 from pathlib import Path
@@ -12,6 +13,34 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = REPO_ROOT / "docs"
 DATA_DIR = DOCS_DIR / "data"
+
+# ---------------------------------------------------------------------------
+# Favicon
+# ---------------------------------------------------------------------------
+
+FAVICON_PATH = REPO_ROOT / "assets" / "favicon.png"
+
+# The emoji SVG that was here before, kept as the fallback so a missing or
+# unreadable asset degrades to the old icon instead of breaking the build.
+_FAVICON_FALLBACK = (
+    "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>"
+    "<text y='.9em' font-size='90'>&#129302;</text></svg>"
+)
+
+
+def favicon_data_uri(path: Path = FAVICON_PATH) -> str:
+    """Inline the favicon so every page stays a single self-contained file.
+
+    Theo's site is deliberately standalone — it has to work from a file:// URL
+    with no sibling assets — so an external <link href="favicon.png"> is not an
+    option there. Embedding costs ~14KB of base64 and keeps that guarantee.
+    """
+    try:
+        return "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode()
+    except OSError:
+        return _FAVICON_FALLBACK
+
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -663,7 +692,7 @@ def build_dashboard() -> None:
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Reporting Agent Dashboard</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+  <link rel="icon" type="image/png" href="{favicon_data_uri()}">
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{

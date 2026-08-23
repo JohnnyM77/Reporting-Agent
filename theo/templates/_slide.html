@@ -42,7 +42,7 @@
 
   <div class="cols">
 
-    <div class="col-l">
+    <div class="col-l{% if s.dense_pillars %} dense{% endif %}">
       <div class="sec-label">Pillars — what has to be true</div>
       {% for p in s.pillars %}
       <div class="pillar {{ p.status }}">

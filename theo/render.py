@@ -388,6 +388,9 @@ def slide_context(
         "drift_verdict": verdict,
         "drift_findings": findings,
         "pillars": _pillar_rows(thesis, statuses),
+        # Four pillars is the schema maximum and does not fit at the
+        # default type size. Tighten rather than clip the last one.
+        "dense_pillars": len(thesis.pillars) >= 4,
         "decision_headers": headers,
         "decisions": rows,
         "no_ledger_note": no_ledger_note,

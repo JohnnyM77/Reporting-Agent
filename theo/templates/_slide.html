@@ -34,7 +34,7 @@
         {%- endfor -%}
         {%- if s.drift_findings|length > 4 %} · +{{ s.drift_findings|length - 4 }} more{% endif -%}
       {%- else -%}
-        Kill conditions intact, reviewed on schedule, no amendments.
+        No drift findings.
       {%- endif -%}
     </div>
   </div>

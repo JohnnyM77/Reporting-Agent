@@ -2,8 +2,8 @@
   "last_run": "2026-08-23",
   "thesis_count": 5,
   "drifting": 1,
-  "watch": 3,
-  "clean": 1,
+  "watch": 2,
+  "clean": 2,
   "theses": [
     {
       "ticker": "AR9",
@@ -133,10 +133,10 @@
       "ticker": "NHC",
       "name": "New Hope Corporation Limited",
       "archetype": "CYCLICAL_TRADE",
-      "grade": "C",
-      "draft": true,
+      "grade": "B",
+      "draft": false,
       "exited": false,
-      "verdict": "WATCH",
+      "verdict": "CLEAN",
       "pillars": [
         {
           "id": "P1",
@@ -152,22 +152,16 @@
           "id": "P3",
           "status": "INTACT",
           "symbol": "\u25cf"
+        },
+        {
+          "id": "P4",
+          "status": "INTACT",
+          "symbol": "\u25cf"
         }
       ],
       "irr": null,
       "multiple": null,
-      "findings": [
-        {
-          "code": "NEVER_REVIEWED",
-          "severity": "WARN",
-          "message": "never reviewed since it was written"
-        },
-        {
-          "code": "GRADE_C",
-          "severity": "INFO",
-          "message": "grade C \u2014 reconstructed from memory, so treat the confident bits with suspicion"
-        }
-      ]
+      "findings": []
     },
     {
       "ticker": "PWH",

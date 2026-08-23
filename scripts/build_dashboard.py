@@ -551,6 +551,22 @@ _VERDICT_COLOUR = {"DRIFTING": "#ef4444", "WATCH": "#f59e0b", "CLEAN": "#22c55e"
 _PILLAR_COLOUR = {"INTACT": "#22c55e", "STRAINED": "#f59e0b", "BREACHED": "#ef4444"}
 
 
+def _theo_link(ticker: str, label: str | None = None) -> str:
+    """A ticker that takes you to its slide.
+
+    Theo's site reads a #TICKER/version fragment on load, so a plain relative
+    link is enough — no JavaScript on this side, and any thesis added later
+    gets a working link with no further work, because this card is generated
+    from theo.json.
+    """
+    ticker = _esc(ticker)
+    return (
+        f"<a href='theo/#{ticker}/current' "
+        f"style='color:#fbbf24;text-decoration:none;border-bottom:1px dotted #a16207'>"
+        f"{_esc(label) if label else ticker}</a>"
+    )
+
+
 def _theo_section(data: dict) -> str:
     """Theo on the dashboard is a glance, not the analysis.
 
@@ -578,7 +594,7 @@ def _theo_section(data: dict) -> str:
         for q in questions:
             items += (
                 f"<div style='border-left:3px solid #f59e0b;padding:8px 12px;margin-top:8px;background:#0f172a'>"
-                f"<div><strong style='color:#fbbf24'>{_esc(q.get('ticker',''))}</strong>"
+                f"<div><strong>{_theo_link(q.get('ticker',''))}</strong>"
                 f"<span style='color:#64748b;font-size:12px'> &middot; {_esc(q.get('source',''))}"
                 f" &middot; {_esc(q.get('date') or '')}</span></div>"
                 f"<div style='color:#94a3b8;font-size:12px;margin-top:3px'>{_esc(q.get('detail',''))}</div>"
@@ -616,7 +632,7 @@ def _theo_section(data: dict) -> str:
             )
             rows += (
                 f"<tr>"
-                f"<td><strong style='color:#fbbf24'>{_esc(r.get('ticker',''))}</strong>{draft}</td>"
+                f"<td><strong>{_theo_link(r.get('ticker',''))}</strong>{draft}</td>"
                 f"<td style='color:#cbd5e1;font-size:12px'>"
                 f"{_esc(r.get('archetype','').replace('_',' ').title())}</td>"
                 f"<td style='letter-spacing:2px;font-size:14px'>{pills}</td>"

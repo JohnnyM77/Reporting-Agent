@@ -199,12 +199,6 @@
           "below_high_pct": 52.18130903734357
         }
       ]
-    },
-    "Test": {
-      "run_timestamp": "2025-01-01T00:00:00",
-      "total": 0,
-      "flagged_count": 0,
-      "flagged": []
     }
   }
 }

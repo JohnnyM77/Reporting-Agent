@@ -27,6 +27,7 @@ renders the judgement and puts dashes where the figures go.
 
 from __future__ import annotations
 
+import base64
 import datetime as dt
 import os
 from pathlib import Path
@@ -40,6 +41,7 @@ from .ledger import EMPTY, Decision, Ledger
 from .thesis import Review, Thesis
 
 TEMPLATE_DIR = Path(__file__).resolve().parent / "templates"
+FAVICON_PATH = Path(__file__).resolve().parent.parent / "assets" / "favicon.png"
 
 KIND_ENTRY = "entry"
 KIND_REVIEW = "review"
@@ -55,6 +57,26 @@ SLIDE_HEIGHT = 794
 CHROMIUM_PATH_ENV = "THEO_CHROMIUM_PATH"
 
 _ENV: Environment | None = None
+_FAVICON: str | None = None
+
+
+def favicon_data_uri() -> str:
+    """The site favicon, inlined.
+
+    Theo's pages are self-contained by design — they must render from a
+    file:// URL with no sibling assets — so the icon is embedded rather than
+    linked. Returns an empty string if the asset is missing, and the template
+    then omits the tag entirely rather than emitting a broken link.
+    """
+    global _FAVICON
+    if _FAVICON is None:
+        try:
+            _FAVICON = "data:image/png;base64," + base64.b64encode(
+                FAVICON_PATH.read_bytes()
+            ).decode()
+        except OSError:
+            _FAVICON = ""
+    return _FAVICON
 
 
 def env() -> Environment:
@@ -442,7 +464,7 @@ def render_html(
     show_amounts: bool = False,
 ) -> str:
     context = slide_context(thesis, version, ledger, today, show_amounts)
-    return env().get_template("slide.html").render(s=context)
+    return env().get_template("slide.html").render(s=context, favicon=favicon_data_uri())
 
 
 class RenderError(RuntimeError):

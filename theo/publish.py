@@ -109,6 +109,7 @@ def build(
         has_ledger=bool(ledger.holdings),
         payload=payload_json,
         built=today.isoformat(),
+        favicon=render_mod.favicon_data_uri(),
         show_amounts=show_amounts,
     )
 

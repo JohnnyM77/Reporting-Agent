@@ -1,10 +1,55 @@
 {
   "last_run": "2026-08-23",
   "thesis_count": 4,
-  "drifting": 0,
+  "drifting": 1,
   "watch": 3,
   "clean": 1,
   "theses": [
+    {
+      "ticker": "AR9",
+      "name": "archTIS Limited",
+      "archetype": "SPECULATIVE_PREPROFIT",
+      "grade": "C",
+      "draft": false,
+      "exited": false,
+      "verdict": "DRIFTING",
+      "pillars": [
+        {
+          "id": "P1",
+          "status": "STRAINED",
+          "symbol": "\u25d0"
+        },
+        {
+          "id": "P2",
+          "status": "STRAINED",
+          "symbol": "\u25d0"
+        },
+        {
+          "id": "P3",
+          "status": "STRAINED",
+          "symbol": "\u25d0"
+        },
+        {
+          "id": "P4",
+          "status": "BREACHED",
+          "symbol": "\u25cb"
+        }
+      ],
+      "irr": null,
+      "multiple": null,
+      "findings": [
+        {
+          "code": "PILLAR_BREACHED",
+          "severity": "ALERT",
+          "message": "P4 is breached and the position is still open"
+        },
+        {
+          "code": "GRADE_C",
+          "severity": "INFO",
+          "message": "grade C \u2014 reconstructed from memory, so treat the confident bits with suspicion"
+        }
+      ]
+    },
     {
       "ticker": "BHP",
       "name": "BHP Group Limited",

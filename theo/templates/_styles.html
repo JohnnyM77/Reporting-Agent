@@ -188,6 +188,11 @@
     color: var(--ink-mute);
   }
   .pillar-claim { font-size: 11.5px; font-weight: 600; line-height: 1.3; flex: 1; }
+  /* ◐ is missing from many UI fonts and falls back to something that is not
+     a half circle. DejaVu Sans has it and ships on the render container. */
+  .pillar-status, .pills {
+    font-family: "DejaVu Sans", "Segoe UI Symbol", "Noto Sans Symbols2", sans-serif;
+  }
   .pillar-status {
     font-size: 9px;
     font-weight: 700;
@@ -198,6 +203,15 @@
   .pillar.INTACT   .pillar-status { color: var(--intact); }
   .pillar.STRAINED .pillar-status { color: var(--strained); }
   .pillar.BREACHED .pillar-status { color: var(--breached); }
+
+  /* Four pillars: buy back ~90px without dropping anything off the page. */
+  .col-l.dense { gap: 4px; }
+  .col-l.dense .sec-label { margin-bottom: 4px; }
+  .col-l.dense .pillar { padding: 4px 9px 5px; }
+  .col-l.dense .pillar-claim { font-size: 10.6px; line-height: 1.22; }
+  .col-l.dense .pillar-evidence { font-size: 8.8px; line-height: 1.28; margin-top: 2px; }
+  .col-l.dense .pillar-kill { font-size: 8.8px; line-height: 1.26; margin-top: 3px; padding-top: 3px; }
+  .col-l.dense .pillar-id, .col-l.dense .pillar-status { font-size: 8.5px; }
 
   .pillar-evidence {
     margin-top: 3px;

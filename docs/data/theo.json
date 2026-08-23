@@ -1,0 +1,116 @@
+{
+  "last_run": "2026-08-23",
+  "thesis_count": 2,
+  "drifting": 0,
+  "watch": 2,
+  "clean": 0,
+  "theses": [
+    {
+      "ticker": "BHP",
+      "name": "BHP Group Limited",
+      "archetype": "CYCLICAL_TRADE",
+      "grade": "B",
+      "draft": false,
+      "exited": false,
+      "verdict": "WATCH",
+      "pillars": [
+        {
+          "id": "P1",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P2",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P3",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        }
+      ],
+      "irr": null,
+      "multiple": null,
+      "findings": [
+        {
+          "code": "NEVER_REVIEWED",
+          "severity": "WARN",
+          "message": "never reviewed since it was written"
+        },
+        {
+          "code": "RESOLUTION_OVERDUE",
+          "severity": "WARN",
+          "message": "resolution date passed 2108 days ago and nothing was written down"
+        },
+        {
+          "code": "SIGNAL_UNANSWERED",
+          "severity": "WARN",
+          "message": "Sally: sally trim on 2026-08-23 and nothing was written down either way"
+        },
+        {
+          "code": "DIVERGENCE_OPEN",
+          "severity": "INFO",
+          "message": "held against Gaurav Sodhi, who has diverged \u2014 the disagreement is still open"
+        }
+      ]
+    },
+    {
+      "ticker": "NHC",
+      "name": "New Hope Corporation Limited",
+      "archetype": "CYCLICAL_TRADE",
+      "grade": "C",
+      "draft": true,
+      "exited": false,
+      "verdict": "WATCH",
+      "pillars": [
+        {
+          "id": "P1",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P2",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P3",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        }
+      ],
+      "irr": null,
+      "multiple": null,
+      "findings": [
+        {
+          "code": "NEVER_REVIEWED",
+          "severity": "WARN",
+          "message": "never reviewed since it was written"
+        },
+        {
+          "code": "GRADE_C",
+          "severity": "INFO",
+          "message": "grade C \u2014 reconstructed from memory, so treat the confident bits with suspicion"
+        }
+      ]
+    }
+  ],
+  "open_questions": [
+    {
+      "ticker": "BHP",
+      "source": "Sally",
+      "kind": "SALLY_TRIM",
+      "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 24x \u00b7 99th valuation percentile",
+      "question": "Sally says trim. You are not going to. What would have to be true about the price for you to change that answer \u2014 and is that written down as a kill condition anywhere?",
+      "date": "2026-08-23"
+    }
+  ],
+  "no_thesis": [
+    {
+      "ticker": "PWH",
+      "source": "Sally",
+      "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 67x \u00b7 98th valuation percentile"
+    }
+  ]
+}

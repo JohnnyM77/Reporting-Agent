@@ -16,10 +16,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
+from theo import drift as drift_mod  # noqa: E402
 from theo import ledger as ledger_mod  # noqa: E402
 from theo import publish as publish_mod  # noqa: E402
 from theo import render as render_mod  # noqa: E402
 from theo import season as season_mod  # noqa: E402
+from theo import signals as signals_mod  # noqa: E402
 from theo import thesis as thesis_mod  # noqa: E402
 
 THESES_DIR = REPO_ROOT / "theses"
@@ -188,6 +190,135 @@ def test_drift_and_season(theses):
     )
 
 
+def test_signals_open_questions_and_orphans():
+    print("\nagent signals become questions Theo will not drop")
+    sally = {
+        "last_run": "2026-08-23",
+        "flagged": [
+            {"ticker": "AAA", "sally_verdict": "Trim candidate",
+             "alert_tier": "Tier 3: Deep Review", "trailing_pe": 40.0,
+             "valuation_percentile": 0.95},
+            {"ticker": "ZZZ", "sally_verdict": "Trim candidate", "alert_tier": "Tier 3"},
+        ],
+    }
+    tmp = REPO_ROOT / "site" / "_test_signals"
+    tmp.mkdir(parents=True, exist_ok=True)
+    (tmp / "sally.json").write_text(json.dumps(sally), encoding="utf-8")
+
+    sigs = signals_mod.load_all(tmp)
+    check(len(sigs) == 2, "both flags are read as signals", str(len(sigs)))
+    check(all(s.kind == signals_mod.SALLY_TRIM for s in sigs), "trim verdicts map to SALLY_TRIM")
+
+    held = thesis_mod.from_dict({
+        "ticker": "AAA",
+        "the_bet": "A short testable reason to own the thing.",
+        "pillars": [{"id": "P1", "claim": "c", "kill_condition": "k"}],
+    })
+
+    questions = signals_mod.open_questions([held], sigs)
+    check(len(questions) == 1 and questions[0][0].ticker == "AAA",
+          "an unanswered signal is an open question")
+    check([s.ticker for s in signals_mod.orphans([held], sigs)] == ["ZZZ"],
+          "a signal against a holding with no thesis is an orphan")
+
+    findings = signals_mod.findings_for(held, sigs)
+    check(any(f.code == "SIGNAL_UNANSWERED" for f in findings),
+          "an unanswered signal is a WARN finding")
+    check(all(f.severity == drift_mod.WARN for f in findings if f.code == "SIGNAL_UNANSWERED"),
+          "unanswered is a warning, not an alert")
+
+    # Answering it — even by declining — closes the question.
+    answered = thesis_mod.from_dict({
+        "ticker": "AAA",
+        "the_bet": "A short testable reason to own the thing.",
+        "pillars": [{"id": "P1", "claim": "c", "kill_condition": "k"}],
+        "reviews": [{"date": "2026-08-23", "trigger": "SALLY_TRIM",
+                     "decision": "DECLINED", "verdict": "Holding."}],
+    })
+    check(not signals_mod.open_questions([answered], sigs),
+          "a declined-but-recorded signal is answered")
+    check(not any(f.code == "SIGNAL_UNANSWERED"
+                  for f in signals_mod.findings_for(answered, sigs)),
+          "answering clears the unanswered finding")
+
+    # A review dated before the signal does not answer the new one.
+    stale = thesis_mod.from_dict({
+        "ticker": "AAA",
+        "the_bet": "A short testable reason to own the thing.",
+        "pillars": [{"id": "P1", "claim": "c", "kill_condition": "k"}],
+        "reviews": [{"date": "2025-01-01", "trigger": "SALLY_TRIM", "decision": "DECLINED"}],
+    })
+    check(len(signals_mod.open_questions([stale], sigs)) == 1,
+          "last year's answer does not close this year's signal")
+
+    for f in tmp.glob("*.json"):
+        f.unlink()
+    tmp.rmdir()
+
+
+def test_three_refusals_without_a_kill_condition_is_an_alert():
+    print("\ndeclining three times without tightening anything is an alert")
+
+    def build(decisions_and_amendments):
+        return thesis_mod.from_dict({
+            "ticker": "AAA",
+            "the_bet": "A short testable reason to own the thing.",
+            "pillars": [{"id": "P1", "claim": "c", "kill_condition": "k"}],
+            "reviews": [
+                {"date": d, "trigger": "SALLY_TRIM", "decision": "DECLINED",
+                 "verdict": "Holding.", "amendments": a}
+                for d, a in decisions_and_amendments
+            ],
+        })
+
+    twice = build([("2026-01-01", []), ("2026-02-01", [])])
+    codes = [f.code for f in signals_mod.findings_for(twice, [])]
+    check("SIGNAL_REFUSED_REPEATEDLY" not in codes, "two refusals is not yet an alert")
+
+    thrice = build([("2026-01-01", []), ("2026-02-01", []), ("2026-03-01", [])])
+    findings = signals_mod.findings_for(thrice, [])
+    hit = [f for f in findings if f.code == "SIGNAL_REFUSED_REPEATEDLY"]
+    check(bool(hit), "three refusals is an alert")
+    check(bool(hit) and hit[0].severity == drift_mod.ALERT, "and it is severity ALERT")
+
+    tightened = build([
+        ("2026-01-01", []),
+        ("2026-02-01", [{"pillar": "P1", "change": "added a price ceiling",
+                         "direction": "TIGHTENED"}]),
+        ("2026-03-01", []),
+    ])
+    check(not [f for f in signals_mod.findings_for(tightened, [])
+               if f.code == "SIGNAL_REFUSED_REPEATEDLY"],
+          "writing the kill condition clears the escalation")
+
+
+def test_signals_fold_into_the_drift_verdict():
+    print("\nsignals reach the drift verdict through season.assess")
+    clean = thesis_mod.from_dict({
+        "ticker": "AAA",
+        "the_bet": "A short testable reason to own the thing.",
+        "evidence_grade": "A",
+        "pillars": [{"id": "P1", "claim": "c", "kill_condition": "k"}],
+        "reviews": [{"date": "2026-08-01", "verdict": "fine"}],
+    })
+    today = dt.date(2026, 8, 23)
+    verdict_without, _ = season_mod.assess(clean, today)
+    check(verdict_without == "CLEAN", "the thesis is clean on its own", verdict_without)
+
+    sig = signals_mod.Signal(source="Sally", ticker="AAA",
+                             kind=signals_mod.SALLY_TRIM, date=today)
+    verdict_with, findings = season_mod.assess(clean, today, [sig])
+    check(verdict_with == "WATCH", "an open question drags it to WATCH", verdict_with)
+    check(any(f.code == "SIGNAL_UNANSWERED" for f in findings),
+          "and the finding is carried through")
+
+
+def test_missing_dashboard_json_is_not_an_error():
+    print("\nno agent JSON is not an error")
+    check(signals_mod.load_all(REPO_ROOT / "does" / "not" / "exist") == [],
+          "a missing dashboard directory yields no signals")
+
+
 def test_site_builds(theses, ledger, tmp_dir: Path):
     print("\nthe site builds to one self-contained file")
     out = publish_mod.build(theses, ledger, tmp_dir, dt.date(2026, 8, 22))
@@ -272,6 +403,10 @@ def main() -> int:
     test_entry_slide_is_blind_to_the_outcome(theses, ledger)
     test_hold_thesis_leads_the_current_slide(theses, ledger)
     test_drift_and_season(theses)
+    test_signals_open_questions_and_orphans()
+    test_three_refusals_without_a_kill_condition_is_an_alert()
+    test_signals_fold_into_the_drift_verdict()
+    test_missing_dashboard_json_is_not_an_error()
     test_site_builds(theses, ledger, tmp_dir)
     test_ledger_is_optional()
     test_bhp_irr_ladder(ledger)

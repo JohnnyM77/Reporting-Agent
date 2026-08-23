@@ -84,13 +84,24 @@ def pre_season_finding(thesis: Thesis, today: dt.date | None = None) -> Finding 
     )
 
 
-def assess(thesis: Thesis, today: dt.date | None = None) -> tuple[str, list[Finding]]:
-    """Drift verdict for a thesis, including the season finding.
+def assess(
+    thesis: Thesis,
+    today: dt.date | None = None,
+    signals: Sequence["object"] | None = None,
+) -> tuple[str, list[Finding]]:
+    """Drift verdict for a thesis: its own drift, the calendar, and the
+    other agents' signals folded into one verdict.
 
     This is the entry point every other module uses; call ``drift.check``
-    directly only when the calendar deliberately should not matter.
+    directly only when the calendar and the other agents deliberately should
+    not matter. ``signals`` is imported lazily to keep the module graph
+    acyclic — signals reads findings from drift, not the other way round.
     """
     extra = [f for f in (pre_season_finding(thesis, today),) if f is not None]
+    if signals:
+        from .signals import findings_for  # noqa: PLC0415 — avoids an import cycle
+
+        extra.extend(findings_for(thesis, signals))
     return drift_mod.check(thesis, today, extra)
 
 

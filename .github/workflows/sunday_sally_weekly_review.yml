@@ -49,12 +49,24 @@ jobs:
         run: |
           python -m src.main
 
+      # Sally's flags become questions Theo will not drop. Theo only *reads*
+      # docs/data/sally.json — Sally is not modified and does not know Theo
+      # exists. continue-on-error because a bug in Theo must never take down
+      # a working agent's weekly run.
+      - name: Ask Theo what Sally's flags mean for the theses
+        continue-on-error: true
+        run: |
+          pip install pyyaml jinja2 openpyxl
+          python -m theo.cli dashboard
+          echo "----- open questions -----"
+          python -m theo.cli signals || true
+
       - name: Commit dashboard update
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Commit only Sally's data JSON — no conflict possible with other agents
-          git add docs/data/sally.json
+          git add docs/data/sally.json docs/data/theo.json
           git diff --staged --quiet || git commit -m "Sally data [skip ci]"
           # Pull other agents' latest JSON files
           git pull --rebase origin HEAD

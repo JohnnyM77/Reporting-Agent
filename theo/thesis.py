@@ -55,6 +55,10 @@ PILLAR_STATUSES = ("INTACT", "STRAINED", "BREACHED")
 
 AMENDMENT_DIRECTIONS = ("LOOSENED", "TIGHTENED", "NEUTRAL")
 
+# What you did when another agent raised something. DECLINED is the
+# interesting one: it is the answer that never gets written down otherwise.
+DECISIONS = ("ACTED", "PARTIAL", "DECLINED")
+
 EXIT_REASONS = (
     "THESIS_BROKEN",
     "THESIS_PLAYED_OUT",
@@ -215,6 +219,10 @@ class Amendment:
 class Review:
     date: dt.date | None = None
     verdict: str = ""
+    # Set when the review was prompted by another agent rather than by the
+    # calendar — e.g. trigger: SALLY_TRIM, decision: DECLINED.
+    trigger: str = ""
+    decision: str = ""
     pillar_status: dict[str, str] = dataclasses.field(default_factory=dict)
     expected_vs_actual: str = ""
     process_score: Any = None
@@ -228,6 +236,8 @@ class Review:
         return cls(
             date=_as_date(d.get("date")),
             verdict=_text(d.get("verdict")),
+            trigger=_upper(d.get("trigger")),
+            decision=_upper(d.get("decision")),
             pillar_status={
                 _text(k): _upper(v) for k, v in _as_dict(d.get("pillar_status")).items()
             },
@@ -542,6 +552,8 @@ def validate(thesis: Thesis) -> list[str]:
         for pid in review.pillar_status:
             if thesis.pillar(pid) is None:
                 bad(f"review references unknown pillar '{pid}'")
+        if review.decision and review.decision not in DECISIONS:
+            bad(f"review decision '{review.decision}' not ACTED/PARTIAL/DECLINED")
         for amendment in review.amendments:
             if amendment.direction not in AMENDMENT_DIRECTIONS:
                 bad(

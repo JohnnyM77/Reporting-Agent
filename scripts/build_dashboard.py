@@ -364,9 +364,34 @@ def _bob_section(data: dict) -> str:
 # Wally section
 # ---------------------------------------------------------------------------
 
+def _live_watchlist_names() -> set[str] | None:
+    """Names declared by the YAML files that currently exist.
+
+    Wally merges each run into wally.json keyed by watchlist name and never
+    prunes, so deleting a watchlist YAML leaves its last result in the JSON
+    forever — a "Test" watchlist outlived its file and kept rendering. Filter
+    on the source of truth instead. Returns None if the directory cannot be
+    read, in which case nothing is filtered.
+    """
+    directory = REPO_ROOT / "watchlists"
+    if not directory.is_dir():
+        return None
+    names: set[str] = set()
+    for path in directory.glob("*.yaml"):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.startswith("name:"):
+                names.add(line.split(":", 1)[1].strip().strip("'\""))
+                break
+    return names or None
+
+
 def _wally_section(data: dict) -> str:
     run_date = _fmt_date(data.get("last_run"))
     watchlists = data.get("watchlists", {})
+
+    live = _live_watchlist_names()
+    if live is not None:
+        watchlists = {k: v for k, v in watchlists.items() if k in live}
 
     total_flagged = sum(wl.get("flagged_count", 0) for wl in watchlists.values())
     status_dot = "#f59e0b" if total_flagged > 0 else "#22c55e"

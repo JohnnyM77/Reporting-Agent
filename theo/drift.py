@@ -68,14 +68,18 @@ def analyse(thesis: Thesis, today: dt.date | None = None) -> list[Finding]:
 
     # --- alerts ----------------------------------------------------------
 
-    for pillar in thesis.pillars:
-        if pillar.status == "BREACHED":
-            add(
-                "PILLAR_BREACHED",
-                ALERT,
-                f"{pillar.id} is breached and the position is still open",
-                pillar.claim,
-            )
+    # A breached pillar on a position you still hold is the alarm. On an
+    # exited one it is the record of why you sold — the system working, not
+    # drift. Same for review nags: a closed position does not need reviewing.
+    if not thesis.is_exited:
+        for pillar in thesis.pillars:
+            if pillar.status == "BREACHED":
+                add(
+                    "PILLAR_BREACHED",
+                    ALERT,
+                    f"{pillar.id} is breached and the position is still open",
+                    pillar.claim,
+                )
 
     loosened = [a for a in thesis.all_amendments if a.loosened]
     if len(loosened) >= LOOSENED_LIMIT:
@@ -122,7 +126,9 @@ def analyse(thesis: Thesis, today: dt.date | None = None) -> list[Finding]:
         )
 
     last = thesis.last_review
-    if not thesis.reviews:
+    if thesis.is_exited:
+        pass  # a closed position is not going stale
+    elif not thesis.reviews:
         add("NEVER_REVIEWED", WARN, "never reviewed since it was written")
     elif last and last.date and _months_between(last.date, today) >= STALE_MONTHS:
         months = int(_months_between(last.date, today))

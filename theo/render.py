@@ -268,7 +268,9 @@ def slide_context(
         statuses = {p.id: p.status for p in thesis.pillars}
 
     # --- drift -----------------------------------------------------------
-    show_drift = kind != KIND_ENTRY
+    # The exit block is the verdict on an exit slide; a drift banner reading
+    # "kill conditions intact" next to two breached pillars is just wrong.
+    show_drift = kind not in (KIND_ENTRY, KIND_EXIT)
     if kind == KIND_REVIEW and review:
         findings = _review_findings(review)
         if any(a.loosened for a in review.amendments):
@@ -384,6 +386,7 @@ def slide_context(
         "exited": thesis.is_exited,
         "bet": bet,
         "bet_label": bet_label,
+        "bet_long": len(bet) > 420,
         "show_drift": show_drift,
         "drift_verdict": verdict,
         "drift_findings": findings,

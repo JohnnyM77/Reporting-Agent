@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-08-23",
+  "last_run": "2026-08-24",
   "thesis_count": 7,
   "drifting": 1,
   "watch": 3,
@@ -46,7 +46,7 @@
         {
           "code": "RESOLUTION_OVERDUE",
           "severity": "WARN",
-          "message": "resolution date passed 284 days ago and nothing was written down"
+          "message": "resolution date passed 285 days ago and nothing was written down"
         }
       ]
     },
@@ -131,7 +131,7 @@
         {
           "code": "RESOLUTION_OVERDUE",
           "severity": "WARN",
-          "message": "resolution date passed 2108 days ago and nothing was written down"
+          "message": "resolution date passed 2109 days ago and nothing was written down"
         },
         {
           "code": "SIGNAL_UNANSWERED",

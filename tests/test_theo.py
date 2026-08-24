@@ -461,6 +461,94 @@ def test_bhp_irr_ladder(ledger):
 # --------------------------------------------------------------------------
 
 
+def test_the_money_free_ledger_carries_no_money() -> None:
+    """data/decisions.json is committed to a public repo. Prove it is safe.
+
+    Two things have to hold at once: no dollar amount survives the export, and
+    every IRR and multiple is still exactly what the private workbook says. If
+    the second were not true the file would be safe and useless.
+    """
+    print("\nthe money-free ledger publishes ratios, not amounts")
+
+    path = ledger_mod.DECISIONS_JSON
+    if not path.is_file():
+        print("  skip (no data/decisions.json — run scripts/export_ledger.py)")
+        return
+
+    payload = json.loads(path.read_text())
+    entries = payload.get("decisions", [])
+    check(bool(entries), "the export contains decisions")
+
+    banned = {"cost", "shares", "value", "value_now", "dividends", "proceeds", "amount"}
+    leaked = sorted({k for e in entries for k in e} & banned)
+    check(not leaked, "no dollar-denominated field is published", ", ".join(leaked))
+
+    # Every buy normalises to exactly one unit of its own capital. A flow
+    # larger than the whole portfolio would mean a raw dollar amount slipped
+    # through unscaled.
+    # Scrip is excluded: a lot that cost nothing normalises to a four-figure
+    # ratio legitimately, which is exactly why it carries no IRR.
+    worst = max(
+        (abs(a) for e in entries if not e.get("scrip") for _, a in e.get("flows", [])),
+        default=0.0,
+    )
+    check(worst < 100, "no flow is large enough to be an unscaled dollar figure", f"max |flow| = {worst}")
+    check(
+        any(e.get("scrip") for e in entries),
+        "demerger scrip is flagged rather than silently given a huge multiple",
+    )
+
+    opening = [e["flows"][0][1] for e in entries if e.get("flows")]
+    check(
+        all(abs(f + 1.0) < 1e-6 for f in opening),
+        "every decision opens with a buy normalised to -1.0",
+    )
+    check(
+        abs(sum(e.get("weight", 0.0) for e in entries) - 1.0) < 1e-3,
+        "the weights account for all of the capital committed",
+    )
+
+    money_free = ledger_mod.load(path=path)
+    check(money_free.normalised, "the loader reports the ledger as normalised")
+
+    # The published numbers must survive the money being removed. These are the
+    # figures the private workbook produces; they are the point of the file.
+    for ticker, multiple, irr in (
+        ("ABB", 1.95, 0.196),
+        ("DRO", 5.03, 0.867),
+        ("AR9", 0.21, -0.247),
+        ("BHP", 4.07, 0.173),
+        ("NHC", 1.46, 0.273),
+    ):
+        holding = money_free.get(ticker)
+        if holding is None:
+            check(False, f"{ticker} is in the export")
+            continue
+        check(
+            holding.multiple is not None and abs(holding.multiple - multiple) < 0.02,
+            f"{ticker} multiple survives normalisation",
+            f"{holding.multiple}",
+        )
+        check(
+            holding.irr is not None and abs(holding.irr - irr) < 0.002,
+            f"{ticker} IRR survives normalisation",
+            f"{holding.irr}",
+        )
+
+    # A single decision and several decisions are different failure modes:
+    # pooling normalised flows without reweighting silently equal-weights a
+    # $250 birthday present against a six-figure cheque.
+    multi = [h for h in money_free.holdings.values() if len(h.decisions) > 1]
+    check(bool(multi), "the export contains multi-decision holdings to pool")
+
+
+def test_private_workbooks_cannot_be_committed() -> None:
+    print("\nthe private workbook is ignored by git")
+    ignored = (REPO_ROOT / ".gitignore").read_text()
+    for pattern in ("data/portfolio.xlsx", "data/*IRR*.xlsx"):
+        check(pattern in ignored, f"{pattern} is gitignored")
+
+
 def main() -> int:
     theses = thesis_mod.load_all(THESES_DIR)
     ledger = ledger_mod.load(as_at=dt.date(2026, 8, 22))
@@ -481,6 +569,8 @@ def main() -> int:
     test_site_builds(theses, ledger, tmp_dir)
     test_ledger_is_optional()
     test_bhp_irr_ladder(ledger)
+    test_the_money_free_ledger_carries_no_money()
+    test_private_workbooks_cannot_be_committed()
 
     for path in (tmp_dir / "index.html", tmp_dir / ".nojekyll"):
         path.unlink(missing_ok=True)

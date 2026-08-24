@@ -56,3 +56,10 @@ storage_state.json
 # Theo — generated slides and published site
 slides/
 site/
+
+# Theo — the private transaction ledger. Never commit these: they carry every
+# cost, dividend and current value. Run scripts/export_ledger.py to produce
+# data/decisions.json, which is money-free and is the file Theo reads in CI.
+data/portfolio.xlsx
+data/*IRR*.xlsx
+data/Jzx_Portfolio*.xlsx

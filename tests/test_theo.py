@@ -292,6 +292,45 @@ def test_three_refusals_without_a_kill_condition_is_an_alert():
           "writing the kill condition clears the escalation")
 
 
+def test_tightening_is_not_counted_as_amendment_churn():
+    print("\ntightening a kill condition is not 'edited to survive'")
+
+    def build(amendments):
+        return thesis_mod.from_dict({
+            "ticker": "AAA",
+            "the_bet": "A short testable reason to own the thing.",
+            "evidence_grade": "A",
+            "pillars": [{"id": "P1", "claim": "c", "kill_condition": "k"}],
+            "resolution_date": "2030-01-01",
+            "reviews": [{"date": "2026-08-24", "verdict": "Holding.",
+                         "amendments": amendments}],
+        })
+
+    def codes(t):
+        return [f.code for f in drift_mod.analyse(t, dt.date(2026, 8, 24))]
+
+    two_tightened = build([
+        {"pillar": "P1", "change": "added a margin floor", "direction": "TIGHTENED"},
+        {"pillar": "P1", "change": "named the sell trigger", "direction": "TIGHTENED"},
+    ])
+    check("AMENDMENT_RATE" not in codes(two_tightened),
+          "two tightening amendments in one review is not churn")
+
+    two_loosened = build([
+        {"pillar": "P1", "change": "widened the margin floor", "direction": "LOOSENED"},
+        {"pillar": "P1", "change": "pushed the date out", "direction": "LOOSENED"},
+    ])
+    check("AMENDMENT_RATE" in codes(two_loosened),
+          "two loosening amendments in one review still trips the rate rule")
+
+    mixed = build([
+        {"pillar": "P1", "change": "restated the wording", "direction": "NEUTRAL"},
+        {"pillar": "P1", "change": "pushed the date out", "direction": "LOOSENED"},
+    ])
+    check("AMENDMENT_RATE" in codes(mixed),
+          "neutral amendments still count toward churn")
+
+
 def test_signals_fold_into_the_drift_verdict():
     print("\nsignals reach the drift verdict through season.assess")
     clean = thesis_mod.from_dict({
@@ -474,6 +513,7 @@ def main() -> int:
     test_drift_and_season(theses)
     test_signals_open_questions_and_orphans()
     test_three_refusals_without_a_kill_condition_is_an_alert()
+    test_tightening_is_not_counted_as_amendment_churn()
     test_signals_fold_into_the_drift_verdict()
     test_an_exited_thesis_is_not_drifting()
     test_missing_dashboard_json_is_not_an_error()

@@ -17,8 +17,11 @@ sources:
       Joined September 2023; DroneShield was the first purchase after joining
       and the introduction to small and mid-cap ideas generally. The community
       surfaced the name — Strawman, Magneto, Summer12, Clio, nerdag and others
-      have covered it continuously. The reasoning below is mine; the
-      introduction was not, and the file should not pretend otherwise.
+      have covered it continuously. It was already the company everyone there
+      was talking about when Zachary, for his eleventh birthday, asked to buy a
+      defence company, so I had a name ready to reach for. The reasoning below
+      is mine; the introduction was not, and the file should not pretend
+      otherwise.
   - name: Oleg Vornik
     outlet: DroneShield CEO — investor calls and results presentations
     alignment: ALIGNED
@@ -261,12 +264,25 @@ playbook was blue chips that had run into bad news — BHP after Brazil, ResMed
 after Ozempic, Fortescue at $4 — with only one or two start-ups ever attempted.
 
 It was also, and this is the part worth recording properly, **bought for the
-boys**. My son got DRO shares at 31 cents for his eleventh birthday. I bought
-for myself the same day. It was chosen as the vehicle to teach both of them
-what owning a company is: what a business does, what it might be worth, and
-what a holding period feels like when the number on the screen halves twice.
+boys** — and the genesis was a birthday present, not a stock screen.
 
-They could not have had a better first lesson, and that is mostly luck.
+It was **Zachary's eleventh birthday**, and the gift was SG$250 to invest in
+shares of his own choice, framed around three of Buffett's rules: buy a company
+whose product you understand and love, run by management you trust, at a fair
+price. We sat down to talk about what he might buy, and he asked — unprompted —
+whether he could own a defence company, a military one to be precise. I had
+only recently joined Strawman, and I told him there was a company everyone on
+there was talking about called DroneShield. Let's have a look. That look is how
+we came across it, and we bought it for the first time at **31 cents**.
+
+So Zachary got his parcel at 31 cents for his birthday, and I bought a much
+larger one for myself the same day. It became the vehicle to teach both boys
+what owning a company is: what a business does, what it might be worth, and what
+a holding period feels like when the number on the screen halves twice.
+
+They could not have had a better first lesson, and that is mostly luck — the
+idea came from an eleven-year-old wanting a defence stock, not from any edge of
+mine.
 
 ## The part that is a risk, not a feature
 

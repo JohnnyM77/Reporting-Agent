@@ -139,12 +139,20 @@ def analyse(thesis: Thesis, today: dt.date | None = None) -> list[Finding]:
         )
 
     if dated_reviews:
-        rate = len(thesis.all_amendments) / len(dated_reviews)
+        # Tightening is excluded on purpose. This rule exists to catch a thesis
+        # being rewritten to keep agreeing with the position, and the direction
+        # field is the whole signal: adding a sharper kill condition after a
+        # result is the behaviour the file is meant to encourage. Counting it
+        # as churn told MSV it was "being edited to survive" for two amendments
+        # that both made the thesis harder to hold, which trains exactly the
+        # wrong habit — record fewer amendments and score better.
+        churn = [a for a in thesis.all_amendments if a.direction != "TIGHTENED"]
+        rate = len(churn) / len(dated_reviews)
         if rate > AMENDMENT_RATE_LIMIT:
             add(
                 "AMENDMENT_RATE",
                 WARN,
-                f"{len(thesis.all_amendments)} amendments across {len(dated_reviews)} "
+                f"{len(churn)} non-tightening amendments across {len(dated_reviews)} "
                 f"reviews ({rate:.1f} per review) — the thesis is being edited to survive",
             )
 

@@ -1,17 +1,48 @@
-name: Publish Theo
+name: Publish site
 
-# Theo's site is rebuilt whenever a thesis, the code that renders one, or the
-# transaction ledger changes. `check` runs first: a malformed thesis fails the
-# build rather than publishing a slide with a hole in it.
+# The one and only publisher of GitHub Pages for this repo. A Pages deploy
+# replaces the whole site at once, so the dashboard at / and Theo's slides at
+# /theo/ have to be built and uploaded together by a single workflow — a second
+# workflow deploying either half on its own would delete the other.
+#
+# `check` runs before the build: a malformed thesis fails the run rather than
+# publishing a slide with a hole in it.
 
 on:
+  # A thesis, the code that renders one, the ledger, or the shared dashboard
+  # changed on main.
   push:
     branches: [main]
     paths:
       - "theses/**"
       - "theo/**"
       - "data/**"
+      - "docs/**"
+      - "scripts/build_dashboard.py"
       - ".github/workflows/theo-pages.yml"
+
+  # An agent finished its run. Each of them writes its own docs/data/*.json,
+  # rebuilds docs/index.html and pushes the result with [skip ci] — which is
+  # exactly what stops that push from triggering anything, this workflow
+  # included. For weeks that meant the agents kept updating docs/index.html in
+  # git while the deployed site stayed frozen at whatever the last thesis
+  # change had published: Bob ran, the email arrived, the website did not move.
+  #
+  # So the deploy hangs off the agent run itself rather than off its commit.
+  # Bob and Ned every morning, Wally on Saturday, Sally on Sunday.
+  #
+  # Deliberately not gated on the triggering run succeeding. A run that emailed
+  # its digest and then tripped over on a later step has still committed data
+  # worth publishing, and re-deploying unchanged content costs nothing.
+  workflow_run:
+    workflows:
+      - "Daily Announcement Digest"    # Bob   — daily,  23:13 UTC
+      - "Ned News Agent"               # Ned   — daily,  23:30 UTC
+      - "Wally Watchlist Screening"    # Wally — Friday, 22:30 UTC
+      - "Selling Sally Weekly Review"  # Sally — Sunday, 00:00 UTC
+    types: [completed]
+    branches: [main]
+
   workflow_dispatch:
     inputs:
       show_amounts:
@@ -21,8 +52,11 @@ on:
         default: false
 
 # Only one Pages deploy at a time; a queued run supersedes the one behind it.
+# Bob and Ned finish within a couple of minutes of each other most mornings,
+# so the second one cancelling the first is the intended outcome — the survivor
+# publishes the newer data.
 concurrency:
-  group: theo-pages
+  group: publish-pages
   cancel-in-progress: true
 
 jobs:
@@ -30,9 +64,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      # `push` gives us the branch in github.ref_name; `workflow_run` sets
+      # github.ref to the default branch and carries the real one on the event.
+      TARGET_BRANCH: ${{ github.event.workflow_run.head_branch || github.ref_name }}
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
+        with:
+          # On workflow_run, github.sha is the default branch's tip as of when
+          # the event fired, which can predate the agent's own dashboard commit
+          # made moments earlier in the run that triggered us. Checking the
+          # branch out by name always picks up the newest data.
+          ref: ${{ github.event.workflow_run.head_branch || github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -63,8 +107,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add docs/data/theo.json docs/index.html
           git diff --staged --quiet || git commit -m "Theo data + dashboard [skip ci]"
-          git pull --rebase origin ${{ github.ref_name }}
-          git push origin HEAD:${{ github.ref_name }}
+          git pull --rebase origin "$TARGET_BRANCH"
+          git push origin HEAD:"$TARGET_BRANCH"
 
       # The Pages root already belongs to the existing agent dashboard in
       # docs/. Publishing Theo over the top of it would take that URL away, so

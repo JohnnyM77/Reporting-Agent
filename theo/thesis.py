@@ -37,6 +37,11 @@ ARCHETYPES = (
     # exists so the pillars can be about the actual purpose and still carry
     # real kill conditions.
     "TROPHY_ASSET",
+    # Broad-market index exposure held for diversification and to put capital
+    # to work when there is no specific single-stock idea to back. Not a
+    # conviction bet on a business — a basket, bought cheaply, to be roughly
+    # the market. VAS, VEU, VHY and any future index fund live here.
+    "INDEX_DIVERSIFIER",
 )
 
 STATUSES = ("HELD", "EXITED")
@@ -590,7 +595,7 @@ def validate_all(theses: Iterable[Thesis]) -> list[str]:
 SCAFFOLD = """---
 ticker: {ticker}
 name: {name}
-archetype: {archetype}          # COMPOUNDING_MACHINE | CYCLICAL_TRADE | STRUCTURAL_WINNER | SPECULATIVE_PREPROFIT | VALUE_TRAP | MELTING_ICE_CUBE | TROPHY_ASSET
+archetype: {archetype}          # COMPOUNDING_MACHINE | CYCLICAL_TRADE | STRUCTURAL_WINNER | SPECULATIVE_PREPROFIT | VALUE_TRAP | MELTING_ICE_CUBE | TROPHY_ASSET | INDEX_DIVERSIFIER
 status: HELD
 evidence_grade: {grade}         # A contemporaneous | B reconstructed with documents | C memory only
 conviction: {conviction}

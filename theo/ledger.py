@@ -34,11 +34,44 @@ from __future__ import annotations
 
 import dataclasses
 import datetime as dt
+import json
 import re
 from pathlib import Path
 from typing import Any, Iterable
 
 DEFAULT_LEDGER_PATH = Path("data/portfolio.xlsx")
+
+# Two shapes of workbook are understood, and both live in the repo rather than
+# on someone's desktop. The transaction export is the original format: a
+# summary table followed by per-ticker "XYZ Transactions" blocks, from which
+# decisions are reconstructed. The decision workbook is already reconstructed —
+# one row per buy, with the cash flows on their own sheet — so it is read
+# directly rather than rebuilt. Searched in order; the first that exists wins.
+LEDGER_SEARCH_PATH = (
+    DEFAULT_LEDGER_PATH,
+    Path("data/JM_Decision_Level_IRR.xlsx"),
+)
+
+# The money-free export of the decision workbook, written by
+# scripts/export_ledger.py. This is the file that is safe to commit to a public
+# repository, and the one Theo reads in CI. Cash flows in it are normalised so
+# each buy is -1.0, which leaves IRR and multiple untouched — see the script.
+DECISIONS_JSON = Path("data/decisions.json")
+
+DECISION_SHEET = "Decision IRR"
+CASHFLOW_SHEET = "Cash Flows"
+
+# Rows on the decision sheet whose first cell is not a decision id are notes,
+# blank spacers, or the PORTFOLIO total line. None of them is a decision.
+_DECISION_ID_RE = re.compile(r"^D\d+$")
+
+
+def default_ledger_path() -> Path:
+    """The first workbook that actually exists, or the canonical default."""
+    for candidate in LEDGER_SEARCH_PATH:
+        if candidate.is_file():
+            return candidate
+    return DEFAULT_LEDGER_PATH
 
 # A lot that cost less than this, while carrying more than this many shares,
 # did not get bought — it fell out of a demerger.
@@ -187,6 +220,12 @@ class Decision:
     is_scrip: bool = False
     flows: list[tuple[dt.date, float]] = dataclasses.field(default_factory=list)
     as_at: dt.date | None = None
+    # Share of total capital ever committed, 0..1. Populated by the money-free
+    # export, where it replaces the dollar cost as the way to compare sizing.
+    weight: float = 0.0
+    # True when the flows are normalised to a buy of -1.0, which makes every
+    # dollar-denominated field meaningless. Callers show dashes instead.
+    normalised: bool = False
 
     @property
     def label(self) -> str:
@@ -234,6 +273,8 @@ class Holding:
     currency: str = "AUD"
     summary_irr: float | None = None
     decisions: list[Decision] = dataclasses.field(default_factory=list)
+    weight: float = 0.0
+    normalised: bool = False
 
     @property
     def unit_value(self) -> float:
@@ -266,6 +307,9 @@ class Ledger:
     as_at: dt.date | None = None
     path: Path | None = None
     warnings: list[str] = dataclasses.field(default_factory=list)
+    # True when loaded from the money-free export: IRR, multiple and years are
+    # exact, every dollar figure is absent by construction.
+    normalised: bool = False
 
     def __bool__(self) -> bool:
         return bool(self.holdings)
@@ -278,7 +322,8 @@ class Ledger:
         return holding.decisions if holding else []
 
     def by_capital(self) -> list[Holding]:
-        return sorted(self.holdings.values(), key=lambda h: h.value or 0.0, reverse=True)
+        key = (lambda h: h.weight) if self.normalised else (lambda h: h.value or 0.0)
+        return sorted(self.holdings.values(), key=key, reverse=True)
 
     def tickers(self) -> list[str]:
         return sorted(self.holdings)
@@ -291,6 +336,15 @@ EMPTY = Ledger()
 # --------------------------------------------------------------------------
 # Parsing
 # --------------------------------------------------------------------------
+
+
+def _open_workbook(path: Path) -> Any | None:
+    """Open the workbook, or None when openpyxl is not installed."""
+    try:
+        import openpyxl  # noqa: PLC0415 — optional dependency, by design
+    except ImportError:
+        return None
+    return openpyxl.load_workbook(path, data_only=True, read_only=True)
 
 
 def _rows_from_sheet(path: Path) -> list[list[Any]] | None:
@@ -569,8 +623,187 @@ def _build_decisions(
 # --------------------------------------------------------------------------
 
 
+# --------------------------------------------------------------------------
+# The decision workbook
+# --------------------------------------------------------------------------
+
+
+def _ticker_from_symbol(symbol: Any) -> str:
+    """ASX:ABB -> ABB, LSE:RR. -> RR. Exchange prefixes are not part of the name."""
+    text = str(symbol or "").strip().upper()
+    if ":" in text:
+        text = text.split(":", 1)[1]
+    return text.rstrip(".").strip()
+
+
+def _decision_flows(workbook: Any) -> tuple[dict[str, list[tuple[dt.date, float]]], dt.date | None]:
+    """Cash flows per decision id, plus the date the terminal values were struck."""
+    flows: dict[str, list[tuple[dt.date, float]]] = {}
+    valued_at: dt.date | None = None
+    if CASHFLOW_SHEET not in workbook.sheetnames:
+        return flows, valued_at
+
+    for row in workbook[CASHFLOW_SHEET].iter_rows(min_row=2, values_only=True):
+        if not row or not row[0]:
+            continue
+        decision_id = str(row[0]).strip()
+        if not _DECISION_ID_RE.match(decision_id):
+            continue
+        when = _date(row[2])
+        amount = _num(row[4])
+        if when is None or amount is None:
+            continue
+        flows.setdefault(decision_id, []).append((when, amount))
+        # The terminal rows all carry the same valuation date. Trusting the
+        # workbook's own mark date keeps `years` honest instead of silently
+        # measuring to today against a price struck weeks ago.
+        if str(row[3] or "").strip().upper() == "TERMINAL":
+            valued_at = when if valued_at is None else max(valued_at, when)
+
+    for entries in flows.values():
+        entries.sort(key=lambda f: f[0])
+    return flows, valued_at
+
+
+def _load_decision_workbook(workbook: Any, ledger: Ledger, as_at: dt.date | None) -> bool:
+    """Read an already-reconstructed decision workbook. True if anything loaded.
+
+    The sibling parser rebuilds decisions from raw transactions. This one does
+    not need to: the workbook has done it, and its own Reconciliation sheet
+    shows the rebuilt IRRs matching. The cash flows are still re-solved here
+    rather than reading the stored IRR column, so there is exactly one place in
+    this repository where an IRR is computed.
+    """
+    if DECISION_SHEET not in workbook.sheetnames:
+        return False
+
+    flows, valued_at = _decision_flows(workbook)
+    ledger.as_at = as_at or valued_at or ledger.as_at
+
+    holdings: dict[str, Holding] = {}
+    counts: dict[str, int] = {}
+
+    for row in workbook[DECISION_SHEET].iter_rows(min_row=2, values_only=True):
+        if not row or not row[0] or not _DECISION_ID_RE.match(str(row[0]).strip()):
+            continue
+        decision_id = str(row[0]).strip()
+        ticker = _ticker_from_symbol(row[1])
+        if not ticker:
+            continue
+
+        shares = _num(row[3]) or 0.0
+        cost = _num(row[5]) or 0.0
+        status = str(row[13] or "").strip().upper()
+        holding = holdings.setdefault(ticker, Holding(ticker=ticker))
+        counts[ticker] = counts.get(ticker, 0) + 1
+
+        decision = Decision(
+            ticker=ticker,
+            index=counts[ticker],
+            date=_date(row[2]),
+            shares=shares,
+            price=_num(row[4]) or 0.0,
+            cost=cost,
+            # No decision in this workbook is part-sold: a row either still
+            # holds its shares or has none. If that ever changes, the sale
+            # proceeds and the terminal value would both be non-zero and this
+            # would need to split the parcel.
+            shares_remaining=shares if status != "CLOSED" else 0.0,
+            dividends=_num(row[7]) or 0.0,
+            proceeds=_num(row[8]) or 0.0,
+            value_now=_num(row[9]) or 0.0,
+            is_scrip=cost < SCRIP_MAX_COST and shares > SCRIP_MIN_SHARES,
+            flows=flows.get(decision_id, []),
+            as_at=ledger.as_at,
+        )
+        holding.decisions.append(decision)
+
+    for holding in holdings.values():
+        holding.decisions.sort(key=lambda d: (d.date or dt.date.min, d.index))
+        holding.shares = sum(d.shares_remaining for d in holding.decisions)
+        holding.value = sum(d.value_now for d in holding.decisions)
+        holding.cost_basis = sum(d.cost for d in holding.decisions)
+        holding.dividends = sum(d.dividends for d in holding.decisions)
+        holding.realized = sum(d.proceeds for d in holding.decisions)
+        holding.unrealized = holding.value - sum(
+            d.cost for d in holding.decisions if d.shares_remaining > 0
+        )
+        holding.total_gains = holding.unrealized + holding.realized + holding.dividends
+
+    ledger.holdings = holdings
+    return bool(holdings)
+
+
+def _load_decisions_json(path: Path, ledger: Ledger, as_at: dt.date | None) -> bool:
+    """Read the money-free export. True if anything loaded.
+
+    Flows arrive normalised to a buy of -1.0, so every dollar figure is
+    genuinely absent rather than hidden: cost, value and dividends stay None
+    and render as dashes. IRR, multiple and years are exact, because none of
+    them depends on the scale of the flows.
+    """
+    try:
+        payload = json.loads(path.read_text())
+    except (OSError, ValueError) as exc:
+        ledger.warnings.append(f"could not read {path}: {exc}")
+        return False
+
+    valued_at = _date(payload.get("as_at"))
+    ledger.as_at = as_at or valued_at or ledger.as_at
+
+    holdings: dict[str, Holding] = {}
+    for entry in payload.get("decisions", []):
+        ticker = str(entry.get("ticker") or "").strip().upper()
+        if not ticker:
+            continue
+        flows = []
+        for raw_when, amount in entry.get("flows") or []:
+            when = _date(raw_when)
+            if when is not None:
+                flows.append((when, float(amount)))
+        # The file stores each decision's flows against a buy of -1.0, which is
+        # right for that decision's own IRR and wrong the moment two decisions
+        # are pooled: a $250 birthday present would count for as much as a
+        # $263,000 cheque. Rescaling by the decision's share of total capital
+        # fixes the pooling and, because IRR is scale-invariant, leaves the
+        # decision's own IRR exactly where it was.
+        weight = float(entry.get("weight") or 0.0)
+        flows = [(when, amount * weight) for when, amount in flows]
+
+        holding = holdings.setdefault(ticker, Holding(ticker=ticker))
+        holding.decisions.append(
+            Decision(
+                ticker=ticker,
+                index=int(entry.get("index") or len(holding.decisions) + 1),
+                date=_date(entry.get("date")),
+                price=float(entry.get("price") or 0.0),
+                # Capital committed, expressed as a fraction of the portfolio
+                # rather than in dollars.
+                cost=weight,
+                shares_remaining=weight if str(entry.get("status")).upper() != "CLOSED" else 0.0,
+                value_now=sum(a for _, a in flows if a > 0),
+                weight=weight,
+                normalised=True,
+                is_scrip=bool(entry.get("scrip")),
+                flows=sorted(flows),
+                as_at=ledger.as_at,
+            )
+        )
+
+    for holding in holdings.values():
+        holding.decisions.sort(key=lambda d: (d.date or dt.date.min, d.index))
+        holding.normalised = True
+        holding.weight = sum(d.weight for d in holding.decisions)
+
+    ledger.holdings = holdings
+    ledger.normalised = True
+    return bool(holdings)
+
+
 def available(path: str | Path | None = None) -> bool:
-    return Path(path or DEFAULT_LEDGER_PATH).is_file()
+    if path:
+        return Path(path).is_file()
+    return default_ledger_path().is_file() or DECISIONS_JSON.is_file()
 
 
 def load(path: str | Path | None = None, as_at: dt.date | None = None) -> Ledger:
@@ -579,9 +812,27 @@ def load(path: str | Path | None = None, as_at: dt.date | None = None) -> Ledger
     Never raises for a missing file or a missing openpyxl — the ledger is
     optional and the rest of Theo is expected to run without it.
     """
-    target = Path(path or DEFAULT_LEDGER_PATH)
+    target = Path(path) if path else default_ledger_path()
     ledger = Ledger(path=target, as_at=as_at or dt.date.today())
+    if target.suffix.lower() == ".json" and target.is_file():
+        _load_decisions_json(target, ledger, as_at)
+        return ledger
     if not target.is_file():
+        # No private workbook — fall back to the money-free export, which is
+        # the normal case in CI and on any machine that is not the one holding
+        # the spreadsheet.
+        if not path and DECISIONS_JSON.is_file():
+            ledger.path = DECISIONS_JSON
+            _load_decisions_json(DECISIONS_JSON, ledger, as_at)
+        return ledger
+
+    workbook = _open_workbook(target)
+    if workbook is None:
+        ledger.warnings.append(
+            "openpyxl is not installed — ledger ignored (pip install openpyxl)"
+        )
+        return ledger
+    if _load_decision_workbook(workbook, ledger, as_at):
         return ledger
 
     rows = _rows_from_sheet(target)

@@ -35,8 +35,8 @@
           "symbol": "\u25cf"
         }
       ],
-      "irr": null,
-      "multiple": null,
+      "irr": 0.19612918169181784,
+      "multiple": 1.9460060000000001,
       "findings": [
         {
           "code": "NEVER_REVIEWED",
@@ -80,8 +80,8 @@
           "symbol": "\u25cb"
         }
       ],
-      "irr": null,
-      "multiple": null,
+      "irr": -0.24743275478002624,
+      "multiple": 0.20628713666753493,
       "findings": [
         {
           "code": "PILLAR_BREACHED",
@@ -125,8 +125,8 @@
           "symbol": "\u25cf"
         }
       ],
-      "irr": null,
-      "multiple": null,
+      "irr": 0.1352977502048015,
+      "multiple": 1.34,
       "findings": [
         {
           "code": "NEVER_REVIEWED",
@@ -160,8 +160,8 @@
           "symbol": "\u25cf"
         }
       ],
-      "irr": null,
-      "multiple": null,
+      "irr": 0.1729052066685631,
+      "multiple": 4.07233226664715,
       "findings": [
         {
           "code": "NEVER_REVIEWED",
@@ -215,8 +215,8 @@
           "symbol": "\u25d0"
         }
       ],
-      "irr": null,
-      "multiple": null,
+      "irr": 0.8670531196027993,
+      "multiple": 5.033353633699309,
       "findings": []
     },
     {
@@ -244,8 +244,8 @@
           "symbol": "\u25cb"
         }
       ],
-      "irr": null,
-      "multiple": null,
+      "irr": -0.13610757665894924,
+      "multiple": 0.7523673149640412,
       "findings": []
     },
     {
@@ -278,8 +278,8 @@
           "symbol": "\u25cf"
         }
       ],
-      "irr": null,
-      "multiple": null,
+      "irr": 0.4090974521130322,
+      "multiple": 1.6666670000000001,
       "findings": []
     },
     {
@@ -312,8 +312,8 @@
           "symbol": "\u25cf"
         }
       ],
-      "irr": null,
-      "multiple": null,
+      "irr": 0.27311980701498667,
+      "multiple": 1.4587343785965985,
       "findings": []
     },
     {
@@ -341,8 +341,8 @@
           "symbol": "\u25cf"
         }
       ],
-      "irr": null,
-      "multiple": null,
+      "irr": 0.37958702863007787,
+      "multiple": 1.539612,
       "findings": [
         {
           "code": "NEVER_REVIEWED",

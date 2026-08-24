@@ -1,8 +1,8 @@
 {
   "last_run": "2026-08-24",
-  "thesis_count": 7,
+  "thesis_count": 8,
   "drifting": 1,
-  "watch": 3,
+  "watch": 4,
   "clean": 3,
   "theses": [
     {
@@ -92,6 +92,46 @@
           "code": "GRADE_C",
           "severity": "INFO",
           "message": "grade C \u2014 reconstructed from memory, so treat the confident bits with suspicion"
+        }
+      ]
+    },
+    {
+      "ticker": "BBL",
+      "name": "Brisbane Broncos Limited",
+      "archetype": "TROPHY_ASSET",
+      "grade": "A",
+      "draft": false,
+      "exited": false,
+      "verdict": "WATCH",
+      "pillars": [
+        {
+          "id": "P1",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P2",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P3",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P4",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        }
+      ],
+      "irr": null,
+      "multiple": null,
+      "findings": [
+        {
+          "code": "NEVER_REVIEWED",
+          "severity": "WARN",
+          "message": "never reviewed since it was written"
         }
       ]
     },

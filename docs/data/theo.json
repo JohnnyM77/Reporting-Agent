@@ -1,8 +1,8 @@
 {
   "last_run": "2026-08-24",
-  "thesis_count": 9,
+  "thesis_count": 10,
   "drifting": 1,
-  "watch": 4,
+  "watch": 5,
   "clean": 4,
   "theses": [
     {
@@ -353,6 +353,41 @@
           "code": "SIGNAL_UNANSWERED",
           "severity": "WARN",
           "message": "Sally: sally trim on 2026-08-23 and nothing was written down either way"
+        }
+      ]
+    },
+    {
+      "ticker": "RMD",
+      "name": "ResMed Inc.",
+      "archetype": "COMPOUNDING_MACHINE",
+      "grade": "B",
+      "draft": false,
+      "exited": false,
+      "verdict": "WATCH",
+      "pillars": [
+        {
+          "id": "P1",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P2",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P3",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        }
+      ],
+      "irr": 0.13616802691752083,
+      "multiple": 1.444256,
+      "findings": [
+        {
+          "code": "NEVER_REVIEWED",
+          "severity": "WARN",
+          "message": "never reviewed since it was written"
         }
       ]
     }

@@ -31,6 +31,12 @@ ARCHETYPES = (
     "SPECULATIVE_PREPROFIT",
     "VALUE_TRAP",
     "MELTING_ICE_CUBE",
+    # Owned on purpose, for a reason that is not return. A football club
+    # bought so a nine-year-old owns part of his team is not a compounding
+    # machine and pretending otherwise makes the file lie. The archetype
+    # exists so the pillars can be about the actual purpose and still carry
+    # real kill conditions.
+    "TROPHY_ASSET",
 )
 
 STATUSES = ("HELD", "EXITED")
@@ -584,7 +590,7 @@ def validate_all(theses: Iterable[Thesis]) -> list[str]:
 SCAFFOLD = """---
 ticker: {ticker}
 name: {name}
-archetype: {archetype}          # COMPOUNDING_MACHINE | CYCLICAL_TRADE | STRUCTURAL_WINNER | SPECULATIVE_PREPROFIT | VALUE_TRAP | MELTING_ICE_CUBE
+archetype: {archetype}          # COMPOUNDING_MACHINE | CYCLICAL_TRADE | STRUCTURAL_WINNER | SPECULATIVE_PREPROFIT | VALUE_TRAP | MELTING_ICE_CUBE | TROPHY_ASSET
 status: HELD
 evidence_grade: {grade}         # A contemporaneous | B reconstructed with documents | C memory only
 conviction: {conviction}

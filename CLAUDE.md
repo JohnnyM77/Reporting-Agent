@@ -215,11 +215,22 @@ string lists behave exactly as before). Three accepted forms, mixable in one
 file: a per-entry mapping with `target_price:` (or the `buy_price:` alias the
 TII list uses), or a top-level `targets: { TICKER: price }` block. Keys are
 `.strip().upper()`-normalised; prices are coerced to float and anything `<= 0`
-or non-numeric is dropped — GBX pence strings (`500.00p`) are deliberately
-ignored rather than mis-flagged, which is why `watchlists/tii_watchlist.yaml`
-omits the buy prices for AUTO/LSEG/RMV (their quotes and buy prices are in
-pence, and a raw `float("...p")` would fail anyway). The TII buy prices come
-from `config/tii_portfolio_targets.yaml` (`buy_below`).
+or non-numeric is dropped. GBX pence buy prices are written the way the source
+spreadsheet holds them — `"500.00p"`, `"9,500.00p"` — and `_coerce_price`
+strips the thousands comma and trailing `p` to a numeric pence value; so
+`watchlists/tii_watchlist.yaml` carries AUTO/LSEG/RMV buy prices in pence.
+Whatever unit a buy price is in, the quote Wally screens it against must match:
+UK names are quoted in pence on their home exchange, so a pence buy price
+compares correctly there.
+
+The TII watchlist (tickers + buy prices) is synced from the user's
+`Watchlists_Aug_26` spreadsheet (TII sheet, "Buy Below" column). The three
+standard watchlists are de-duplicated in priority order **TII → JM → Aussie
+Tech**: a ticker that appears in more than one is kept only in the
+highest-priority list. `tii75_watchlist.yaml` is a separate canonical list and
+stays untouched at exactly 30. `config/tii_portfolio_targets.yaml` (`buy_below`,
+used for the email's Portfolio Targets block) is a separate, older source and
+may lag the spreadsheet.
 
 `TickerScreenResult` gained `near_low`, `target_price`, `below_target` and
 `distance_to_target_pct` (all defaulted, so the empty/error constructors in

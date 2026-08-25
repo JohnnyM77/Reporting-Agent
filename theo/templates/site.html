@@ -93,7 +93,11 @@
     .badge.DRIFTING { color: var(--alert); }
     .badge.WATCH    { color: var(--warn); }
     .badge.CLEAN    { color: var(--clean); }
+    .badge.CLOSED   { color: var(--ink-mute); }
     .badge.DRAFT    { color: var(--ink-mute); }
+    .hub-link { display: inline-block; margin-bottom: 8px; font-size: 13px;
+      color: var(--ink-mute); text-decoration: none; }
+    .hub-link:hover { color: var(--ink); }
 
     .stage { margin-top: 20px; display: none; }
     .stage.on { display: block; }
@@ -127,6 +131,7 @@
 
   <div class="site-hdr">
     <div>
+      <a class="hub-link" href="../">&larr; Jzx Portfolio Management</a>
       <div class="site-title">Theo</div>
       <div class="site-sub">
         Why each holding was bought, what would make it a sell, and whether the
@@ -222,8 +227,8 @@
 
     <div class="legend">
       <b>Pillars</b> ● intact &nbsp; ◐ strained &nbsp; ○ breached &nbsp;·&nbsp;
-      <b>Grade</b> A contemporaneous, B reconstructed with documents, C memory only &nbsp;·&nbsp;
-      <b>Drift</b> DRIFTING any alert, WATCH any warning, CLEAN neither.
+      <b>Grade</b> A contemporaneous, B reconstructed with documents, C memory only — evidence quality, not outcome &nbsp;·&nbsp;
+      <b>Drift</b> DRIFTING any alert, WATCH any warning, CLEAN neither, CLOSED position exited.
       {% if not show_amounts %}<br>Dollar amounts are suppressed on this build. Share prices, IRRs and multiples are not.{% endif %}
     </div>
   </div>

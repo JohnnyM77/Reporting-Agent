@@ -29,6 +29,10 @@ DEFAULT_OUT = Path("site")
 
 def _index_row(thesis: Thesis, ledger: Ledger, today: dt.date) -> dict[str, Any]:
     verdict, _ = season_mod.assess(thesis, today)
+    # A closed position is not "clean" — nothing live is being watched. Show
+    # CLOSED so an exited holding never reads like an all-clear on an open one.
+    if thesis.is_exited:
+        verdict = "CLOSED"
     holding = ledger.get(thesis.ticker)
     return {
         "ticker": thesis.ticker,

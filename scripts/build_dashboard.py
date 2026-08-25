@@ -547,7 +547,7 @@ def _sally_section(data: dict) -> str:
 # Theo section — thesis accountability
 # ---------------------------------------------------------------------------
 
-_VERDICT_COLOUR = {"DRIFTING": "#ef4444", "WATCH": "#f59e0b", "CLEAN": "#22c55e"}
+_VERDICT_COLOUR = {"DRIFTING": "#ef4444", "WATCH": "#f59e0b", "CLEAN": "#22c55e", "CLOSED": "#64748b"}
 _PILLAR_COLOUR = {"INTACT": "#22c55e", "STRAINED": "#f59e0b", "BREACHED": "#ef4444"}
 
 
@@ -623,7 +623,10 @@ def _theo_section(data: dict) -> str:
             irr_str = f"{irr * 100:.1f}%" if isinstance(irr, (int, float)) else "&mdash;"
             mult = r.get("multiple")
             mult_str = f"{mult:.2f}x" if isinstance(mult, (int, float)) else "&mdash;"
-            verdict = r.get("verdict", "")
+            # A closed position is not "clean" — the drift engine has nothing
+            # live to watch. Show CLOSED so an exited holding never reads like
+            # an all-clear on an open one.
+            verdict = "CLOSED" if r.get("exited") else r.get("verdict", "")
             draft = (
                 " <span style='color:#64748b;font-size:10px;border:1px solid #475569;"
                 "padding:1px 4px;border-radius:3px'>DRAFT</span>"

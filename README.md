@@ -470,8 +470,11 @@ targets:
 ```
 
 Loader rules: ticker keys are normalised with `.strip().upper()`; prices are
-coerced to `float` and anything `<= 0` or non-numeric is ignored (e.g. GBX
-pence strings like `500.00p`), so a bad value never produces a false flag. When
+coerced to `float` and anything `<= 0` or non-numeric is ignored, so a bad
+value never produces a false flag. GBX pence prices may be written the way the
+source spreadsheet holds them (`"500.00p"`, `"9,500.00p"`) — the loader strips
+the thousands comma and trailing `p` to a numeric pence value (compare against a
+pence-quoted quote). When
 `CGS.AX` has `target_price: 1.20`, it is flagged the moment it trades at or
 below 1.20 and appears in the email with **Target** `1.20` and **Trigger**
 `Below target` (or `Near 52w low + Below target` when both apply).

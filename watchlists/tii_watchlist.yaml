@@ -1,118 +1,178 @@
 name: TII Watchlist
-notes: "TII 75th Anniversary Watchlist - August 2026"
+notes: "TII Watchlist — buy prices synced from Watchlists (Aug 2026). Priority list: duplicates with JM / Aussie Tech are kept here."
 tickers:
   - COH.AX
+  - CSL.AX
   - JBH.AX
+  - SEK.AX
+  - TLS.AX
+  - PMV.AX
+  - CAR.AX
   - TAH.AX
-  - REH.AX
-  - PNI.AX
-  - LOV.AX
-  - FDC.AX
-  - ORI.AX
-  - AUB.AX
-  - HLS.AX
-  - EVT.AX
-  - IFT.AX
-  - GTK.AX
-  - MIN.AX
-  - HSN.AX
-  - CCL.AX
-  - AWC.AX
-  - RHC.AX
-  - COL.AX
-  - WPR.AX
-  - AIA.AX
-  - SHL.AX
-  - ANN.AX
-  - PLS.AX
-  - GMG.AX
-  - FPH.AX
-  - RUL.AX
-  - ANZ.AX
-  - NAB.AX
-  - WBC.AX
-  - SIG.AX
-  - CNU.AX
-  - BKW.AX
-  - HUB.AX
-  - NWL.AX
-  - JHX.AX
-  - FDV.AX
+  - REA.AX
+  - RMD.AX
   - EDV.AX
-  - KAR.AX
-  - APE.AX
   - MA
   - V
   - AMZN
   - MSFT
   - FFH
+  - LOV.AX
+  - FDC.AX
   - FERG
+  - REH.AX
+  - PNI.AX
   - CME
+  - S32.AX
+  - PME.AX
+  - KAR.AX
+  - APE.AX
   - CPNG
+  - DBI.AX
+  - AUB.AX
+  - BHP.AX
+  - TLC.AX
+  - DDR.AX
   - AUTO
+  - ORI.AX
   - LSEG
   - BATRK
+  - NHC.AX
+  - HLS.AX
+  - EVT.AX
+  - IFT.AX
+  - GTK.AX
+  - MIN.AX
+  - WOW.AX
+  - HSN.AX
+  - CCL.AX
+  - ARB.AX
   - KKR
   - AJG
+  - SOL.AX
+  - BRG.AX
   - CSU
   - RMV
-  - MAF
-  - DMP
-  - TCL
-  - ORG
-  - RIO
+  - MAQ.AX
+  - MAF.AX
+  - WES.AX
+  - DMP.AX
+  - ABB.AX
+  - RHC.AX
+  - WHC.AX
+  - WTC.AX
+  - COL.AX
+  - WPR.AX
+  - AIA.AX
+  - SHL.AX
+  - ANN.AX
+  - XRO.AX
+  - PLS.AX
+  - PWH.AX
+  - GMG.AX
+  - FPH.AX
+  - RUL.AX
+  - ANZ.AX
+  - CBA.AX
+  - NAB.AX
+  - WBC.AX
+  - SIG.AX
+  - CNU.AX
+  - BKW.AX
+  - TNE.AX
+  - HUB.AX
+  - NWL.AX
+  - MQG.AX
+  - JHX.AX
+  - FDV.AX
+  - AAI
+  - WDS.AX
+  - AWC.AX
+  - NXT.AX
+  - FND
+  - TCL.AX
+  - ORG.AX
+  - FMG.AX
+  - RIO.AX
 
-# Per-ticker buy ("target") prices — a ticker is flagged when its current price
-# falls at or below its buy price, in addition to the 52-week-low proximity flag.
-# Sourced from config/tii_portfolio_targets.yaml (buy_below). Only tickers with a
-# numeric buy price in the reporter's own quote currency are listed here; GBX
-# (pence) names — AUTO, LSEG, RMV — are intentionally omitted to avoid a false
-# below-target flag from a currency/unit mismatch.
+# Per-ticker buy ("target") prices from the TII sheet's "Buy Below" column.
+# A ticker is flagged when its current price is at or below this value, in
+# addition to the 52-week-low screen. UK names (AUTO/LSEG/RMV) are quoted in
+# GBX pence exactly as the source spreadsheet holds them; the loader parses the
+# trailing 'p'. Names with no "Buy Below" in the sheet carry no target.
 targets:
   COH.AX: 120
   JBH.AX: 70
-  REH.AX: 10
-  PNI.AX: 15
-  LOV.AX: 25
-  FDC.AX: 3
-  ORI.AX: 25
-  AUB.AX: 25
-  HLS.AX: 0.7
-  EVT.AX: 12
-  IFT.AX: 9
-  MIN.AX: 50
-  HSN.AX: 5.5
-  CCL.AX: 4
-  AWC.AX: 1.4
-  RHC.AX: 25
-  COL.AX: 18
-  WPR.AX: 2.2
-  AIA.AX: 6
-  SHL.AX: 25
-  ANN.AX: 25
-  GMG.AX: 23
-  FPH.AX: 22
-  ANZ.AX: 20
-  NAB.AX: 24
-  WBC.AX: 20
-  SIG.AX: 2
-  CNU.AX: 8
-  HUB.AX: 40
-  NWL.AX: 15
+  TLS.AX: 3.5
+  PMV.AX: 14
+  CAR.AX: 30
+  REA.AX: 150
+  RMD.AX: 32
   EDV.AX: 2.2
-  KAR.AX: 1
-  APE.AX: 20
-  MAF.AX: 3
-  RIO.AX: 70
   MA: 500
   V: 315
   AMZN: 200
   MSFT: 400
   FFH: 1800
+  LOV.AX: 25
+  FDC.AX: 3
   FERG: 190
+  REH.AX: 10
+  PNI.AX: 15
   CME: 230
+  PME.AX: 100
+  KAR.AX: 1
+  APE.AX: 20
   CPNG: 16
+  DBI.AX: 4.3
+  AUB.AX: 25
+  BHP.AX: 40
+  TLC.AX: 5
+  DDR.AX: 9
+  AUTO: "500.00p"
+  ORI.AX: 25
+  LSEG: "9,500.00p"
   BATRK: 45
+  NHC.AX: 4
+  HLS.AX: 0.7
+  EVT.AX: 12
+  IFT.AX: 9
+  MIN.AX: 50
+  WOW.AX: 25
+  HSN.AX: 5.5
+  CCL.AX: 4
+  ARB.AX: 22
   KKR: 80
   AJG: 225
+  SOL.AX: 35
+  BRG.AX: 25
   CSU: 3500
+  RMV: "550.00p"
+  MAQ.AX: 60
+  MAF.AX: 3
+  WES.AX: 50
+  ABB.AX: 3.5
+  RHC.AX: 25
+  WHC.AX: 6
+  COL.AX: 18
+  WPR.AX: 2.2
+  AIA.AX: 6
+  SHL.AX: 25
+  ANN.AX: 25
+  PWH.AX: 8
+  GMG.AX: 23
+  FPH.AX: 22
+  ANZ.AX: 20
+  CBA.AX: 80
+  NAB.AX: 24
+  WBC.AX: 20
+  SIG.AX: 2
+  CNU.AX: 8
+  TNE.AX: 20
+  HUB.AX: 40
+  NWL.AX: 15
+  MQG.AX: 120
+  AWC.AX: 1.4
+  NXT.AX: 8
+  FMG.AX: 8
+  RIO.AX: 70

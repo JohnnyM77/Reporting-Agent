@@ -56,13 +56,29 @@ def _ticker_from_entry(entry) -> str | None:
 
 
 def _coerce_price(val) -> float | None:
-    """Coerce a raw target price to a positive float, or None if unusable."""
+    """Coerce a raw target price to a positive float, or None if unusable.
+
+    Accepts GBX pence strings written the way the source spreadsheet holds them
+    — ``"500.00p"`` or ``"9,500.00p"`` — returning the numeric pence value
+    (``500.0`` / ``9500.0``). Whichever unit the price is quoted in, the quote
+    Wally screens it against must be in the same unit; UK names are quoted in
+    pence on their home exchange, so a pence buy price compares correctly there.
+    """
     if val is None:
         return None
-    try:
-        price = float(val)
-    except (ValueError, TypeError):
-        return None
+    if isinstance(val, str):
+        s = val.strip().replace(",", "")
+        if s.lower().endswith("p"):  # GBX pence, e.g. "9,500.00p"
+            s = s[:-1]
+        try:
+            price = float(s)
+        except ValueError:
+            return None
+    else:
+        try:
+            price = float(val)
+        except (ValueError, TypeError):
+            return None
     return price if price > 0 else None
 
 

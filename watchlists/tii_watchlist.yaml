@@ -61,3 +61,58 @@ tickers:
   - TCL
   - ORG
   - RIO
+
+# Per-ticker buy ("target") prices — a ticker is flagged when its current price
+# falls at or below its buy price, in addition to the 52-week-low proximity flag.
+# Sourced from config/tii_portfolio_targets.yaml (buy_below). Only tickers with a
+# numeric buy price in the reporter's own quote currency are listed here; GBX
+# (pence) names — AUTO, LSEG, RMV — are intentionally omitted to avoid a false
+# below-target flag from a currency/unit mismatch.
+targets:
+  COH.AX: 120
+  JBH.AX: 70
+  REH.AX: 10
+  PNI.AX: 15
+  LOV.AX: 25
+  FDC.AX: 3
+  ORI.AX: 25
+  AUB.AX: 25
+  HLS.AX: 0.7
+  EVT.AX: 12
+  IFT.AX: 9
+  MIN.AX: 50
+  HSN.AX: 5.5
+  CCL.AX: 4
+  AWC.AX: 1.4
+  RHC.AX: 25
+  COL.AX: 18
+  WPR.AX: 2.2
+  AIA.AX: 6
+  SHL.AX: 25
+  ANN.AX: 25
+  GMG.AX: 23
+  FPH.AX: 22
+  ANZ.AX: 20
+  NAB.AX: 24
+  WBC.AX: 20
+  SIG.AX: 2
+  CNU.AX: 8
+  HUB.AX: 40
+  NWL.AX: 15
+  EDV.AX: 2.2
+  KAR.AX: 1
+  APE.AX: 20
+  MAF.AX: 3
+  RIO.AX: 70
+  MA: 500
+  V: 315
+  AMZN: 200
+  MSFT: 400
+  FFH: 1800
+  FERG: 190
+  CME: 230
+  CPNG: 16
+  BATRK: 45
+  KKR: 80
+  AJG: 225
+  CSU: 3500

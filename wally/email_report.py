@@ -33,6 +33,42 @@ def _fmt(n: float) -> str:
     return f"{n:.2f}"
 
 
+def _fmt_target(r: TickerScreenResult) -> str:
+    """Formatted target price, or an em dash when none is configured."""
+    if r.target_price and r.target_price > 0:
+        return _fmt(r.target_price)
+    return "—"
+
+
+def _trigger_reasons(r: TickerScreenResult) -> str:
+    """Join the applicable flag reasons for a ticker (e.g. 'Near 52w low + Below target')."""
+    reasons = []
+    if r.near_low:
+        reasons.append("Near 52w low")
+    if r.below_target:
+        reasons.append("Below target")
+    return " + ".join(reasons) if reasons else "—"
+
+
+# Header cells shared by the flagged table across both email builders.
+_FLAGGED_HEADER = (
+    "<tr style='background:#1F2D4E;color:white'>"
+    "<th>Ticker</th><th>Name</th><th>Current</th><th>52W Low</th><th>52W High</th>"
+    "<th>% Above Low</th><th>% Below High</th><th>Target</th><th>Trigger</th></tr>"
+)
+
+_NO_FLAGS_MSG = "<p><strong>No stocks within 5% of 52-week low or below target.</strong></p>"
+
+
+def _flagged_row(r: TickerScreenResult) -> str:
+    return (
+        f"<tr><td>{r.ticker}</td><td>{r.company_name}</td><td>{_fmt(r.current_price)}</td>"
+        f"<td>{_fmt(r.low_52w)}</td><td>{_fmt(r.high_52w)}</td>"
+        f"<td>{_fmt(r.distance_to_low_pct)}%</td><td>{_fmt(r.below_high_pct)}%</td>"
+        f"<td>{_fmt_target(r)}</td><td>{_trigger_reasons(r)}</td></tr>"
+    )
+
+
 _PS_BADGE = (
     "<span style='background:#C0392B;color:white;padding:1px 6px;"
     "border-radius:3px;font-size:11px;white-space:nowrap'>PRICE SENSITIVE</span>"
@@ -137,17 +173,11 @@ def build_combined_html(
 
         # Build table for this watchlist
         if flagged:
-            rows = []
-            for r in flagged:
-                rows.append(
-                    f"<tr><td>{r.ticker}</td><td>{r.company_name}</td><td>{_fmt(r.current_price)}</td><td>{_fmt(r.low_52w)}</td>"
-                    f"<td>{_fmt(r.high_52w)}</td><td>{_fmt(r.distance_to_low_pct)}%</td><td>{_fmt(r.below_high_pct)}%</td></tr>"
-                )
+            rows = [_flagged_row(r) for r in flagged]
 
             flagged_table = (
                 "<table border='1' cellspacing='0' cellpadding='6' style='border-collapse:collapse'>"
-                "<tr style='background:#1F2D4E;color:white'>"
-                "<th>Ticker</th><th>Name</th><th>Current</th><th>52W Low</th><th>52W High</th><th>% Above Low</th><th>% Below High</th></tr>"
+                + _FLAGGED_HEADER
                 + "".join(rows)
                 + "</table>"
             )
@@ -169,7 +199,7 @@ def build_combined_html(
                     f"{build_news_html(r.ticker, news.get(r.ticker))}"
                 )
         else:
-            html_parts.append("<p><strong>No stocks within 5% of 52-week low.</strong></p>")
+            html_parts.append(_NO_FLAGS_MSG)
 
         html_parts.append("<hr>")
     
@@ -186,20 +216,14 @@ def build_html(
     news: dict[str, list[NewsItem]] | None = None,  # ticker -> significant announcements
     portfolio_targets: PortfolioTargets | None = None,  # portfolio targets (buy/sell/weight)
 ) -> str:
-    rows = []
-    for r in flagged:
-        rows.append(
-            f"<tr><td>{r.ticker}</td><td>{r.company_name}</td><td>{_fmt(r.current_price)}</td><td>{_fmt(r.low_52w)}</td>"
-            f"<td>{_fmt(r.high_52w)}</td><td>{_fmt(r.distance_to_low_pct)}%</td><td>{_fmt(r.below_high_pct)}%</td></tr>"
-        )
+    rows = [_flagged_row(r) for r in flagged]
 
     flagged_table = (
         "<table border='1' cellspacing='0' cellpadding='6' style='border-collapse:collapse'>"
-        "<tr style='background:#1F2D4E;color:white'>"
-        "<th>Ticker</th><th>Name</th><th>Current</th><th>52W Low</th><th>52W High</th><th>% Above Low</th><th>% Below High</th></tr>"
+        + _FLAGGED_HEADER
         + "".join(rows)
         + "</table>"
-    ) if flagged else "<p><strong>No stocks within 5% of 52-week low.</strong></p>"
+    ) if flagged else _NO_FLAGS_MSG
 
     details = []
     for r in flagged:

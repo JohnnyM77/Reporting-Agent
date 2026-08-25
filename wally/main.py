@@ -132,7 +132,8 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                 )
                 continue
 
-            row = screen_snapshot(snap)
+            target = wl.target_prices.get(ticker)
+            row = screen_snapshot(snap, target_price=target)
             _log_screen_result(row)
             results.append(row)
             if row.flagged:
@@ -307,6 +308,10 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
                     "high_52w": r.high_52w,
                     "distance_to_low_pct": r.distance_to_low_pct,
                     "below_high_pct": r.below_high_pct,
+                    "near_low": r.near_low,
+                    "target_price": r.target_price,
+                    "below_target": r.below_target,
+                    "distance_to_target_pct": r.distance_to_target_pct,
                 }
                 for r in flagged
             ],

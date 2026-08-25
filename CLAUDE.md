@@ -199,6 +199,36 @@ Digest blocks may now be either a plain string (escaped, pre-wrap) or a
 `{"text": ..., "html": ...}` dict for blocks that build their own email-safe
 HTML (`_block_text` / `_block_html` in `agent.py`).
 
+## Wally the Watcher — target ("buy") prices
+
+Wally flags a ticker on two independent triggers now, not one:
+`flagged = near_low or below_target`. `near_low` is the original within-5%-of-
+52-week-low screen; `below_target` fires when the current price is at or below a
+per-ticker target price. Below-target tickers get exactly the same downstream
+treatment as near-low ones (range + value charts, email detail, dashboard row),
+because everything keys off `row.flagged` — the only change in `wally/main.py`
+is passing `target_price=wl.target_prices.get(ticker)` into `screen_snapshot`.
+
+Target prices live in the watchlist YAML, loaded by `wally/watchlist_loader.py`
+into `Watchlist.target_prices` (`dict[str, float]`, empty by default so plain
+string lists behave exactly as before). Three accepted forms, mixable in one
+file: a per-entry mapping with `target_price:` (or the `buy_price:` alias the
+TII list uses), or a top-level `targets: { TICKER: price }` block. Keys are
+`.strip().upper()`-normalised; prices are coerced to float and anything `<= 0`
+or non-numeric is dropped — GBX pence strings (`500.00p`) are deliberately
+ignored rather than mis-flagged, which is why `watchlists/tii_watchlist.yaml`
+omits the buy prices for AUTO/LSEG/RMV (their quotes and buy prices are in
+pence, and a raw `float("...p")` would fail anyway). The TII buy prices come
+from `config/tii_portfolio_targets.yaml` (`buy_below`).
+
+`TickerScreenResult` gained `near_low`, `target_price`, `below_target` and
+`distance_to_target_pct` (all defaulted, so the empty/error constructors in
+`main.py` still work). They flow into `outputs/` JSON via `to_dict()`, into
+`docs/data/wally.json`, and onto the dashboard as a **Buy Price** column plus a
+**Trigger** cell (below-buy hits highlighted green as a buying opportunity). The
+email flagged table gained matching **Target** and **Trigger** columns
+(`_flagged_row` / `_trigger_reasons` in `wally/email_report.py`).
+
 ## GitHub Pages — one publisher, triggered by the agents
 
 The site at `https://johnnym77.github.io/Reporting-Agent/` has two halves that

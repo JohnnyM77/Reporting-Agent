@@ -436,14 +436,32 @@ def _wally_section(data: dict) -> str:
         for r in flagged:
             dist = r.get("distance_to_low_pct", 0)
             below = r.get("below_high_pct", 0)
+            target = r.get("target_price")
+            near_low = r.get("near_low", True)
+            below_target = r.get("below_target", False)
+
+            target_cell = (
+                f"${target:.2f}" if isinstance(target, (int, float)) and target > 0 else "—"
+            )
+
+            triggers = []
+            if near_low:
+                triggers.append("52w low")
+            if below_target:
+                triggers.append("Buy price")
+            trigger_txt = " + ".join(triggers) if triggers else "—"
+            # Highlight a below-buy-price hit in green (a buying opportunity).
+            trigger_colour = "22c55e" if below_target else "94a3b8"
+
             rows += (
                 f"<tr>"
                 f"<td><strong style='color:#fbbf24'>{r.get('ticker','')}</strong></td>"
                 f"<td style='color:#cbd5e1'>{r.get('company_name','')[:35]}</td>"
                 f"<td style='text-align:right;color:#e2e8f0'>${r.get('current_price',0):.2f}</td>"
                 f"<td style='text-align:right;color:#94a3b8'>${r.get('low_52w',0):.2f}</td>"
+                f"<td style='text-align:right;color:#34d399'>{target_cell}</td>"
                 f"<td style='text-align:right'>{_pct_bar(dist)} <span style='font-size:11px;color:#{'22c55e' if dist<=3 else 'f59e0b' if dist<=7 else 'ef4444'}'>{dist:.1f}%</span></td>"
-                f"<td style='text-align:right;color:#64748b;font-size:12px'>{below:.1f}%↓high</td>"
+                f"<td style='text-align:right;color:#{trigger_colour};font-size:12px'>{trigger_txt}</td>"
                 f"</tr>"
             )
 
@@ -453,7 +471,7 @@ def _wally_section(data: dict) -> str:
             <h4 style="color:#94a3b8;margin:0;font-size:14px">{wl_name}</h4>
             <span style="font-size:12px;color:#{'f59e0b' if flagged_count else '22c55e'}">{flagged_count}/{total} flagged</span>
           </div>
-          {"<table style='width:100%;border-collapse:collapse;font-size:13px'><tr style='color:#64748b;font-size:11px'><th style='text-align:left'>Ticker</th><th style='text-align:left'>Name</th><th style='text-align:right'>Price</th><th style='text-align:right'>52W Low</th><th>% Above Low</th><th style='text-align:right'>vs High</th></tr>" + rows + "</table>" if flagged else "<p style='color:#22c55e;font-size:13px;margin:0'>✓ No stocks near 52-week low</p>"}
+          {"<table style='width:100%;border-collapse:collapse;font-size:13px'><tr style='color:#64748b;font-size:11px'><th style='text-align:left'>Ticker</th><th style='text-align:left'>Name</th><th style='text-align:right'>Price</th><th style='text-align:right'>52W Low</th><th style='text-align:right'>Buy Price</th><th>% Above Low</th><th style='text-align:right'>Trigger</th></tr>" + rows + "</table>" if flagged else "<p style='color:#22c55e;font-size:13px;margin:0'>✓ No stocks near 52-week low or below buy price</p>"}
         </div>"""
 
     if not watchlists:

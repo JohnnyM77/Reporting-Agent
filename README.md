@@ -427,7 +427,13 @@ Wally is a second, separate agent that screens multiple watchlists for stocks tr
 - Fetches latest price + 52-week low/high per ticker
 - Flags stocks within 5% of 52-week low:
   - `distance_to_low_pct = ((current - low_52w) / low_52w) * 100`
-  - flagged when `distance_to_low_pct <= 5`
+  - flagged (`near_low`) when `distance_to_low_pct <= 5`
+- Also flags stocks at or below a configured per-ticker **target ("buy") price**:
+  - `below_target` when `current <= target_price`
+  - `distance_to_target_pct = ((current - target_price) / target_price) * 100`
+  - a ticker is flagged when `near_low OR below_target`, and below-target
+    tickers get the same treatment as near-low ones (range + value charts, email
+    detail, dashboard row)
 - Creates:
   - 10-year price-vs-value chart when valuation config exists
 - Sends an HTML email report (with chart attachments)
@@ -435,7 +441,7 @@ Wally is a second, separate agent that screens multiple watchlists for stocks tr
 
 ### Watchlist files
 
-Supported format:
+Supported format — a plain string list still works exactly as before:
 
 ```yaml
 name: JM Watch List
@@ -443,6 +449,32 @@ tickers:
   - ARB.AX
   - QOR.AX
 ```
+
+**Target ("buy") prices are optional and fully backwards-compatible.** Any of
+the three forms below may be mixed in one file; plain strings simply carry no
+target:
+
+```yaml
+name: JM Watch List
+tickers:
+  - ARB.AX                 # plain string — no target
+  - ticker: CGS.AX
+    target_price: 1.20     # per-entry mapping
+  - ticker: QOR.AX
+    buy_price: 3.50        # `buy_price` is an accepted alias (used by the TII list)
+
+# ...or a separate top-level block keyed by ticker:
+targets:
+  ARB.AX: 30.00
+  CGS.AX: 1.20
+```
+
+Loader rules: ticker keys are normalised with `.strip().upper()`; prices are
+coerced to `float` and anything `<= 0` or non-numeric is ignored (e.g. GBX
+pence strings like `500.00p`), so a bad value never produces a false flag. When
+`CGS.AX` has `target_price: 1.20`, it is flagged the moment it trades at or
+below 1.20 and appears in the email with **Target** `1.20` and **Trigger**
+`Below target` (or `Near 52w low + Below target` when both apply).
 
 Files used:
 

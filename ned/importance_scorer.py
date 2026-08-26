@@ -12,24 +12,62 @@ PRIORITY_MEDIUM = "MEDIUM"
 PRIORITY_LOW = "LOW"
 PRIORITY_FYI = "FYI"
 
-# Keyword scoring rules
+# Keyword scoring rules.
+#
+# The CRITICAL/HIGH lists are deliberately broad on earnings vocabulary: during
+# reporting season most portfolio news IS a result, and the dashboard caps cards
+# at two-per-company, so generous flagging surfaces the right names without
+# flooding. Note the singular "result" alongside "results" — headlines like
+# "BHP 1H26 result" or "FY26 full-year result" are extremely common and were
+# being missed (the same singular trap documented for Bob's results gate).
 CRITICAL_KEYWORDS = [
+    # Results / reporting-season documents
     "earnings",
     "results",
-    "guidance",
-    "capital raise",
-    "acquisition",
-    "takeover",
+    "result",            # singular — "1H26 result", "full-year result"
+    "half year",
+    "half-year",
+    "full year",
+    "full-year",
+    "first half",
+    "second half",
+    "interim",
+    "preliminary final",
+    "trading update",
+    "quarterly",
     "appendix 4d",
     "appendix 4e",
+    # Numbers that only appear in a result / price-sensitive update
+    "profit",
+    "npat",
+    "ebitda",
+    "revenue",
+    "dividend",
+    "guidance",
+    "downgrade",         # profit/guidance downgrade — highly material
+    # Corporate actions
+    "capital raise",
+    "capital raising",
+    "placement",
+    "acquisition",
+    "takeover",
+    "merger",
+    "scheme of arrangement",
 ]
 
 HIGH_KEYWORDS = [
+    "upgrade",           # guidance/analyst upgrade
+    "buyback",
+    "buy-back",
     "contract",
     "partnership",
     "ceo",
+    "managing director",
+    "chief executive",
     "lawsuit",
+    "litigation",
     "regulator",
+    "asic",
     "product launch",
 ]
 
@@ -37,6 +75,7 @@ MEDIUM_KEYWORDS = [
     "analyst",
     "industry",
     "forecast",
+    "broker",
 ]
 
 

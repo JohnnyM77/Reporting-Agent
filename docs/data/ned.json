@@ -1,8 +1,110 @@
 {
   "agent": "Ned",
-  "last_run": "2026-08-25T23:46:34.339878Z",
+  "last_run": "2026-08-26T06:37:55.517299Z",
   "youtube_hits": 0,
-  "news_hits": 134,
-  "total_hits": 134,
-  "status": "ok"
+  "news_hits": 71,
+  "total_hits": 71,
+  "critical_high_count": 26,
+  "status": "ok",
+  "items": [
+    {
+      "tickers": [
+        "ATP"
+      ],
+      "title": "Atlas Pearls Announces FY26 Financial Results with $5.8M Normalised EBITDA and Declares Fully Franked Dividend - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMi6wFBVV95cUxPdHkzUHV2cW1aeTFRWXoxSDNJSDZQa2g5VWR6aVJEQ29UU0gyc2J1cFNhaWVPdmk0WTJOZTctSHBUcWhpOUhOSEpnTFpMMnJZUVhrclc1dm5mZlFQaGdYSUczbmVCMllpekNoLTc0a1RVOVI5LVJVS2p5YndRR0xoQzkzOVdnckF0WExYSXJUbUZfN3ZVdUhNZURyRW9KOEJ4QTgwVllIR2lSSkdXSkVaUF9ra3MzUE9CQlV6Q2RWNUlpaHRfT3U4U0dnSGJnU1YwYVRRSlVhUzRxVFpDLVV6VHl0ZWhXcDVSNEZN?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "Atlas Pearls delivered $5.8M normalised EBITDA in FY26 and returned cash to shareholders via a fully franked dividend, demonstrating operational profitability and capital discipline.",
+      "published": "2026-08-26T03:05:35+00:00"
+    },
+    {
+      "tickers": [
+        "ATP"
+      ],
+      "title": "Atlas Pearls Limited Reports Earnings Results for the Full Year Ended June 30, 2026 - marketscreener.com",
+      "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxQX1hxQjZsQV9qUnJKYlc5dGdqUjY2RGhuQTgtSTRKa1g0RXk5WFN0bEFpazRwbllUVTU3bEE2amtlSV9QdUlFbWVYeXluLWlPbFg1MzY4bnpjRGtPWER3ckJ3NmlJcHlMUjFwTEVCSHNESzFaZkVVVkFCX256VEhaaEVPOFl1M09fMElMMGZDS3BSQWgwWUJSdzVTbzBySlhuWU5WQ3pWNlBzcndPTmdXNXBtTEJENndkUmpTM0xXWUhIQUh0UEFOZHM4M3RZU3NN?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "[not material]\n\nThe snippet provided contains only a headline and URL fragment with no actual content details about Atlas Pearls Limited's (ATP) earnings results, making it impossible to determine what happened or assess materiality to shareholders.",
+      "published": "2026-08-26T04:21:38+00:00"
+    },
+    {
+      "tickers": [
+        "DRO"
+      ],
+      "title": "Are DroneShield shares a buy, sell or hold following their half-year FY26 results today? - The Motley Fool Australia",
+      "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxNYTJOWUJkYi1EWllTbnFZbWJpeFd3dGNNejlibXRISmhmMEZ6dURYWE1Yek5jT3kyeVdpdnhtMkdtRUFtWktqTzRtRWlvWFJUT05BNGVyMklsM1dVS1g0WVFWM2RTSDVEME0xS1pZUU1wQl80ZkRjQ3hUOGJzTTdaRDNzSFMwUnNZSTFCQVkwTjc1UVVWUWhvcDFJVl9rV3NyM0FhWkRPUmRrVFZCektlVVZMOVYzX3hoazczampidw?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-08-26T02:27:17+00:00"
+    },
+    {
+      "tickers": [
+        "DRO"
+      ],
+      "title": "DroneShield share price in focus as record revenue meets interim loss - The Motley Fool Australia",
+      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNaDBydUd4dWFyUThJTXh4MzlhZ3lUVFlhb24tM0taeVhzWldmVC04NmtyQzFudjlFdnctRFNLbExhNHlsdnV3ZDNHQlRXckpNNDR5R1VicXdvVENoR2YyOHFBVFdHTGQ0cndJN3RkekhsbDFGTkJsNXoyTTdEQnRUTGlMeFlYYjlxRjAtLW5oOWxCRWpndGpSLVU4eVJzWmtUMG43bWE5TDA?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-08-25T23:47:32+00:00"
+    },
+    {
+      "tickers": [
+        "IAG"
+      ],
+      "title": "Insurance Australia Group (ASX:IAG) FY26 Results Highlight Premium Growth Amid Profit Pressure - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxPTDNoV3c1ZjNzWUVCWHFEYjFCcEowaHlhREFVcUdaR1VPbHBmQnpWM3F3S3JfS21tWmhpbXNvY1RJZEpSZFVUZzJvWEJjeU9hejIzbHdJUWxPUkViOFpVTmdkdjdTSWp0bFFhWGVlT1g1Z19pWEtWU09SR253c0txUXd6Y0ItTXFBVHlrQktkTUI5Ti13dEYycnpvcThDZEU2bkpMODFFVHd4alIyUGtTZXF6Q3J5RlB6eHhodTNMa3FZaWRFc0tqZXVjR2xhTzFkSkZrbTNn?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-08-25T01:52:00+00:00"
+    },
+    {
+      "tickers": [
+        "WDS"
+      ],
+      "title": "Woodside raises dividend, with inflated gas prices driving a surge in profit - Livewire Markets",
+      "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxONFc2OXR2UUVtcno5S3dkQnVzLTl0a0tSdlB6c1pQWGFET1ktd091a1hWUGtKemh6QTYwSXJ3MF9VcGlabkFzUXZ1ZGpKNE9lck5meVp2OWc5YmJrMmpQSTdPNzRmZldvT3FyaV9HM2tzd3gySnJMQ29tMGpDLUh6SGotUTI1bVN0akhLZXZXYW5mcmN2Yklmcm9veXV2UWl2LXRhUEUtZDVTMl9TcUU3d3E4OA?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-08-25T03:27:27+00:00"
+    },
+    {
+      "tickers": [
+        "WDS"
+      ],
+      "title": "Woodside Abandons $5 Billion Clean Energy Target, Posts 7% Profit Gain - finance.biggo.com",
+      "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE9kLVRSSlNsRFpBZVB5Q0JkTlBYZnZBUFpHWEoycTJUM1JDWXdYZDR0bVNTMHh0NEluZG9QN05pajdDNjVyVWFDdHNhMnQ4c3Y3RlJ3cFVOTTB3ZURsY2FiSmhYek9YV2RPRUpDU1lPdUdUNUdFVHc?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-08-25T18:20:00+00:00"
+    },
+    {
+      "tickers": [
+        "LAU"
+      ],
+      "title": "Lindsay Australia lands North Queensland contract amid record revenue - fullyloaded.com.au",
+      "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxONWF2NVdLdmlNM0E0T09xRzc3cUt6R3lWQWZIVlJMTENSa2ExZFlRWjExQ0ZBVk1BLTZzTmhuSE5Fck10VlNhQ2hwc1FYN1FnOTE2ZzN5d3BjaVprMGhnLW04a1hCakpKSGlnaVB2VV9PT1dyQlg5dlJQTFB4OVpIVmUwWHlQbTNMUlRVazZDa2dMWHU3cGNGQ3pJVzFmbjdkRmlJ?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-08-25T23:19:31+00:00"
+    },
+    {
+      "tickers": [
+        "BHP"
+      ],
+      "title": "Monadelphous Secures $200M BHP Nelson Point Contract in 2026 - Discovery Alert",
+      "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQVnFaek0zVDZ4Y0JKeDFVVUlBbGdoWmVUS3o5Z0hoODJEbFdlUFh6X1BaSFVrNTQ4dFFUQ3QtTEh1SWU0dmc0QkVtQVJyeTlDdHBUNUxNZlZ6M0hZcGpSc19ZQ1M4RkoydE9JTGVxcFRsT1RHNEh5cy1jcjlsY1h3am8wVVJGWkVBZFJzQjA5ZlFKekVoXzJj?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "Monadelphous won a $200M contract from BHP for the Nelson Point project starting in 2026, signaling continued capital investment by BHP in its operations and potential revenue growth for the contractor.",
+      "published": "2026-08-26T05:47:39+00:00"
+    }
+  ]
 }

@@ -132,17 +132,54 @@ def today_sgt() -> str:
 # ----------------------------
 # Dashboard JSON
 # ----------------------------
-def write_dashboard_json(youtube_hits: list[dict], news_hits: list[dict]) -> None:
+# Only these importance levels are surfaced on the public dashboard.
+_DASHBOARD_LEVELS = ("CRITICAL", "HIGH")
+# Cap the number of cards so the dashboard stays compact (4-across grid).
+_DASHBOARD_MAX_ITEMS = 12
+
+
+def _dashboard_items(all_hits: list[dict], summaries: dict[str, str]) -> list[dict]:
+    """Pick the Critical + High hits for the dashboard, most important first."""
+    picked = [h for h in all_hits if h.get("importance_level") in _DASHBOARD_LEVELS]
+    picked.sort(
+        key=lambda h: (-h.get("importance_score", 0), h.get("title", ""))
+    )
+    items: list[dict] = []
+    for h in picked[:_DASHBOARD_MAX_ITEMS]:
+        items.append({
+            "tickers": h.get("tickers", []),
+            "title": h.get("title", ""),
+            "url": h.get("url", ""),
+            "source": h.get("source", ""),
+            "level": h.get("importance_level", ""),
+            "summary": summaries.get(h.get("seen_key", ""), ""),
+            "published": h.get("published", ""),
+        })
+    return items
+
+
+def write_dashboard_json(
+    youtube_hits: list[dict],
+    news_hits: list[dict],
+    summaries: dict[str, str] | None = None,
+) -> None:
     out_path = REPO_ROOT / "docs" / "data" / "ned.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     total = len(youtube_hits) + len(news_hits)
+    all_hits = youtube_hits + news_hits
+    items = _dashboard_items(all_hits, summaries or {})
+    critical_high_total = sum(
+        1 for h in all_hits if h.get("importance_level") in _DASHBOARD_LEVELS
+    )
     out_path.write_text(json.dumps({
         "agent": "Ned",
         "last_run": dt.datetime.utcnow().isoformat() + "Z",
         "youtube_hits": len(youtube_hits),
         "news_hits": len(news_hits),
         "total_hits": total,
+        "critical_high_count": critical_high_total,
         "status": "ok" if total else "silence",
+        "items": items,
     }, indent=2))
 
 
@@ -222,7 +259,7 @@ def main():
     save_seen(SEEN_STATE_PATH, seen)
 
     # Write dashboard JSON
-    write_dashboard_json(youtube_hits, news_hits)
+    write_dashboard_json(youtube_hits, news_hits, summaries)
 
 
 if __name__ == "__main__":

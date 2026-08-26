@@ -134,27 +134,59 @@ def today_sgt() -> str:
 # ----------------------------
 # Only these importance levels are surfaced on the public dashboard.
 _DASHBOARD_LEVELS = ("CRITICAL", "HIGH")
-# Cap the number of cards so the dashboard stays compact (4-across grid).
-_DASHBOARD_MAX_ITEMS = 12
+# At most this many cards per company — the dashboard shows each company's
+# highest-priority items, not a flat global top-N. A company with lots of news
+# still only takes two cards, so twenty companies is forty cards, not two
+# hundred.
+_DASHBOARD_MAX_PER_COMPANY = 2
 
 
 def _dashboard_items(all_hits: list[dict], summaries: dict[str, str]) -> list[dict]:
-    """Pick the Critical + High hits for the dashboard, most important first."""
+    """Pick the Critical + High hits for the dashboard: each company's two
+    highest-priority items, companies ordered by their most important item.
+
+    A hit is attributed to its first ticker (news hits carry exactly one), and
+    the same headline never appears twice.
+    """
     picked = [h for h in all_hits if h.get("importance_level") in _DASHBOARD_LEVELS]
-    picked.sort(
-        key=lambda h: (-h.get("importance_score", 0), h.get("title", ""))
-    )
-    items: list[dict] = []
-    for h in picked[:_DASHBOARD_MAX_ITEMS]:
-        items.append({
-            "tickers": h.get("tickers", []),
+    # Most important first; title breaks ties for a stable order.
+    picked.sort(key=lambda h: (-h.get("importance_score", 0), h.get("title", "")))
+
+    per_company: dict[str, list[dict]] = {}
+    seen_keys: set[str] = set()
+    for h in picked:
+        key = h.get("seen_key", "")
+        if key and key in seen_keys:
+            continue
+        tickers = h.get("tickers") or []
+        company = tickers[0] if tickers else "—"
+        bucket = per_company.setdefault(company, [])
+        if len(bucket) >= _DASHBOARD_MAX_PER_COMPANY:
+            continue
+        if key:
+            seen_keys.add(key)
+        bucket.append({
+            "tickers": tickers,
             "title": h.get("title", ""),
             "url": h.get("url", ""),
             "source": h.get("source", ""),
             "level": h.get("importance_level", ""),
-            "summary": summaries.get(h.get("seen_key", ""), ""),
+            "summary": summaries.get(key, ""),
             "published": h.get("published", ""),
+            "_score": h.get("importance_score", 0),
         })
+
+    # Order companies by their single most-important item, keep each company's
+    # cards together, then drop the private sort key.
+    ordered_companies = sorted(
+        per_company.values(),
+        key=lambda cards: -max(c["_score"] for c in cards),
+    )
+    items: list[dict] = []
+    for cards in ordered_companies:
+        for c in cards:
+            c.pop("_score", None)
+            items.append(c)
     return items
 
 

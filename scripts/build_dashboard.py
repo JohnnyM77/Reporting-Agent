@@ -756,34 +756,35 @@ def _ned_section(data: dict) -> str:
     run_date = _fmt_date(data.get("last_run"))
     items = data.get("items", []) or []
     total_hits = data.get("total_hits", 0)
-    crit_high = data.get("critical_high_count", len(items))
+
+    # Number of distinct companies represented in the cards.
+    companies = {
+        (it.get("tickers") or ["—"])[0] for it in items
+    }
+    n_companies = len(companies)
     status_dot = "#f59e0b" if items else "#22c55e"
 
     if items:
         cards = "".join(_ned_card(it) for it in items)
-        more = crit_high - len(items)
-        more_html = (
-            f"<div style='color:#64748b;font-size:12px;margin-top:12px'>"
-            f"+{more} more Critical / High item(s) in the email digest.</div>"
-            if more > 0 else ""
-        )
-        body = f"<div class='ned-grid'>{cards}</div>{more_html}"
+        body = f"<div class='ned-grid'>{cards}</div>"
+        headline = f"{len(items)} card(s) &middot; {n_companies} compan{'y' if n_companies == 1 else 'ies'}"
     else:
         body = (
             "<p style='color:#22c55e;font-size:13px;margin:0'>"
             "✓ No Critical or High-impact news this run"
             f"{f' ({total_hits} lower-priority mention(s))' if total_hits else ''}.</p>"
         )
+        headline = "0 flagged"
 
     return f"""
     <div class="agent-card">
       <div class="card-header">
         <div>
           <span class="agent-name">Ned the News Agent</span>
-          <span class="agent-role">Media Scanner &middot; Critical &amp; High impact (daily)</span>
+          <span class="agent-role">Media Scanner &middot; Critical &amp; High impact, up to 2 per company (daily)</span>
         </div>
         <div style="text-align:right">
-          <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{status_dot};margin-right:6px"></span><span style="font-size:13px;color:#e2e8f0">{crit_high} flagged</span></div>
+          <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{status_dot};margin-right:6px"></span><span style="font-size:13px;color:#e2e8f0">{headline}</span></div>
           <div style="font-size:12px;color:#64748b;margin-top:4px">Last run: {run_date}</div>
         </div>
       </div>

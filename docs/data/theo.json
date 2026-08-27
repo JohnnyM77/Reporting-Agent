@@ -1,9 +1,9 @@
 {
   "last_run": "2026-08-27",
-  "thesis_count": 19,
+  "thesis_count": 20,
   "drifting": 2,
   "watch": 12,
-  "clean": 5,
+  "clean": 6,
   "theses": [
     {
       "ticker": "ABB",
@@ -49,6 +49,40 @@
           "message": "resolution date passed 288 days ago and nothing was written down"
         }
       ]
+    },
+    {
+      "ticker": "AHC",
+      "name": "Austco Healthcare",
+      "archetype": "COMPOUNDING_MACHINE",
+      "grade": "B",
+      "draft": false,
+      "exited": false,
+      "verdict": "CLEAN",
+      "pillars": [
+        {
+          "id": "P1",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P2",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        },
+        {
+          "id": "P3",
+          "status": "STRAINED",
+          "symbol": "\u25d0"
+        },
+        {
+          "id": "P4",
+          "status": "INTACT",
+          "symbol": "\u25cf"
+        }
+      ],
+      "irr": -0.1695103604018689,
+      "multiple": 0.754098,
+      "findings": []
     },
     {
       "ticker": "AR9",

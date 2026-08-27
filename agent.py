@@ -1851,6 +1851,131 @@ def generate_analysis_pdf(
         return None
 
 
+# ---------------------------------------------------------------------------
+# Publishing the long-form analysis to the site
+# ---------------------------------------------------------------------------
+#
+# Bob's full analysis used to exist in exactly one place: an emailed PDF. The
+# weasyprint file is written to /tmp, attached, and destroyed with the CI
+# container — but its temp path was still being recorded in bob.json, so the
+# dashboard carried a /tmp/... string no browser could ever open.
+#
+# The analysis is now also written as a plain HTML page under docs/analysis/,
+# which is committed with the rest of docs/ and published by the Pages
+# workflow. HTML rather than PDF for the same reason the results card is a card:
+# it reflows on a phone. The email keeps its PDF attachment — that path is
+# unchanged and is still the copy that lands in your inbox.
+#
+# Pages expire on the same clock as the cards that link to them
+# (BOB_HI_RETENTION_DAYS). A card outliving its own link would be worse than
+# having no link at all, so the two must not be allowed to drift apart.
+
+ANALYSIS_DIR_NAME = "analysis"
+_ANALYSIS_SLUG_RE = re.compile(r"[^A-Za-z0-9]+")
+
+
+def _analysis_dir() -> Path:
+    return Path(__file__).resolve().parent / "docs" / ANALYSIS_DIR_NAME
+
+
+def analysis_page_name(ticker: str, period: str, run_date: dt.date) -> str:
+    """Filename for one analysis page: TICKER-PERIOD-YYYY-MM-DD.html.
+
+    The date is in the name so pruning is a filename comparison rather than a
+    stat() on mtime — a fresh CI checkout gives every file the same mtime, so
+    mtime cannot answer "which day was this written".
+    """
+    slug = _ANALYSIS_SLUG_RE.sub("-", f"{ticker} {period}".strip()).strip("-").upper()
+    return f"{slug}-{run_date.isoformat()}.html"
+
+
+# build_analysis_doc_html targets weasyprint and Google Docs, neither of which
+# has a viewport. Served to a phone as-is it renders at desktop width and needs
+# pinch-zoom — which would give up the one advantage HTML has over the PDF it
+# replaced. The injection happens here rather than in the builder so the PDF
+# and Drive paths keep producing byte-identical output to what they did before.
+_WEB_PAGE_HEAD = (
+    '<meta charset="utf-8">'
+    '<meta name="viewport" content="width=device-width, initial-scale=1">'
+    '<style>'
+    'body{max-width:52rem;margin:0 auto;padding:18px 16px 48px;line-height:1.55}'
+    'table{max-width:100%;border-collapse:collapse}'
+    'pre{white-space:pre-wrap;word-wrap:break-word}'
+    'img{max-width:100%;height:auto}'
+    '@media(max-width:600px){body{font-size:15px}}'
+    '</style>'
+)
+
+
+def _as_web_page(doc_html: str) -> str:
+    return doc_html.replace('<meta charset="utf-8">', _WEB_PAGE_HEAD, 1)
+
+
+def write_analysis_page(
+    ticker: str,
+    analysis: dict,
+    asx_url: str,
+    run_date: Optional[dt.date] = None,
+) -> Optional[str]:
+    """Write the full analysis as a page under docs/analysis/.
+
+    Returns the site-relative URL for the dashboard card, or None if the page
+    could not be written. Never raises: losing the page is a degraded card, and
+    must not cost the digest.
+    """
+    run_date = run_date or today_sgt_date()
+    try:
+        body_html = _as_web_page(build_analysis_doc_html(ticker, analysis, asx_url))
+        out_dir = _analysis_dir()
+        out_dir.mkdir(parents=True, exist_ok=True)
+        name = analysis_page_name(ticker, _results_period_label(analysis), run_date)
+        (out_dir / name).write_text(body_html, encoding="utf-8")
+        log(f"[analysis] Wrote {ANALYSIS_DIR_NAME}/{name}")
+        return f"{ANALYSIS_DIR_NAME}/{name}"
+    except Exception as e:
+        log(f"[analysis] Could not write page for {ticker}: {type(e).__name__}: {e}")
+        return None
+
+
+def prune_analysis_pages(
+    run_date: Optional[dt.date] = None,
+    retention_days: int = None,
+) -> int:
+    """Delete analysis pages older than the retention window.
+
+    Runs every day whether or not Bob analysed anything, so a quiet week still
+    clears the directory out. Deleting is best-effort for the same reason
+    writing is: a stale page left on the site is untidy, a crashed digest is
+    not.
+    """
+    run_date = run_date or today_sgt_date()
+    retention_days = retention_days or BOB_HI_RETENTION_DAYS
+    oldest_kept = run_date - dt.timedelta(days=retention_days - 1)
+
+    out_dir = _analysis_dir()
+    if not out_dir.is_dir():
+        return 0
+
+    removed = 0
+    for path in out_dir.glob("*.html"):
+        stamp = path.stem[-10:]
+        try:
+            page_date = dt.date.fromisoformat(stamp)
+        except ValueError:
+            # Not one of ours, or hand-placed. Leave it alone rather than
+            # delete a file this function does not understand.
+            continue
+        if page_date < oldest_kept:
+            try:
+                path.unlink()
+                removed += 1
+            except OSError as e:
+                log(f"[analysis] Could not remove {path.name}: {e}")
+    if removed:
+        log(f"[analysis] Pruned {removed} page(s) older than {oldest_kept.isoformat()}")
+    return removed
+
+
 def create_analysis_doc(
     ticker: str,
     period: str,
@@ -2275,13 +2400,29 @@ def _emit_bob_dashboard_json(
         BOB_HI_RETENTION_DAYS,
     )
 
+    retained = todays_items + carried
+
+    # Pages and the cards that link to them expire on the same clock, so the
+    # prune happens here rather than anywhere else in the run.
+    prune_analysis_pages(today, BOB_HI_RETENTION_DAYS)
+
+    # Belt and braces: a card promising "full analysis" and delivering a 404 is
+    # worse than a card with no link, so any URL whose file did not survive the
+    # prune is dropped rather than published on trust.
+    analysis_dir = _analysis_dir()
+    for item in retained:
+        url = item.get("analysis_url")
+        if url and not (analysis_dir / Path(url).name).exists():
+            log(f"[analysis] Dropping dead link for {item.get('ticker')}: {url}")
+            item["analysis_url"] = None
+
     data = {
         "last_run": today.isoformat(),
         "silence": silence,
         # One list, each item stamped with the day it was produced. Consumers
         # that only care about today filter on run_date; the dashboard renders
         # the carried ones under their own heading.
-        "high_impact": todays_items + carried,
+        "high_impact": retained,
         "material": material,
         "fyi": fyi,
     }
@@ -2474,6 +2615,10 @@ def main():
                 except Exception as e:
                     log(f"ERROR: analysis PDF generation failed for {ticker}: {type(e).__name__}: {e}")
 
+                # The same analysis as a page on the site, so it survives the
+                # container the PDF dies with. See write_analysis_page.
+                analysis_url = write_analysis_page(ticker, analysis, any_results_link)
+
                 block = build_results_block(
                     ticker=ticker,
                     analysis=analysis,
@@ -2485,7 +2630,10 @@ def main():
                 high_impact_items.append({
                     "ticker": ticker, "title": bundle[0]["title"] if bundle else "Results (HY/FY)",
                     "url": any_results_link, "type": "results", "analysis": analysis,
-                    "doc_link": "", "doc_error": "", "pdf_path": str(analysis_pdf_path) if analysis_pdf_path else None,
+                    # pdf_path used to be recorded here. It was the weasyprint
+                    # temp file — a /tmp/... string committed into bob.json that
+                    # pointed at nothing by the time anyone read it.
+                    "doc_link": "", "doc_error": "", "analysis_url": analysis_url,
                 })
                 if ticker == "AR9":
                     brother_blocks.append(block)

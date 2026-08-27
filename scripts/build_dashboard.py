@@ -272,6 +272,12 @@ def _hi_item_card(item: dict, carried: bool = False) -> str:
         f"</div>"
         f"<div style='display:flex;align-items:center;gap:10px;white-space:nowrap'>"
         + (
+            # analysis_url is a page under docs/analysis/, published with the
+            # site and expiring on the same clock as this card. doc_link is the
+            # older Google Drive route, kept so an existing bob.json still
+            # renders its link.
+            f"<a href='{_esc(item.get('analysis_url'))}' style='color:#34d399;"
+            f"font-size:12px'>Full analysis ↗</a>" if item.get("analysis_url") else
             f"<a href='{item.get('doc_link')}' target='_blank' style='color:#34d399;"
             f"font-size:12px'>Full analysis ↗</a>" if item.get("doc_link") else ""
         )

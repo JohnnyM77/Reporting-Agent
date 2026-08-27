@@ -194,3 +194,134 @@ class TestRender:
         html = build_dashboard._bob_section(data)
         assert "1 HIGH IMPACT" in html
         assert "STILL WORTH A LOOK" not in html
+
+
+# ---------------------------------------------------------------------------
+# Analysis pages published to the site
+#
+# The invariant that matters: a card and the page it links to expire together.
+# A card promising "full analysis" and delivering a 404 is worse than a card
+# with no link, which is the state this replaced (a /tmp path committed into
+# bob.json pointing at a file destroyed with the CI container).
+# ---------------------------------------------------------------------------
+
+class TestAnalysisPages:
+    def test_page_name_carries_the_date_not_the_mtime(self):
+        name = agent.analysis_page_name("ABB", "FY26", TODAY)
+        assert name == "ABB-FY26-2026-08-24.html"
+
+    def test_page_name_survives_a_missing_period(self):
+        assert agent.analysis_page_name("LAU", "", TODAY) == "LAU-2026-08-24.html"
+
+    def test_page_name_slugs_awkward_periods(self):
+        assert agent.analysis_page_name("BHP", "1H FY2026", TODAY) == "BHP-1H-FY2026-2026-08-24.html"
+
+    def test_write_returns_a_relative_url_and_writes_the_file(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(agent, "_analysis_dir", lambda: tmp_path / "analysis")
+        url = agent.write_analysis_page(
+            "ABB", {"period": "FY26", "full_analysis": "# Heading\n\nBody text."},
+            "https://asx/abb", TODAY,
+        )
+        assert url == "analysis/ABB-FY26-2026-08-24.html"
+        written = (tmp_path / "analysis" / "ABB-FY26-2026-08-24.html").read_text()
+        assert "Body text." in written
+
+    def test_write_failure_is_not_fatal(self, tmp_path, monkeypatch):
+        """Losing the page degrades a card. It must never cost the digest."""
+        monkeypatch.setattr(agent, "_analysis_dir", lambda: tmp_path / "analysis")
+        monkeypatch.setattr(agent, "build_analysis_doc_html",
+                            lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom")))
+        assert agent.write_analysis_page("ABB", {}, "u", TODAY) is None
+
+    def test_prune_removes_pages_past_the_window_and_keeps_the_rest(self, tmp_path, monkeypatch):
+        d = tmp_path / "analysis"; d.mkdir()
+        for stamp in ("2026-08-24", "2026-08-23", "2026-08-21"):
+            (d / f"ABB-FY26-{stamp}.html").write_text("x")
+        monkeypatch.setattr(agent, "_analysis_dir", lambda: d)
+
+        assert agent.prune_analysis_pages(TODAY, 2) == 1
+        assert sorted(p.name for p in d.glob("*.html")) == [
+            "ABB-FY26-2026-08-23.html", "ABB-FY26-2026-08-24.html",
+        ]
+
+    def test_prune_leaves_files_it_does_not_understand(self, tmp_path, monkeypatch):
+        d = tmp_path / "analysis"; d.mkdir()
+        (d / "index.html").write_text("x")
+        (d / "notes.html").write_text("x")
+        monkeypatch.setattr(agent, "_analysis_dir", lambda: d)
+        assert agent.prune_analysis_pages(TODAY, 2) == 0
+        assert len(list(d.glob("*.html"))) == 2
+
+    def test_prune_on_a_missing_directory_is_a_no_op(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(agent, "_analysis_dir", lambda: tmp_path / "nope")
+        assert agent.prune_analysis_pages(TODAY, 2) == 0
+
+    def test_a_carried_card_keeps_its_page(self, tmp_path, monkeypatch):
+        """Yesterday's card is still on the dashboard, so its page must survive
+        the same prune."""
+        out = tmp_path / "docs" / "data" / "bob.json"
+        out.parent.mkdir(parents=True)
+        analysis_dir = tmp_path / "docs" / "analysis"; analysis_dir.mkdir()
+        (analysis_dir / "ABB-FY26-2026-08-23.html").write_text("x")
+
+        out.write_text(json.dumps({
+            "last_run": YESTERDAY,
+            "high_impact": [_item("ABB", "u/abb", YESTERDAY,
+                                  analysis_url="analysis/ABB-FY26-2026-08-23.html")],
+            "material": [], "fyi": [],
+        }))
+        monkeypatch.setattr(agent, "today_sgt_date", lambda: TODAY)
+        monkeypatch.setattr(agent, "_analysis_dir", lambda: analysis_dir)
+        monkeypatch.setattr(agent.Path, "resolve", lambda self: tmp_path / "agent.py")
+
+        agent._emit_bob_dashboard_json([], [], [], False)
+
+        carried = json.loads(out.read_text())["high_impact"][0]
+        assert carried["analysis_url"] == "analysis/ABB-FY26-2026-08-23.html"
+        assert (analysis_dir / "ABB-FY26-2026-08-23.html").exists()
+
+    def test_a_link_whose_page_is_gone_is_dropped_not_published(self, tmp_path, monkeypatch):
+        out = tmp_path / "docs" / "data" / "bob.json"
+        out.parent.mkdir(parents=True)
+        analysis_dir = tmp_path / "docs" / "analysis"; analysis_dir.mkdir()
+
+        out.write_text(json.dumps({
+            "last_run": YESTERDAY,
+            "high_impact": [_item("ABB", "u/abb", YESTERDAY,
+                                  analysis_url="analysis/ABB-FY26-2026-08-23.html")],
+            "material": [], "fyi": [],
+        }))
+        monkeypatch.setattr(agent, "today_sgt_date", lambda: TODAY)
+        monkeypatch.setattr(agent, "_analysis_dir", lambda: analysis_dir)
+        monkeypatch.setattr(agent.Path, "resolve", lambda self: tmp_path / "agent.py")
+
+        agent._emit_bob_dashboard_json([], [], [], False)
+        assert json.loads(out.read_text())["high_impact"][0]["analysis_url"] is None
+
+    def test_dashboard_links_the_page_when_present(self):
+        html = build_dashboard._hi_item_card(
+            _item("ABB", "u/abb", analysis_url="analysis/ABB-FY26-2026-08-24.html"))
+        assert "analysis/ABB-FY26-2026-08-24.html" in html
+        assert "Full analysis" in html
+
+    def test_dashboard_shows_no_analysis_link_when_absent(self):
+        html = build_dashboard._hi_item_card(_item("ABB", "u/abb"))
+        assert "Full analysis" not in html
+
+    def test_an_old_bob_json_still_renders_its_drive_link(self):
+        html = build_dashboard._hi_item_card(
+            _item("ABB", "u/abb", doc_link="https://docs.google.com/d/x"))
+        assert "https://docs.google.com/d/x" in html
+
+    def test_web_page_is_mobile_readable(self, tmp_path, monkeypatch):
+        """HTML over PDF is only worth it if it reflows on a phone."""
+        monkeypatch.setattr(agent, "_analysis_dir", lambda: tmp_path / "analysis")
+        agent.write_analysis_page("ABB", {"period": "FY26"}, "u", TODAY)
+        page = (tmp_path / "analysis" / "ABB-FY26-2026-08-24.html").read_text()
+        assert 'name="viewport"' in page
+        assert page.count("<meta charset") == 1, "charset must not be duplicated"
+
+    def test_the_pdf_and_drive_html_is_left_alone(self):
+        """_as_web_page is applied on the way to disk, not in the builder."""
+        doc = agent.build_analysis_doc_html("ABB", {"period": "FY26"}, "u")
+        assert 'name="viewport"' not in doc

@@ -45,7 +45,7 @@
       },
       "doc_link": "",
       "doc_error": "",
-      "pdf_path": "/tmp/ABB_FY26_2026-08-24.pdf"
+      "analysis_url": null
     },
     {
       "ticker": "LAU",
@@ -62,7 +62,7 @@
       },
       "doc_link": "",
       "doc_error": "",
-      "pdf_path": "/tmp/LAU__2026-08-24.pdf"
+      "analysis_url": null
     },
     {
       "ticker": "MSV",
@@ -107,7 +107,7 @@
       },
       "doc_link": "",
       "doc_error": "",
-      "pdf_path": "/tmp/MSV_FY26_2026-08-24.pdf"
+      "analysis_url": null
     }
   ],
   "material": [],

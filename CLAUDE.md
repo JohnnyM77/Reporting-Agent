@@ -64,9 +64,14 @@ Drive v3 API silently refuses to touch Shared Drive contents; passing it costs
 nothing for My Drive writes and future-proofs the code.
 
 **Raw PDF uploads were removed.** The ASX link in the email already points at
-the same PDF ASX hosts, so copying it to Drive was pure duplication. Drive is
-used only for the analysis Doc now — one file per results item, and that
-file is worth opening.
+the same PDF ASX hosts, so copying it to Drive was pure duplication.
+
+**The Drive path is currently dormant.** `create_analysis_doc` and
+`drive_service` are still here and still correct, but nothing calls them — the
+results call site passes `doc_link=""` and attaches a weasyprint PDF to the
+email instead. The section above describes the design as intended; what runs
+today is the PDF attachment plus the site page below. Reviving the Doc means
+calling `create_analysis_doc` again at that call site, not rewriting it.
 
 **Drive failures are visible.** When `create_analysis_doc` raises, the results
 card renders a red "⚠️ Drive save failed" warning row with the actual error
@@ -253,3 +258,57 @@ name (`TARGET_BRANCH`) so the deploy always carries the newest data.
 The trigger is not gated on the agent run succeeding. A run that emailed its
 digest and then tripped over on a later step has still committed data worth
 publishing, and re-deploying unchanged content costs nothing.
+
+
+## Where Bob's long-form analysis actually lives
+
+Three copies exist, and they are not interchangeable:
+
+| Copy | Lifetime | Built by |
+|---|---|---|
+| PDF attached to the email | forever, in your inbox | `generate_analysis_pdf` (weasyprint) |
+| Page at `/analysis/<TICKER>-<PERIOD>-<DATE>.html` | two days | `write_analysis_page` |
+| Google Doc | — | `create_analysis_doc`, **not currently called** |
+
+### The /tmp path that was published for weeks
+The PDF is written to `/tmp` inside the CI container, attached to the email,
+and destroyed when the container is reclaimed — but its temp path was still
+being recorded on the dashboard item and committed to `docs/data/bob.json`:
+
+```
+"pdf_path": "/tmp/ABB_FY26_2026-08-24.pdf"
+```
+
+A path no browser could open, pointing at a file that no longer existed
+anywhere, sitting in version control. Nothing rendered it, so nothing looked
+broken. It is now `analysis_url`, and it points at something real.
+
+### Pages expire on the same clock as the cards
+`prune_analysis_pages` runs inside `_emit_bob_dashboard_json` — the same
+function that decides which cards are retained — and both use
+`BOB_HI_RETENTION_DAYS`. That co-location is deliberate: a card promising
+"Full analysis ↗" and delivering a 404 is worse than a card with no link at
+all, so the two must not be able to drift apart. After the prune, any
+`analysis_url` whose file did not survive is set to `None` rather than
+published on trust.
+
+The date is in the **filename**, not read from mtime. A fresh CI checkout gives
+every file the same mtime, so mtime cannot answer "which day was this written".
+A file in `docs/analysis/` that does not parse as `...-YYYY-MM-DD.html` is left
+alone — the pruner does not delete what it does not understand.
+
+### Why HTML and not the PDF
+Same reason the results card is a card: it reflows on a phone. The pages are
+public — anyone with the URL can read one, and the URL is guessable from the
+ticker and the date. That is a considered trade, not an oversight: the
+dashboard is already public and the analysis is drawn entirely from public ASX
+filings.
+
+`build_analysis_doc_html` targets weasyprint and Google Docs, neither of which
+has a viewport, so `_as_web_page` injects the viewport meta and a small
+stylesheet on the way to disk. It is applied there rather than in the builder
+so the PDF and Drive paths keep emitting byte-identical output.
+
+`docs/analysis/` needs `git add -A` in `daily.yml`, not plain `git add` — the
+day's expired pages have to be staged as deletions, not just the new ones as
+additions.

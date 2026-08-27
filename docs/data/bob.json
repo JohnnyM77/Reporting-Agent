@@ -1,13 +1,114 @@
 {
   "last_run": "2026-08-27",
   "silence": false,
-  "high_impact": [],
+  "high_impact": [
+    {
+      "ticker": "CTD",
+      "title": "Half Year Accounts 35\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.2MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131486",
+      "type": "results",
+      "analysis": {
+        "ticker": "CTD",
+        "period": "1H26",
+        "period_type": "half_year",
+        "currency": "AUD",
+        "metrics": {
+          "revenue": {
+            "value": "$342.9m",
+            "change_pct": "+6%",
+            "basis": "reported"
+          },
+          "underlying_npat": {
+            "value": "n/a",
+            "change_pct": "n/a",
+            "basis": "n/a"
+          },
+          "underlying_eps": {
+            "value": "9.6c",
+            "change_pct": "+4%",
+            "basis": "statutory"
+          },
+          "dividend_ordinary": {
+            "value": "nil",
+            "change_pct": "n/a",
+            "note": "Board determined not to pay interim dividend; prior period 10.0c unfranked interim paid Apr 2025"
+          },
+          "operating_cash_flow": {
+            "value": "$22.6m",
+            "change_pct": "+77%",
+            "basis": "reported"
+          }
+        },
+        "summary": "A deeply distressed result masquerading as stabilisation — statutory NPAT of $13.3m is up just 1% on pcp but the prior period itself was restated down from $28.5m after the UK fraud, making the comparison largely meaningless. The headline improvement is driven entirely by Europe's forensic-adjusted recovery and $10.2m of forensic accounting costs sitting between underlying EBITDA ($66.9m, +17%) and reported profit, while ANZ underlying EBITDA collapsed 28% and North America revenue fell 2%. Cash conversion is the one genuine positive — operating cash flow of $22.6m nearly doubled pcp — but $35.5m of the $121m cash balance is restricted and the group faces $149m of UK customer refund payments in FY27 alone. No interim dividend was declared, signalling the board has no confidence in near-term free cash flow generation. The single biggest risk is that the $38m of UK customer related liabilities still under negotiation crystallise at worse-than-provided amounts, and that covenant review events under the new $175m syndicated facility are triggered by trading or litigation shocks.",
+        "full_analysis": "## Executive summary\n- **Fraud-distorted result**: Both the current period and the restated pcp are contaminated by the CTM UK accounting irregularities; prior period statutory NPAT was restated from $28.5m to $13.1m — a $15.3m haircut — making year-on-year comparisons unreliable.\n- **Underlying EBITDA up 17% to $66.9m**, but $10.2m of forensic/restatement costs and a further $1.2m of transition costs are excluded from that measure; these are recurring in nature until the remediation is complete.\n- **ANZ is deteriorating**: Revenue -3%, underlying EBITDA -28% to $19.6m as accounting adjustments (non-cash write-offs on variable consideration) hit both the top and bottom line.\n- **Europe's 'recovery' is artificial**: Underlying EBITDA surged from $2.5m to $20.1m (+704%), but this is mechanically driven by the low restated base (prior period revenue was slashed by the forensic restatement) and project work at thin margins, not genuine business momentum.\n- **Red flag — auditor qualified conclusion**: Deloitte issued a qualified review conclusion on CTM Europe trade receivables ($154.4m) and trade payables ($143.8m) due to insufficient audit evidence; the net $9.2m payable position cannot be relied upon.\n\n## Key numbers\n\n| Metric | 1H26 | 1H25 (Restated) | Change |\n|---|---|---|---|\n| Revenue | $342.9m | $323.6m | +6% |\n| Total revenue & other income | $345.2m | $326.9m | +6% |\n| Underlying EBITDA | $66.9m | $57.0m | +17% |\n| Underlying EBITDA margin | 19.4% | 17.4% | +200bps |\n| Forensic/restatement costs | ($10.2m) | nil | n/m |\n| Transition costs | ($1.2m) | ($7.1m) | -83% |\n| Reported EBITDA | $55.5m | $49.8m | +11% |\n| D&A (total) | ($32.4m) | ($31.8m) | +2% |\n| Operating profit | $24.6m | $19.2m | +28% |\n| Profit before tax | $23.3m | $17.9m | +30% |\n| Income tax expense | ($9.1m) | ($4.0m) | +127% |\n| Statutory NPAT (group) | $14.2m | $13.9m | +2% |\n| NPAT attributable to shareholders | $13.3m | $13.1m | +1% |\n| Basic EPS | 9.6c | 9.2c | +4% |\n| Operating cash flow | $22.6m | $12.7m | +77% |\n| Free cash flow (OCF less capex/intangibles) | $3.7m | ($7.0m) | n/m |\n| Cash & equivalents | $121.2m | n/a | n/a |\n| Net debt / (cash) | ($121.2m) gross cash; facility undrawn | n/a | n/a |\n| Customer related liabilities | $222.4m | n/a | n/a |\n| Other refund liabilities | $49.8m | n/a | n/a |\n\n*Note: No underlying NPAT figure is disclosed by the company. The company discloses underlying EBITDA only; the statutory NPAT is used above. EPS of 9.6c is statutory basic EPS.*\n\n## Quality of earnings\n- **Cash conversion is real**: OCF of $22.6m against statutory NPAT of $14.2m represents ~159% conversion — genuine improvement driven by working capital inflows (trade receivables fell $48.5m from Jun-25 to Dec-25) partly offset by customer refund outflows of $24.5m during the half.\n- **Restricted cash**: Of the $121.2m cash balance, $35.5m is restricted (client cash and regulatory/contractual holds) and $8.4m is client cash. Freely available cash is materially lower than the headline figure.\n- **Non-cash charges are elevated**: D&A of $32.4m consumes 94% of operating profit. Software amortisation alone is $18.4m. Capitalised software additions of $15.9m in the half continue at pace.\n- **Tax rate anomaly**: Tax expense jumped from $4.0m on $17.9m PBT (22%) to $9.1m on $23.3m PBT (39%), implying either non-deductible forensic costs or unrecognised deferred tax assets in loss-making jurisdictions — a quality-of-earnings concern.\n- **Customer related liabilities**: $222.4m on balance sheet; $24.5m paid during the half. Post-period, $175.4m of settlements reached for $205.3m of liability face value — a $29.9m gain to be booked in FY27. A residual $38.4m remains under negotiation.\n- **Other refund liabilities** of $49.8m sit separately in payables (not in customer related liabilities) — settlements of $26.6m agreed post-period.\n- **ANZ write-offs**: Non-cash write-offs from reassessment of variable consideration under customer contracts hit ANZ revenue and EBITDA; these are accounting-driven rather than volume-driven but signal ongoing revenue quality issues.\n\n## Management framing\n**Rating: Mixed / Promotional**\n- The directors' report leads with underlying EBITDA (+17%) and total TTV growth (+6.3% to $4.9bn), burying the statutory result which is essentially flat.\n- Europe's 704% EBITDA growth is presented as a 'substantial recovery' without adequately highlighting that the prior period was artificially depressed by forensic restatements — the comparison is not economically meaningful.\n- ANZ is framed as delivering 'resilient results' despite a 28% EBITDA decline and ongoing accounting remediation.\n- The going concern section is long and detailed, which is appropriate given the severity of the issues, but management's modelling assumptions (only a 5% revenue decline stress-tested) appear conservative relative to the scale of execution risk.\n- The new $175m facility terms are disclosed: ~$20m annualised borrowing cost estimate and a 4% of market cap termination fee — these are onerous terms that were not prominently flagged in the narrative section.\n- The report was signed on 27 August 2026 for a period ending 31 December 2025 — an 8-month delay reflecting the severity of the accounting issues.\n\n## Segments\n\n| Segment | Revenue 1H26 | Revenue 1H25 | Change | U-EBITDA 1H26 | U-EBITDA 1H25 | Change | Margin 1H26 | Margin 1H25 |\n|---|---|---|---|---|---|---|---|---|\n| ANZ | $92.6m | $95.7m | -3% | $19.6m | $27.4m | -28% | 21.2% | 28.6% |\n| North America | $156.9m | $159.9m | -2% | $31.0m | $30.5m | +2% | 19.8% | 19.1% |\n| Asia | $32.0m | $30.1m | +6% | $8.2m | $7.7m | +6% | 25.6% | 25.6% |\n| Europe | $63.1m | $41.0m | +54% | $20.1m | $2.5m | +704% | 31.9% | 6.1% |\n| Corporate/Other | $0.6m | $0.2m | n/m | ($12.0m) | ($11.1m) | -8% | n/m | n/m |\n| **Total** | **$345.2m** | **$326.9m** | **+6%** | **$66.9m** | **$57.0m** | **+17%** | **19.4%** | **17.4%** |\n\n**Key observations**:\n- North America discontinued its loyalty redemption program, deflating revenue by ~2%; the underlying core travel business held up.\n- Europe's improvement reflects both the low restated base and project work at margins lower than core business — management flagged project work 'delivered at margins lower than core business'.\n- ANZ is the most troubled region with both revenue compression and sharp margin contraction, with ongoing remediation work weighing on results.\n- Asia is the clean, growing business — consistent 25.6% margins and 6% growth.\n\n## Balance sheet\n- **No drawn debt**: The syndicated facility ($75m revolving credit, $65m IATA guarantee) was entirely undrawn at 31 December 2025. Post-period, a new $175m facility was secured (Aug 2026).\n- **Net current liability position of $98.2m**: Driven by $222.4m customer related liabilities and $49.8m other refund liabilities both classified as current — these dominate the balance sheet.\n- **Net tangible assets**: Negative 29 cents per share (vs negative 18c pcp), worsening, as goodwill and intangibles ($637m) dwarf net assets ($591m).\n- **Goodwill**: $561m on the balance sheet; no impairment was taken despite ongoing business deterioration — the impairment test assumptions are a latent risk.\n- **Bank guarantees**: Jumped from $19.2m (Jun-25) to $93.3m (Dec-25) — a material increase reflecting the IATA guarantee requirements.\n- **Post-period financing**: New $175m facility at BBSY plus a margin (~$20m annualised cost), secured, with a 4% market cap termination fee — materially more expensive than predecessor facilities. Covenants include leverage ratio, interest cover, minimum cash and review events.\n- **FY27 cash requirements**: $149.2m in customer refund payments + $31.9m in FY28. The Group must fund these from operating cash flow and the new facility drawdowns.\n\n## Dividend and capital allocation\n- **No interim dividend declared** for 1H26, compared with a 10.0c unfranked interim in 1H25. This is a significant signal — the board is preserving cash to fund UK settlement payments.\n- **No buyback** conducted in 1H26 (vs $33.1m buyback in 1H25).\n- Capital expenditure on intangibles (software) of $16.6m and PP&E of $2.2m totalling $18.8m — consistent with prior period ($20.0m), suggesting continued technology investment is not being curtailed.\n- Free cash flow (OCF minus all capex) of approximately $3.7m is thin relative to the scale of the business and the upcoming settlement obligations.\n\n## Guidance and outlook\n- **No quantitative guidance provided** for 2H26 or FY26. This is the second consecutive period without forward guidance.\n- Management commentary is directional only: North America 'well positioned for sustained profitability', Asia 'strong pipeline', Europe 'multi-faceted strategy', ANZ 'focused on completing remediation workstreams'.\n- The going concern note provides a 12-month liquidity assessment to Dec-27 but this is not earnings guidance.\n- The Amadeus global partnership is referenced as a source of expected cash receipts in the going concern model — no financial details disclosed.\n\n## Positives\n- **Underlying EBITDA +17% to $66.9m**: Demonstrates the core travel management business retains earnings power once non-recurring forensic costs are stripped out.\n- **Operating cash flow +77% to $22.6m**: Strong working capital discipline; net operating cash flows turned significantly positive.\n- **UK settlement progress**: $205.3m of the $222.4m customer related liabilities have reached full and final settlement post-period, removing the largest source of balance sheet uncertainty. A $29.9m gain will flow to FY27 P&L.\n- **Facility secured**: $175m syndicated facility agreed August 2026 provides liquidity runway to July 2028 (expected extension to Aug 2029), removing near-term refinancing risk.\n- **New CEO in place**: Ana Pedersen appointed as MD & Group CEO July 2026, providing leadership continuity after Pherous's departure in Feb 2026.\n- **Asia performing well**: Consistent 25.6% EBITDA margins and 6% revenue growth with a clean book.\n- **No drawn debt**: The group enters the heavy payment period with an undrawn facility, providing flexibility.\n\n## Negatives / red flags\n- **Qualified audit conclusion**: Deloitte qualified on CTM Europe trade receivables ($154.4m) and payables ($143.8m) — cannot conclude on existence, accuracy or completeness. This is a fundamental governance failure not yet resolved.\n- **ANZ deteriorating**: Underlying EBITDA down 28%; accounting remediation ongoing, revenue yield compression from variable consideration reassessments — the clean-up is not complete.\n- **$272m in refund liabilities**: Combined customer related liabilities ($222.4m) and other refund liabilities ($49.8m) total $272.2m, all classified as current. Post-period settlements reduce this but $38.4m remains under negotiation at unknown quantum.\n- **FY27 cash demands are severe**: $149.2m in customer refund payments due within one year. Against free cash flow of ~$3.7m per half, this will require material facility drawdowns, at ~$20m annual interest cost.\n- **Onerous new debt terms**: 4% of market capitalisation termination fee on repayment is a highly unusual and punitive provision — effectively an equity-linked kicker for lenders.\n- **Tax rate spike to 39%**: Implies non-deductible costs or deferred tax asset limitations in certain jurisdictions — future cash tax payments may be elevated.\n- **Goodwill not impaired**: $561m of goodwill (93% of net assets) with no impairment in a period of significant operational deterioration, segment margin compression in ANZ and ongoing governance issues.\n- **8-month reporting delay**: This half-year report for Dec-25 was signed in August 2026 — the scale of the accounting mess remains exceptional.\n- **Retained earnings deeply negative**: ($361.8m) as at Dec-25, reflecting the cumulative impact of the UK write-downs and restated revenue.\n- **No EPS underlying figure**: Management discloses no underlying NPAT or EPS, making it impossible to independently assess the quality of earnings on a normalised basis.\n\n## Bottom line\n**Bull case**: The UK customer settlements are now substantially concluded at a $29.9m discount to carrying value (i.e., better than feared). North America and Asia are holding up. Underlying EBITDA of $66.9m annualised (~$134m) against a market cap that has been severely de-rated offers value if governance is truly fixed, ANZ stabilises, and the new CEO can execute. The new facility provides liquidity runway and going concern is not in question.\n\n**Bear case**: The qualified audit opinion on $300m of European balance sheet items means the financials cannot be relied upon in full. ANZ is structurally impaired with more write-offs to come. The $38m of unsettled UK liabilities may resolve at worse-than-provided amounts. The new debt costs ~$20m annually and must be serviced alongside $149m of FY27 refund payments. Goodwill impairment of $561m has not been taken despite clear impairment indicators. A revenue shock or covenant breach under the new facility's review event provisions could accelerate the debt.\n\n**What would change the view**: (1) A clean (unqualified) audit conclusion on CTM Europe's balance sheet; (2) ANZ EBITDA margins returning above 25%; (3) quantitative guidance provided, signalling management confidence; (4) full settlement of the $38m residual customer related liabilities without material adverse adjustment; (5) goodwill formally tested and either confirmed or written down with transparency.",
+        "_status": "ok"
+      },
+      "doc_link": "",
+      "doc_error": "",
+      "pdf_path": "/tmp/CTD_1H26_2026-08-27.pdf"
+    }
+  ],
   "material": [],
   "fyi": [
     {
-      "ticker": "PWH",
-      "title": "Change of Director's Interest Notice - Matthew Bryson 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 484.9KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131477"
+      "ticker": "CTD",
+      "title": "Continuation of Suspension from Quotation 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 20",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131538"
+    },
+    {
+      "ticker": "CTD",
+      "title": "Appendix 4G and Corporate Governance Statement 30\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 700.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131514"
+    },
+    {
+      "ticker": "CTD",
+      "title": "Half Year Accounts 35\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.2MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131486"
+    },
+    {
+      "ticker": "CTD",
+      "title": "Update - Notification of buy-back - CTD 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131487"
+    },
+    {
+      "ticker": "CTD",
+      "title": "Sustainability/Climate Action Report 29\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 9.6MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131485"
+    },
+    {
+      "ticker": "CTD",
+      "title": "Annual Report to shareholders 133\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 8.0MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131484"
+    },
+    {
+      "ticker": "CTD",
+      "title": "Presentation 51\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.8MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131483"
+    },
+    {
+      "ticker": "CTD",
+      "title": "FY25 and 1H26 Results 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 186.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131482"
+    },
+    {
+      "ticker": "CTD",
+      "title": "Preliminary Final Report 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 271.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131481"
+    },
+    {
+      "ticker": "CTD",
+      "title": "Webinar Details 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 115.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131454"
+    },
+    {
+      "ticker": "CTD",
+      "title": "CTM Announces new Financing Arrangements ahead of Release of 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 173.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130515"
+    },
+    {
+      "ticker": "CTD",
+      "title": "Conclusion of Negotiations with Key Impacted UK Customers 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 159.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03128165"
     }
   ]
 }

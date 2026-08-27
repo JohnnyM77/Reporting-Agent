@@ -3,72 +3,325 @@
   "silence": false,
   "high_impact": [
     {
-      "ticker": "EOS",
-      "title": "Appendix 4D, Half-year Financial Report and Revenue Update 44\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.4MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03129388",
+      "ticker": "ATP",
+      "title": "Annual Report FY26 and Dividend Announcement 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 186.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130361",
       "type": "results",
       "analysis": {
-        "ticker": "EOS",
-        "period": "1H26",
-        "period_type": "half_year",
+        "ticker": "ATP",
+        "period": "FY26",
+        "period_type": "full_year",
         "currency": "AUD",
         "metrics": {
           "revenue": {
-            "value": "$168.8m",
-            "change_pct": "+283%",
+            "value": "$25.8m",
+            "change_pct": "-42%",
             "basis": "reported"
           },
           "underlying_npat": {
+            "value": "-$7.9m",
+            "change_pct": "n/m",
+            "basis": "statutory"
+          },
+          "underlying_eps": {
             "value": "n/a",
             "change_pct": "n/a",
             "basis": "n/a"
           },
-          "underlying_eps": {
-            "value": "-17.3c",
-            "change_pct": "+7.0c improvement",
-            "basis": "statutory"
-          },
           "dividend_ordinary": {
-            "value": "nil",
+            "value": "0.45c",
             "change_pct": "n/a",
-            "note": "no dividend declared or paid"
+            "note": "fully franked final dividend; no pcp comparative disclosed in release"
           },
           "operating_cash_flow": {
-            "value": "-$8.1m",
-            "change_pct": "+12%",
-            "basis": "reported"
+            "value": "n/a",
+            "change_pct": "n/a",
+            "basis": "n/a"
           }
         },
-        "summary": "Revenue surged +283% to $168.8m on continuing operations, entirely driven by Defence Systems RWS deliveries and milestone completions, but the business remains loss-making with a statutory NPAT loss of -$32.9m. The headline loss is dominated by a $34.0m non-cash fair-value remeasurement charge on the MARSS earn-out liability, which EOS excludes from its Underlying EBITDA of +$21.6m (vs -$14.9m pcp), a genuine operational inflection. Operating cash flow was -$8.1m despite the revenue surge because supplier and employee payments outpaced customer receipts as long-lead inventory was accumulated; the $256m cash balance is largely funded by the $200m equity raise and $70m debt drawdown, not operations. No dividend was declared, consistent with the loss-making and growth-investment phase. The single biggest forward risk is the MARSS earn-out liability ($164m at 30 June, Level 3 valuation), which will continue to create volatile P&L swings tied to EOS's share price, and potential mandatory cash settlement of up to €20m per tranche if vendors elect cash.",
-        "full_analysis": "## Executive Summary\n- Revenue +283% to $168.8m is real but almost entirely from one segment (Defence RWS deliveries); the prior period was a very low base ($44.1m) partly distorted by a $12m one-off penalty reversal in 1H25 that artificially inflated that period's gross margin to 75.5% vs 57.5% now.\n- The statutory loss of -$32.9m is dominated by a $34.0m non-cash MARSS earn-out remeasurement; strip that out and the Group is approximately breakeven at the NPAT level on a continuing basis, consistent with the Underlying EBITDA swing from -$14.9m to +$21.6m.\n- Cash of $256m looks strong but is almost entirely equity and debt-funded ($200m placement + $70m loan); operating cash outflow of -$8.1m on $168.8m of revenue (cash conversion ratio deeply negative) is a real concern and reflects large inventory build and milestone-timing lumpiness.\n- The MARSS acquisition ($183m total purchase consideration, $145m of provisional goodwill not yet allocated to a CGU) adds substantial complexity and balance-sheet risk that management has not yet been able to fully quantify.\n- Red flag: $70.2m of cash is locked in security deposits supporting bank guarantees and bonds — excluded from the headline $256m figure — meaning true freely available cash is materially lower than advertised.\n\n## Key Numbers\n\n| Metric | 1H26 | 1H25 | Change |\n|---|---|---|---|\n| Revenue (continuing) | $168.8m | $44.1m | +283% |\n| Gross margin on materials | 57.5% | 75.5%* | -18.0pp |\n| Underlying EBITDA | +$21.6m | -$14.9m | n/m (loss to profit) |\n| Statutory NPAT (owners) | -$32.9m | +$46.8m** | n/m |\n| Statutory EPS (continuing) | -17.3c | -24.3c | +7.0c improvement |\n| Operating cash flow | -$8.1m | -$9.2m | +12% improvement |\n| Free cash flow (approx.) | -$29.2m | n/a | n/a |\n| Net debt / (cash) | +$186.6m net cash*** | n/a | n/a |\n| NTA per share | 64.4c | 122.2c | -47% |\n\n*1H25 gross margin inflated by $12.0m one-off reversal of late delivery penalties.\n**1H25 statutory NPAT included $91.0m discontinued operations gain from EMS divestment; from continuing operations 1H25 loss was -$44.8m.\n***Net cash = $256m cash less $69.4m borrowings = $186.6m, but $70.2m is restricted in security deposits.\n\n**Statutory to Underlying EBITDA bridge (1H26):**\n- Statutory loss before tax: -$28.9m\n- Add back: net finance income (-$2.8m credit, so deduct): +$2.8m\n- Add back: D&A $10.3m\n- Add back: MARSS fair value remeasurement $34.0m\n- Add back: other non-recurring (acquisition costs etc.) $10.2m\n- Add back: FX gain -$1.2m (deduct)\n- **Underlying EBITDA: +$21.6m**\n\n## Quality of Earnings\n- **Cash conversion is poor.** Revenue of $168.8m generated customer receipts of $138.9m, implying ~18% of revenue is not yet cash — partly sitting in contract assets ($7.1m) and partly in timing of milestone achievement. Operating outflow of -$8.1m on $168.8m revenue = cash conversion of approximately -5%.\n- **Contract liabilities are a double-edged sword.** The $163.8m contract liability balance (up $121.4m from $42.4m at Dec-25) looks like strong pre-invoicing, but $26.4m came from MARSS acquisition accounting. The balance represents future delivery obligations, not banked profit — execution risk is real.\n- **Long-lead inventory build.** Inventory fell modestly to $68.8m from $80.6m, but payments to suppliers and employees of $150.7m dwarfed receipts of $138.9m, indicating material ongoing investment in the supply chain ahead of H2 deliveries.\n- **Capitalised development costs rising.** $24.8m capitalised (up from $22.8m at Dec-25). Given the business is still loss-making at a statutory level, continued capitalisation judgment warrants scrutiny.\n- **FX gain vs prior period.** 1H26 booked a $1.2m FX gain vs a $5.8m FX loss in 1H25; this $7.0m swing flattered the year-on-year improvement in the underlying result.\n- **$34m MARSS earn-out loss is non-cash but real economic.** It represents a higher obligation to MARSS vendors. A further 10% rise in EOS share price would add ~$15.5m in additional losses in 2H26. This is structural P&L volatility, not a one-time item.\n- **Administrative costs jumped $13.6m** largely from MARSS acquisition costs ($4.6m expensed); remaining $9m represents underlying cost base growth that needs watching.\n\n## Management Framing\n**Rating: Mixed / Promotional**\n- Management leads with +283% revenue growth prominently, without immediately contextualising that the prior period was an extremely low base partly distorted by the $12m penalty reversal.\n- Underlying EBITDA of +$21.6m is the key metric management emphasises, and the adjustments (MARSS fair value loss, acquisition costs) are defensible and disclosed transparently.\n- The framing of $256m cash as a strength is technically correct but misleading without immediate disclosure that $70.2m is restricted — this is buried in the notes. The cover page and review of operations discuss the $256m figure without the caveat.\n- Management notes gross margin compression from 75.5% to 57.5% and correctly attributes the prior period uplift to the one-off penalty reversal — this is transparent and appropriate.\n- The outlook revenue range of $360-$400m for FY26 implies 2H26 revenue of $191-$231m, which would be a significant step-up from 1H26's $168.8m; no EBITDA or NPAT guidance was provided, leaving profitability trajectory opaque.\n- Contract identity non-disclosure is boilerplate but limits due diligence on customer concentration risk.\n\n## Segments\n\n| Segment | Revenue 1H26 | Revenue 1H25 | Change | Segment Loss 1H26 | Segment Loss 1H25 |\n|---|---|---|---|---|---|\n| Defence Systems | $163.7m | $38.8m | +322% | -$6.4m | -$25.7m |\n| Space Systems | $5.1m | $5.3m | -4% | -$8.9m | -$5.2m |\n| Unallocated corp costs | - | - | - | -$13.6m | -$14.4m |\n| **Total** | **$168.8m** | **$44.1m** | **+283%** | **-$28.9m** | **-$45.3m** |\n\n- Defence margin improvement is real: segment loss narrowed from -$25.7m to -$6.4m on 4x revenue — a significant operational step-up driven by RWS deliveries and milestone completions.\n- Space Systems is deteriorating: -4% revenue decline and widening losses (-$8.9m vs -$5.2m), with no clear near-term catalyst. Space is a drag on capital.\n- MARSS contributed nil revenue post-acquisition (42 days to 30 June) due to revenue recognition timing, and a -$3.3m net loss. Had it been owned all half, estimated contribution would have been $8.2m revenue / -$7.8m loss — structurally loss-making pre-synergies.\n- Order book: $846m contracted (vs $170m at Jun-25), of which ~$605m is EOS Defence (ex-MARSS) and ~$225m is MARSS. This is a compelling forward revenue signal if execution delivers.\n\n## Balance Sheet\n- Net assets increased $153.6m to $391.6m, primarily from the $190m equity raise net of transaction costs and MARSS goodwill/intangibles ($144.9m goodwill, $71.2m identified intangibles), partially offset by the period's loss.\n- **Goodwill of $147.4m** ($144.9m from MARSS, $2.5m Space) is provisional and unallocated to CGUs. No impairment test has been performed. This is a significant accounting uncertainty.\n- **Contingent consideration liability of $164.1m** sits as a current liability, representing the MARSS earn-out. This is a Level 3 fair value estimate with wide sensitivity: a 10% EOS share price move = +/-$15m impact on P&L. A 10% AUD/EUR move = +/-$13.9m-$17.3m impact. This liability will be volatile every reporting period until May 2027.\n- Trade receivables surged to $155.8m from $31.1m. This is a massive jump and while partly MARSS-related, the magnitude warrants scrutiny on collectability.\n- $70.2m in cash security deposits (excluded from $256m headline cash) supporting bonds/guarantees. Post-period, a further ~$77m was placed as security for the prospective UK£37.1m bank guarantee — meaning restricted cash could reach ~$147m, leaving ~$109m freely available against a $69.4m debt balance.\n- WHSP term loan: $70m drawn at 14.75% all-in average rate over 24 months — an expensive facility. No financial covenants on the WHSP facility (positive), but EFA bond covenants apply.\n- Working capital position: current assets $519.5m vs current liabilities $410.2m = net current assets $109.3m, but $163.8m of contract liabilities in current liabilities represent delivery obligations, not cash demands.\n\n## Dividend and Capital Allocation\n- No dividend declared or paid. Not expected given ongoing cash burn from operations and significant capital deployment into MARSS integration, inventory build, and security deposits.\n- Capital allocation has been aggressive: $190m raised in equity in 1H26 for MARSS acquisition ($51.2m upfront cash + $6m transaction costs) and working capital. The $70m WHSP debt at 14.75% is dilutive to equity returns until revenues mature.\n- Share count: 216.7m shares at 30 June, rising to ~221.7m post the July strategic placement. MARSS earn-out could add up to 28.9m shares (a further ~13% dilution at maximum), plus tranche 1 vest of ~5.7m shares imminent.\n- NTA per share collapsed from 122.2c to 64.4c, reflecting the equity raise dilution and MARSS goodwill (which doesn't count in NTA calculation).\n\n## Guidance and Outlook\n- FY26 full-year revenue guidance: $360m-$400m. This implies 2H26 revenue of $191m-$231m, a meaningful step-up from 1H26's $168.8m. EOS explicitly states this excludes new orders and conditional contracts.\n- No EBITDA, NPAT, or cash flow guidance provided. Given the MARSS earn-out will continue to create P&L noise, and operating cash generation is not yet proven, the guidance is revenue-only and therefore of limited use for profitability assessment.\n- Management caveats heavily on supply chain, customer milestone timing, and project lumpiness — all legitimate but also standard disclaimer language.\n- Post-period: prospective ~A$70.9m contract in the Middle East (bank guarantee issued 12 August 2026) is not included in guidance; contract not yet signed.\n\n## Positives\n- **Order book at $846m** (vs $170m a year ago) provides multi-year revenue visibility and reduces existential contract risk that plagued EOS historically.\n- **Underlying EBITDA swing from -$14.9m to +$21.6m** demonstrates the Defence business is genuinely scaling and approaching cash profitability at the operating level.\n- **Revenue +283%** reflects real contract execution, not accounting tricks (milestone completions are cash events).\n- **Counter-drone market tailwinds** from ongoing Ukraine/Middle East conflicts driving urgent procurement of RWS and C2 systems; EOS is well-positioned with a differentiated integrated product.\n- **MARSS NiDAR selected by BAE Systems** as core of BATS counter-drone system — significant third-party validation of the acquired technology.\n- **$70m debt facility has no financial covenants** and can be prepaid without penalty — flexible capital structure.\n- **Contract liabilities of $163.8m** represent strong pre-invoicing / cash-positive contract structures.\n\n## Negatives / Red Flags\n- **Operating cash flow -$8.1m** despite $168.8m revenue. Cash conversion is deeply negative; the business has not yet demonstrated it can convert earnings to cash at scale.\n- **$164m contingent consideration liability (current)** will create recurring P&L volatility every half until May 2027 and may require up to €20m cash per tranche if vendors elect the cash option.\n- **$70.2m+ cash locked in security deposits** materially reduces freely available liquidity; a further ~$77m was posted post-period, making the headline $256m cash figure highly misleading.\n- **Gross margin compression** to 57.5% from 75.5% (adjusted for the prior period penalty reversal one-off, true underlying compression is still meaningful) as material costs for higher-volume RWS contracts are lower-margin than the historical mix.\n- **$147.4m provisional goodwill unallocated to CGUs**; no impairment test performed at the half-year. MARSS paid $183m total consideration for a business that lost money; a goodwill impairment is a real risk if order conversion underperforms.\n- **Space Systems is structurally loss-making** (-$8.9m segment loss on $5.1m revenue) with no clear path to profitability disclosed.\n- **Receivables jumped from $31m to $156m** — a $125m increase that is only partially explained by MARSS acquisition accounting; must be monitored for collection risk.\n- **14.75% all-in cost on WHSP debt** is expensive for a company without a dividend or near-term NPAT. Interest cost will drag on profitability in 2H26.\n- **Dilution risk**: MARSS earn-out (up to 28.9m shares), ongoing employee equity plans, and the strategic placement mean the share count is structurally rising.\n\n## Bottom Line\n**Bull case:** The $846m order book converts to revenue at the guided $360-$400m FY26 run-rate, 2H26 delivers positive operating cash flow as milestones are hit, the MARSS earn-out liability stabilises (share price flat), and the integrated EOS-MARSS counter-drone proposition wins material new NATO/Middle East contracts. In this scenario, EOS is a genuinely transforming defence prime on a multi-year revenue ramp, and the current share price embeds limited credit for the order book.\n\n**Bear case:** Revenue is lumpy and 2H26 misses guidance due to supply chain or customer milestone delays; the MARSS earn-out continues to inflate as EOS share price rises, creating ongoing statutory losses and cash settlement pressure; Space Systems bleeds capital with no monetisation; the goodwill impairment clock ticks; and the restricted cash situation forces a further equity raise in 2027.\n\n**What would change the view:** Demonstrating positive operating cash flow in 2H26 on a standalone basis (excluding financing inflows) would be the single most important data point to validate the investment thesis. Secondary signals: gross margin stabilisation above 55%, Space Systems monetisation or divestment, and MARSS earn-out tranche 2/3 resolution without material cash outflow.",
+        "summary": "A brutal miss versus pcp with no guidance to benchmark against — revenue collapsed 42% to $25.8m and the company swung from a $21.6m profit to a $7.9m statutory net loss. The driver was a 47% crash in average selling price per pearl (from $87.40 to $39.83), caused by a mix shift toward lower-grade pearls and softer market conditions, not a volume problem (volumes actually rose 9%). Cash quality and operating cash flow are not disclosed in this release so profit-to-cash conversion cannot be assessed. The Board declared a 0.45c fully franked final dividend, justified by positive normalised EBITDA of $5.8m, but paying a dividend while reporting a statutory loss and falling NTA signals management is prioritising optics over capital discipline. The single biggest forward risk is that lower-grade pearl mix and soft wholesale pricing persist into FY27, compressing revenue further despite the record seeding investment.",
+        "full_analysis": "## Executive Summary\n- Revenue down 42% to $25.8m on a 47% collapse in average price per pearl — volume growth of 9% is entirely irrelevant at these price levels.\n- Statutory NPAT swung from +$21.6m to -$7.9m; management attributes the loss to non-cash items but no detailed bridge is provided in this release.\n- Normalised EBITDA of $5.8m (down 69% from $18.6m) is the only positive earnings signal, but the gap between EBITDA and statutory NPAT (~$13.7m) implies very large non-cash charges (likely biological asset write-downs or fair-value losses on pearl inventory/oyster stock) that are not itemised here.\n- NTA per share fell from 16.0c to 12.0c (-25%) while the share price sits at 8.3c — a 31% discount to NTA, reflecting market scepticism about biological asset valuations.\n- Red flag: declaring a 0.45c fully franked dividend while the company just reported a $7.9m statutory loss and NTA erosion of $17m raises governance questions.\n\n## Key Numbers\n\n| Metric | FY26 | FY25 | Change |\n|---|---|---|---|\n| Revenue | $25.8m | $44.3m | -42% |\n| Pearls sold (volume) | 647,271 | 592,919 | +9% |\n| Average price per pearl | $39.83 | $87.40 | -47% |\n| Harvest volume | ~620k | ~621k | flat |\n| Normalised EBITDA | $5.8m | $18.6m | -69% |\n| Statutory NPAT | -$7.9m | +$21.6m | n/m |\n| EPS | n/a | n/a | n/a |\n| Operating cash flow | n/a | n/a | n/a |\n| Free cash flow | n/a | n/a | n/a |\n| Total assets | $64.0m | $85.9m | -25% |\n| Total liabilities | $10.1m | $14.9m | -32% |\n| Net assets / equity | $54.0m | $71.0m | -24% |\n| Net debt / (cash) | Net cash $6.9m | n/a | n/a |\n| NTA per share | 12.0c | 16.0c | -25% |\n| Share price | 8.3c | 16.5c | -50% |\n\n*Note: No EPS, operating cash flow, gross margin, or NPAT-to-EBITDA bridge is provided in this ASX release. The full annual report would be required for those figures.*\n\n## Quality of Earnings\n- Operating cash flow is not disclosed in this release — cash quality cannot be assessed.\n- The $13.7m gap between normalised EBITDA ($5.8m) and statutory NPAT (-$7.9m) implies substantial non-cash charges. Management attributes the statutory loss to \"non-cash losses\" without specifying — most likely biological asset fair-value write-downs under AASB 141, depreciation, and/or inventory write-offs.\n- Biological asset accounting (pearling companies carry live oyster stock at fair value) is inherently subjective and can mask or amplify real economic performance. The $21.8m contraction in total assets year-on-year warrants scrutiny — if most of that is biological asset devaluation, it reflects genuine pricing pressure flowing through to the balance sheet.\n- Cash of $6.9m is disclosed; no debt is carried (debt/equity = nil for three consecutive years), which is a genuine positive.\n- No receivables, DSO, or inventory aging data is provided in the release.\n\n## Management Framing\n**Rating: Promotional / Mixed**\n- The headline highlights lead with volume growth (+9% pearls sold) and record seeding — both operationally positive but financially immaterial in a year where price collapsed 47%.\n- \"Operational resilience\" is used to describe a year where NPAT fell from +$21.6m to -$7.9m and revenue nearly halved. That framing is misleading.\n- The statutory net loss is disclosed (credit for transparency) but immediately qualified with \"due to non-cash losses\" without any breakdown of what those non-cash items are. Investors cannot assess whether these are recurring or truly one-off without the full accounts.\n- Normalised EBITDA of $5.8m is front-and-centre in the highlights; the $7.9m statutory loss is buried in the body text — a classic burying of the bad news.\n- The dividend announcement is framed as reflecting \"positive normalised EBITDA and sound balance sheet\" — no mention that a fully franked dividend is being paid in a statutory loss year with NTA declining 25%.\n- No guidance is provided for FY27 beyond qualitative commentary about \"steady near-term pearl numbers.\"\n\n## Segments\n- Single-segment business: South Sea pearl farming and sales.\n- No geographic or channel breakdown is provided in this release.\n- Mix shift toward lower-grade pearls is the critical structural detail — it implies either biological quality degradation (disease, biological challenge) or deliberate clearing of lower-quality stock, or both.\n- FY26 closing pearl inventory: 159k pearls (quantum disclosed but no valuation provided).\n\n## Balance Sheet\n- No financial debt for three consecutive years — genuinely clean balance sheet.\n- Cash: $6.9m at 30 June 2026, plus $2.5m undrawn overdraft.\n- Total assets fell $21.9m year-on-year (from $85.9m to $64.0m) — almost certainly driven by biological asset and/or inventory write-downs reflecting the pricing environment.\n- Net assets fell from $71.0m to $54.0m (-$17.1m), consistent with the statutory loss plus any prior period adjustments.\n- Liabilities fell from $14.9m to $10.1m, suggesting lease or payables reduction — positive but not a priority concern.\n- No covenant or refinancing risk given nil external debt.\n\n## Dividend and Capital Allocation\n- Board declared a fully franked final dividend of 0.45c per share (record 1 Sep 2026, payment 25 Sep 2026).\n- No pcp final dividend quantum disclosed in this release for direct comparison.\n- Paying a dividend in a statutory loss year with NTA contracting 25% and EBITDA down 69% is a governance concern. The Board's justification — positive normalised EBITDA and sound balance sheet — is technically defensible (cash of $6.9m, no debt) but sends a confusing signal: is capital discipline or shareholder appeasement the priority?\n- At 439m shares, the 0.45c dividend costs approximately $2.0m in cash — material relative to $6.9m cash on hand (29% of cash reserves).\n- No buyback or other capital allocation activity noted.\n\n## Guidance and Outlook\n- No quantitative guidance provided for FY27.\n- Qualitative commentary: \"steady near-term pearl numbers,\" record seeding supports future production pipeline.\n- The outlook section is vague and entirely backward-looking in framing. No pricing outlook, no volume targets, no capex guidance.\n- **Guidance was effectively withheld.**\n\n## Positives\n- No financial debt for three consecutive years; clean balance sheet with $6.9m cash and $2.5m undrawn facility.\n- Volume growth of 9% (647k vs 593k pearls) demonstrates operational execution despite biological challenges.\n- Record oyster seeding in FY26 supports production pipeline — a genuine leading indicator if pricing recovers.\n- Harvest volumes held flat at ~620k despite disclosed biological challenges — operational resilience is real even if management's use of that phrase is self-serving.\n- Normalised EBITDA remained positive ($5.8m) — the business is not burning cash at the operating level.\n- Fully franked dividend preserves franking value for Australian shareholders.\n\n## Negatives / Red Flags\n- Revenue collapsed 42% to $25.8m driven by a 47% fall in average price per pearl ($39.83 vs $87.40) — this is a dramatic pricing dislocation, not a one-quarter blip.\n- Statutory NPAT of -$7.9m vs +$21.6m pcp — swing of $29.5m year-on-year.\n- Normalised EBITDA down 69% to $5.8m — even on the management's preferred metric, earnings quality has severely deteriorated.\n- Non-cash losses driving the statutory loss are unexplained in this release — biological asset write-downs under AASB 141 are volatile and can reverse or worsen unpredictably.\n- NTA per share fell from 16.0c to 12.0c while share price is 8.3c — the market is pricing in further asset devaluation or persistent earnings weakness.\n- Paying a ~$2.0m dividend (29% of closing cash) in a loss year with declining NTA is a capital allocation red flag.\n- No operating cash flow or free cash flow disclosed — inability to assess whether the business actually generated cash.\n- No FY27 guidance — management either cannot forecast or is unwilling to commit, neither of which is reassuring.\n- Mix shift to lower-grade pearls may indicate structural biological quality degradation, not just a temporary market condition.\n\n## Bottom Line\n**Bull case:** The pricing collapse is cyclical and temporary; record seeding sets up a volume and quality recovery in FY27-28; the debt-free balance sheet and positive EBITDA mean the company can survive a downturn without existential risk; NTA at 12.0c vs share price 8.3c offers a margin of safety if biological assets hold value.\n\n**Bear case:** The 47% price collapse reflects structural oversupply in lower-grade South Sea pearls globally; the mix shift toward lower-grade product may worsen as biological challenges persist; biological asset valuations are subjective and could face further write-downs; the dividend signals management is prioritising optics over capital preservation at exactly the wrong time.\n\n**What would change the view:** Evidence that the mix shift to lower-grade pearls was a deliberate, one-time inventory clearance (not structural quality degradation); a recovery in average selling price toward $60+/pearl in 1H27 sales data; and full disclosure of the non-cash loss composition (biological asset write-down quantum, depreciation, and any inventory provisions) in the annual report.",
         "_status": "ok"
       },
       "doc_link": "",
       "doc_error": "",
-      "pdf_path": "/tmp/EOS_1H26_2026-08-27.pdf"
+      "pdf_path": "/tmp/ATP_FY26_2026-08-27.pdf"
+    },
+    {
+      "ticker": "CAT",
+      "title": "Catapult Reaffirms Guidance, CEO & MD Address 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 511.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130415",
+      "type": "trading_update",
+      "analysis": {
+        "what_they_said": "AGM update covering FY26 actuals and FY27 outlook reaffirmation. FY26: Total Revenue US$140.7m (+19% YoY); ACV US$133.8m (+28% YoY, +18% organic ex-acquisitions); Management EBITDA US$24.7m (+67% YoY, 18% margin); FCF ex-transaction costs US$6.5m (slightly below FY25); cash US$53m+, no debt; ACV retention >96%; ARPU >US$30k (+10% YoY); 506 new multi-solution pro teams added (+62% YoY). FY27 guidance reaffirmed: strong ACV growth with low churn, improving cost margins toward targets, higher FCF ex-transaction costs. New product IMPECT Video Scouting launched July 2026 (6 months ahead of schedule), sold into teams across 20 leagues in 13 countries.",
+        "vs_prior_guidance": "In-line / reaffirmation. FY27 guidance unchanged from what was communicated at FY26 results. No upgrade to numbers, no new quantitative targets introduced. Management is framing this as a positive — early IMPECT Video Scouting traction is the headline hook — but the actual guidance content is a straight reaffirmation of already-vague directional statements.",
+        "the_numbers": "FY26 actuals provided (Revenue US$140.7m, ACV US$133.8m, Mgmt EBITDA US$24.7m / 18% margin, FCF US$6.5m, cash US$53m+). FY27 guidance is entirely qualitative: 'strong ACV growth', 'low churn', 'continued improvement in cost margins towards targets', 'higher FCF'. No specific ACV growth rate, no EBITDA margin target range, no FCF dollar figure. Long-term ambition of US$1bn ACV mentioned but no timeframe given. TAM cited as US$72bn by 2030 — classic addressable market inflation.",
+        "why_happening": "Growth driven by: (1) three acquisitions in FY26 (Perch, IMPECT, unnamed third) which doubled company size and contributed ~10ppts of ACV growth; (2) organic cross-sell expansion — multi-solution teams up 62%; (3) ARPU expansion as customers adopt more solutions; (4) new product launches (Vector 8, Perch P2, IMPECT Video Scouting) extending platform breadth. FCF slightly below FY25 due to acquisition-related timing on collections — management says now collected. Cost margin improvement attributed to operating leverage as SaaS base scales.",
+        "balance_sheet": "No change to funding needs flagged. US$53m+ cash, zero debt at FY26 year-end. Three acquisitions digested in FY26; no new M&A signalled imminently but long-term US$1bn ACV ambition and 'platform expansion' language keep the door open. FCF of only US$6.5m on US$140m revenue means cash generation remains modest relative to scale — watch for future deal funding if M&A appetite continues.",
+        "red_flags": [
+          "FY27 guidance is entirely directional with zero quantitative anchors — 'strong ACV growth' and 'margins towards targets' are not numbers; investors cannot model against them",
+          "FCF ex-transaction costs was US$6.5m — slightly below FY25 — on a revenue base that grew 19%; cash conversion remains weak and the transaction cost exclusion is doing real work here",
+          "28% ACV growth headline is flattered by acquisitions; organic rate of 18% is solid but management leads with the 28% figure repeatedly",
+          "IMPECT Video Scouting early sales disclosed in teams and leagues only — no ACV or revenue contribution quantified, making it impossible to assess materiality",
+          "US$1bn ACV long-term ambition introduced with no timeline or interim milestones — aspirational framing without accountability",
+          "Three acquisitions in a single year ('doubled the size of the company') creates meaningful integration risk; no integration cost or progress metrics disclosed"
+        ],
+        "bottom_line": "This is a clean reaffirmation with genuinely solid FY26 actuals — 18% EBITDA margin and 96%+ retention are real SaaS quality signals — but the FY27 guidance remains frustratingly vague, and the IMPECT Video Scouting launch, while ahead of schedule, is presented without any revenue or ACV contribution data that would let investors size the opportunity. Not a profit warning, but not an upgrade either; the narrative work around the US$1bn ACV aspiration and TAM figures outpaces the quantitative disclosure.",
+        "key_questions": [
+          "What is the specific ACV contribution and average contract value from IMPECT Video Scouting deals signed to date, and what is management's FY27 ACV target range including this product?",
+          "FCF ex-transaction costs was US$6.5m on US$140.7m revenue — what is the expected FCF conversion rate in FY27, and what does 'higher FCF' actually mean in dollar terms given the low FY26 base?",
+          "With three acquisitions completed in FY26 doubling the company size, what are the remaining integration costs, and when does the 'ex-transaction costs' FCF adjustment roll off so we can see clean cash generation?"
+        ]
+      }
+    },
+    {
+      "ticker": "RTH",
+      "title": "RTH FY26 Results Presentation 17\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.6MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131310",
+      "type": "results",
+      "analysis": {
+        "ticker": "RTH",
+        "period": "FY26",
+        "period_type": "full_year",
+        "currency": "AUD",
+        "metrics": {
+          "revenue": {
+            "value": "$28.4m",
+            "change_pct": "+34%",
+            "basis": "reported"
+          },
+          "underlying_npat": {
+            "value": "-$0.3m",
+            "change_pct": "n/m",
+            "basis": "normalised"
+          },
+          "underlying_eps": {
+            "value": "n/a",
+            "change_pct": "n/a",
+            "basis": "n/a"
+          },
+          "dividend_ordinary": {
+            "value": "nil",
+            "change_pct": "n/a",
+            "note": "no dividend declared"
+          },
+          "operating_cash_flow": {
+            "value": "$2.3m",
+            "change_pct": "-25%",
+            "basis": "reported"
+          }
+        },
+        "summary": "Revenue grew 34% to $28.4m but the business swung to a normalised net loss of $0.3m (vs $1.1m profit pcp) as cost growth massively outpaced revenue — employee costs alone rose 38% and total opex absorbed the entire revenue uplift. Cash from operations fell 25% to $2.3m reported ($2.7m normalised), while free cash flow was deeply negative at -$1.2m after $3.3m of capitalised intangibles spend. No dividend was declared or is expected. The biggest forward risk is that LeoVegas and other new wins ramp more slowly than promised, leaving RAS burning cash through a thin $4.2m balance with no disclosed debt facility buffer.",
+        "full_analysis": "## Executive Summary\n- Revenue +34% to $28.4m is real and broad-based, but earnings quality is poor: the company swung from a normalised NPAT profit of ~$1.1m to a normalised loss of ~$0.3m despite 34% top-line growth, exposing severe operating leverage in reverse.\n- Employee costs jumped $3.7m (+38%), production/delivery costs nearly doubled (+$2.1m), and D&A rose $0.8m — aggregate cost growth of ~$7.6m on $7.2m of incremental revenue means every dollar of new revenue was consumed by new costs.\n- RED FLAG: The company buried the statutory NPAT loss of -$957k and the normalised NPAT loss of -$0.3m in the body text while leading with EBITDA (+3%) and ARR (+8%); the investor presentation's headline slide does not show NPAT at all.\n- ARR of $23.5m is 8% above pcp but management concedes it fell from the half-year level after losing the Stake contract; LeoVegas's largest brands (BetMGM, LeoVegas UK, BetUK) were onboarded post year-end, so the ARR tailwind is not yet in the numbers.\n- Cash fell $1.5m to $4.2m; free cash flow was approximately -$1.2m after capex; with no debt facility disclosed, the runway is limited if FY27 investment continues at the same pace.\n\n## Key Numbers\n| Metric | FY26 | FY25 | Change |\n|---|---|---|---|\n| Revenue | $28.4m | $21.3m | +34% |\n| Other income | $0.5m | $0.8m | -36% |\n| Total revenue + other income | $28.9m | $22.0m | +31% |\n| Employee costs | $13.3m | $9.6m | +38% |\n| Production/delivery costs | $4.2m | $2.1m | +98% |\n| D&A | $2.9m | $2.1m | +37% |\n| Statutory EBIT (implied) | $2.2m | $2.3m | -5% |\n| Normalised EBITDA | $3.0m | $2.9m | +3% |\n| Statutory NPBT | -$0.6m | $0.2m | n/m |\n| Statutory NPAT | -$1.0m | $0.5m | n/m |\n| Normalised NPAT (loss) | -$0.3m | +$1.1m | n/m |\n| Normalised EPS | n/a | n/a | n/a |\n| Operating cash flow (reported) | $2.3m | $3.0m | -25% |\n| Normalised operating cash flow | $2.7m | $3.6m | -25% |\n| Capex (intangibles + PPE) | $3.4m | $2.8m | +21% |\n| Free cash flow (approx.) | -$1.2m | +$0.2m | n/m |\n| Cash | $4.2m | $5.7m | -26% |\n| Net debt / (cash) | Net cash $4.2m | Net cash $5.7m | -$1.5m |\n\nNote: Normalised adjustments of $735k in FY26 relate to non-recurring share-based payment expense adjustment and redundancy costs; FY25 adjustment related to acquisition transaction costs of $541k.\n\n## Quality of Earnings\n- **Cash conversion**: Reported operating cash flow of $2.3m on a statutory loss of -$1.0m looks acceptable in isolation, but this is primarily because D&A of $2.9m is a non-cash add-back. True free cash flow after $3.4m of capitalised intangibles and PPE is approximately -$1.2m, a material deterioration from near breakeven in FY25.\n- **Capitalised costs**: Intangibles rose from $10.3m to $11.0m, with $3.3m of new spending capitalised in FY26. This is a sizeable portion of revenue (12%) and warrants scrutiny — if development spend is being aggressively capitalised, D&A will compound in future years.\n- **Receivables**: Trade and other receivables grew 27% to $3.4m against 34% revenue growth — not alarming in isolation. Contract assets jumped $0.5m to $0.7m, suggesting revenue is being recognised ahead of billing on some contracts.\n- **R&D grants**: The Federal Government's exclusion of gambling activities from R&D eligibility is a structural headwind; in FY25 the company received $1.4m in R&D cash receipts vs zero in FY26, directly depressing both reported OCF (-$1.4m mechanical headwind) and net profit. Management disclosed this but framed it as a one-off accounting treatment change rather than a permanent loss of government subsidy.\n- **Normalised vs statutory bridge**: The $735k normalisation in FY26 converts a statutory NPAT loss of -$957k to a normalised loss of approximately -$300k. The adjustments (share-based payment reset + redundancies) are described as non-recurring, but share-based payment expense resets suggest option repricing or forfeiture reversals — details are thin.\n\n## Management Framing\n**Rating: Promotional / Mixed**\n- The ASX announcement headline is \"RAS delivers strong revenue growth\" — technically accurate but glosses over the shift from profit to loss.\n- The investor presentation's financial highlights slide (p.5) shows five KPIs: Revenue, Normalised EBITDA, ARR, Cash, Normalised OCF. NPAT is absent entirely from this slide.\n- EBITDA growth of only 3% on 34% revenue growth — a severe margin compression — is described as \"EBITDA continuing to grow despite the major focus on investment.\" This is technically true but misleads on the scale of the issue.\n- The ARR dip from H1 to H2 (caused by Stake contract loss) is disclosed but minimised; management pivots immediately to the LeoVegas upside, which is post-year-end.\n- The CEO's letter leads with \"We invested heavily to build long-term capability\" — a reasonable framing IF the investment is genuinely discretionary and genuinely finite. The company has used similar language in prior years.\n- Positively, the statutory P&L is included in full in the appendix with no material discrepancies between deck and filing numbers.\n\n## Segments\n| Segment | FY26 Revenue | FY25 Revenue | Change |\n|---|---|---|---|\n| Enhanced Information Services | $14.7m | $13.3m | +11% |\n| Wagering Technology | $7.7m | $5.4m | +43% |\n| Digital, Media, Publications & Other | $6.1m | $2.6m | +135% |\n| **Total** | **$28.4m** | **$21.3m** | **+34%** |\n\n- Digital/Media/Other surge is almost entirely attributable to the first full 12 months of the Hong Kong (RASA) acquisition (FY26 RASA revenue: $4.5m). This is inorganic revenue — the organic growth rate is materially lower than the headline 34%.\n- Wagering Technology growth (+43%) is the most valuable segment given its recurring, contractual nature; LeoVegas was only partially included (Sweden only, launched May 2026).\n- Enhanced Information Services, the largest segment at $14.7m, grew a more modest 11% — reflecting the Tabcorp renewal and stable core but limited new client wins in Australia.\n- ARR by segment: EIS $14.9m, Wagering Tech $6.3m, Digital/Media $2.4m — total $23.5m vs $21.8m pcp. The sum of ARR segments ($23.5m) is below total revenue ($28.4m), with the gap (~$4.9m) representing non-recurring or variable revenue components.\n\n## Balance Sheet\n- Net cash position: $4.2m (FY25: $5.7m), down $1.5m. No disclosed debt facility — the company is entirely equity-funded for growth.\n- Intangibles: $11.0m (FY25: $10.3m) — largely capitalised development costs and acquisition goodwill. No impairment testing disclosures provided in the deck.\n- Working capital (current assets minus current liabilities): $2.6m (FY25: $3.9m) — tightening but still positive.\n- Deferred tax asset fell from $1.6m to $0.8m, reflecting reduced R&D offset benefit — another sign the tax shield from gambling R&D exclusion is fading.\n- Employee provisions and liabilities rose (benefits up $0.3m to $1.8m) consistent with headcount growth.\n- No debt, no covenants, no refinancing risk — but also no disclosed revolving credit facility if cash burns further.\n\n## Dividend and Capital Allocation\n- No dividend declared or flagged. Given the company is loss-making on both statutory and normalised bases, this is appropriate.\n- Capital allocation priority is clearly organic investment: $3.3m to intangibles, $0.1m to PPE, $0m to acquisitions in FY26.\n- Share issuance: issued capital grew from $14.9m to $15.5m (+$0.6m), likely from option exercises or scrip-based remuneration.\n- The company has now spent approximately $7.0m on intangible capitalisation over FY25-26 combined — investors need to see this convert to materially higher EBITDA in FY27 or the capitalisation strategy becomes a concern.\n\n## Guidance and Outlook\n- **No quantitative guidance provided for FY27.** The outlook section is entirely qualitative: AI priorities, LeoVegas growth, Asian expansion, cost initiatives.\n- Management stated \"operating leverage and net results expected to improve from FY2027 onwards\" — but gave no EBITDA, revenue or NPAT targets.\n- LeoVegas (BetMGM, LeoVegas UK, BetUK) onboarded post-year-end — this is the key swing factor for H1 FY27 and management flagged it as a \"significant growth driver\" without quantifying the contract value.\n- Conghua Racecourse (mainland China) racing scheduled for October 2026 — optionality but no revenue attached.\n- Cost reduction program flagged (automation, supplier optimisation, staff restructuring) — suggests some reversal of the FY26 investment step-up, which is encouraging but unquantified.\n\n## Positives\n- Revenue grew 34% to $28.4m, marking the fifth consecutive year of 30%+ revenue growth — a genuinely strong commercial track record.\n- Wagering Technology ARR grew to $6.3m (+5% pcp) despite losing the Stake contract — organic replacement is occurring.\n- LeoVegas full contract (four brands including BetMGM) is live post year-end — this is a Tier 1 name and could add meaningfully to ARR in H1 FY27 when it runs at full contracted value.\n- Tabcorp renewed for four years and TABtouch extended five years — anchor clients locked in.\n- RASA gross margin improved from 35% to 40% in year one of ownership — integration is generating efficiency gains.\n- UK ARR grew from $7.4m (1H FY25) to $9.0m (2H FY26) — consistent trajectory.\n- Cash burn slowed in H2 FY26 — management's claim that the investment phase is peaking has some support.\n- No debt; positive net current asset position of $2.6m provides near-term solvency buffer.\n\n## Negatives / Red Flags\n- Statutory NPAT loss of -$957k and normalised NPAT loss of -$0.3m on 34% revenue growth — cost control is absent; every dollar of new revenue is being consumed by new costs.\n- Operating cash flow fell 25% to $2.3m reported; free cash flow is approximately -$1.2m — the business is consuming cash despite positive EBITDA.\n- R&D grant income of $1.4m in FY25 went to zero in FY26 — a structural $1.4m+ headwind to both profit and cash that management described as an accounting reclassification rather than a permanent loss, which is misleading framing.\n- Employee costs at $13.3m represent 47% of revenue — for a technology/data company this is high and rising.\n- ARR of $23.5m fell from the H1 FY26 level following Stake contract exit — headline +8% pcp growth masks intra-year deterioration.\n- $11.0m of intangibles on the balance sheet (52% of total assets) — if growth does not materialise, impairment risk is meaningful.\n- No quantitative FY27 guidance makes it impossible to assess whether management's \"operating leverage\" narrative will deliver.\n- Cash balance of $4.2m with negative free cash flow and no disclosed credit facility creates a funding risk if FY27 revenue ramp is delayed.\n- NPAT and EPS are absent from the investor presentation's headline financial metrics slide — a material omission that obscures the earnings deterioration.\n\n## Bottom Line\n**Bull case**: LeoVegas (BetMGM + 3 brands) ramps to full contracted value in H1 FY27, adding $2-3m+ of high-margin ARR; AI-driven cost efficiencies materialise; Conghua provides an Asia upside option. On this path, EBITDA could inflect to $5m+ and the company reaches sustained profitability in FY27.\n\n**Bear case**: LeoVegas ramp is slower than guided (brands are complex to integrate), Stake-like churn recurs elsewhere, R&D cost base stays elevated, and the $4.2m cash position forces an equity raise within 12-18 months at a dilutive price.\n\n**What would change the view**: (1) Quantitative H1 FY27 revenue guidance showing LeoVegas contribution is material and on track; (2) a clear cost reduction plan with dollar targets that demonstrates the FY26 investment step-up was genuinely temporary; (3) evidence of positive free cash flow in H1 FY27 before further capex calls. Until then, the mismatch between the promotional revenue narrative and the actual earnings/cash trajectory warrants caution.",
+        "_status": "ok"
+      },
+      "doc_link": "",
+      "doc_error": "",
+      "pdf_path": "/tmp/RTH_FY26_2026-08-27.pdf"
     }
   ],
-  "material": [],
+  "material": [
+    {
+      "ticker": "CAT",
+      "title": "Catapult 2026 AGM - Results 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 442.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130506",
+      "analysis": {
+        "what_happened": "CAT: Catapult 2026 AGM - Results 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 442.9KB",
+        "so_what": "Price-sensitive headline — open link for details."
+      }
+    },
+    {
+      "ticker": "CAT",
+      "title": "Catapult 2026 AGM - Presentation 18\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.9MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130420",
+      "analysis": {
+        "what_happened": "CAT: Catapult 2026 AGM - Presentation 18\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.9MB",
+        "so_what": "Price-sensitive headline — open link for details."
+      }
+    },
+    {
+      "ticker": "DRO",
+      "title": "1H 2026 Investor Presentation 30\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.4MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130392",
+      "analysis": {
+        "what_happened": "DRO: 1H 2026 Investor Presentation 30\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.4MB",
+        "so_what": "Price-sensitive headline — open link for details."
+      }
+    },
+    {
+      "ticker": "DRO",
+      "title": "1H 2026 Results - Sustained Growth and Investing for Scale 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 310.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130350",
+      "analysis": {
+        "what_happened": "DRO: 1H 2026 Results - Sustained Growth and Investing for Scale 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 310.0KB",
+        "so_what": "Price-sensitive headline — open link for details."
+      }
+    },
+    {
+      "ticker": "WDS",
+      "title": "Half-Year 2026 Results Briefing Transcript 17\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 328.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130538",
+      "analysis": {
+        "what_happened": "WDS: Half-Year 2026 Results Briefing Transcript 17\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 328.2KB",
+        "so_what": "Price-sensitive headline — open link for details."
+      }
+    }
+  ],
   "fyi": [
     {
-      "ticker": "EOS",
-      "title": "Proposed issue of securities - EOS 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03129872"
+      "ticker": "ABB",
+      "title": "Change of Director's Interest Notice - Sarah Adam-Gedge 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 236.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130486"
     },
     {
-      "ticker": "EOS",
-      "title": "Investor Presentation 33\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.8MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03129404"
+      "ticker": "ABB",
+      "title": "Change of Director's Interest Notice - Sue Klose 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 197.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130484"
     },
     {
-      "ticker": "EOS",
-      "title": "Appendix 4D, Half-year Financial Report and Revenue Update 44\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.4MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03129388"
+      "ticker": "ABB",
+      "title": "Change of Director's Interest Notice - Adrian Fitzpatrick 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 257.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130482"
     },
     {
-      "ticker": "EOS",
-      "title": "1H 2026 Reporting Date and Investor Call 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 133.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03129169"
+      "ticker": "ABB",
+      "title": "Notification regarding unquoted securities - ABB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130480"
+    },
+    {
+      "ticker": "ABB",
+      "title": "Notification of cessation of securities - ABB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130474"
+    },
+    {
+      "ticker": "ATP",
+      "title": "Annual Report FY26 and Dividend Announcement 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 186.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130361"
+    },
+    {
+      "ticker": "ATP",
+      "title": "Dividend/Distribution - ATP 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130347"
+    },
+    {
+      "ticker": "BHP",
+      "title": "Notification regarding unquoted securities - BHP 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130590"
+    },
+    {
+      "ticker": "BHP",
+      "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 441.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130589"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131372"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 20.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131368"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130984"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130871"
+    },
+    {
+      "ticker": "CAT",
+      "title": "Catapult 2026 AGM - Results 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 442.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130506"
+    },
+    {
+      "ticker": "CAT",
+      "title": "Catapult 2026 AGM - Presentation 18\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.9MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130420"
+    },
+    {
+      "ticker": "CAT",
+      "title": "Catapult Reaffirms Guidance, CEO & MD Address 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 511.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130415"
+    },
+    {
+      "ticker": "CSL",
+      "title": "Notification of buy-back - CSL 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130654"
+    },
+    {
+      "ticker": "DRO",
+      "title": "1H 2026 Investor Presentation 30\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.4MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130392"
+    },
+    {
+      "ticker": "DRO",
+      "title": "1H 2026 Results - Sustained Growth and Investing for Scale 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 310.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130350"
+    },
+    {
+      "ticker": "PWH",
+      "title": "Change of Director's Interest Notice - Susan Forrester 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 311.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130600"
+    },
+    {
+      "ticker": "RTH",
+      "title": "RTH Appendix 4G and Corporate Governance Statement 25\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 612.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131317"
+    },
+    {
+      "ticker": "RTH",
+      "title": "RTH FY26 Results Presentation 17\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.6MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131310"
+    },
+    {
+      "ticker": "RTH",
+      "title": "RTH FY26 Results Announcement 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 237.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131304"
+    },
+    {
+      "ticker": "RTH",
+      "title": "RTH Appendix 4E and 2026 Annual Report 75\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.0MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131299"
+    },
+    {
+      "ticker": "RTH",
+      "title": "FY26 Results and Investor Briefing Details 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 1",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124454"
+    },
+    {
+      "ticker": "RTH",
+      "title": "Change in substantial holding 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 181.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03121898"
+    },
+    {
+      "ticker": "RTH",
+      "title": "Tabcorp signs new agreement for Data and Content 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 245.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03119877"
+    },
+    {
+      "ticker": "RTH",
+      "title": "New Deals and Contract Extensions 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 222.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03095756"
+    },
+    {
+      "ticker": "RTH",
+      "title": "Initial Director's Interest Notice 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 202.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03079254"
+    },
+    {
+      "ticker": "RTH",
+      "title": "RTH appoints David Zeffman as Non-Executive Director 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 191.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03078671"
+    },
+    {
+      "ticker": "WDS",
+      "title": "Half-Year 2026 Results Briefing Transcript 17\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 328.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03130538"
     }
   ]
 }

@@ -97,6 +97,19 @@ MAX_LLM_CALLS_PER_RUN = _int_env("MAX_LLM_CALLS", 25)
 # with MAX_PDFS.
 MAX_PDFS_PER_RUN = _int_env("MAX_PDFS", 30)
 
+# How many days of HIGH IMPACT items stay on the dashboard.
+#
+# bob.json used to be a straight overwrite, so a results card — by some margin
+# the most expensive thing Bob produces, and the one actually worth re-reading —
+# vanished the next morning whether or not anyone had looked at it. An
+# announcement landing overnight on a busy day was gone before it was read.
+#
+# Two days means today plus yesterday. MATERIAL and FYI are deliberately left
+# at one day: they are one-liners pointing at an ASX link that does not expire,
+# so carrying them forward would only pad the page. Override with
+# BOB_HI_RETENTION_DAYS.
+BOB_HI_RETENTION_DAYS = _int_env("BOB_HI_RETENTION_DAYS", 2)
+
 # Per-call output-token budgets. The default (4096) is enough for the terse
 # two-liners and the short structured memos on the other paths. The results
 # path is different: the model returns metrics JSON *plus* a full markdown
@@ -2163,6 +2176,82 @@ def pick_report_and_deck_pdfs(
     return report_pdf, deck_pdf
 
 
+def _hi_identity(item: dict) -> tuple:
+    """A stable key for one high-impact item, for de-duplication.
+
+    The ASX announcement URL carries an idsId and is unique per document, so it
+    is the key wherever there is one. Ticker plus title is the fallback for an
+    item that somehow arrived without a URL — weaker, but it only has to
+    survive a two-day window.
+    """
+    url = (item.get("url") or "").strip()
+    if url:
+        return ("url", url)
+    return ("title", item.get("ticker", ""), (item.get("title") or "")[:200])
+
+
+def _carry_forward_high_impact(
+    previous_items: List[dict],
+    todays_items: List[dict],
+    today: dt.date,
+    retention_days: int,
+) -> List[dict]:
+    """Pick the items from earlier runs that still belong on the dashboard.
+
+    Anything re-analysed today is dropped in favour of today's copy — a
+    re-analysis is the better record of the same announcement, and showing both
+    would read as two separate results.
+
+    An item with no `run_date` predates this feature. It is dropped rather than
+    assumed to be recent: guessing a date here would pin the first item Bob
+    ever wrote to the dashboard permanently.
+    """
+    oldest_kept = today - dt.timedelta(days=retention_days - 1)
+    seen = {_hi_identity(item) for item in todays_items}
+
+    carried: List[dict] = []
+    for item in previous_items:
+        identity = _hi_identity(item)
+        if identity in seen:
+            continue
+        run_date = _parse_run_date(item.get("run_date"))
+        if run_date is None or run_date < oldest_kept or run_date > today:
+            continue
+        seen.add(identity)
+        carried.append(item)
+
+    # Newest first, so a two-day dashboard reads top-down in time order.
+    carried.sort(key=lambda i: i.get("run_date", ""), reverse=True)
+    return carried
+
+
+def _parse_run_date(raw) -> Optional[dt.date]:
+    if not isinstance(raw, str):
+        return None
+    try:
+        return dt.date.fromisoformat(raw.strip())
+    except ValueError:
+        return None
+
+
+def _read_previous_bob_dashboard(path: Path) -> dict:
+    """Yesterday's bob.json, or an empty dict if there isn't a usable one.
+
+    In CI this is whatever the last run committed to the repo, so the file is
+    always the previous day's. A missing or corrupt file must never take down
+    the run — the worst case is a dashboard that carries nothing forward, which
+    is what it did before this existed.
+    """
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
+    except Exception as exc:
+        log(f"[bob] Previous dashboard JSON unreadable ({exc}) — carrying nothing forward")
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
 def _emit_bob_dashboard_json(
     high_impact: List[dict],
     material: List[dict],
@@ -2171,15 +2260,36 @@ def _emit_bob_dashboard_json(
 ) -> None:
     out_path = Path(__file__).resolve().parent / "docs" / "data" / "bob.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    today = today_sgt_date()
+
+    # Stamp on a copy — the caller's dicts are also the ones the email blocks
+    # were built from, and this function should not reach back into them.
+    todays_items = [{**item, "run_date": today.isoformat()} for item in high_impact]
+
+    previous = _read_previous_bob_dashboard(out_path)
+    carried = _carry_forward_high_impact(
+        previous.get("high_impact", []) or [],
+        todays_items,
+        today,
+        BOB_HI_RETENTION_DAYS,
+    )
+
     data = {
-        "last_run": today_sgt_date().isoformat(),
+        "last_run": today.isoformat(),
         "silence": silence,
-        "high_impact": high_impact,
+        # One list, each item stamped with the day it was produced. Consumers
+        # that only care about today filter on run_date; the dashboard renders
+        # the carried ones under their own heading.
+        "high_impact": todays_items + carried,
         "material": material,
         "fyi": fyi,
     }
     out_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
-    log(f"[bob] Dashboard JSON written → {out_path}")
+    log(
+        f"[bob] Dashboard JSON written → {out_path} "
+        f"({len(todays_items)} high impact today, {len(carried)} carried forward)"
+    )
 
 
 def main():

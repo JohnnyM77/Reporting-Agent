@@ -241,7 +241,14 @@ def _render_analysis_sections(analysis: dict, kind: str) -> str:
     )
 
 
-def _hi_item_card(item: dict) -> str:
+def _hi_item_card(item: dict, carried: bool = False) -> str:
+    """One high-impact card.
+
+    `carried` marks an item held over from an earlier run. It renders in the
+    same shape but muted and collapsed: still there to be opened, visibly not
+    this morning's news. The distinction has to survive at a glance, or
+    carrying items forward just makes the dashboard lie about its own date.
+    """
     ticker = _esc(item.get("ticker", ""))
     title  = _esc(item.get("title", "")[:120])
     url    = item.get("url", "")
@@ -250,11 +257,15 @@ def _hi_item_card(item: dict) -> str:
     type_label = itype.replace("_", " ").upper() if itype else "HIGH IMPACT"
     analysis = item.get("analysis")
 
+    header_bg   = "#151d33" if carried else "#1a2540"
+    border      = "#2a3550" if carried else "#334155"
+    ticker_col  = "#a8862a" if carried else "#fbbf24"
+
     header = (
-        f"<div style='background:#1a2540;padding:10px 14px;display:flex;"
+        f"<div style='background:{header_bg};padding:10px 14px;display:flex;"
         f"justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px'>"
         f"<div style='display:flex;align-items:center;gap:8px;flex-wrap:wrap'>"
-        f"<strong style='color:#fbbf24;font-size:14px'>{ticker}</strong>"
+        f"<strong style='color:{ticker_col};font-size:14px'>{ticker}</strong>"
         f"<span style='background:{badge_bg};color:#fff;padding:1px 7px;border-radius:3px;"
         f"font-size:10px;white-space:nowrap'>{type_label}</span>"
         f"<span style='color:#cbd5e1;font-size:12px'>{title}</span>"
@@ -271,8 +282,10 @@ def _hi_item_card(item: dict) -> str:
 
     if analysis:
         sections_html = _render_analysis_sections(analysis, itype)
+        # Today's cards open on load; carried ones stay shut so yesterday never
+        # pushes this morning below the fold.
         body = (
-            f"<details open style='border-top:1px solid #334155'>"
+            f"<details{'' if carried else ' open'} style='border-top:1px solid {border}'>"
             f"<summary style='cursor:pointer;padding:7px 14px;color:#94a3b8;font-size:11px;"
             f"list-style:none;user-select:none'>▸ Analysis</summary>"
             f"{sections_html}"
@@ -282,7 +295,8 @@ def _hi_item_card(item: dict) -> str:
         body = ""
 
     return (
-        f"<div style='border:1px solid #334155;border-radius:8px;overflow:hidden;margin:10px 0'>"
+        f"<div style='border:1px solid {border};border-radius:8px;overflow:hidden;margin:10px 0"
+        f"{';opacity:0.82' if carried else ''}'>"
         f"{header}{body}"
         f"</div>"
     )
@@ -315,13 +329,48 @@ def _mat_item_row(item: dict) -> str:
 # Bob section
 # ---------------------------------------------------------------------------
 
+def _carried_block(carried: list[dict]) -> str:
+    """High-impact items held over from earlier runs, grouped by their day.
+
+    Grouped and dated rather than merged into one list: "still on the page" and
+    "happened this morning" are different facts, and a results card that quietly
+    outlived its announcement date would be worse than losing it.
+    """
+    if not carried:
+        return ""
+
+    by_day: dict[str, list[dict]] = {}
+    for item in carried:
+        by_day.setdefault(item.get("run_date", ""), []).append(item)
+
+    out = []
+    for day in sorted(by_day, reverse=True):
+        items = by_day[day]
+        out.append(
+            f"<h4 style='color:#94a3b8;margin:20px 0 6px;font-weight:600'>"
+            f"🕘 STILL WORTH A LOOK &middot; {_fmt_date(day)} ({len(items)})</h4>"
+            + "".join(_hi_item_card(item, carried=True) for item in items)
+        )
+    return "".join(out)
+
+
 def _bob_section(data: dict) -> str:
-    run_date = _fmt_date(data.get("last_run"))
-    hi = data.get("high_impact", [])
+    last_run = data.get("last_run")
+    run_date = _fmt_date(last_run)
     mat = data.get("material", [])
     fyi = data.get("fyi", [])
     silence = data.get("silence", False)
 
+    # High-impact items are retained for two days (BOB_HI_RETENTION_DAYS in
+    # agent.py) and each carries the run_date it was produced on. Items written
+    # before that stamp existed have no run_date; treat those as today's, which
+    # is how they rendered before and keeps an old JSON readable.
+    hi_all = data.get("high_impact", [])
+    hi = [i for i in hi_all if i.get("run_date", last_run) == last_run]
+    carried = [i for i in hi_all if i.get("run_date", last_run) != last_run]
+
+    # The status line is about *this* run. Yesterday's cards being on the page
+    # must not make a quiet morning read as a busy one.
     status_dot = "#ef4444" if hi else "#22c55e"
     status_text = f"{len(hi)} HIGH IMPACT" if hi else ("SILENCE" if silence else "All clear")
 
@@ -357,6 +406,8 @@ def _bob_section(data: dict) -> str:
         + (hi_cards if hi_cards else _no_hi)
     ) if hi else ""
 
+    carried_block = _carried_block(carried)
+
     mat_block = (
         f"<h4 style='color:#3b82f6;margin:16px 0 6px'>📌 MATERIAL ({len(mat)})</h4>"
         f"<table style='width:100%;border-collapse:collapse;font-size:13px'>"
@@ -384,6 +435,7 @@ def _bob_section(data: dict) -> str:
         </div>
       </div>
       {hi_block}
+      {carried_block}
       {mat_block}
       {fyi_block}
     </div>"""
@@ -677,7 +729,7 @@ def _theo_section(data: dict) -> str:
       <div class="card-header">
         <div>
           <span class="agent-name">Theo</span>
-          <span class="agent-role">Thesis Accountability &middot; <a href="theo/" style="color:#3b82f6;text-decoration:none">slides &rarr;</a></span>
+          <span class="agent-role">Keeping the Bastards Honest &middot; Thesis Accountability &middot; <a href="theo/" style="color:#3b82f6;text-decoration:none">slides &rarr;</a></span>
         </div>
         <div style="text-align:right">
           <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{status_dot};margin-right:6px"></span><span style="font-size:13px;color:#e2e8f0">{len(questions)} open &middot; {drifting} drifting</span></div>

@@ -79,6 +79,20 @@ def _infer_event_type(title: str, item_type: Optional[str] = None) -> str:
     return EVENT_TYPE_GENERIC_NEWS
 
 
+def _event_timestamp(item: dict, default: str) -> str:
+    """Timestamp for one dashboard item.
+
+    High-impact items are retained for two days and each carries the run_date
+    it was produced on, so a carried item must date from *its* day rather than
+    from the file's last_run. Downstream scoring is recency-weighted; letting
+    yesterday's card present as this morning's would quietly promote it.
+    """
+    run_date = item.get("run_date")
+    if isinstance(run_date, str) and run_date.strip():
+        return f"{run_date.strip()}T04:00:00Z"
+    return default
+
+
 def _item_to_event(
     item: dict,
     tier: str,
@@ -147,9 +161,10 @@ def collect_events_from_dashboard() -> list[InvestorEvent]:
 
     events: list[InvestorEvent] = []
 
-    # High impact items (HY/FY results, acquisitions, capital raises)
+    # High impact items (HY/FY results, acquisitions, capital raises).
+    # These span two run days — see _event_timestamp.
     for item in data.get("high_impact", []):
-        ev = _item_to_event(item, "high_impact", timestamp)
+        ev = _item_to_event(item, "high_impact", _event_timestamp(item, timestamp))
         if ev:
             events.append(ev)
 

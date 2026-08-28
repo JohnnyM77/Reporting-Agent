@@ -93,7 +93,7 @@ jobs:
           git diff --staged --quiet || git commit -m "Bob data [skip ci]"
           git pull --rebase origin HEAD
           python scripts/build_dashboard.py
-          git add docs/index.html
+          git add docs/index.html docs/data/bob_history.json
           git diff --staged --quiet || git commit -m "Dashboard update — Bob [skip ci]"
           git push origin HEAD
 

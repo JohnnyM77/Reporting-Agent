@@ -315,15 +315,15 @@ def _mat_item_row(item: dict) -> str:
 # Bob section
 # ---------------------------------------------------------------------------
 
-def _bob_section(data: dict) -> str:
-    run_date = _fmt_date(data.get("last_run"))
+def _bob_run_blocks(data: dict) -> str:
+    """The high-impact / material / FYI blocks for one Bob run.
+
+    Pulled out of ``_bob_section`` so the same rendering serves both the
+    current digest and the retained previous one.
+    """
     hi = data.get("high_impact", [])
     mat = data.get("material", [])
     fyi = data.get("fyi", [])
-    silence = data.get("silence", False)
-
-    status_dot = "#ef4444" if hi else "#22c55e"
-    status_text = f"{len(hi)} HIGH IMPACT" if hi else ("SILENCE" if silence else "All clear")
 
     hi_cards = "".join(_hi_item_card(item) for item in hi)
 
@@ -371,22 +371,102 @@ def _bob_section(data: dict) -> str:
         + "</table>"
     )
 
+    return hi_block + mat_block + fyi_block
+
+
+def _bob_section(data: dict, history: list[dict] | None = None) -> str:
+    """Bob's card: the current digest, plus the previous run kept below it.
+
+    ``history`` is the rolling list written by ``_update_bob_history`` —
+    newest first, current run at index 0, at most two entries. The previous
+    run is rendered collapsed so the page stays a glance while the last two
+    iterations are both there. Falls back to just ``data`` when no history is
+    available.
+    """
+    run_date = _fmt_date(data.get("last_run"))
+    hi = data.get("high_impact", [])
+    silence = data.get("silence", False)
+
+    status_dot = "#ef4444" if hi else "#22c55e"
+    status_text = f"{len(hi)} HIGH IMPACT" if hi else ("SILENCE" if silence else "All clear")
+
+    current_blocks = _bob_run_blocks(data)
+
+    previous_html = ""
+    prior = (history or [])[1:2]
+    if prior:
+        prev = prior[0]
+        prev_date = _fmt_date(prev.get("last_run"))
+        prev_hi = len(prev.get("high_impact", []))
+        prev_mat = len(prev.get("material", []))
+        prev_fyi = len(prev.get("fyi", []))
+        previous_html = (
+            "<details style='margin-top:20px;border-top:1px solid #334155;padding-top:12px'>"
+            "<summary style='cursor:pointer;color:#94a3b8;font-size:13px;font-weight:600'>"
+            f"◷ Previous digest — {prev_date} "
+            f"<span style='color:#64748b;font-weight:400'>"
+            f"({prev_hi} high-impact · {prev_mat} material · {prev_fyi} FYI)</span>"
+            "</summary>"
+            "<div style='margin-top:10px;opacity:0.85'>"
+            + _bob_run_blocks(prev)
+            + "</div></details>"
+        )
+
     return f"""
     <div class="agent-card">
       <div class="card-header">
         <div>
           <span class="agent-name">Bob the Bot</span>
-          <span class="agent-role">Daily ASX Digest</span>
+          <span class="agent-role">Daily ASX Digest &middot; last two runs kept</span>
         </div>
         <div style="text-align:right">
           <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{status_dot};margin-right:6px"></span><span style="font-size:13px;color:#e2e8f0">{status_text}</span></div>
           <div style="font-size:12px;color:#64748b;margin-top:4px">Last run: {run_date}</div>
         </div>
       </div>
-      {hi_block}
-      {mat_block}
-      {fyi_block}
+      {current_blocks}
+      {previous_html}
     </div>"""
+
+
+def _update_bob_history(bob: dict) -> list[dict]:
+    """Keep the last two distinct Bob digests in docs/data/bob_history.json.
+
+    Bob overwrites bob.json every run, so without this the site only ever
+    shows the most recent digest. This prepends the current run when its
+    content differs from the top of the history and truncates to two, so a
+    plain dashboard rebuild (Theo/Wally/Ned, or an identical re-run) never
+    churns the file. Returns the history, newest first.
+    """
+    if not bob or not bob.get("last_run"):
+        # No Bob data to record; return whatever is already on disk.
+        try:
+            existing = json.loads((DATA_DIR / "bob_history.json").read_text())
+            return existing if isinstance(existing, list) else []
+        except Exception:
+            return []
+
+    hist_path = DATA_DIR / "bob_history.json"
+    history: list[dict] = []
+    if hist_path.exists():
+        try:
+            loaded = json.loads(hist_path.read_text())
+            if isinstance(loaded, list):
+                history = [h for h in loaded if isinstance(h, dict)]
+        except Exception:
+            history = []
+
+    def _sig(d: dict) -> str:
+        return json.dumps(
+            {k: d.get(k) for k in ("last_run", "silence", "high_impact", "material", "fyi")},
+            sort_keys=True,
+        )
+
+    if not history or _sig(history[0]) != _sig(bob):
+        history = [bob] + history
+    history = history[:2]
+    hist_path.write_text(json.dumps(history, indent=2))
+    return history
 
 
 # ---------------------------------------------------------------------------
@@ -697,8 +777,8 @@ def _theo_section(data: dict) -> str:
     <div class="agent-card">
       <div class="card-header">
         <div>
-          <span class="agent-name">Theo</span>
-          <span class="agent-role">Thesis Accountability &middot; <a href="theo/" style="color:#3b82f6;text-decoration:none">slides &rarr;</a></span>
+          <span class="agent-name">Theo &mdash; Thesis Accountability</span>
+          <span class="agent-role">Keeping the bastard honest &middot; <a href="theo/" style="color:#3b82f6;text-decoration:none">slides &rarr;</a></span>
         </div>
         <div style="text-align:right">
           <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{status_dot};margin-right:6px"></span><span style="font-size:13px;color:#e2e8f0">{len(questions)} open &middot; {drifting} drifting</span></div>
@@ -798,6 +878,7 @@ def _ned_section(data: dict) -> str:
 
 def build_dashboard() -> None:
     bob = _load("bob.json")
+    bob_history = _update_bob_history(bob)
     wally = _load("wally.json")
     sally = _load("sally.json")
     theo = _load("theo.json")
@@ -910,7 +991,7 @@ def build_dashboard() -> None:
     <div class="meta">Auto-updated by GitHub Actions &nbsp;·&nbsp; Generated: {generated_at}</div>
   </header>
   <main>
-    {_bob_section(bob)}
+    {_bob_section(bob, bob_history)}
     {_wally_section(wally)}
     {_sally_section(sally)}
     {_theo_section(theo)}

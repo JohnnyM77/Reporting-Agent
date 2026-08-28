@@ -841,3 +841,28 @@ def test_parser_will_not_rescue_a_truncated_response():
     assert agent._parse_analysis_json(truncated, allow_repair=False) is None
     # Even with repair allowed the unterminated string cannot be closed.
     assert agent._parse_analysis_json(truncated) is None
+
+
+# ---------------------------------------------------------------------------
+# Catch-up schedule must not double-send
+# ---------------------------------------------------------------------------
+
+def test_already_sent_today_guard(tmp_path):
+    """daily.yml carries a second, later cron because GitHub drops scheduled
+    fires. The guard is what keeps a day where both fire to one email."""
+    dashboard = tmp_path / "bob.json"
+    today = agent.today_sgt_date().isoformat()
+
+    with mock.patch.object(agent, "BOB_DASHBOARD_JSON", dashboard):
+        # No file yet — nothing has run, so the run must go ahead.
+        assert agent._already_sent_today() is False
+
+        dashboard.write_text(json.dumps({"last_run": today}))
+        assert agent._already_sent_today() is True
+
+        dashboard.write_text(json.dumps({"last_run": "2000-01-01"}))
+        assert agent._already_sent_today() is False
+
+        # Unreadable/corrupt means "no idea" — never suppress on a guess.
+        dashboard.write_text("{not json")
+        assert agent._already_sent_today() is False

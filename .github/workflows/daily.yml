@@ -12,7 +12,14 @@ on:
         required: false
         default: ""
   schedule:
+    # 23:13 UTC = 07:13 SGT. GitHub's schedule event is best-effort — fires
+    # queue on shared infrastructure and are delayed or dropped under load
+    # (2026-08-26 was skipped entirely; 2026-08-27 landed 5h16m late), so a
+    # second cron 90 minutes later acts as a catch-up. agent.py stands the
+    # catch-up down when the first run already sent the digest, so a day
+    # where both fire still produces exactly one email.
     - cron: "13 23 * * *"
+    - cron: "43 0 * * *"
 
 jobs:
   run-agent:
@@ -71,6 +78,9 @@ jobs:
           SEEN_STATE_PATH: state_seen.json
           FORCE_RERUN_TICKERS: ${{ inputs.force_rerun_tickers }}
           MANUAL_TICKER: ${{ inputs.manual_ticker }}
+          # Lets main() gate the catch-up schedule without also gating a
+          # manual dispatch, which must always run.
+          RUN_TRIGGER: ${{ github.event_name }}
         run: |
           python agent.py
 

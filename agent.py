@@ -2163,13 +2163,32 @@ def pick_report_and_deck_pdfs(
     return report_pdf, deck_pdf
 
 
+BOB_DASHBOARD_JSON = Path(__file__).resolve().parent / "docs" / "data" / "bob.json"
+
+
+def _already_sent_today() -> bool:
+    """True when a run has already completed for today's SGT date.
+
+    ``bob.json`` is written only after ``send_email`` returns, so its
+    ``last_run`` is a record that the digest actually went out — which makes
+    it the right thing for the catch-up schedule to check before sending a
+    second one. A missing or unreadable file means "no idea", and the caller
+    should go ahead and run.
+    """
+    try:
+        data = json.loads(BOB_DASHBOARD_JSON.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    return str(data.get("last_run") or "") == today_sgt_date().isoformat()
+
+
 def _emit_bob_dashboard_json(
     high_impact: List[dict],
     material: List[dict],
     fyi: List[dict],
     silence: bool,
 ) -> None:
-    out_path = Path(__file__).resolve().parent / "docs" / "data" / "bob.json"
+    out_path = BOB_DASHBOARD_JSON
     out_path.parent.mkdir(parents=True, exist_ok=True)
     data = {
         "last_run": today_sgt_date().isoformat(),
@@ -2183,6 +2202,23 @@ def _emit_bob_dashboard_json(
 
 
 def main():
+    # GitHub's `schedule` event is best-effort, not a guarantee: fires are
+    # queued on shared infrastructure, arrive late under load, and are
+    # sometimes dropped outright. On 2026-08-26 the 23:13 fire never
+    # happened and the following day's arrived 5h16m late, so the digest
+    # simply didn't turn up. daily.yml therefore carries a second, later
+    # cron as a catch-up, and this guard is what stops the two from sending
+    # two emails on a day when both fire: whichever runs first writes
+    # bob.json, and the other one stands down. Only scheduled runs are
+    # gated — a manual dispatch always runs, which is how you force a
+    # re-send.
+    if os.environ.get("RUN_TRIGGER", "").strip().lower() == "schedule" and _already_sent_today():
+        log(
+            f"Digest already sent for {today_sgt_date().isoformat()} (SGT) — "
+            "catch-up schedule standing down."
+        )
+        return
+
     subject = f"{BOB_NAME} {VERSION_LABEL} — Daily Announcements Digest — {today_sgt_date().isoformat()} (SGT)"
     session = http_session()
     asx_tickers, _lse_tickers = read_tickers()

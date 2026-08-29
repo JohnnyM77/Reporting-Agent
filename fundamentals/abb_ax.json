@@ -1,0 +1,22 @@
+{
+  "annual_div_cents": {
+    "2024": 4.0,
+    "2025": 6.4,
+    "2026": 2.4
+  },
+  "annual_eps_cents": {
+    "2023": 9.09,
+    "2024": 9.73,
+    "2025": 11.17,
+    "2026": 11.94
+  },
+  "last_updated": "2026-08-29",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2023": "yfinance",
+    "2024": "yfinance",
+    "2025": "yfinance",
+    "2026": "yfinance"
+  },
+  "ticker": "ABB.AX"
+}

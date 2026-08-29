@@ -1,84 +1,23 @@
 {
-  "last_run": "2026-08-28",
+  "last_run": "2026-08-29",
   "silence": false,
-  "high_impact": [
-    {
-      "ticker": "OCL",
-      "title": "Full Year Results FY2026 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 139.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131203",
-      "type": "results",
-      "analysis": {
-        "ticker": "OCL",
-        "period": "FY26",
-        "period_type": "full_year",
-        "currency": "AUD",
-        "metrics": {
-          "revenue": {
-            "value": "$134.7m",
-            "change_pct": "+9%",
-            "basis": "reported"
-          },
-          "underlying_npat": {
-            "value": "$37.2m",
-            "change_pct": "+5%",
-            "basis": "statutory"
-          },
-          "underlying_eps": {
-            "value": "38.9c",
-            "change_pct": "+5%",
-            "basis": "statutory"
-          },
-          "dividend_ordinary": {
-            "value": "26.0c",
-            "change_pct": "+18%",
-            "note": "final comprises 8c fully franked + 5c unfranked; interim components not separately disclosed in this release"
-          },
-          "operating_cash_flow": {
-            "value": "$49.3m",
-            "change_pct": "+6%",
-            "basis": "reported"
-          }
-        },
-        "summary": "Solid but unspectacular result with no guidance provided to beat or miss against; revenue +9% and NPAT +5% are decent in absolute terms but the headline-grabbing '22% SaaS growth' masks a -2% decline in group ARR, the most important forward-looking metric for a SaaS business. The ARR decline is driven by the largest segment, Information Intelligence, where ARR fell 5% to $81m, signalling customer churn or downsell that management did not address directly. Operating cash flow of $49.3m is strong and materially exceeds NPAT of $37.2m, so profit quality is high. The 26c dividend (+18%) is a positive capital-return signal but the group also spent $7.1m on buybacks and paid NZ$4m for the Isovist acquisition, drawing cash down 7% to $92.7m. The single biggest forward risk is the continued erosion of Information Intelligence ARR, which at $81m is the revenue engine and its decline implies FY27 revenue headwinds.",
-        "full_analysis": "## Executive summary\n- Revenue +9% and Adjusted EBITDA +11% are respectable, but NPAT growth of only +5% suggests cost growth is eating into operating leverage below the EBITDA line.\n- **Red flag: Group ARR fell -2% to $117.3m.** This is the leading indicator for future revenue and it is moving in the wrong direction. The largest segment, Information Intelligence (65% of ARR), fell -5%.\n- The '22% SaaS revenue growth' headline is a selective cut of the data; total revenue grew only 9% and the ARR stock — which drives future revenue — is shrinking.\n- Cash conversion is excellent: operating cash flow of $49.3m against NPAT of $37.2m (132% cash conversion ratio), supported by the subscription billing model collecting cash upfront.\n- No forward guidance was provided in this release.\n\n## Key numbers\n\n| Metric | FY26 | FY25 | Change |\n|---|---|---|---|\n| Revenue | $134.7m | $123.5m | +9% |\n| Adjusted EBITDA | $51.5m | $46.5m | +11% |\n| Adjusted EBITDA margin | 38.2% | 37.7% | +50bps |\n| NPAT (statutory) | $37.2m | $35.4m | +5% |\n| Underlying/adjusted NPAT | n/a (not separately disclosed) | n/a | n/a |\n| Bridge statutory to underlying | No separate underlying NPAT disclosed; statutory figure used throughout | — | — |\n| EPS | 38.9c | 37.2c | +5% |\n| Operating cash flow | $49.3m | $46.3m | +6% |\n| Free cash flow (est.) | n/a (capex not separately disclosed) | n/a | n/a |\n| R&D capitalised | $17.4m | $15.7m | +11% |\n| Group ARR | $117.3m | $120.2m | -2% |\n| Cash at balance date | $92.7m | $99.2m | -7% |\n| Net debt / (cash) | ($92.7m) net cash | ($99.2m) net cash | n/a |\n\n## Quality of earnings\n- **Cash conversion is strong.** Operating cash flow of $49.3m versus NPAT of $37.2m represents ~132% conversion, consistent with a subscription model where customers pay upfront. This is genuine quality.\n- **Capitalised R&D is elevated and rising.** Of the $33.8m total R&D spend, $17.4m (51%) was capitalised in FY26 vs $15.7m (50%) in FY25. Capitalised development costs are not expensed through NPAT, which flatters reported earnings. Investors should treat the expensed R&D of ~$16.4m plus amortisation of prior capitalised R&D as the true recurring cost. Without a full P&L breakdown (not provided in this 3-page release), the amortisation charge cannot be isolated.\n- No information on receivables, DSO, deferred revenue, or inventory trends is provided in this short-form release, limiting deeper forensic analysis.\n- The Adjusted EBITDA to NPAT bridge is not disclosed; the gap between $51.5m EBITDA and $37.2m NPAT ($14.3m) presumably reflects depreciation, amortisation (including capitalised R&D), and tax. Without the full statutory accounts, this cannot be verified.\n\n## Management framing\n**Rating: Mixed / Promotional**\n- The three headline bullet points lead with '22% SaaS revenue growth' — this is a cherry-picked metric. Investors searching for it will not find a line item called 'SaaS revenue' in the financial summary table; total revenue grew 9%.\n- The ARR decline of -2% (and Information Intelligence ARR -5%) is disclosed in the body of the release but not in the three headline bullets, which is a meaningful omission for a company that has consistently marketed itself on recurring revenue quality.\n- Management describes the balance sheet as providing 'significant capacity to further pursue investment opportunities' — standard boilerplate that glosses over the 7% cash drawdown.\n- No explanation is given for what drove the ARR decline in Information Intelligence. This is the most important unanswered question in the release.\n- The dividend increase of +18% is prominently signalled, which is a positive but also partially offsets the ARR deterioration narrative.\n\n## Segments\n\n| Segment | FY26 Sales Revenue | FY25 Sales Revenue | Change | FY26 ARR | FY25 ARR | ARR Change |\n|---|---|---|---|---|---|---|\n| Information Intelligence | $87.9m | $83.4m | +5% | $80.9m | $85.1m | -5% |\n| Planning & Building | $18.5m | $13.1m | +41% | $18.7m | $18.2m | +3% |\n| Regulatory Solutions | $25.3m | $23.6m | +7% | $17.6m | $16.9m | +4% |\n| **Total** | **$134.7m** | **$123.5m** | **+9%** | **$117.3m** | **$120.2m** | **-2%** |\n\n- **Information Intelligence** is 65% of revenue and 69% of ARR. The +5% sales revenue growth despite -5% ARR decline suggests revenue is being recognised from a declining contracted base — a timing mismatch that will bite FY27 revenue unless the ARR trend reverses.\n- **Planning & Building** is the standout with +41% sales revenue growth. The ARR growth of only +3% suggests much of the revenue uplift was non-recurring or project-based rather than new SaaS subscriptions — this is inconsistent with the 'SaaS growth' narrative.\n- **Regulatory Solutions** is steady with +7% revenue and +4% ARR — the most straightforward growth story in the portfolio.\n- Segment EBITDA or margin data is not disclosed in this release.\n\n## Balance sheet\n- Net cash position of $92.7m (no external borrowings) is a genuine strength and provides M&A optionality.\n- Cash fell $6.5m in FY26. Outflows: $24.9m dividends, $7.1m share buybacks, NZ$4.0m (approx. A$3.5m) Isovist acquisition. Inflow: $49.3m operating cash flow. The maths roughly reconciles.\n- The buyback program ($7.1m) is new (nil in FY25) — a positive capital discipline signal but small relative to the cash balance.\n- Isovist acquisition (NZ$4m) is immaterial in size; its strategic rationale is not explained in this release.\n- No covenants disclosed (no external debt).\n\n## Dividend and capital allocation\n- Total FY26 dividend: 26.0c per share (+18% vs 22.0c in FY25).\n- Final dividend: 8c fully franked + 5c unfranked = 13c final. Interim components not separately itemised in this release.\n- The mixed franking on the final dividend (8c franked, 5c unfranked) is worth noting — the unfranked portion may indicate the company is distributing earnings from offshore entities where Australian tax has not been paid.\n- Capital allocation in FY26: dividends $24.9m + buybacks $7.1m + Isovist NZ$4m = ~$36.5m returned/deployed against $49.3m operating cash flow. Disciplined.\n\n## Guidance and outlook\n- **No formal FY27 guidance was provided.** This is consistent with OCL's historical practice but leaves investors without a target to assess.\n- The ARR trajectory as at 30 June 2026 implies a revenue headwind into FY27 unless new signings materially accelerate in H1 FY27.\n\n## Positives\n- Operating cash flow $49.3m, strong 132% cash conversion of NPAT — subscription model is working as intended.\n- Adjusted EBITDA margin expanded to 38.2% from 37.7% — incremental operating leverage.\n- Planning & Building sales revenue +41% — high growth in a segment that was subscale.\n- Zero external debt and $92.7m cash — fortress balance sheet with M&A capacity.\n- Dividend +18% to 26c signals management confidence in earnings durability.\n- 100% of software revenue on subscription — no perpetual licence tail risk.\n- New buyback program ($7.1m) demonstrates improving capital discipline.\n\n## Negatives / red flags\n- Group ARR -2% to $117.3m — the forward revenue indicator is declining, not growing.\n- Information Intelligence ARR -5% to $80.9m — the largest segment is losing contracted revenue. No explanation provided.\n- Planning & Building revenue +41% but ARR only +3% — strong revenue growth appears to include non-recurring items, which will not repeat.\n- Capitalised R&D of $17.4m (51% of total R&D) flatters NPAT; amortisation of the capitalised balance is not disclosed in this release, obscuring true underlying profitability.\n- NPAT growth of +5% significantly lags EBITDA growth of +11% — something below EBITDA (likely amortisation of capitalised software) is consuming value.\n- No guidance provided, leaving investors to extrapolate from a deteriorating ARR position.\n- The '22% SaaS revenue growth' headline is not reconcilable from the disclosed financials and risks misleading unsophisticated investors.\n\n## Bottom line\n**Bull case:** The cash-generative subscription model, strong balance sheet, and improving EBITDA margins support a premium multiple. If Information Intelligence ARR stabilises or recovers in FY27 (possibly driven by new product releases funded by the heavy R&D spend), earnings can re-accelerate. The buyback and dividend growth signal management sees intrinsic value.\n\n**Bear case:** The ARR decline in the core segment is not explained and may reflect structural competitive pressure or customer churn in the government sector. Revenue growth of 9% is partly borrowed from a shrinking ARR base, meaning FY27 revenue growth could decelerate meaningfully. The capitalised R&D trend (51% of R&D capitalised) and the EBITDA-to-NPAT gap deserve scrutiny in the full statutory accounts. At a premium SaaS multiple, any earnings deceleration will be punished severely.\n\n**What would change the view:** A credible explanation for the Information Intelligence ARR decline and evidence of re-acceleration in new logo signings would be the key positive catalyst. Conversely, if 1H FY27 ARR continues to fall, the investment thesis is materially impaired.",
-        "_status": "ok"
-      },
-      "doc_link": "",
-      "doc_error": "",
-      "pdf_path": "/tmp/OCL_FY26_2026-08-28.pdf"
-    }
-  ],
+  "high_impact": [],
   "material": [],
   "fyi": [
     {
-      "ticker": "OCL",
-      "title": "FY2026 Investor Presentation 41\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131232"
+      "ticker": "BHP",
+      "title": "Update - Dividend/Distribution - BHP 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 23.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03132396"
     },
     {
-      "ticker": "OCL",
-      "title": "Dividend/Distribution - OCL 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131229"
+      "ticker": "CAT",
+      "title": "Change of Director's Interest Notice 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 208.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03132669"
     },
     {
-      "ticker": "OCL",
-      "title": "Dividend/Distribution - OCL 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131210"
-    },
-    {
-      "ticker": "OCL",
-      "title": "CEO Letter to Shareholders 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.8MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131208"
-    },
-    {
-      "ticker": "OCL",
-      "title": "Full Year Results FY2026 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 139.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131203"
-    },
-    {
-      "ticker": "OCL",
-      "title": "Preliminary Final Report 73\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.5MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131200"
+      "ticker": "CAT",
+      "title": "Notification regarding unquoted securities - CAT 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 22.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03132662"
     }
   ]
 }

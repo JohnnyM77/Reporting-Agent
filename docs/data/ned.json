@@ -1,110 +1,66 @@
 {
   "agent": "Ned",
-  "last_run": "2026-08-28T06:59:30.702149Z",
-  "youtube_hits": 1,
-  "news_hits": 51,
-  "total_hits": 52,
-  "critical_high_count": 16,
+  "last_run": "2026-08-29T04:14:41.436796Z",
+  "youtube_hits": 0,
+  "news_hits": 21,
+  "total_hits": 21,
+  "critical_high_count": 5,
   "status": "ok",
   "items": [
     {
       "tickers": [
         "AHC"
       ],
-      "title": "Austco Healthcare Limited Reports Earnings Results for the Full Year Ended June 30, 2026 - marketscreener.com",
-      "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxNOUkyRVAtdjBuTk1QZ1ZkbnBRZWdGN19wM25ORlNnUGEzdXFzUlA0ZlRaeUtBWHdJMkN2QzJHbzF3M2pHaHNlc3pQRkQyUUozNkxiaENwRkJ3UGdwWGNaQkZuTHlJWjlOSk1EMWlQUWpwbGdQR0g4OERyY0M1X3BJejFKV1NPdjg5N2JBSlBJVTNuXzE1REpVYnJackkyc1FETGhSX0FUYUtPVXhYR1BKYkZ5eHlhcjVhQ3ZnUE9sRjB2YTA3bzNZWUgzR1NZamRNSHBPTjJ2aw?oc=5",
+      "title": "Austco Healthcare (ASX:AHC): Record FY26 Revenue and Profit Strengthen Its Global Healthcare Growth Story - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxQSDRZTVFubFJCVTJ0NExZMDhESmtaMWM4U3BDQkRqUHFqUWR4cXlwX3RNV1dLV1NQNUhZaFlxNEY1NklWSmVWSDNqbGNCTHl3MU1qckJwMDFwMElCRUx1T0t5aXNDbVFwNHZzeXRVV1BYRnFMZjJNTGhocFdFWFhzODJhS1N6QnhycElOdlpYbmVoQk12WDdzVHZvRFlXUm83eWxMSzN0QlFqbG1aLXI0Qi1wZlFVcjN5QU1GamVyUnQzdDIycS1HemdzLXpQYS1MbGZINTVoXzNGZ1V2MkR4Nl9uWjk?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
-      "summary": "[not material]\n\nThe snippet is truncated and provides no actual financial details, performance metrics, or news content to assess impact on shareholders.",
-      "published": "2026-08-27T09:35:32+00:00"
+      "summary": "Austco Healthcare reported record FY26 revenue and profit, demonstrating strong execution on its global healthcare expansion strategy and signaling improved earnings growth potential for shareholders.",
+      "published": "2026-08-28T07:48:00+00:00"
     },
     {
       "tickers": [
-        "AHC"
+        "ATP"
       ],
-      "title": "Austco Healthcare (ASX:AHC) Completes MCS Acquisition Ahead of FY26 Results - Kalkine",
-      "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPTExFRm9pR0tlZzlwM3dPTlVOT05qMlYtM3ZpUG0tMVRDZ0pCT2JNOUUtVEFtRGc0M3BpN3NZNWFhUEUyQW1FcGk4cjFnUm9oUXBBSGw1T3RnUzhZd1dibDl4dVQtb2xzbm9QNUlqbHRSaFlSWTF0QVZFSjJ1NC1MUlM5bVhKZnZRY3dXZTNpVjhuWUotM1RPM3BLRXloV3QxMG5pLU9GX3owcmUySnplUw?oc=5",
+      "title": "ATLAS PEARLS LTD To Go Ex-Dividend On August 31st, 2026 With 0.0043 USD Dividend Per Share - Moomoo",
+      "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxNaDRzQTZ5WXQ0ellxcDl3blZCRU51NmFJMzBJUGp0RXBWTVVnVGp5YWdPbzByMmhFMk0zRkQxRDAwVllFdnlHbzV3WWRSUi1BcWd6a0JFajRtckZPUENGM3VjT1hxWlJJSXhiSmo1YVNPcDNNalpHeUY2ZGQ5Tlg4N0lOT2ZwRFRZb0h2dlBMVjZ4UFkwM3c?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
-      "summary": "Austco Healthcare completed its acquisition of MCS, expanding its portfolio ahead of FY26 results, which matters to shareholders as it demonstrates growth strategy execution and may positively impact future earnings.",
-      "published": "2026-08-28T02:32:00+00:00"
+      "summary": "Atlas Pearls (ATP) will pay a modest dividend of $0.0043 per share on August 31st, 2026, providing shareholders with a small cash return on their investment.",
+      "published": "2026-08-28T13:45:10+00:00"
     },
     {
       "tickers": [
         "CSL"
       ],
-      "title": "Is CSL (ASX:CSL) Cheap On Results, 2027 Guidance And Its Dividend? - simplywall.st",
-      "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOMXhmVzMwakpNbDUzbUhwZ0JrZi1GT0NPR2RFUTgzZXlaVnMxMkNWb0hWOG9idm5NUWVUQWxnREctQjJDWHY3M3g1TjUzY1NMOERIQlVmdXRZelpSelBQVnVTYjh0UUVJUVUydFdzNy1JUmNSS3dldTFxak00enpYRWNZazk4a0R2d3hMUHJHdUp4TU5qRWtRVXgxUldmWjQ3TXlMaFFPUWZXNEIzSG9UaEFZNFZlYlBsaWExb3VEZk9UQ3laVFZyblFrbUVLaGRpQkx4bEh6b9IB3AFBVV95cUxPTF9OOEdzR2dNV05VYzZxQUtFcWE3U0YydVlMNzFDUFZqNTUyRzBYQ1owaGFRekhKUkxJQThCam8yLU8xYVNxUk41OXlXYXVKUVR3aXd5R0Y0aEMtWVhGWjA4dVFJaHcwMDFaWE5raFBUR01VMlVWTDdkXzExaTM4MWZSdnNRcnV4U1VBRF9Vclg5dE5jZC1Cc3J3a09YUnZwWEkwdTZ4VVVoZWZjOVpXQ3VKNlpMMEVFWWw1WmZhQXFZcmoxZWJNUDRtbHpoVGxqSTREQkY5Q3VFX2NU?oc=5",
+      "title": "CSL (ASX:CSL) FY26 Results Highlight Business Reset, Efficiency Improvements and Future Growth Opportunities - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxOaDRETlNNUFQ4dzNZTjYycnp4S1N2UGxUY3dBdlc4TXZpV3FUR1NBakprX1YyN25xZ1NhcGJrTXA4WDN5MHhTMVlXNGFpTXdfdUw5dFRQUkREbUdWclA2Yk5kS3VMVjZWNmRULUZibFVaUHl1QmRFTlpzZGRTYkx5TFlPYXpoU0tPWkhiVnZSLVlyMHlCR3lxemNsc25kNXhON1ZULTF2alpzU1NMN2F4Z2dtcWVCQW1YVFV3eVdVYl9saDNwN3d3b29xbTJaY2hnZWVMWTZ6M2owYjA?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
-      "summary": "[not material]\n\nThe snippet is truncated and doesn't provide sufficient detail about what CSL results, 2027 guidance, or dividend developments were announced, making it impossible to assess materiality to shareholders.",
-      "published": "2026-08-27T21:53:17+00:00"
+      "summary": "CSL's FY26 results show business restructuring and operational efficiencies that position the company for renewed growth, which matters because it signals management is addressing past challenges and creating a foundation for improved future profitability and shareholder returns.",
+      "published": "2026-08-28T07:22:00+00:00"
     },
     {
       "tickers": [
         "DRO"
       ],
-      "title": "DroneShield (ASX:DRO) Revenue Soars but Profit Pressure Raises Questions - Kalkine Media",
-      "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNRWJIVGk0NFRzVWVJU2xIZUUwY2liQ1Y2WVQ4MWpDU2NiWnRETEMtb0pfUXQ5dl9xVnZNRWhuV01nNlNKUWxkbTZLZnpSNTA2LVZENkhFdk5JN1hFLTJPS1BUQUhQbHhEcHc4LU9LUmpielkyUklYWS1nUkJIYllGRzlYbFp5dnE0S3hucHR4U2FjbmhGU0o1c3NBYm9EUUJocWliMDVuaUZQVWJZN3dxZjNvWFNBdw?oc=5",
+      "title": "DroneShield (ASX:DRO) Is Down 7.9% After Swinging To Loss Despite Surging Half-Year Sales - simplywall.st",
+      "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxPN3p5cW00RzBxaDRLYllka0pNNlF5Z245dUVaOXpzSlJEMlByQUxKMGVrVVdRQnhSaktORzlVazRQTldHazNoNTBWdmpqVzZUY3gzZzhwTkc3OGs5SjJXQ3FOWnVFVm9lcU9kaWFNV1lLR3k5NFFiSFliME9EUHVoY2JwRUdqb1Vya2dxSUVwY0JSV3I2TDg5MURJc1JWbVQ1UEpWbVkzVXlkajV1c0doVFhranJNMjY4UkZ4d1hKYlBfY0xucnNyeGVPTTVGa01BNzg2WdIB2gFBVV95cUxPcHBvcDRlNVh5U2FKZDZPTGlEVUZnWHdHN0l1aGwtYjNTY1FYNGRveDNnTUp0RWJyekFGeGlKWVRUMW01YzhvcDlmQVhjcmVxNk9vLXVfOFBmZGRGZGZhekRIdXRaU1R3ZkN3N3BTUl94enY2YllkRGVNS2psZGxNN0FWeTV6WkkwZWR5WFdsNHhXdFNZTi1HdGYzREtvWjdkZXk2eU1tS1FhSW5DNFBuSlQ1a3BqNHVfUWpCcDNUbnVhZjRsanZMVDJvaEl3Vl9QODRyN3VRSFNVZw?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
-      "summary": "",
-      "published": "2026-08-27T06:06:00+00:00"
+      "summary": "DroneShield's stock fell 7.9% despite strong sales growth because the company swung to a loss in the half-year period, signaling profitability concerns despite revenue momentum.",
+      "published": "2026-08-28T08:54:27+00:00"
     },
     {
       "tickers": [
         "DRO"
       ],
-      "title": "DroneShield (ASX: DRO): DroneShield Shares Stay Volatile After Record Revenue and a Swing to Loss - Is the Growth Story Still Intact? - Kalkine",
-      "url": "https://news.google.com/rss/articles/CBMi-AFBVV95cUxQemJsY0VNN2lhTjJWZllxRnNEUi1haWV3RkVwQWxlU2tqYkpuWm1qcDVCSlk1MGUtWGdvbV83cHRUNTdVcDZETDVwZHU0ZHZZbG5RTjhGVUhvZFotUl9mSzlhNHNTek43YjBTd3oxVU43N0phZUFRRkdSMmVuV0dKeE1zNXFhLTBwYUZWU21WZTE1bjVYLV9QOUJmUE5QeDBVSkM1SW42TXI2aXJrOXNSUzNKZ2xtU1ZYZE5Pa1BJSF9odFcydFhrc2tiRXRyaV8xX1pTOG1TTm9mdld4Y0h0YVFHSHYyM3RjMGxwZHByVUpidzdMQWhLbg?oc=5",
+      "title": "DroneShield's Margin Conundrum: Can the Counter-Drone Specialist Turn Growth Into Profit? - Ad-hoc-news.de",
+      "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxNUVZuTTZrU0U1M1lZVGdJRFVTMlpIck9QZm0xX2NhMjRWV1ppR0Z3UVFkNFhYcTlCeEpINURCMWxCUE42Vi1ZLUtjellmSW9PbF9MMWdNaDNDLV9XMU95eU10SWU5OHJ2RVJIZkdmRzFoSko4dWR3LWdQbUV5N1oxMkxNVmx0MHhzbDR1V2R1enpTbmxBUUJoRHhMQ2dnWFNrOWktRTFRczRwNGV5NjBhU1UybjVIWVU0ZGxOMWMwcFE5RHgyM1d0aGZHZVZVMGUxbXVoU0RZUQ?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
-      "summary": "",
-      "published": "2026-08-27T07:46:00+00:00"
-    },
-    {
-      "tickers": [
-        "BHP"
-      ],
-      "title": "BHP Group (ASX:BHP) Copper Strategy Takes Centre Stage After Record FY26 Results - Kalkine",
-      "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOXzRyQmZKdTZyeUpBeWYwbGNMMVRYSlJDdlhPMkprR0pkZmVKOHZ3Qk96TnZkc0VCa3dOODJTdThtUU9JSUtTekdqMTZBZVBFSGtLZGVXVHozcU9xZS1GU2hmN1Zha0JmN1o0VWVnU2NLakJrZk0zNmIzeERpSVJfUUdPMmZ1WmVyRlpDXy1pNl9Za09JdW9qMzVwSTR4c19RQUtfaEdDQlowME9wOGR0TVdLb2s0c01kTXJES19Zdw?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "BHP's record FY26 results have elevated copper to strategic priority, signaling the company is capitalizing on surging copper demand from electrification and renewable energy transition\u2014critical for long-term growth in a high-margin commodity.",
-      "published": "2026-08-27T10:25:00+00:00"
-    },
-    {
-      "tickers": [
-        "CPU"
-      ],
-      "title": "Computershare (ASX: CPU): Computershare Shares Edge Lower - Could Higher Rates Keep the Earnings Tailwind Alive? - Kalkine",
-      "url": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxQRzdNdFR0SjJQN3VWVTFzMGpfRVJmRVh3WllPRFU4MjhJeTBwaVVFUjhxckxRaEtkY0NrZUhiY1JDX05VZjVWQVBRS3ViR19XOU5EY0t0bURIQnlqblhqTG9PaDlYZmR5RE40Z2ZHNkRybi1fQXVTZzZDd3hqNmlpSGs1QXJFbm1JRzlaY1RqLW1JZ2ltMVZfcy1sOEpVa2F2aTFTblBSdzJ4YkRtd3g4TjgtbWJGVW55VU1DLUt5TWFBZWx2Z1V5LXAxeThtRVQ3NkhtTnNfYzBvWFlCbUE?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "[not material]\n\nThe headline raises a question about whether higher rates could support earnings but provides no concrete news about what actually happened to the stock or company.",
-      "published": "2026-08-27T07:42:00+00:00"
-    },
-    {
-      "tickers": [
-        "RTH"
-      ],
-      "title": "RAS Technology FY2026 slides: 34% revenue growth amid investment phase By Investing.com - Investing.com India",
-      "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQZ0NXOXJIU191bklXeWpUZUxVX0h4YW84VDloSmMwMEhiNllKODhCNjFwcW1fR2xXX3BWM2I0R2ROamVTUkZ3ZE5XQjJxZ2ZuWlowTUJFWlJwT2lNT0Z2X2tzQzhMUkdMUHlGS1oxUDlMaXl1Q1dPQW9XcEhfS2dWYk4tc3luRHlsZkRMSWhVUENRWTBPWWxqRmR1RkE2a3k4QTFtSW4wRjhGbVUyQlZUc0RfT1M0NFhvcTZfR09rZTlFMkotUWd4RA?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "",
-      "published": "2026-08-27T01:22:59+00:00"
-    },
-    {
-      "tickers": [
-        "RTH"
-      ],
-      "title": "RAS Technology Holdings (ASX:RTH) Revenue Jumps 34% as Tabcorp Signs New Four-Year Data Agreement - Kalkine",
-      "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxQbHl4NThBMHJ3dThrcC1yZWM4WW1TZUhHRWh3VWw4NDBEOXRRUUVieWNqbkVPVGhQQXFFdnIxTmhqN2xpSlIzb2FJT1Y4LVJNYkxlREhweTR0OWl5VHlBUEpab01rTFFPOERRMlMxQXYtX2JZYU5iYUh0SVZja1dtWERQbEdNcjFfR182dS15MXFoOWVvcWpGSEZpOXdVaFBUTXg0Qjc3N2NoR00ybTN6MHBZYlZBU012WGNJSjRMRWF3WHNVWDZlRDVyYUY?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "",
-      "published": "2026-08-27T04:04:00+00:00"
+      "summary": "[not material]\n\nThe snippet is truncated and doesn't provide sufficient detail about what actually happened with DroneShield (DRO) or its financial situation beyond a vague headline about margin challenges.",
+      "published": "2026-08-28T19:02:55+00:00"
     }
   ]
 }

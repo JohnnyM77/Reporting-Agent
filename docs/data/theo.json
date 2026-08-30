@@ -2,8 +2,8 @@
   "last_run": "2026-08-30",
   "thesis_count": 20,
   "drifting": 2,
-  "watch": 12,
-  "clean": 6,
+  "watch": 14,
+  "clean": 4,
   "theses": [
     {
       "ticker": "ABB",
@@ -270,7 +270,7 @@
         {
           "code": "SIGNAL_UNANSWERED",
           "severity": "WARN",
-          "message": "Sally: sally trim on 2026-08-23 and nothing was written down either way"
+          "message": "Sally: sally trim on 2026-08-30 and nothing was written down either way"
         },
         {
           "code": "DIVERGENCE_OPEN",
@@ -390,7 +390,7 @@
       "grade": "A",
       "draft": false,
       "exited": true,
-      "verdict": "CLEAN",
+      "verdict": "WATCH",
       "pillars": [
         {
           "id": "P1",
@@ -410,7 +410,13 @@
       ],
       "irr": -0.13610757665894924,
       "multiple": 0.7523673149640412,
-      "findings": []
+      "findings": [
+        {
+          "code": "SIGNAL_UNANSWERED",
+          "severity": "WARN",
+          "message": "Sally: sally review on 2026-08-30 and nothing was written down either way"
+        }
+      ]
     },
     {
       "ticker": "MSV",
@@ -453,7 +459,7 @@
       "grade": "B",
       "draft": false,
       "exited": false,
-      "verdict": "CLEAN",
+      "verdict": "WATCH",
       "pillars": [
         {
           "id": "P1",
@@ -478,7 +484,13 @@
       ],
       "irr": 0.27311980701498667,
       "multiple": 1.4587343785965985,
-      "findings": []
+      "findings": [
+        {
+          "code": "SIGNAL_UNANSWERED",
+          "severity": "WARN",
+          "message": "Sally: sally trim on 2026-08-30 and nothing was written down either way"
+        }
+      ]
     },
     {
       "ticker": "PWH",
@@ -516,7 +528,7 @@
         {
           "code": "SIGNAL_UNANSWERED",
           "severity": "WARN",
-          "message": "Sally: sally trim on 2026-08-23 and nothing was written down either way"
+          "message": "Sally: sally trim on 2026-08-30 and nothing was written down either way"
         }
       ]
     },
@@ -765,17 +777,33 @@
       "ticker": "BHP",
       "source": "Sally",
       "kind": "SALLY_TRIM",
-      "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 24x \u00b7 99th valuation percentile",
+      "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 25x \u00b7 99th valuation percentile",
       "question": "Sally says trim. You are not going to. What would have to be true about the price for you to change that answer \u2014 and is that written down as a kill condition anywhere?",
-      "date": "2026-08-23"
+      "date": "2026-08-30"
+    },
+    {
+      "ticker": "LAU",
+      "source": "Sally",
+      "kind": "SALLY_REVIEW",
+      "detail": "Hold but stop adding \u00b7 Tier 2: Review \u00b7 PE 13x \u00b7 80th valuation percentile",
+      "question": "Sally has flagged this for review. What does she see that your pillars do not cover?",
+      "date": "2026-08-30"
+    },
+    {
+      "ticker": "NHC",
+      "source": "Sally",
+      "kind": "SALLY_TRIM",
+      "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 33x \u00b7 96th valuation percentile",
+      "question": "Sally says trim. You are not going to. What would have to be true about the price for you to change that answer \u2014 and is that written down as a kill condition anywhere?",
+      "date": "2026-08-30"
     },
     {
       "ticker": "PWH",
       "source": "Sally",
       "kind": "SALLY_TRIM",
-      "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 67x \u00b7 98th valuation percentile",
+      "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 65x \u00b7 97th valuation percentile",
       "question": "Sally says trim. You are not going to. What would have to be true about the price for you to change that answer \u2014 and is that written down as a kill condition anywhere?",
-      "date": "2026-08-23"
+      "date": "2026-08-30"
     }
   ],
   "no_thesis": []

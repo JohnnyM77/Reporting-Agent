@@ -1,5 +1,94 @@
 [
   {
+    "last_run": "2026-09-01",
+    "silence": false,
+    "high_impact": [
+      {
+        "ticker": "CPU",
+        "title": "Annual Report - FY26 144\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.2MB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03133935",
+        "type": "results",
+        "analysis": {
+          "ticker": "CPU",
+          "period": "FY26",
+          "period_type": "full_year",
+          "currency": "USD",
+          "metrics": {
+            "revenue": {
+              "value": "US$3,265.9m",
+              "change_pct": "+4.7%",
+              "basis": "reported"
+            },
+            "underlying_npat": {
+              "value": "US$849.8m",
+              "change_pct": "+7.1%",
+              "basis": "underlying"
+            },
+            "underlying_eps": {
+              "value": "146.92c",
+              "change_pct": "+8.6%",
+              "basis": "underlying"
+            },
+            "dividend_ordinary": {
+              "value": "AU65c final (AU$1.20 total FY26)",
+              "change_pct": "+29% total vs FY25",
+              "note": "Final unfranked; interim was 30% franked; total FY26 DPS AU$1.20 vs AU$0.93 in FY25"
+            },
+            "operating_cash_flow": {
+              "value": "US$836.6m",
+              "change_pct": "+1.6%",
+              "basis": "reported"
+            }
+          },
+          "summary": "CPU delivered a clean beat on its own upgraded guidance, with Management EPS of 146.92c beating the February 2026 upgrade of ~144c and well ahead of initial August 2025 guidance of ~140c. The driver was broad-based fee revenue growth across all three core segments \u2014 Employee Share Plans (+10%), Corporate Trust (+6%), Issuer Services (+4%) \u2014 plus cost discipline and Wells Fargo synergy delivery a year early, which more than offset a modest -1.6% decline in Margin Income as rates fell. Cash conversion was excellent: free cash flow of US$801.2m covered the statutory profit ~1.3x and the balance sheet is almost debt-free at 0.11x net debt/EBITDA. The AU$1.20 total FY26 dividend (+29%) and FY27 guidance for +6% EPS growth to 154c signal management confidence, but the payout leap is partly an acknowledgement that the rate tailwind is now a gentle headwind rather than a boost. The single biggest forward risk is a faster-than-guided rate decline compressing Margin Income, which at US$748.7m still represents ~29% of management revenue and where CPU has hedged only ~50-60% of exposed balances.",
+          "full_analysis": "## Executive summary\n- **Clean beat vs own guidance**: Management EPS 146.92c delivered above the February 2026 upgrade of ~144c and materially above initial guidance of ~140c; statutory EPS +3.4% to 106.97c.\n- **All three core segments grew**: ESP +10% revenue, +24% EBIT; Corporate Trust +6% revenue, +3% EBIT; Issuer Services +4% revenue, but EBIT -4% as Margin Income fell and investment spending stepped up.\n- **Balance sheet transformation complete**: Net debt/EBITDA collapsed from 0.42x to 0.11x following UK Mortgage Services disposal (Feb 2026) and strong cash generation; this funds the 29% dividend increase and future M&A optionality.\n- **Margin Income still shrinking but cushioned**: MI fell -1.6% to US$748.7m despite rising average client balances (+US$1.8bn to US$31.7bn) \u2014 rate cuts in all major markets were partly offset by hedging and balance growth; FY27 guidance assumes MI rebounds to ~US$770m on an assumed rate increase cycle.\n- **Red flag \u2014 restructuring costs are persistent**: Major restructuring costs added back to reach management NPAT were US$61.6m in FY26 (US$60.7m in FY25); this is now a recurring 'one-off', and amortisation of acquisition intangibles (US$76.3m net of tax) is also structural.\n\n## Key numbers\n| Metric | FY26 | FY25 | Change |\n|---|---|---|---|\n| Management Revenue (actual rates) | US$3,265.9m | US$3,120.2m | +4.7% |\n| Management Revenue (constant currency) | US$3,212.5m | US$3,120.2m | +3.0% |\n| Margin Income | US$748.7m | ~US$760.3m est. | -1.6% (CC) |\n| Management EBIT | US$1,210.7m | US$1,174.3m | +3.1% |\n| Management EBITDA | US$1,284.9m | US$1,244.0m | +3.3% |\n| Statutory NPAT (post-NCI) | US$618.7m | US$607.0m | +1.9% |\n| Management NPAT (post-NCI) | US$849.8m | US$793.8m | +7.1% |\n| Bridge: statutory to management NPAT | Amortisation +US$76.3m; restructuring +US$61.6m; UK MS loss on sale +US$46.3m; UK MS disposal costs +US$32.0m; integration costs +US$10.8m; hedge modification +US$8.6m; less contingent consideration gain -US$5.1m; MTM +US$0.3m | | |\n| Statutory EPS (basic) | 106.97c | 103.45c | +3.4% |\n| Management EPS (basic, actual rates) | 146.92c | 135.28c | +8.6% |\n| Management EPS (constant currency) | 145.19c | 135.08c | +7.5% |\n| Free cash flow | US$801.2m | US$780.1m | +2.7% |\n| Cash flow from operations (ex-SLS) | US$836.6m | US$823.7m | +1.6% |\n| Net debt/Management EBITDA (ex non-recourse) | 0.11x | 0.42x | -0.31x |\n| Total assets | US$4,966.7m | US$5,335.4m | -6.9% |\n| Total shareholders' equity | US$2,287.4m | US$2,140.7m | +6.9% |\n| Return on equity (management) | 38.3% | 38.7% | -40bps |\n| Staff numbers | 11,625 | 12,891 | -9.8% |\n\n## Quality of earnings\n- **Cash conversion is strong**: Free cash flow of US$801.2m against management NPAT of US$849.8m = ~94% conversion; operating cash flow (ex-SLS) of US$836.6m is essentially equal to statutory NPAT \u2014 no obvious working capital inflation.\n- **Restructuring is a recurring add-back**: US$61.6m in FY26 (major restructuring) follows US$60.7m in FY25. Two consecutive years of near-identical 'one-off' restructuring charges signal this is a structural cost of running the business. Stripping this out to reach 'management' NPAT flatters the true earnings power.\n- **Amortisation of acquisition intangibles**: US$76.3m net of tax added back in FY26 (vs US$70.6m in FY25). These are real economic costs representing the decay of acquired client relationships and technology; the management EPS number permanently excludes them.\n- **UK MS disposal losses**: A US$46.3m loss on sale plus US$32.0m disposal-related expenses (US$78.3m combined, net of tax) from the February 2026 UK Mortgage Services sale are legitimately excluded from management results, but represent real cash/value destruction from an exit at below book value \u2014 this was a strategic clean-up, not a clean deal.\n- **Margin Income hedge modification**: US$8.6m added back (US$19.9m in FY25) relates to fair-value adjustments on interest rate hedges \u2014 non-cash but reflects genuine risk management costs being excluded from the headline number.\n- **Capitalised costs / DSO**: Detailed DSO and capitalised software disclosure not extracted in the text provided; receivables and inventory granularity limited in this excerpt.\n- **Staff reduction of 1,266 headcount** (-9.8%) is consistent with the restructuring charges and cost-out savings; the salary inflation line of US$93.7m partially offsets the headcount reduction benefit.\n\n## Management framing\n**Rating: Mixed \u2014 mostly transparent with selective emphasis**\n- **Transparent**: CPU provides a clear statutory-to-management bridge with named line items and dollar amounts; the amortisation, restructuring and disposal costs are all individually disclosed. Constant currency vs actual rates are both shown. Guidance upgrades are explicitly referenced.\n- **Promotional**: The Chairman's report leads with constant currency EPS and Management Revenue rather than statutory numbers \u2014 the 107c statutory EPS (barely above the 103c prior year) gets no prominence, while the 145c management EPS is front and centre. The +29% dividend increase is highlighted but not contextualised against the fact that free cash flow growth was only +2.7%.\n- **Selective emphasis**: Issuer Services EBIT fell -4.2% (in CC) \u2014 this is buried in the CEO's report after the positives; the margin compression from lower MI and higher investment spend in IS is mentioned but framed as a deliberate 'investment' rather than a miss.\n- **Restructuring opacity**: Management never explains when restructuring costs will end; US$61-62m per year for two years with ongoing cost-out programs and a FY27 promise of further US$22m savings implies this line continues.\n- **Stranded costs**: The FY26 CEO report flags US$33.3m of 'stranded costs' from the US MS disposal, allocated across segments but excluded from segment EBIT in the commentary \u2014 this is a legitimate but double-adjusting practice (stranded costs are in the reported segment P&L but excluded from the management EBIT commentary used to calculate management EPS).\n\n## Segments\n| Segment | FY26 Revenue (actual) | Change (CC) | FY26 EBIT (ex stranded) | EBIT Margin | Change |\n|---|---|---|---|---|---|\n| Issuer Services | US$1,310.6m | +4.4% | US$436.5m | 33.3% | -300bps |\n| Corporate Trust | US$1,032.0m | +5.7% | US$526.4m | 51.0% | -150bps |\n| Employee Share Plans | US$559.7m | +10.2% | US$260.8m | 46.6% | +530bps |\n| Corporate & Other | US$310.2m | -18.7% | -US$27.4m | n/m | deteriorated |\n| **Group Total** | **US$3,265.9m** | **+3.0%** | **US$1,210.7m** | **~37.1%** | **+0bps approx** |\n\n- **Issuer Services**: Revenue growth driven by US corporate actions volumes (+3% deals, +8% in 2H), Hong Kong IPO surge (+96%), Register Maintenance fees (+3%) and Entity Solutions (+7.7%). But Margin Income declined US$9.1m and the company invested in new product development, compressing EBIT margin 300bps. Net: growing but getting less profitable per dollar of revenue.\n- **Corporate Trust**: US$80m Wells Fargo synergy target delivered a full year early \u2014 a genuine positive. Trust fee revenue +9%; structured products growing strongly. MI down US$3.1m. EBIT ex MI margin expanded to >17% (as stated by management). The 150bps overall margin decline is entirely MI-driven.\n- **Employee Share Plans**: The standout performer. Transaction fees +18% on record trading volumes, assets under administration up 8%, administered units +5%. EBIT +24%, margin +530bps. Volatility in equity markets was a positive for transaction volume. High operating leverage evident.\n- **Corporate & Other**: Revenue down US$71.2m driven by UK MS disposal (February 2026) and lower MI. EBIT loss of US$27.4m. Stranded costs from prior US MS disposal also sit here. This segment will mechanically improve in FY27 as comparatives reflect a full year without UK MS.\n\n## Balance sheet\n- **Near debt-free**: Net debt/EBITDA of 0.11x (ex non-recourse debt) vs 0.42x a year ago \u2014 a dramatic deleveraging. Total assets fell US$368.7m to US$4,966.7m, partly reflecting the UK MS disposal.\n- **Equity up 6.9%** to US$2,287.4m, consistent with retained profit after dividends.\n- **No covenant or refinancing stress identified** in this excerpt; the low leverage gives material headroom.\n- **Non-recourse debt**: SLS (Specialized Loan Servicing) advances and associated non-recourse debt are excluded from the headline leverage ratio \u2014 this is standard practice but worth noting as a gross balance sheet item.\n- **Capital allocation**: With 0.11x leverage and US$801m FCF, CPU has significant firepower. Management flagged a pipeline focused on Corporate Trust and Entity Solutions acquisitions; patience and discipline emphasised.\n- **ROE** dipped 40bps to 38.3% despite higher NPAT \u2014 equity base growing faster than profits, suggesting the balance sheet is becoming over-capitalised without a near-term acquisition or capital return event.\n\n## Dividend and capital allocation\n- **FY26 total dividend: AU$1.20/share** (+29% on FY25's AU$0.93). Interim AU55c (30% franked), Final AU65c (unfranked).\n- The 29% dividend increase significantly outpaces the 7.1% management NPAT growth and 2.7% FCF growth \u2014 this is a deliberate policy signal that the balance sheet is strong enough to sustainably uplift the payout ratio.\n- **FY25 final was AU48c; FY26 final is AU65c** \u2014 a 35% jump in the final dividend alone. This is partly an admission that prior dividends were conservative relative to earnings power.\n- **No buyback announced** despite the clean balance sheet; management appears to be preserving M&A optionality.\n- **Franking**: The interim was 30% franked; the final is unfranked \u2014 reflecting the proportion of Australian-source taxable income. Given ~56% of revenue is US-sourced, full franking is structurally unavailable.\n\n## Guidance and outlook\n- **FY27 Management EPS guidance: ~154c** (+6% on FY26 actual of 146.92c).\n- **Margin Income forecast: ~US$770m** (vs US$748.7m in FY26) based on: average client balances of US$32.8bn; average yield of 2.35%; assumed rate increases in US (Jan), Canada (Mar), UK (Nov + Mar); hedged proportion rising from ~50% to ~60% of exposed balances.\n- **EBIT ex MI: up ~3.5%** (or ~7% adjusting for disposed businesses).\n- **Operating cost inflation below 3%** in FY27; additional US$22m cost-out savings by end of FY27.\n- **EBIT ex MI margin target: ~19%** for full year.\n- **Net interest expense down ~15%** due to lower debt levels.\n- **Guidance caveat**: Assumes broadly consistent equity market conditions for ESP transactional revenue; event fees in ESP expected to decline as some FY26-specific activity will not repeat.\n- **Risk to guidance**: The MI forecast assumes a rate-increase cycle \u2014 this is an unusual assumption in mid-2026 and could easily be wrong if central banks pause or cut further. A US$10m miss on MI would be ~1.2% of management NPAT.\n\n## Positives\n- **ESP EBIT +24%** with margin expanding 530bps \u2014 high operating leverage demonstrating the business model at its best; US$289bn in assets under administration provides a durable revenue base.\n- **Wells Fargo synergies delivered a year early** in Corporate Trust; US$80m target achieved, providing a clean FY27 baseline without integration drag.\n- **Balance sheet strength**: 0.11x net leverage with US$801m FCF gives strategic flexibility rare in this peer group.\n- **Corporate Actions momentum building through FY26**: US deal volume +3% for the year, +8% in 2H; pending deal count +8% at year-end \u2014 a positive leading indicator for FY27 IS revenue.\n- **Hong Kong IPO +96%**: Demonstrates geographic diversification value; non-US growth vectors reducing rate-cycle dependency.\n- **Dividend +29%** signals management and board confidence in the earnings durability; payout comfortably covered by FCF.\n- **Staff headcount -9.8%** while revenues grew \u2014 productivity improvement is real and structurally valuable.\n- **FY27 MI guidance assumes rate increases** \u2014 if correct, removes the rate headwind that suppressed FY26 IS and CT margins.\n\n## Negatives / red flags\n- **Restructuring 'one-off' is now recurring**: US$61.6m in FY26, US$60.7m in FY25 \u2014 this should be treated as an operating cost, not an add-back. Adjusting for this, true underlying NPAT is ~US$788m, not US$849.8m.\n- **Issuer Services EBIT margin fell 300bps** to 33.3% \u2014 the largest segment by revenue is getting less profitable; Margin Income headwinds and investment spend are compressing returns without a clear payback timeline disclosed.\n- **UK MS disposal at a loss**: US$78.3m total cost (loss on sale + disposal expenses, net of tax) to exit a non-core business. This is a real economic cost, not a footnote.\n- **Guidance relies on rate increases**: FY27 MI forecast of US$770m assumes central banks raise rates; if the cycle reverses, MI misses and EPS guidance is at risk given MI is ~23% of management revenue.\n- **Management EPS is NOT a GAAP metric and excludes real costs**: Adding back amortisation (US$76.3m) and restructuring (US$61.6m) together total US$137.9m net of tax in FY26 \u2014 that is a 22% premium to statutory profit. Investors relying solely on 146.92c are paying for economics that may not fully materialise.\n- **ROE trending down**: 38.3% in FY26 vs 38.7% in FY25 \u2014 minor but consistent with the over-capitalisation risk as the balance sheet strengthens faster than earnings grow.\n- **ESP event fee revenue expected to decline in FY27**: Some FY26 one-off activity will not repeat; this creates a tough comp in the strongest-performing segment.\n- **Continental Europe revenue -21.9% in constant currency**: A meaningful regional deterioration; no substantive explanation provided in the text.\n- **Stranded cost accounting**: US$33.3m of stranded costs are in the statutory P&L but excluded from segment management EBIT commentary \u2014 a legitimate but layered adjustment that makes true segment economics harder to assess.\n\n## Bottom line\n**Bull case**: CPU is a capital-light tollbooth on global financial markets with genuinely sticky client relationships, rising recurring fee revenues and a near-debt-free balance sheet. ESP and Corporate Trust are in structural growth phases; the Wells Fargo integration is complete and delivering; the balance sheet funds both a rising dividend and selective bolt-on M&A without equity dilution. FY27 guidance of 154c EPS is conservative if deal volumes hold and rates rise as assumed. On ~17-18x management earnings, the stock is not expensive for this quality.\n\n**Bear case**: Management EPS inflates the true picture by US$137m/year of recurring 'one-offs'. Statutory EPS of 107c grew just 3.4% and is only ~72% of the management number. Margin Income \u2014 still US$749m or 23% of revenue \u2014 faces structural headwinds if central banks cut rather than hike, as many forecasters expect. Issuer Services margins are compressing. The 29% dividend jump is unsupported by equivalent FCF growth and reduces reinvestment flexibility. At current multiples, the market is pricing in the bull case with limited margin for error.\n\n**What would change the view**: (1) A sustained rate-cut cycle in the US/UK/Canada that takes MI below US$700m would break the FY27 earnings narrative \u2014 watch the February 2027 1H update MI line closely; (2) A large Corporate Trust acquisition would test management's discipline claim and could re-lever the balance sheet quickly; (3) If restructuring costs disappear in FY27 (confirming they were genuinely one-off), the statutory-to-management earnings gap would close and the stock's multiple would be better justified.",
+          "_status": "ok"
+        },
+        "doc_link": "",
+        "doc_error": "",
+        "pdf_path": "/tmp/CPU_FY26_2026-09-01.pdf"
+      }
+    ],
+    "material": [],
+    "fyi": [
+      {
+        "ticker": "BXB",
+        "title": "Change of Director's Interest Notice 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 328.8KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134092"
+      },
+      {
+        "ticker": "CPU",
+        "title": "Corporate Governance Statement and Appendix 4G - FY26 26\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 733.2KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03133939"
+      },
+      {
+        "ticker": "CPU",
+        "title": "Annual Report - FY26 144\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.2MB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03133935"
+      },
+      {
+        "ticker": "CSL",
+        "title": "Agreements with U.S. on Drug Prices and Manufacturing 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                           ",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03133877"
+      },
+      {
+        "ticker": "PWH",
+        "title": "Change in substantial holding 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 537.3KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03133482"
+      },
+      {
+        "ticker": "VAS",
+        "title": "Updated PDSs Vanguard Australian Shares ETFs 40\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.5MB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134120"
+      },
+      {
+        "ticker": "VHY",
+        "title": "Updated PDSs Vanguard Australian Shares ETFs 40\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.5MB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134120"
+      }
+    ]
+  },
+  {
     "last_run": "2026-08-31",
     "silence": false,
     "high_impact": [
@@ -82,12 +171,5 @@
         "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03132921"
       }
     ]
-  },
-  {
-    "last_run": "2026-08-30",
-    "silence": true,
-    "high_impact": [],
-    "material": [],
-    "fyi": []
   }
 ]

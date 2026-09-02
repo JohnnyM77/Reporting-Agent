@@ -1,5 +1,38 @@
 [
   {
+    "last_run": "2026-09-02",
+    "silence": false,
+    "high_impact": [],
+    "material": [],
+    "fyi": [
+      {
+        "ticker": "BXB",
+        "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134511"
+      },
+      {
+        "ticker": "BXB",
+        "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134457"
+      },
+      {
+        "ticker": "BXB",
+        "title": "Notification regarding unquoted securities - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.2KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134192"
+      },
+      {
+        "ticker": "DRO",
+        "title": "Change in substantial holding 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 348.3KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134369"
+      },
+      {
+        "ticker": "RMD",
+        "title": "Accelerated Share Repurchase Agreement Announcement 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 118.7KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134484"
+      }
+    ]
+  },
+  {
     "last_run": "2026-09-01",
     "silence": false,
     "high_impact": [
@@ -85,90 +118,6 @@
         "ticker": "VHY",
         "title": "Updated PDSs Vanguard Australian Shares ETFs 40\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.5MB",
         "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134120"
-      }
-    ]
-  },
-  {
-    "last_run": "2026-08-31",
-    "silence": false,
-    "high_impact": [
-      {
-        "ticker": "AR9",
-        "title": "Preliminary Final Report 33\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 718.3KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03133095",
-        "type": "results",
-        "analysis": {
-          "ticker": "AR9",
-          "period": "FY26",
-          "period_type": "full_year",
-          "currency": "AUD",
-          "metrics": {
-            "revenue": {
-              "value": "$13.4m",
-              "change_pct": "+120%",
-              "basis": "reported"
-            },
-            "underlying_npat": {
-              "value": "-$16.3m",
-              "change_pct": "-243%",
-              "basis": "statutory"
-            },
-            "underlying_eps": {
-              "value": "-3.64c",
-              "change_pct": "-119%",
-              "basis": "statutory"
-            },
-            "dividend_ordinary": {
-              "value": "nil",
-              "change_pct": "n/a",
-              "note": "no dividend declared"
-            },
-            "operating_cash_flow": {
-              "value": "-$15.4m",
-              "change_pct": "n/m",
-              "basis": "reported"
-            }
-          },
-          "summary": "Revenue doubled to $13.4m on the back of the Spirion acquisition but the statutory loss blew out from -$4.8m to -$16.3m as opex surged, and operating cash flow swung from a +$3.0m inflow to a -$15.4m outflow. The entire top-line uplift is acquisition-driven \u2014 Spirion only contributed nine months and organic revenue was modest. Cash conversion is deeply negative, with only $2.9m cash on hand against $8.0m in borrowings due imminently and $18.6m in total current liabilities. No dividend and none foreseeable. The single biggest risk is a going-concern liquidity crunch: the CBA $4m facility was extended only to October 2026, cash runway is razor-thin, and the company explicitly flags material uncertainty about its ability to continue as a going concern.",
-          "full_analysis": "## Executive summary\n- Revenue doubled to $13.4m (+120%) but this is almost entirely from the Spirion LLC acquisition (closed 1 Oct 2025, nine months contribution); organic growth is immaterial.\n- Statutory net loss tripled to -$16.3m (FY25: -$4.8m), driven by a step-change in opex from the enlarged group, one-off loan establishment/termination fees of $714k, $5.6m intangible amortisation, and $948k share-based payments.\n- Operating cash flow swung from a +$3.0m inflow to a -$15.4m outflow \u2014 the most alarming single number in this report.\n- Going concern is flagged as a material uncertainty: $2.9m cash, $8m bank loan classified current, $4m CBA facility extended only to Oct 2026, and current liabilities of $18.6m dwarf current assets of $8.2m.\n- ARR of $14.8m (+208%) and deferred revenue of $8.5m (+35%) are genuine positives but do not resolve the near-term cash problem.\n\n## Key numbers\n\n| Metric | FY26 | FY25 | Change |\n|---|---|---|---|\n| Revenue | $13.4m | $6.1m | +120% |\n| Gross profit | $10.0m | $4.6m | +115% |\n| Gross margin | 75% | 76% | -1pp |\n| EBITDA | -$10.2m | -$0.7m | n/m |\n| Amortisation of intangibles | $5.6m | $4.1m | +38% |\n| Total D&A | $6.0m | $4.3m | +41% |\n| Statutory NPAT | -$16.3m | -$4.8m | -243% |\n| Underlying NPAT | n/a \u2014 no underlying figure disclosed | \u2014 | \u2014 |\n| Basic EPS | -3.64c | -1.66c | -119% |\n| Operating cash flow | -$15.4m | +$3.0m | n/m |\n| Free cash flow (OCF less capex/intangibles) | -$17.5m | -$6.4m | n/m |\n| Cash & equivalents | $2.9m | $3.1m | -9% |\n| Borrowings (current) | $8.0m | $2.0m | +300% |\n| Net debt | $5.1m | -$1.1m (net cash) | n/m |\n| Market cap | $33.8m | $66.5m | -49% |\n\n## Quality of earnings\n- Cash conversion is catastrophically poor. Revenue recognised was $13.4m but receipts from customers were only $7.8m \u2014 a $5.6m gap explained largely by the build in contract liabilities (deferred revenue) brought in via Spirion and multi-year renewal billing. Deferred revenue is a future obligation, not free cash.\n- Payments to suppliers and employees of $24.9m against customer receipts of $7.8m (supplemented by $2.0m R&D tax incentive) underscores the scale of the cash burn.\n- Capitalised development costs are $3.5m (FY25: $2.96m), with $2.0m of employee and $1.4m of contractor costs capitalised. This reduces the reported opex loss but does not generate cash; amortisation of $5.6m then hits EBITDA making the EBITDA loss of -$10.2m worse than the capitalisation flatters.\n- Receivables jumped from $0.58m to $2.98m (+415%), partly acquisition-driven but DSO has clearly lengthened.\n- R&D tax incentive cash receipt of $2.0m is structurally important to the cash position but is a government refund, not operating earnings.\n- Finance costs of $1.03m include a $521k loan establishment fee and $193k termination fee \u2014 one-off but real cash costs that management downplayed in the narrative.\n- The PPA for Spirion is provisional; final allocation could shift goodwill, amortisation, and hence future losses.\n\n## Management framing\n**Rating: Promotional / Mixed**\n- Management led with ARR of $14.8m (+208%), contracted sales of $14.1m, and a 'record' for Q3/Q4 revenue growth \u2014 all of which are materially inflated by the acquisition. The +208% ARR figure is almost entirely acquisition-derived, not organic.\n- The directors used pro forma contracted sales of $16.6m (full 12-month Spirion contribution) to present a rosier picture than the statutory $14.1m, without being transparent that actual recognised revenue was only $13.4m.\n- Operating cash outflow of -$15.4m is acknowledged but buried; the narrative emphasises cost 'reduction' in H2 (an 11% June quarter decline in opex) while not quantifying the full-year opex explosion.\n- Going concern risk is disclosed in Note 1(a) but not mentioned in the Directors' Report narrative, which reads as upbeat and forward-looking.\n- The company discloses it is 'impracticable' to show standalone Spirion revenue and profit post-acquisition \u2014 while technically defensible given integration, this prevents any assessment of what Spirion alone contributed or whether it is profitable.\n- No formal Audit and Risk Committee exists \u2014 disclosed tersely at the back of the compliance section. For a company with material going concern issues, this is a significant governance gap.\n\n## Segments\n- No formal segment reporting. Revenue split disclosed: Licensing $11.7m (FY25: $4.2m, +181%), Services $1.6m (FY25: $1.8m, -10%), Equipment nil (FY25: $0.07m).\n- Licensing now 88% of revenue (FY25: 69%), reflecting Spirion's recurring licence base. This is a genuine quality improvement.\n- Services revenue declined in absolute terms \u2014 the company is deliberately deprioritising low-margin services work.\n- Geographic split not separately disclosed but management commentary indicates growing US presence via Spirion's established US customer base.\n\n## Balance sheet\n- Net assets of $15.6m (FY25: $5.4m) are flattered by $26.8m of intangible assets on the balance sheet, of which $9.9m is goodwill (untested in the period, no impairment taken) and $9.4m is acquired software.\n- Net tangible assets per share are negative at -2.31c (FY25: -1.87c), meaning the entire equity value rests on intangibles.\n- $8.0m bank loan is classified as current (due within 12 months) and the facility is essentially fully drawn ($92 unused).\n- The $4.0m CBA facility was extended only to 30 October 2026 \u2014 a three-month reprieve that solves nothing structurally.\n- Current ratio is 0.44x ($8.2m current assets / $18.6m current liabilities), which is deeply distressed. However, $7.3m of current liabilities are contract liabilities (deferred revenue) that do not typically require cash repayment \u2014 stripping these out gives an adjusted current ratio of approximately 0.72x, still below 1.\n- Two capital raisings during the year raised $28m gross ($26.4m net) but the cash was largely consumed by the $13.4m Spirion acquisition, ongoing operating losses, and $6m new borrowings that themselves cost $714k in fees.\n- Accumulated losses now $56.7m on a $70.5m issued capital base \u2014 the equity account is structurally eroding.\n- Foreign currency reserve swung from +$589k to -$220k, reflecting AUD weakness against USD post-acquisition.\n\n## Dividend and capital allocation\n- No dividend declared or expected given the company is loss-making and cash-constrained.\n- Capital allocation in FY26 was dominated by the Spirion acquisition ($13.4m cash) funded by equity raises ($28m gross). The market cap has halved from $66.5m to $33.8m over the year, meaning shareholders who participated in the raises at $0.15 are underwater.\n- Share count expanded from 289m to 483m (+67%), significantly diluting existing holders.\n- $948k in share-based payments adds further dilution overhang (31.8m options/rights on issue).\n\n## Guidance and outlook\n- No quantitative financial guidance provided for FY27. Management referenced 'growing high-margin ARR', 'realising synergies' and 'reducing operating cash outflows' \u2014 all directional, none specific.\n- The US DoD opportunity is explicitly flagged as outside the company's control on timing, which is a candid acknowledgment of a key overhang.\n- Post-period events: $3.2m ADF contract (mostly services, $1m ARR) and the CBA facility extension to October 2026 are thin positives.\n- The company needs either a significant DoD contract win, refinancing of its debt, or another capital raise to remain solvent beyond Q2 FY27.\n\n## Positives\n- ARR of $14.8m provides a visible recurring revenue base entering FY27, up 208% (though acquisition-driven).\n- Gross margin maintained at 75% \u2014 the licensing model is high-quality when it scales.\n- Deferred revenue of $8.5m (+35%) provides FY27 revenue visibility.\n- NC Protect passed all 60 US DoD production test cases \u2014 a key technical milestone for a potentially transformative contract.\n- Q3 and Q4 revenue each hit $3.5m, implying an annualised run-rate of ~$14m from the enlarged group, which roughly matches ARR \u2014 a sign of revenue quality improving.\n- Opex declined sequentially in H2 as Spirion integration synergies ($4.5m annualised) were realised.\n- Post-period $3.2m ADF Kojensi renewal secured, confirming key government customer retention.\n\n## Negatives / red flags\n- Going concern material uncertainty explicitly flagged in Note 1(a) \u2014 the auditors have not yet signed off and the final accounts may differ.\n- Operating cash outflow of -$15.4m vs +$3.0m prior year: a $18.4m deterioration in a single year.\n- Only $2.9m cash with $8.0m debt due imminently and no meaningful undrawn facility ($92 available).\n- No Audit and Risk Committee for a company with material going concern risk \u2014 a governance failure.\n- Loss tripled to -$16.3m; EBITDA of -$10.2m means the business is deeply pre-profitability even excluding D&A.\n- All revenue growth is inorganic \u2014 Spirion acquired for $13.4m in cash; organic growth cannot be isolated due to integration.\n- PPA is provisional \u2014 final allocation could increase goodwill write-down risk or amortisation charges in FY27.\n- 67% share dilution in one year; shares are down ~50% in market cap over the same period.\n- Finance costs jumped from $123k to $1.03m, including $714k in non-recurring loan fees that indicate costly and potentially distressed debt financing.\n- US DoD commercial outcome remains uncertain and 'outside the company's control'.\n- The impairment model for intangibles uses a 9.54% discount rate with 100% renewal assumed for named strategic accounts \u2014 aggressive assumptions for a pre-profitability company.\n\n## Bottom line\n**Bull case:** The $14.8m ARR base at 75% gross margin, combined with a US DoD production-tested product and a growing deferred revenue book, means archTIS has a credible path to cash flow breakeven if (a) the US DoD contract converts to meaningful recurring revenue in FY27, (b) the Spirion integration synergies hit the $4.5m annualised target, and (c) the company can refinance its debt without further dilutive equity. At $33.8m market cap against $14.8m ARR, the valuation is not demanding if execution lands.\n\n**Bear case:** The company burns cash at $15m+ per year, has $2.9m in the bank, owes $8m that matures in months, has no Audit Committee, and its auditors have not yet signed off on accounts that carry a going concern flag. Another capital raise at distressed prices is likely. The US DoD contract has been 'in commercial negotiations' for an extended period with timing 'outside the company's control'. If that contract slips further into FY28, the company faces a solvency event or near-total dilution via an emergency raise.\n\n**What would change the view:** A signed, material US DoD contract with upfront cash receipts, or a multi-year debt refinancing on non-distressed terms, would materially de-risk the thesis. Evidence of organic ARR growth (ex-Spirion) in the quarterly 4C would also be encouraging. Conversely, failure to refinance the CBA facility beyond October 2026 or a further capital raise below $0.10/share would confirm the bear case.",
-          "_status": "ok"
-        },
-        "doc_link": "",
-        "doc_error": "",
-        "pdf_path": "/tmp/AR9_FY26_2026-08-31.pdf"
-      }
-    ],
-    "material": [],
-    "fyi": [
-      {
-        "ticker": "AR9",
-        "title": "archTIS United States Department of Defense Update 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 97.9KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03133140"
-      },
-      {
-        "ticker": "AR9",
-        "title": "Preliminary Final Report 33\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 718.3KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03133095"
-      },
-      {
-        "ticker": "BXB",
-        "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03133002"
-      },
-      {
-        "ticker": "BXB",
-        "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03132861"
-      },
-      {
-        "ticker": "VAS",
-        "title": "Annual Statement and Annual Tax Statement Notification 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 231.6KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03132921"
-      },
-      {
-        "ticker": "VHY",
-        "title": "Annual Statement and Annual Tax Statement Notification 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 231.6KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03132921"
       }
     ]
   }

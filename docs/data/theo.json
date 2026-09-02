@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-09-01",
+  "last_run": "2026-09-02",
   "thesis_count": 20,
   "drifting": 2,
   "watch": 14,
@@ -46,7 +46,7 @@
         {
           "code": "RESOLUTION_OVERDUE",
           "severity": "WARN",
-          "message": "resolution date passed 293 days ago and nothing was written down"
+          "message": "resolution date passed 294 days ago and nothing was written down"
         }
       ]
     },
@@ -121,6 +121,11 @@
           "code": "PILLAR_BREACHED",
           "severity": "ALERT",
           "message": "P4 is breached and the position is still open"
+        },
+        {
+          "code": "STALE",
+          "severity": "WARN",
+          "message": "last reviewed 12 months ago (2025-09-01)"
         },
         {
           "code": "GRADE_C",
@@ -265,7 +270,7 @@
         {
           "code": "RESOLUTION_OVERDUE",
           "severity": "WARN",
-          "message": "resolution date passed 2117 days ago and nothing was written down"
+          "message": "resolution date passed 2118 days ago and nothing was written down"
         },
         {
           "code": "SIGNAL_UNANSWERED",

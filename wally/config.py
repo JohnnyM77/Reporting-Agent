@@ -37,12 +37,19 @@ def _load_excluded_etfs() -> frozenset[str]:
 # Bob (announcements agent) does NOT use this exclusion set.
 WALLY_EXCLUDED_TICKERS: frozenset[str] = _load_excluded_etfs()
 
+# The watchlists live in watchlists/ — NOT .github/Watchlist/, which held an
+# older copy Wally read until 2026-08-29. The buy-price sync and the
+# TII -> JM -> Aussie Tech de-duplication were both written to watchlists/,
+# so Wally kept screening the March-2026 TII list with no target prices at
+# all: every run reported target_price=null and below_target=false, and the
+# whole below-target trigger was dead while looking completely healthy.
+# The stale copy has been deleted so there is only one place to edit.
 STANDARD_WATCHLISTS = [
-    ".github/Watchlist/tii_watchlist.yaml",
-    ".github/Watchlist/jm_watchlist",
-    ".github/Watchlist/aussie_tech_watchlist",
+    "watchlists/tii_watchlist.yaml",
+    "watchlists/jm_watchlist.yaml",
+    "watchlists/aussie_tech_watchlist.yaml",
 ]
-TII75_WATCHLIST = ".github/Watchlist/tii75_watchlist"
+TII75_WATCHLIST = "watchlists/tii75_watchlist.yaml"
 
 TII75_ANCHOR_ISO_WEEK = int(os.environ.get("TII75_ANCHOR_ISO_WEEK", "1"))
 

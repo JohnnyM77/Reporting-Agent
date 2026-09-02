@@ -240,6 +240,17 @@ may lag the spreadsheet.
 email flagged table gained matching **Target** and **Trigger** columns
 (`_flagged_row` / `_trigger_reasons` in `wally/email_report.py`).
 
+### Watchlists live in `watchlists/`, and only there
+`wally/config.py` used to point `STANDARD_WATCHLISTS` at `.github/Watchlist/`,
+a second copy dating from March 2026. Every improvement — the Aug-26 buy-price
+sync, the TII → JM → Aussie Tech de-duplication — was written to
+`watchlists/`, which nothing loaded. Wally screened the old 74-name TII list,
+returned `target_price: null` on every row, and the below-target trigger was
+dead for as long as it existed, while the run reported success and the email
+looked normal. `.github/Watchlist/` has been deleted so there is one place to
+edit, and `tests/test_wally_watchlist_paths.py` fails if a second copy
+reappears or if the TII list stops carrying prices.
+
 ## GitHub Pages — one publisher, triggered by the agents
 
 The site at `https://johnnym77.github.io/Reporting-Agent/` has two halves that

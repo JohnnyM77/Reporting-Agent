@@ -1,0 +1,18 @@
+{
+  "annual_div_cents": {},
+  "annual_eps_cents": {
+    "2022": -0.22,
+    "2023": 2.01,
+    "2024": -0.21,
+    "2025": 0.38
+  },
+  "last_updated": "2026-09-02",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2022": "yfinance",
+    "2023": "yfinance",
+    "2024": "yfinance",
+    "2025": "yfinance"
+  },
+  "ticker": "DRO.AX"
+}

@@ -1,33 +1,48 @@
 {
-  "last_run": "2026-09-02",
+  "last_run": "2026-09-03",
   "silence": false,
   "high_impact": [],
   "material": [],
   "fyi": [
     {
+      "ticker": "ABB",
+      "title": "Aussie Broadband Board Announces New Non-Executive Director 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 297.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03135159"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notice of Annual General Meeting/Proxy Form 25\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.3MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03135146"
+    },
+    {
       "ticker": "BXB",
       "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134511"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03135138"
     },
     {
       "ticker": "BXB",
       "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.5KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134457"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03135109"
     },
     {
-      "ticker": "BXB",
-      "title": "Notification regarding unquoted securities - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134192"
+      "ticker": "CPU",
+      "title": "Initial Director's Interest Notice 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 161.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03135123"
     },
     {
-      "ticker": "DRO",
-      "title": "Change in substantial holding 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 348.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134369"
+      "ticker": "MSV",
+      "title": "Change in substantial holding 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 847.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134875"
     },
     {
-      "ticker": "RMD",
-      "title": "Accelerated Share Repurchase Agreement Announcement 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 118.7KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134484"
+      "ticker": "PWH",
+      "title": "Notification of cessation of securities - PWH 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03135319"
+    },
+    {
+      "ticker": "WDS",
+      "title": "Appendix 3Y (Non-Executive Directors) 12\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 459.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134838"
     }
   ]
 }

@@ -1,66 +1,44 @@
 {
   "agent": "Ned",
-  "last_run": "2026-09-02T01:10:25.943970Z",
+  "last_run": "2026-09-03T01:16:30.329873Z",
   "youtube_hits": 0,
-  "news_hits": 35,
-  "total_hits": 35,
-  "critical_high_count": 6,
+  "news_hits": 30,
+  "total_hits": 30,
+  "critical_high_count": 3,
   "status": "ok",
   "items": [
     {
       "tickers": [
-        "BHP"
-      ],
-      "title": "Citigroup Global Markets Declares Estimated Dividend for BHP CitiFirst Instalments BHPIOB and BHPIOC - kalkine.com.au",
-      "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxNTDlaZjhnYmE0SlN4a3BsVmxhaDV6cmVua1ZkRmJDU25zckZTMHBiUmQ2QnVYUHFpekE5a1NTRFI3MEdwM014ekJKVXRFclRUYkFkX2t1QmxaeWtCUGVhdjZycnZLZVlrTXRFSlZBWHFFZXhfY1NjeDNkTHlqUUpLM201c2l0dzl0bGV3SUd2VWpON3k3WXh6bWRGbmo4ZkJMU2FjS3ZwYzExTHl4X1AwMFI2dVpJT2kxN1RXb2pGX2NqM1dXeDNiTDRIZE96OU1fYTN1ZzVPZmhYdw?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "[not material]\n\nThe article only announces a dividend declaration for BHP CitiFirst installment securities (structured products), which is routine administrative news that doesn't reflect material developments in BHP's underlying business or financial performance.",
-      "published": "2026-09-02T00:40:35+00:00"
-    },
-    {
-      "tickers": [
-        "BHP"
-      ],
-      "title": "Last chance to grab the supersized BHP dividend today - The Motley Fool Australia",
-      "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxPb0sxM3N5ZktGaWstcUF0ck9YTVBCZWN0aHNJbmktdHVPMzVHRVpEbm9majNka3JuWFVETE12SFBYSzA3Q3NhZF93ZkYtVGstQmxhUFQ2czlKNFVRS2MzTmpSOVFyTzRoNGFrTUN3cVJKZUJIejNYdXAxUGtVclZHT25ZR2N6SzROdm16eThOV3RZMzg?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "BHP's final dividend payment date is today, so shareholders need to act quickly if they want to receive the full \"supersized\" dividend distribution.",
-      "published": "2026-09-01T18:30:00+00:00"
-    },
-    {
-      "tickers": [
-        "CSL"
-      ],
-      "title": "Why Is CSL (ASX:CSL) in Focus as Its Chart tests the annual result surge? - Kalkine Media",
-      "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNWDJuM1NtNkp0Yl95WUxyRVRqVzlTak94dXNaVXFyOXFjdUdDWlhQNnZBZGpTaXdQY2FfSjFVMDMxeXV4bmowUE9vdDlnVklhb0U0LWJyTGtpOXg4NDZiT1hmMGFYaFlqblVZemQxSFlVaTVOcUJ5WTJlTm12YjI0OENpU3B1bWJrODM5N2FNZ21GTTJTcVBScUZVZ2VEUkJyNmwwaGpnMjNBM2I1bldBV242ZzNFbHdNYjg5NGZRWjI?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "[not material]\n\nThe article headline is vague and doesn't provide specific information about what CSL event occurred or why it matters financially\u2014it only mentions the chart \"testing\" results without clarity on the actual news.",
-      "published": "2026-09-01T06:10:00+00:00"
-    },
-    {
-      "tickers": [
-        "CPU"
-      ],
-      "title": "Why Is Computershare (ASX:CPU) in Focus as It Lifts revenue and cash payout? - Kalkine Media",
-      "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNd055Nmc5Z0VtQ2IweDhJb0tlaWVXTHFNbEFHRGZhOXRlek91Nlp3X1h6a0cyUFd0Nkp2dVhvTEFrblhpZ0p1LWExZkVoa1dkdHlGZGdRNE5vOUhqR3pkcFdHMnBlcHBmWXFuc0phTzZaMmxXYWlnV1RldE5HOGU1ZmlyTGxVSzlvMkpvX21ZTGdoa1g5bkZGY0NFX2V6QUdqYXBneWxpODBxcklUX3VuODlzbw?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "Computershare lifted revenue and increased its cash payout to shareholders, demonstrating improved financial performance and stronger capital returns.",
-      "published": "2026-09-01T06:11:00+00:00"
-    },
-    {
-      "tickers": [
         "RR."
       ],
-      "title": "25-Year Rolls-Royce Partnership Expands Aerospace Research in Belfast - Tomorrow's World Today",
-      "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxOQ0dpNjVUNzdJMHBjbWNOUUU0YTV4S1hkeEJVVzdvbVlycU94aVdCVUtoLWVRY2lVQm1fdGpXVm8zSmhiZkRBWVZrTmZuUnMxSTFvdVFJaVJCN3M3N3JLLW0zTTZtU1kyZ2psdVJPQ2NlYlZLM3BMemlKOGhzdjhPRkVSTnl4QmpSZW9uOGJXU2Z1UGs3UHRkWDNzNnI3Z2dzaFJwNUp0bHhEWi1oci1YbnU1MUwyOVQ0dXNpbA?oc=5",
+      "title": "Sigma Expands Rolls-Royce Partnership with \u00a3125 Million Additional Long-term Agreement Following its Strategic Bromford Acquisition - Raksha Anirveda",
+      "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxOZW1qYUxBTWt0U0FkMEtfNEZKcHFpeU43TG1GMkwtX0FlWUFNZ0xMYWE3Z2M2TDV5ckJVU0h1bE1iS2JzNzBvU3BKc09BV1dmcERvTElsdXZ1ZENRZF9yOGF2UG00QXZwUVMxM2JBMDhFU01nbkFGbHlEYlR2QXBMaUxpYk1lRncwT1JtejhNR0JVTERSWTFYOENmWjJNX3E0eEVHai1PWlB0OHBVcE1iRDJVSF93ZVVrOFdXWWtnRXY2TFpCNTBsc2RobGtTTE0xaEJSWDQ1cVhQelgxQXhHY3E1UlZhZmF0MHBUNG1kZmE?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "Sigma has expanded its long-term partnership with Rolls-Royce through a \u00a3125 million additional agreement following its Bromford acquisition, signaling increased revenue potential and deepened commercial ties for RR.",
+      "published": "2026-09-02T14:02:56+00:00"
+    },
+    {
+      "tickers": [
+        "BHP"
+      ],
+      "title": "BHP Group (ASX:BHP): Copper Growth Strategy Takes Centre Stage Under New CEO Brandon Craig - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNVms2X3VXT2NrQUVDQ3liZjhLeUNkajdfQVRWODF5QnNuUVhrM2Fsc1hmMXM0b2E1QmFSenRObGZOOEJPUWJkZlEwV3d4bnJyb2N6bXlCMXdBRFgwNDdNblpLa2VoRXU0NVFBYUZOT2hqanAwWVVaS1VwWEo3dE1xcnJaNU9iTld3bGc4Tm5YODZsNjhFYW53TnN0TzRWckY5ZjZNaklmTlRpV0R2NTJPNUdvR3hoQTA1RVFJY2tHaTNPNUJ0NDF6U3RXbw?oc=5",
       "source": "Google News",
       "level": "HIGH",
-      "summary": "",
-      "published": "2026-08-31T16:30:30+00:00"
+      "summary": "BHP's new CEO Brandon Craig is prioritizing copper growth, which matters because copper demand is surging from electric vehicles and renewable energy, positioning BHP to capitalize on a multi-decade structural tailwind.",
+      "published": "2026-09-02T08:37:00+00:00"
+    },
+    {
+      "tickers": [
+        "BHP"
+      ],
+      "title": "BHP executive quits after missing the CEO role - The Australian",
+      "url": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxQQng0VHBNX2Y4dl8wS0hpUkdoYi03X2FUOUtCX0JOTEMwMU1RNkZac2lrYm5KQVJ4cnFOZWZCYnI5bW5HaFRWN01MUzJ1NXFKdXpJT0FQdmpoVXlFbnFLdjJtQmZ0cTRnVUUxTWxCU2dkRUF5UElSWHE3clZBSnR3cm9TeHJXbHIyemQtYllpWWthRkJWVEVXdDlqaGpSV3pRa01SRC1PaWc0R2V6MWxlbjg4VklBZ3B2eFEyLWJlVWtlVV9aV0hwM1ZwLXVYYjNrZmt3Y2NBY0dPamppekRhNzBOR201NmxVekp0dmR30gHzAUFVX3lxTFBFeU00b0RLWjVjSWh0QlMwbjd0U19sd0ZjWkVfNkVYSDlkUWVaQ0NacDNiTmNYbm1JcDctUDlOMDZuRjNsUUhUMW8xYVk1aGVmSVNYTnlPOVZzVDZBYjVVendnYnNyRHNqeVMwcUxuSlppMFBrYm91UUVmdG5HbVVqS19NVDZqV1daRlVKall0RkhZajRwaGt0Mm84X29wQmM4R0RtTmJINWx1QXhfOUNJUXhfQzhUa1lTNlBVQjdtbWtkczcyVUVMMDVjaGRPNElFdDRFR21CajZXQ3FxU3Q2NlJ3Q3A4bDVoV3Vnc0xQNDNENA?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "[not material]\n\nThe snippet is truncated and doesn't provide enough detail about what happened or its business impact on BHP.",
+      "published": "2026-09-02T05:00:01+00:00"
     }
   ]
 }

@@ -1,44 +1,132 @@
 {
   "agent": "Ned",
-  "last_run": "2026-09-03T01:16:30.329873Z",
-  "youtube_hits": 0,
-  "news_hits": 30,
-  "total_hits": 30,
-  "critical_high_count": 3,
+  "last_run": "2026-09-04T01:07:42.615786Z",
+  "youtube_hits": 1,
+  "news_hits": 80,
+  "total_hits": 81,
+  "critical_high_count": 16,
   "status": "ok",
   "items": [
     {
       "tickers": [
-        "RR."
+        "DRO"
       ],
-      "title": "Sigma Expands Rolls-Royce Partnership with \u00a3125 Million Additional Long-term Agreement Following its Strategic Bromford Acquisition - Raksha Anirveda",
-      "url": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxOZW1qYUxBTWt0U0FkMEtfNEZKcHFpeU43TG1GMkwtX0FlWUFNZ0xMYWE3Z2M2TDV5ckJVU0h1bE1iS2JzNzBvU3BKc09BV1dmcERvTElsdXZ1ZENRZF9yOGF2UG00QXZwUVMxM2JBMDhFU01nbkFGbHlEYlR2QXBMaUxpYk1lRncwT1JtejhNR0JVTERSWTFYOENmWjJNX3E0eEVHai1PWlB0OHBVcE1iRDJVSF93ZVVrOFdXWWtnRXY2TFpCNTBsc2RobGtTTE0xaEJSWDQ1cVhQelgxQXhHY3E1UlZhZmF0MHBUNG1kZmE?oc=5",
+      "title": "DroneShield (ASX:DRO) Could Be 26% Overvalued Following Reaffirmed 2026 Revenue Guidance - simplywall.st",
+      "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxQTDRRdkRGZkhrOGwwZFZZSHJPS2ZNbE5LQ1ZxV1lIYmV4cFk1RDJfX2lDc1VOVFhPUzN1d0E4YWR0X0wyRTlBdEFHQnZ6OFpjNHR1M0hVcEt0Y2xGVjV3eTdlYjJ1dFVqOWZPS21hR01Famd3OWIwdzFXRWc1bWVRZlhXbmFoSlA1SDZmX0draVpIYVZrLUhycWwxSDRCazE5c1JPZnlqNUdiZ1ZfWlVoNG5UNW16STFNeU9zbHFCUjlra3FXby05ZkUxU252Zjh1VWVxcdIB2gFBVV95cUxPZ1k2NW9kNWdZTjBmWk5VcHNhaTdUdEp0Wk5xSC1jWkZ3Nl9pLWs3bGw5QWNubVoxTXgyVUVTMkZpcFpaZjgybVNIQ3NlQUdSTkhsVmR2OVZ6bXhvRWZTSFF3VWF5R1NTbWRaYWtQbXFsekNtQ0NvbE45YkJ3ckE1M1doWWpFTkVkc0c4UWJFeXBNSnc5WFdvZE5BdHMtRGxzVXBwZjV0dFA2Rjl2d2xSUTM2V0pDSjV6NEs2LXNOU0ZOV0R5YUlSaUFTalZlX2JSNUdRZHRWd214dw?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
-      "summary": "Sigma has expanded its long-term partnership with Rolls-Royce through a \u00a3125 million additional agreement following its Bromford acquisition, signaling increased revenue potential and deepened commercial ties for RR.",
-      "published": "2026-09-02T14:02:56+00:00"
+      "summary": "",
+      "published": "2026-09-03T02:41:15+00:00"
+    },
+    {
+      "tickers": [
+        "DRO"
+      ],
+      "title": "DroneShield stock falls as ASIC probe and valuation concerns weigh on investors - AD HOC NEWS",
+      "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxOazJzOUtyZ0ZyMmhDNUxqdFZ3dmlSUk1GdVdmcThGMVNfRzZZXzR3ZVN1WHFPWlM2LVZUM1BtVGEwdnVfREZIUGZtcHhlS0ozMURzcWJsdGF1enA2M0RTQjhXZGhJUWpsd0ZHUjNfT3plYUZIU3JEUUpVNUpLYlpNTExkU2pxRzU1R2NfQzJYNFZaVHhteENYWERPTTFuazZZS20yRkhqNjg4YXZPaUdZS3gzMy1TTnUtWWllUHVESF8ycDR1M0tOUGtXeVE?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "",
+      "published": "2026-09-03T14:25:34+00:00"
+    },
+    {
+      "tickers": [
+        "ABB"
+      ],
+      "title": "Aussie Broadband (ASX:ABB) Going Ex-Dividend: Stock Investors Should Watch Tomorrow - kalkine.com.au",
+      "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNYkNBTV9iUHZQY1hpN3E3SlhCOWxyeUFOamZkNGRLX05QSHBXa0RHZEFaNGdnZ1hkWnd6eGJkM084U3pjckw5aG9JVnhodHJET0VfVHgtSG13UUlzNG94R3NQeG94VV9TSFNKSFp1Q1ZfdUR5SnZSdml1Q01Fc2ZuVG9yQTktZERxbXBzeTBMWDVBMEtocl9qOHVlYTJwQ1ptNTE2ZVBMWFNMLUJUWHhESDlpd2VOTUlNMk1scGdISTE?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "[not material]\n\nThe article is about Aussie Broadband (ASX:ABB), an Australian telecommunications company, not ABB (ABB Ltd), the Swiss-Swedish electrical equipment manufacturer in your portfolio.",
+      "published": "2026-09-03T06:28:00+00:00"
+    },
+    {
+      "tickers": [
+        "ABB"
+      ],
+      "title": "Aussie Broadband Limited (ASX:ABB): Higher FY26 Dividend Puts September Payment on the Calendar - kalkine.com.au",
+      "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxOb1N5cXRtNXllaHdXTU5ZWDlNa05qUEpMUzFJY0t0NmN1VU1fRzQ3TDVzZHhLQzlSY3FTVnVSRDc4am1ZRVVUaTlxOF9zMTE2Q1hFQTJGc1dWVkNiM2cyMk1Bell2VDR5aGgzVEhNQjRDVFFMN2JIUmFpWGJNWF9XckxvY2tmR2I4aFJPd3M3M2F4cUlDSW00NlFJWFB1cFdaYllDMDg2VnV4TW5ZVkdjWVJ3Tno2cmxBeDBSSHNvQk45VThjQ3hyQWw4OXMzeVFo?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "Aussie Broadband is increasing its FY26 dividend with a payment scheduled for September, rewarding shareholders with higher returns.",
+      "published": "2026-09-02T07:22:00+00:00"
+    },
+    {
+      "tickers": [
+        "RTH"
+      ],
+      "title": "RAS Technology (ASX:RTH) Moves Up\u2014Can Racing Data Deliver More Recurring Revenue? - kalkine.com.au",
+      "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxNbDNPM0I3X0ZWSGpwR3d0QXpJM0hDX0lDY3JkMUp2VUFnMzg0Q25aU3pETzhJZWpXYjBlQkt2dElsbk5QdFUtdHJldFRDUGQzQkNndFQya3BxZ2g3OXFNLVdLTk1hVUxqRW9aT3pQWkt2aGNNQ2FZV1pfYjcxSlQ0Ni1ubUs0b2xZVUkwbGhVSjBud2h0dEJHeGtIbUVWalpDX2RjTEVxdVFKdlpUc0s3Rm9sTUJBMG8?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-03T09:42:00+00:00"
+    },
+    {
+      "tickers": [
+        "IAG"
+      ],
+      "title": "What Does Insurance Australia Group (ASX:IAG)'s Share Price Rise After Results Mean for Market participants? - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxNQ1BnMDFTM0NZOXhyOThES2o1dDVTQmRHWVZKT2pnSlFTeDlMdXdqNndYWVQ4OXRmMmh2SzhnRTZYMUktSzdzLTlWNjE2YlN0Z1R0SVlXZXVKMHJOUzFwUDl3Y24weFZtbVFhdHZLUFR6VDNkSVMyMnJnbmxUdnR2N3ExWTYtLUxFU3VIODBfRGpIczY5SDctaEFESl94Z01ITGY4YzNmSkttM2N2WElaY1Vmb0lHdTl6UzRQdDJvU29LS0hYVXNXbTJFWTg0dzJwaUwyRDZDeGhRMnJCYmlNcQ?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-03T04:08:00+00:00"
     },
     {
       "tickers": [
         "BHP"
       ],
-      "title": "BHP Group (ASX:BHP): Copper Growth Strategy Takes Centre Stage Under New CEO Brandon Craig - Kalkine",
-      "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNVms2X3VXT2NrQUVDQ3liZjhLeUNkajdfQVRWODF5QnNuUVhrM2Fsc1hmMXM0b2E1QmFSenRObGZOOEJPUWJkZlEwV3d4bnJyb2N6bXlCMXdBRFgwNDdNblpLa2VoRXU0NVFBYUZOT2hqanAwWVVaS1VwWEo3dE1xcnJaNU9iTld3bGc4Tm5YODZsNjhFYW53TnN0TzRWckY5ZjZNaklmTlRpV0R2NTJPNUdvR3hoQTA1RVFJY2tHaTNPNUJ0NDF6U3RXbw?oc=5",
+      "title": "Albemarle appoints BHP\u2019s Udd as CEO - Australian Mining",
+      "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTFBqcS1EbkxDdFg0YWJ3TGpUOG5BNDRkLUF2Y2dCLWRQNzFjdGgta0t0ODZ0VXZlR2NDM082NUt2UjJzWDgxNUZ2bG5EQ1ZrT3EyQ2VyWE01Y0N0RmRxU0Exc2VNQ3p2OE8zREdDNk5aYkJWUlltN2VMamVZdw?oc=5",
       "source": "Google News",
       "level": "HIGH",
-      "summary": "BHP's new CEO Brandon Craig is prioritizing copper growth, which matters because copper demand is surging from electric vehicles and renewable energy, positioning BHP to capitalize on a multi-decade structural tailwind.",
-      "published": "2026-09-02T08:37:00+00:00"
+      "summary": "Albemarle has appointed BHP executive Udd as its new CEO, signaling potential leadership changes at BHP and Albemarle's strategic direction in lithium and mining operations.",
+      "published": "2026-09-04T00:38:24+00:00"
     },
     {
       "tickers": [
         "BHP"
       ],
-      "title": "BHP executive quits after missing the CEO role - The Australian",
-      "url": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxQQng0VHBNX2Y4dl8wS0hpUkdoYi03X2FUOUtCX0JOTEMwMU1RNkZac2lrYm5KQVJ4cnFOZWZCYnI5bW5HaFRWN01MUzJ1NXFKdXpJT0FQdmpoVXlFbnFLdjJtQmZ0cTRnVUUxTWxCU2dkRUF5UElSWHE3clZBSnR3cm9TeHJXbHIyemQtYllpWWthRkJWVEVXdDlqaGpSV3pRa01SRC1PaWc0R2V6MWxlbjg4VklBZ3B2eFEyLWJlVWtlVV9aV0hwM1ZwLXVYYjNrZmt3Y2NBY0dPamppekRhNzBOR201NmxVekp0dmR30gHzAUFVX3lxTFBFeU00b0RLWjVjSWh0QlMwbjd0U19sd0ZjWkVfNkVYSDlkUWVaQ0NacDNiTmNYbm1JcDctUDlOMDZuRjNsUUhUMW8xYVk1aGVmSVNYTnlPOVZzVDZBYjVVendnYnNyRHNqeVMwcUxuSlppMFBrYm91UUVmdG5HbVVqS19NVDZqV1daRlVKall0RkhZajRwaGt0Mm84X29wQmM4R0RtTmJINWx1QXhfOUNJUXhfQzhUa1lTNlBVQjdtbWtkczcyVUVMMDVjaGRPNElFdDRFR21CajZXQ3FxU3Q2NlJ3Q3A4bDVoV3Vnc0xQNDNENA?oc=5",
+      "title": "Albemarle names BHP executive Ragnar Udd as CEO - Mining Weekly",
+      "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxONXh2NEVpdTlKYjByRkgwT3o5R0ZRaGVPN1ZXcE9BN2pzUEpCTHBEZVQwZjVYXzNxU2hQQU5ULXNRVUlZVDk3cnZrSjNsLW55cTlPWGpiU1o0OEFGRGJGcG81cE5WUkxlWktvZENVX3k2X01BQi1MSDh5U05jVUdQT29wcmY2SVJ2UEI2b1VBYS12VGVROTROaFZSZw?oc=5",
       "source": "Google News",
       "level": "HIGH",
-      "summary": "[not material]\n\nThe snippet is truncated and doesn't provide enough detail about what happened or its business impact on BHP.",
-      "published": "2026-09-02T05:00:01+00:00"
+      "summary": "Ragnar Udd's departure from BHP to become CEO of lithium competitor Albemarle removes a key executive and signals confidence in Albemarle's strategic direction during a critical period for battery materials.",
+      "published": "2026-09-03T13:03:00+00:00"
+    },
+    {
+      "tickers": [
+        "RR."
+      ],
+      "title": "Sigma expands Rolls-Royce partnership with long-term agreement - Machinery Market",
+      "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxNb0MwMm12TmF2YlFhY1ZfT3RteU5oRXctLTFFYjA0UUNFTnA5MFd6TGhGRi05b2NpZ1Z5RkJjM2x1V05OYkk0MDYtSU5zMXQtVkZtV3JUVGhENktpZnlHZGwyYWhuLWlHNnVDLXRMOHltY3hhS1pITUI1SDV0MVZuN3V5ZVZpM2tPdVBCOU1aNFFwS29Sa0V3M0lvZTlnaURra1BSWGxwVEZWd3FG?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "",
+      "published": "2026-09-03T10:11:53+00:00"
+    },
+    {
+      "tickers": [
+        "WDS"
+      ],
+      "title": "Woodside Energy And Petr\u00f3leos Mexicanos Sign MOU To Expand Strategic Partnership In Mexico - marketscreener.com",
+      "url": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxNOUF5TEktQ3JHREUyTWp5c2psaEVsVTFSQU8tV2RfUnRXRGt2Vk1Ic2M1OTR1TlNJUXREWHlvNExNdFFXUl9mMmtNanI1REpoaUJoMVZla0ZxWGpKRVJJMlZMek5sdVNQRFlBby03cUMtcXQxQTBrOUZUa1NHNjNRUjRWaG9NVGh2TGN0TFV4NFlBcmUwQmlXSFBNLUpuWEt0akVueEd1NFhzTzkyLVMzbDFDdy1GYThiY3V2cHFqN3FGLU1Dc3dmNHFEWDhzbjE3Z0xvTGFqWXAxaEE?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "",
+      "published": "2026-09-03T07:21:35+00:00"
+    },
+    {
+      "tickers": [
+        "WDS"
+      ],
+      "title": "Woodside Energy, Pemex move toward expanded partnership in Mexico (WDS:NYSE) - Seeking Alpha",
+      "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNYzJFMEJmTERKeEdvRFBYOGlIdlN4TU5ieHlvMTRnTXVmYzZOWDJvZGRfR0FBNHJOcHhtbVZISThFQ3h2cVBwTXpvRi0tbk9tdGFHOTJVWG5iakVwOTlBTExNS282SHRHTmpzN1pjdE1MdGJhVF9qMEhFekJscEQ5RjNLdEVPU0NoVXo4ZjVkaTBpLWw3NHNSeGtxU0VEZ29JQWZIbw?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "",
+      "published": "2026-09-03T20:25:21+00:00"
     }
   ]
 }

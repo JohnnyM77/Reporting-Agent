@@ -1,5 +1,43 @@
 [
   {
+    "last_run": "2026-09-05",
+    "silence": false,
+    "high_impact": [],
+    "material": [],
+    "fyi": [
+      {
+        "ticker": "ATP",
+        "title": "Update - Kobe Auction September 2026 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 165.0KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136111"
+      },
+      {
+        "ticker": "BHP",
+        "title": "Response to media speculation on Western Australia Iron Ore 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 109.0KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136215"
+      },
+      {
+        "ticker": "BXB",
+        "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 17.0KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136013"
+      },
+      {
+        "ticker": "BXB",
+        "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 17.0KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136009"
+      },
+      {
+        "ticker": "DRO",
+        "title": "Change in substantial holding 37\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.9MB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136139"
+      },
+      {
+        "ticker": "PWH",
+        "title": "Becoming a substantial holder 58\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.4MB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136151"
+      }
+    ]
+  },
+  {
     "last_run": "2026-09-04",
     "silence": false,
     "high_impact": [],
@@ -104,130 +142,6 @@
         "ticker": "CSL",
         "title": "Notification regarding unquoted securities - CSL 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 17.9KB",
         "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03135483"
-      }
-    ]
-  },
-  {
-    "last_run": "2026-09-03",
-    "silence": false,
-    "high_impact": [
-      {
-        "ticker": "CTD",
-        "title": "FY26 Results Announcements 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 205.8KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134607",
-        "type": "results",
-        "analysis": {
-          "ticker": "CTD",
-          "period": "FY26",
-          "period_type": "full_year",
-          "currency": "AUD",
-          "metrics": {
-            "revenue": {
-              "value": "$669.9m",
-              "change_pct": "+4%",
-              "basis": "reported"
-            },
-            "underlying_npat": {
-              "value": "n/a",
-              "change_pct": "n/a",
-              "basis": "n/a"
-            },
-            "underlying_eps": {
-              "value": "n/a",
-              "change_pct": "n/a",
-              "basis": "n/a"
-            },
-            "dividend_ordinary": {
-              "value": "nil",
-              "change_pct": "n/a",
-              "note": "no dividend declared"
-            },
-            "operating_cash_flow": {
-              "value": "n/a",
-              "change_pct": "n/a",
-              "basis": "n/a"
-            }
-          },
-          "summary": "CTD delivered FY26 in line with its own August 2026 guidance, so no surprise vs management forecast, though consensus is unavailable given trading suspension. The EBITDA recovery is real \u2014 underlying EBITDA +36% to $113.6m \u2014 driven by a European turnaround (from -$1.2m to +$24.7m EBITDA) and strong ANZ leverage (+53% EBITDA). Cash conversion, free cash flow, underlying NPAT, and EPS are not disclosed in this release, making profit quality impossible to assess. No dividend was declared, consistent with the board's stated priority of completing remediation and strengthening the balance sheet. The single biggest forward risk is the unresolved 22% of customer remediation liabilities, the unknown total quantum of refunds payable, and the reliance on a newly secured $175m funding package to complete that process.",
-          "full_analysis": "## Executive Summary\n- CTD delivered underlying EBITDA of $113.6m (+36% on FY25's $83.6m), a genuine recovery but still well below pre-scandal historical levels.\n- Statutory NPAT swung to +$17.7m from a loss of $348.5m in FY25, but this is almost entirely a function of FY25 containing massive write-downs/provisions; the FY26 statutory figure tells us little about ongoing earnings power.\n- Critical data absent from this release: underlying NPAT, EPS, operating cash flow, free cash flow, capex, net debt, working capital movement, and a statutory-to-underlying bridge. This is a material disclosure gap.\n- Europe turnaround is the headline positive \u2014 EBITDA from -$1.2m to +$24.7m \u2014 but management attributes part of this to \"increased special project activity\" which may not be recurring.\n- CTD's shares remain suspended from trading; the company has now lodged FY25 and FY26 documents with ASX and is awaiting reinstatement.\n\n## Key Numbers\n\n| Metric | FY26 | FY25 | Change |\n|---|---|---|---|\n| Revenue and other income | $669.9m | $643.4m | +4% |\n| TTV | $9,800m | $9,600m | +2% |\n| Transaction volumes | 18.3m | 16.2m | +13% |\n| Underlying EBITDA | $113.6m | $83.6m | +36% |\n| Statutory NPAT | $17.7m | ($348.5m) | n/m |\n| Underlying NPAT | n/a | n/a | n/a |\n| EPS (underlying) | n/a | n/a | n/a |\n| Operating cash flow | n/a | n/a | n/a |\n| Free cash flow | n/a | n/a | n/a |\n| Net debt / cash | $106.9m cash (incl $15.8m client cash) | n/a | n/a |\n| ANZ underlying EBITDA | $39.2m | ~$25.6m (implied) | +53% |\n| Europe underlying EBITDA | $24.7m | ($1.2m) | n/m |\n| North America underlying EBITDA | $62.3m | ~$62m (implied) | flat |\n| Asia underlying EBITDA | $15.8m | n/a | n/a |\n\n*Note: Segment EBITDA figures sum to approximately $142m vs group underlying EBITDA of $113.6m, suggesting significant unallocated corporate costs of ~$28m not discussed in this release.*\n\n## Quality of Earnings\n- **Cash conversion**: Not disclosed. Operating cash flow and free cash flow are absent from this release. Given ongoing remediation payments (refunds to customers), cash conversion is likely materially below EBITDA, but this cannot be quantified.\n- **Remediation liability**: 22% of refunds remain unresolved. The total quantum of the remediation pool is not disclosed \u2014 a critical omission. The $175m funding package post period-end implies the existing cash balance of $106.9m (net of $15.8m client cash = $91.1m) is insufficient to cover remaining obligations.\n- **Special project revenue (Europe)**: Management explicitly called out \"increased special project activity\" as a driver of Europe's recovery. This language typically signals non-recurring work. The UK Ministry of Defence Afghan Resettlement contract renewal provides some visibility, but revenue is \"volume-dependent and not fixed.\"\n- **Revenue vs TTV divergence**: Revenue grew 4% on TTV growth of only 2%, suggesting improved revenue yield/margin per transaction. Transaction volumes grew 13%, yet revenue only grew 4%, implying lower average revenue per transaction \u2014 a potential mix/pricing concern not addressed by management.\n- **No statutory-to-underlying bridge**: The document does not provide any reconciliation between statutory NPAT ($17.7m) and an underlying NPAT figure. Significant items, amortisation of acquired intangibles, and remediation costs are all unknown.\n- **One-offs**: FY25's $348.5m loss contained substantial provisions/write-downs. The degree to which residual provisions reverse into FY26 income is unknown.\n\n## Management Framing\n**Rating: Mixed / Promotional**\n- Management leads with \"strong underlying earnings growth\" in the headline but does not actually disclose an underlying NPAT or EPS number \u2014 the most important metrics for equity valuation.\n- The framing around the statutory NPAT swing (+$366.2m) is misleading as a measure of performance given FY25 contained extraordinary provisions; management presents the delta prominently.\n- \"78% of refunds agreed or close to finalisation\" is carefully worded \u2014 \"close to finalisation\" could mean many things and the total liability pool size is withheld.\n- The Whole of Australian Government audit finding (\"no widespread or systemic overcharging\") is well-timed and prominently placed \u2014 a genuine positive but also serves to deflect from remaining remediation uncertainty.\n- July 2026 trading disclosed (revenue $53.3m vs $58.3m pcp, TTV $830m vs $840m pcp) represents a year-on-year decline in both revenue and TTV \u2014 a fact management frames as \"broadly in line with management expectations\" and attributes to \"seasonal patterns, client mix and FX.\" This deserves scrutiny.\n- No FY27 quantitative guidance is provided; management defers to November 2026 AGM.\n- The segment EBITDA sum (~$142m) vs group underlying EBITDA ($113.6m) implies ~$28m of unallocated costs that go unmentioned.\n\n## Segments\n\n| Segment | Revenue FY26 | Revenue FY25 | Change | U-EBITDA FY26 | U-EBITDA FY25 |\n|---|---|---|---|---|---|\n| ANZ | $181.4m | ~$171.1m | +6% | $39.2m | ~$25.6m (implied) |\n| Europe | $113.7m | ~$84.9m | +34% | $24.7m | ($1.2m) |\n| North America | n/a | n/a | n/a | $62.3m | ~$62m (implied) |\n| Asia | n/a | n/a | n/a | $15.8m | n/a |\n\n- Europe recovery is the standout but partly driven by special project activity (potentially non-recurring) and the MoD Afghan Resettlement contract.\n- North America (the largest profit contributor at $62.3m EBITDA) is flat despite volume growth of 13% at the group level \u2014 FX headwinds (AUD/USD) are cited but no quantification provided.\n- North America revenue is not disclosed \u2014 an unusual omission for the largest profit segment.\n\n## Balance Sheet\n- Cash of $106.9m at 30 June 2026 includes $15.8m of client cash (not freely available), leaving clean corporate cash of approximately $91.1m.\n- A $175m committed funding package was secured post balance date \u2014 the need for this facility at this scale signals that remaining remediation obligations are material relative to available cash.\n- Net debt position, covenant details, and facility terms are not disclosed in this release.\n- Working capital movements unknown; given remediation outflows, this is a key watch item.\n\n## Dividend and Capital Allocation\n- No dividend declared, consistent with board priorities: completing remediation, strengthening balance sheet, embedding governance.\n- Dividend resumption timeline is not guided. Given the remediation overhang and new debt facility, dividends are unlikely in FY27.\n- Capital allocation beyond remediation is not discussed \u2014 no M&A commentary, no buyback, no capex guidance.\n\n## Guidance and Outlook\n- No quantitative FY27 guidance provided. Management commits only to providing further guidance at the November 2026 AGM.\n- July 2026 trading shows revenue of $53.3m vs $58.3m pcp (-8.6%) and TTV of $830m vs $840m pcp (-1.2%) \u2014 both year-on-year declines in the first month of FY27, framed as \"broadly in line with management expectations.\"\n- Transaction volumes in July 2026 were 1.6m vs 1.5m pcp (+7%) \u2014 volume growing but revenue declining implies further yield compression.\n- MoD contract renewal (GBP 28m TTV in first 6 months) provides some FY27 Europe revenue visibility.\n- $178m in new business wins YTD in FY27 on a TTV basis.\n\n## Positives\n- Underlying EBITDA +36% to $113.6m demonstrates real operating leverage as volumes recover.\n- Europe turnaround from -$1.2m to +$24.7m EBITDA is a significant operational improvement.\n- ANZ EBITDA +53% to $39.2m shows strong margin recovery in the home market.\n- Transaction volumes +13% to 18.3m across all regions demonstrates customer retention through crisis.\n- Government audit finding of no systemic overcharging removes a major tail risk.\n- $669m new business wins and $1.5bn re-tenders/renewals in FY26 confirms the franchise is intact.\n- Trading suspension about to be lifted once ASX confirms reinstatement.\n\n## Negatives / Red Flags\n- No underlying NPAT or EPS disclosed \u2014 impossible to value the company on reported metrics alone.\n- No operating cash flow or free cash flow \u2014 profit quality entirely unverifiable.\n- Segment EBITDA sum (~$142m) vs group EBITDA ($113.6m) implies ~$28m unallocated corporate costs with zero disclosure.\n- July 2026 revenue down 8.6% on pcp despite volume growth \u2014 yield compression is accelerating.\n- 22% of remediation refunds unresolved; total liability quantum withheld; $175m post-period facility required to fund completion.\n- No quantitative FY27 guidance \u2014 management deferring 10+ weeks to AGM despite stock reinstatement imminent.\n- North America EBITDA flat on prior year despite 13% volume growth \u2014 revenue not disclosed for this segment.\n- Europe recovery partly driven by \"special project activity\" \u2014 likely non-recurring.\n- Stock has been suspended; reinstatement date uncertain; price discovery will be violent.\n- Cash balance of $106.9m includes $15.8m client cash; clean cash ($91.1m) vs a $175m facility suggests significant net draw-down ahead.\n\n## Bottom Line\n**Bull case**: The underlying EBITDA recovery to $113.6m is real and the franchise has proven durable through an extraordinary governance crisis. If remediation is contained within the $175m facility, the path to $150m+ underlying EBITDA in 2-3 years is credible. At a 10-12x EBITDA multiple on through-cycle earnings, the stock could re-rate sharply post-reinstatement.\n\n**Bear case**: The total remediation liability is unknown, cash conversion from EBITDA is likely poor, July 2027 revenue trends suggest yield compression, North America is stagnating, and the company is entering FY27 with new debt and no EPS guidance. The $175m facility has a cost, and dilution or covenant risk cannot be ruled out without full financial statements.\n\n**What would change the view**: Release of the full financial statements (P&L, balance sheet, cash flow statement) with a proper statutory-to-underlying bridge; disclosure of the total remediation liability quantum and expected completion timeline; quantitative FY27 EBITDA guidance; and evidence that July's revenue decline vs pcp was genuinely one-off rather than structural yield compression.",
-          "_status": "ok"
-        },
-        "doc_link": "",
-        "doc_error": "",
-        "pdf_path": "/tmp/CTD_FY26_2026-09-03.pdf"
-      }
-    ],
-    "material": [],
-    "fyi": [
-      {
-        "ticker": "CTD",
-        "title": "Reinstatement to Quotation 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 202.1KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03135031"
-      },
-      {
-        "ticker": "CTD",
-        "title": "FY26 Results Announcements 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 205.8KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134607"
-      },
-      {
-        "ticker": "CTD",
-        "title": "Financial and Sustainability Reports 2026 141\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 10.6MB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134606"
-      },
-      {
-        "ticker": "CTD",
-        "title": "Preliminary Final Report 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 282.4KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03134605"
-      },
-      {
-        "ticker": "CTD",
-        "title": "Continuation of Suspension from Quotation 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 20",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131538"
-      },
-      {
-        "ticker": "CTD",
-        "title": "Appendix 4G and Corporate Governance Statement 30\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 700.3KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131514"
-      },
-      {
-        "ticker": "CTD",
-        "title": "Half Year Accounts 35\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.2MB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131486"
-      },
-      {
-        "ticker": "CTD",
-        "title": "Update - Notification of buy-back - CTD 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 18.1KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131487"
-      },
-      {
-        "ticker": "CTD",
-        "title": "Sustainability/Climate Action Report 29\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 9.6MB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131485"
-      },
-      {
-        "ticker": "CTD",
-        "title": "Annual Report to shareholders 133\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 8.0MB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131484"
-      },
-      {
-        "ticker": "CTD",
-        "title": "Presentation 51\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.8MB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131483"
-      },
-      {
-        "ticker": "CTD",
-        "title": "FY25 and 1H26 Results 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 186.6KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131482"
-      },
-      {
-        "ticker": "CTD",
-        "title": "Preliminary Final Report 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 271.6KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131481"
-      },
-      {
-        "ticker": "CTD",
-        "title": "Webinar Details 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 115.4KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131454"
       }
     ]
   }

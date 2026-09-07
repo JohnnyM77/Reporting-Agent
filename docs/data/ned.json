@@ -1,33 +1,55 @@
 {
   "agent": "Ned",
-  "last_run": "2026-09-06T01:09:06.666919Z",
+  "last_run": "2026-09-07T01:09:57.337813Z",
   "youtube_hits": 0,
-  "news_hits": 8,
-  "total_hits": 8,
-  "critical_high_count": 2,
+  "news_hits": 14,
+  "total_hits": 14,
+  "critical_high_count": 4,
   "status": "ok",
   "items": [
     {
       "tickers": [
-        "DRO"
+        "BHP"
       ],
-      "title": "Did DroneShield\u2019s Reaffirmed 2026 Revenue Guidance Amid Half-Year Loss Just Shift DroneShield's (ASX:DRO) Investment Narrative? - simplywall.st",
-      "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxQUzFqaFBtQTNTSHU4QjUwbjFrams0X3hiTGtLZFRaVXN1aWtrN3RLN2ZpeWZQaWRsU0stQWh5MG42Z1dSZk1oZGtaTlV3X21fM3hyWW11NE9NdUxsQ1BadzZ3aHBZNW94YUlVVFo3NnI1MHNJVEtKRWFBc0hBeEg3WmlRMmZKcldrcUxDN190SERuNkpPTjZYS0hYczNxcUU0NXhnSGNJYVhKWERTdVVzT1dpVFRwX2IzcVdPOXhROXowVllOaFdGdlc1Z0Y1d0lGLVZwTUo5Z2jSAdgBQVVfeXFMUFMxamhQbUEzU0h1OEI1MG4xa2prNF94YkxrS2RUWlVzdWlrazd0SzdmaXlmUGlkbFNLLUFoeTBuNmdXUmZNaGRrWk5Vd19tXzN4clltdTRPTXVMbENQWnc2d2hwWTVveGFJVVRaNzZyNTBzSVRLSkVhQXNIQXhIN1ppUTJmSnJXa3FMQzdfdEhEbjZKT042WEtIWHMzcXFFNDV4Z0hjSWFYSlhEU3VVc09XaVRUcF9iM3FXTzl4UTl6MFZZTmhXRnZXNWdGNXdJRi1WcE1KOWdo?oc=5",
+      "title": "BHP Stock Faces Monday Test as WAIO Partnership Talk Reaches $14.7 Billion Earnings Engine - TechStock\u00b2",
+      "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxPbUl0enNVNnE1UDBQOHBWZjBaMDFxUXJjR1ctcjR2dnRiYnpSUS03X0ZEYzBFNDRDWXh1TS1rZjBKRVJnYmRybWZEYmZDc0pmVjM1bDVsczBzQXVLNzNWbkd3SFhTVnZZY1FYeVZ6eU9Uc09uNk1raERGVmpuWmk5cXdUOVB6S1huN3JIX0syRENiN3QtejVmRWlyTHlCWjZybmJVc0M3LXJmWDJ5OHBr?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
-      "summary": "[not material]\n\nThe article snippet is truncated and doesn't provide enough substantive information about what happened with DroneShield's guidance or financial results to assess materiality to shareholders.",
-      "published": "2026-09-05T02:42:53+00:00"
+      "summary": "[not material]\n\nThe headline appears to reference a \"WAIO Partnership\" and earnings potential, but without access to the full article content, the specific details of what happened and its actual impact on BHP shareholders cannot be determined from the snippet provided.",
+      "published": "2026-09-06T19:33:42+00:00"
     },
     {
       "tickers": [
-        "PWH"
+        "CSL"
       ],
-      "title": "PWR:ASX Announcement - S&P DJI Announces September 2026 Quarterly Rebalance - 04 Sep 2026 - Market Index",
-      "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNTWtBMkxkYTR1VkFGOTdHTVM5Z0F3aElxWWFRNGRPQUVPZV81SzludVVzZzNEaFhpc3liN0hKaFhaY1FTdWpPRHpUeEdXaHZpM1J5bkxFb2VBSjY3eFA3Nl9Ub3c0aExRQXNTT05wWmZieDZxU21GNkFqMTNUS0VrWWc3c2dHN2FfUzF4Y1VZaDRnVW9tR2Qya0pGVk8zT2pnSW40aDlfZXNOdmtIdlJNNXJhTnhkdw?oc=5",
+      "title": "Looking to bank the upcoming CSL dividend? You better hurry! - The Motley Fool Australia",
+      "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxNRnI5NFNUVHBYR2JGS2ZjcUVmdGlTSTNSYXV6QVBSUjhvN0h2eU5JVmVqMlctemg4cVpxbnlUYk41T1RTSVJXUW1rd25uSm8zS0hNazcwNTZBaDFhLUtfNzd0dEZrQ0hNd0RVWGdhWnhYdHFTM1NqM1ZHbkFmYVNXazV1Vk1zZ1Y1V3FiWjJCZ0FvaF9LRFlGdVZ3?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
-      "summary": "[not material]\n\nThe announcement only indicates a routine quarterly index rebalancing by S&P DJI with no detail on whether PWR is being added, removed, or affected.",
-      "published": "2026-09-04T20:55:05+00:00"
+      "summary": "CSL shareholders need to act quickly to secure an upcoming dividend payment before the ex-dividend date passes.",
+      "published": "2026-09-06T19:30:00+00:00"
+    },
+    {
+      "tickers": [
+        "CSL"
+      ],
+      "title": "Why Is CSL (ASX:CSL) Back on Dividend Watch? - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxPM3pOelJ5aWdCWFVLYTF5dFk1MmxUY1FubkFFeU11TVg1b1AtSzduMDZYT05QclhYLUFXd1c2NUFnVXJtMjlRbEhNdnJhamp6elliX2NERE41M21CVWFmTXpVSUU5d2RBVWxseXJ5cW9HNGJWd2ktNW1yV2hzc0w0em1mM3pJRzFpQ3dpNw?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "[not material]\n\nThe headline suggests dividend speculation about CSL, but without access to the actual article content (only a snippet is provided), there's insufficient information to determine what specific development occurred or why it would materially impact shareholders.",
+      "published": "2026-09-07T01:01:00+00:00"
+    },
+    {
+      "tickers": [
+        "ABB"
+      ],
+      "title": "Aussie Broadband Appoints Goldman Sachs for On-Market Buy-Back of Up to $115 Million - kalkine.com.au",
+      "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPX2V0WGo4U3FxcnB1NHZzSXlfZ1p2Q0VDSlhiOVRXWFNqcjZpcjFiNG44Y3Z5X01fOGUyQTBlczB4dFpLNW13TGdDbkJiLUJlNUZ3aHJtRVd2S04yRU55bnEzLTBLa1lsa3N5dzBHV2M3Qzd4R3FQOXdxeWUwazF3OUdIQTluZUc4cmRHcV95aktwR185c3FmN0JBMnVMVTJ1cXQxaW53Ry1GRWZnUk1QUW5QaVpmMW9wZ0JBY0VsM2x3bFU?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "[not material]\n\nThis news is about Aussie Broadband, not ABB (ABB Ltd, the Swiss robotics and power technology company in your portfolio).",
+      "published": "2026-09-06T23:42:10+00:00"
     }
   ]
 }

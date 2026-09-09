@@ -1,10 +1,198 @@
 {
   "agent": "Ned",
-  "last_run": "2026-09-08T01:18:27.838470Z",
+  "last_run": "2026-09-09T01:20:24.110596Z",
   "youtube_hits": 0,
-  "news_hits": 0,
-  "total_hits": 0,
-  "critical_high_count": 0,
-  "status": "silence",
-  "items": []
+  "news_hits": 135,
+  "total_hits": 135,
+  "critical_high_count": 33,
+  "status": "ok",
+  "items": [
+    {
+      "tickers": [
+        "NHC"
+      ],
+      "title": "New Hope Corporation to Announce 2026 Full Year Financial Results on 15 September - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxPaVVCd3pPZ01ZdVNaRE1xM2tlMm1Td2l4dEdQTUd0OWZkYjdVd3dlQ2x1SWpoaFhqVzFxTlF1M2U1a2tLMGZJUThGTF9vNWlkT3FITjg0VE1OUkQybzVyZnE2bTBtbjMwVEFqQ0hMU0JBUmlpUm00MF92bXdkcDB0Ynh4MjY2dGh4OGNTS1ItRjFFWnVQMWlHWVhuaGx5RTYzbUgxcjBsaURuX3pEemF3emtrSDFvekw0aW8yNDFsazJITWlMaUJ3?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-07T23:51:15+00:00"
+    },
+    {
+      "tickers": [
+        "NHC"
+      ],
+      "title": "New Hope Corporation to Release 2026 Full Year Results on 15 September - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxOQzVmeVpzODU0MzBveURwb1hRdUx4YmdmWm9QVmhQNGNtZk9MSlpBd25MbWYxYm5sRjdkd0gwc2NnaDhIUnRTVEpjYVBLYzhSYlQtUjdES3ZDT19EX2NnYmVfRmJtR1VhdXpiQU9YNWt5MXB3YzVZVDh4dmU5Z3M5c2hWOVZtaHRfZjhleTlNN0h5enI2MEk4azJnXzV0Rjg1VExKQUlWWkV3QWZSTFpNaEJ3?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-07T23:51:15+00:00"
+    },
+    {
+      "tickers": [
+        "BHP"
+      ],
+      "title": "BHP (ASX:BHP): Copper Becomes Its Biggest Earnings Engine - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxOeGJaTlNnbDF0aEFnLXNiZngwN1hmVDhSQXBPSzRTMXpQRGc0WjVSOTBweURNcGFfX3NCdFRGeTFpUjBkcUxPR0hZc3JVQWFzS0htTXpsN3RqbmgyTVJnSmFWSzNDWTlfQjNSM3M3cEJFekVuR2xHSDhzQTVXeUFyX1Nkbk9malFoN0kxMmFibTNTNklHZkxsQmNyUXFTcWc?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "Copper has become BHP's largest profit driver, signaling the company's strategic shift toward high-demand commodities that could boost shareholder returns as global demand for copper accelerates.",
+      "published": "2026-09-08T02:56:00+00:00"
+    },
+    {
+      "tickers": [
+        "BHP"
+      ],
+      "title": "What Does BHP Group (ASX:BHP) Reveal About the Future of Dividend Stocks? - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQazNZRjdVVzlKZVdabFVPalBEMmxvYjZ1SklIREwwS09PTHFKa0h4OVpndFF6R0JWUDhtemhNQ3lkaFkwT2l4RW42M1N3V1dxbWNMLTRvSVpYQUNKc1FPQ3MwR1hrZllrZDIwN00tNk9LbjJJN2l2X0ZyVjUtazhLcmxQOFR4Wm9NRW1nek1mbkRmSzMzMHpTU2liTE8tRnNRU3FlVjhPb3RHWmh1b3lXSGF6NA?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-08T02:38:00+00:00"
+    },
+    {
+      "tickers": [
+        "BXB"
+      ],
+      "title": "Brambles (ASX:BXB) Rewards Shareholders with Final Dividend as Free Cash Flow Tops US$1 Billion - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQdGFVVDNtdnkwMms0cWFEa0JSb2pqRkxzdU5OOC1ZZ1MyNEVfQzJ1eGU5TjdzMEJSaEpLc0thWUtZUTNlaG0zNkdXQkphMHd0bEFrdVIzZlJrdlctSTFyZEl5UHlub19zUy15RGt4S2h4WVJrRm1LLVF4WUcySllnTEFJRmNxX19OS3BsUjVUNXBPN0N3VnJkd3FMQmt6YXJ1dkQ0LVJLbERyUEhTOFdQeHBvdXpjc3N1U2lwLV9EREhxdnJiVVcxeg?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-08T13:09:00+00:00"
+    },
+    {
+      "tickers": [
+        "BXB"
+      ],
+      "title": "Why Is Brambles (ASX:BXB)'s Result Extending Margin Progress? - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOSjItWGxkWjl0VG9RbVQyeWhXaUxrcEp3TEJRWUJRazFsQUhTQUxLOGxYR29IdFkyZzl3LVRPTzRSMUlsdzAxWFQ1Y1lRamp2ZkJ6MW51Tm1NRGdEXzlKMTFMWDdRamt0Ql9oQlZzR0RVVk5GTXlVdnVyNFIxbmtTYzFEc1hjWVkxOTN6MEpvLW9PX0V4S3JCV01yTFgzeGFzMGx0TQ?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-07T04:13:00+00:00"
+    },
+    {
+      "tickers": [
+        "RR."
+      ],
+      "title": "By September 2027, the Rolls-Royce share price and dividend could turn \u00a32,496.48 into\u2026 - The Twelfth Magpie",
+      "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQRkNqUlRDWUtfdV80ZF9NbXF3amduWWRSMnRaZFJaazljcVhhTFVHd2tMZGFkR25Jc2JsTWQ1NG16RGVLQnd4ektGcnBFLXRvSV9hZG5FRzdMU3RIeVVXSWZMTTcyQVhEM2JIb0Z1dVZVbThYRUEzQjJreXRwNFNRNHcwZTBNbWx2cnI4dHVNQnN6ckJjRDlzZWV0SFMxMEJoYmljMk5oS1E4NVdOQmVYaWNtR0FCa21UMlh2Z3NhU1UwQQ?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-07T07:30:00+00:00"
+    },
+    {
+      "tickers": [
+        "CSL"
+      ],
+      "title": "CSL Limited (ASX: CSL) \u2014 A Reset Year with $15.8 Billion Revenue and a Clear Rebuilding Path - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxPNjNuVXJGX0JmelBLNEViTThvR0JINmEzLUpLTlRqRUh6bkdmSGxZTVRLa2NoVGdRWUR3U0xwNE1FVWJfOGVQSk5mWGxBNDZTMFV5cUE2Yk9xeE45T1pQckJBeWZFdlNzQ3c3bG85cUdkYmtWS2NNMmJXanVUMUdqRE5wQ1JwZks0TTU2YmxJekVvQU5HVjBBRnRyUVpVOHU3elhJVFFpR25HNVp0ZUh1TG5vQVRKSTBjS2tyYkhYUkNDUQ?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-07T12:41:00+00:00"
+    },
+    {
+      "tickers": [
+        "CSL"
+      ],
+      "title": "CitiFirst Instalment MINI Declares Estimated AUD 2.24407813 Unfranked Dividend for CSL Warrants - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxOQVREd2NlRm9tdXM4WHk5cnRIVV9lS0VUMG1ENW1BOU9lVGhrdWMzR1NUZk5fTGQ5Q2hwZGMyRlJwN3Z0d0Fnd0FjLVJERG1GS2oyRFVOdU8tSkVGaHdjcUgyM2pQTkZZNnVVcThGczFHS2w5dzFWU2J1YXdGanBUR19oc29CVE0zWTBxeUJOWjFQbEJzREZiYlQ1dmc0STV0NG1xV1ZYTUNmVWYtSUltcVdfcjd2aGlYOEJfeTV5MGJta1NGSzRZbFFEOW9CWFdaNEE?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-08T00:24:08+00:00"
+    },
+    {
+      "tickers": [
+        "CPU"
+      ],
+      "title": "Computershare (ASX:CPU): Can Recurring Revenue Offset Rate Sensitivity? - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxPR0t6akNCdlhjWUZrWlg0YlhTOFZFcTNPdU5hc3JZbGtOOTRZNG9VcWlPTGhINGxJMDhUaGRMcHpGdlRIUF9OTUhpdk1fTldQQWY1b1BSM3hnQkJIb2Y3SUo3X283V0ZyQy1MazBrTS1DZ3UtRG5BTzBSRGZrZWNjemlROGNLSzZJMXlYb2tPbU1TaFExaEk1Mkg3bFlidnlaM3k2WHp0eHU?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-08T06:08:00+00:00"
+    },
+    {
+      "tickers": [
+        "DRO"
+      ],
+      "title": "DroneShield stock recovers modestly as markets digest steep half-year loss - AD HOC NEWS",
+      "url": "https://news.google.com/rss/articles/CBMi0wFBVV95cUxOcTV3NnJiVGlYN0t4ckRiMFRJN3h1T25pZWNZLUVmT3Qwd29GeGgySnNvOFJRZVNLOXdxNDUydjd3S3hFMXFFM21hYlBlMThzS1BmMHU5YVFXVUo2Q1MxRkxWMHBhTTBKV3NIeU8tMXk0Y21KNG1zMjdrV2MtOWNKZ3VBZFk4aDJMWGZSbU8yVFVlLXU4MWkwcC1WOUJDRVlTR1UtWE4wRlJHNWsxVmV2N001b2c2bXc3NUZiUEVrd1NxSTJsWXdVU2JtUk5DbklUMXkw?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-08T15:10:41+00:00"
+    },
+    {
+      "tickers": [
+        "DRO"
+      ],
+      "title": "DroneShield's Recurring Revenue Inflection Point Arrives as Europe's Counter-Drone Calculus Shifts - AD HOC NEWS",
+      "url": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxNWDlsOGVfLVhVaGRVUjEtbjFMYWtwMmw0ZUhSUHpVeFFvM2pJcG9nZjc4U3FrTXVxSm1LV3VBYjFTdHNnVjYwaFh6R1pUQU8teFlaNUc1T05OY3RMb0Nqd2VIZlRnWUxWSkxoRlRBeXNzUzNzaDVqNGN5aWkzeFFhU0wxdjF4LUM1SHNHbVl2SVZUcVdxZXAxaXZhZkVCVnoxYk14NWNjTC1zYkpmcndXZzREYWVuQVAwSEVuU1BUamNHaVhYNmw3eFBEUHJxWk1RbjAtSDctcw?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-08T16:21:35+00:00"
+    },
+    {
+      "tickers": [
+        "RTH"
+      ],
+      "title": "RAS Technology (ASX:RTH): Tabcorp Renewal, Recurring Revenue and the Global Racing-Data Opportunity - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxNNERNbTJ0b3VSbmJkd05qU1JVcmxKVDBRdTc3Rm0weERxVW5NLVBFR3pIdTY0SWNNaERIRERONV9qREVSRFdyVXdIanlpUndCUlI5S2RyeGpUZkFpLXVCdzk4X1U1bENsQkw4dEhLT0hoRkZVZE5wVEtUdWRoUlQtakJXYUk4QzBKcENFblZMSWdRRmo5aXN5V1RLUDNWQXBBTUlkMmNheFd6OHluR1lwSDR1Q2tKSnpadGFQOHU4cmNJbElSUGY3LTJiT3VrUDhPY25JYXFB?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-08T13:40:00+00:00"
+    },
+    {
+      "tickers": [
+        "TWE"
+      ],
+      "title": "Why Is Treasury Wine (ASX:TWE)'s Result Resetting Americas Focus? - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPSGhlZlduOHpBSlhieGlnQ0g4dkYxYkp6cDIwYW5jY251Sk1vREsydExNeE5lSGJUQkZrNUtHdWZzWXhLOUhqUjVhUTdyV3BEOWR1VV9TLTVhMEs3b2xicE9PUkR1SGRsRHlrczR2R3llQTZSMHlZQlhDMGw4M25ScW9Sd0pmNEJYbi1BZ0J0bjNOWHlxN1RxbUh1cWdES2NQby14MzJTWQ?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-07T04:08:00+00:00"
+    },
+    {
+      "tickers": [
+        "AR9"
+      ],
+      "title": "archTIS (ASX:AR9) Strengthens Its Defence Cybersecurity Position With Growing Recurring Revenue - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNTVhEREEwZEpyRVlSb3dmRzVWRW5iUFdaWUU5TzVqU2pwa3RJRzhPalNJV2JublRqa0M5SE1ndEhQYW5zbUh3LUM1WnB0YWlIb0k3bVI1Vm9RLU1HdV9PNW96T1RnVXdQSWM1ckZYeGlkOWVsT1Y2cS1UVG1HOTRLdWZFY3JlYk5yM3Z6RUFyUGpxSUNOOW15WkVmWFNBUF9aTGZ6RmxPT1RiQnRDR3RVNzdvUGd0dFBrdFVBeGlQR1NEQjhBcEo4eS1BTQ?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "archTIS is strengthening its position in defence cybersecurity with growing recurring revenue, which matters because recurring revenue provides predictable cash flow and improves valuation multiples for shareholders.",
+      "published": "2026-09-07T02:20:00+00:00"
+    },
+    {
+      "tickers": [
+        "AR9"
+      ],
+      "title": "AR9:ASX Announcement - archTIS Awarded A$445,000 Three-Year Spirion SDP Contract - 08 Sep 2026 - Market Index",
+      "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNZUlqdDlfTGJmV1NTajBVRGZXMkRBcHZuRmNUT2FyeEM0djdhYVpHT295WHVKTlNoX1Awd2lsRzZOQUV4SE1XSWJRZV9BUnBUaFBGWWVILWNNNDA1SjhFOTlkYWR2bjI3VWd0OEEwR25NNUV0T1p1bVlkMXJSck53dkIxdEd5T2ptdDZtcjB6eHUxM2l0SnA5aV96YzRwb2VxSE1TOUR1UzJKSFNPek50eWtzZlhPTUY4?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "archTIS (AR9) secured a A$445,000 three-year contract for Spirion SDP services, demonstrating revenue diversification and recurring revenue potential that strengthens earnings visibility.",
+      "published": "2026-09-08T03:11:39+00:00"
+    },
+    {
+      "tickers": [
+        "ABB"
+      ],
+      "title": "Aussie Broadband Executes Buy-Back of 316,768 Shares on September 7, 2026 - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxPZ3k5eXpteDM4cjI3VGFieVRYeGlRek45UU1iNVhFbDJFX1g1LVZvdFVYUWFNZWE1OGh6TzhXaFljc2NvOXpCOVhaelpFM2RNZDhKN3lmTmU4TmFfVlFSOE9XeXU1Z0VQQlBuUjZ0NGxYc3lsbzJ3R1d6d2ZGTzhHRmpSTEV6YVZ1VXhFdmcxUmhCdnl4Vm9Ra2hvenlrR1BUMEZvVmh3Zl9fTTRUbDVSUVlvemRkS0Y1bUE?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "[not material]\n\nThis news is about Aussie Broadband (ABB), an Australian telecommunications company, not ABB (ABB Ltd), the Swiss multinational electrical engineering conglomerate in your portfolio.",
+      "published": "2026-09-08T02:25:13+00:00"
+    }
+  ]
 }

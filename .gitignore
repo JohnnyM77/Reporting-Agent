@@ -47,6 +47,9 @@ Thumbs.db
 # Master Investor Alert — generated digests and runtime outputs
 outputs/
 
+# Ned — single-episode transcripts (fetched on demand; uploaded as CI artifacts)
+transcripts/
+
 # SWS Drip Bot
 data/sws.db
 data/sws_debug/*

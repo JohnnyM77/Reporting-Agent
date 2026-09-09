@@ -20,6 +20,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import smtplib
@@ -39,6 +40,12 @@ from ned.youtube_scanner import scan_youtube_channels
 from ned.news_scanner import scan_rss_feeds, scan_yahoo_finance
 from ned.email_builder import build_email
 from ned.importance_scorer import sort_by_importance
+from ned.youtube_transcript_fetcher import (
+    TranscriptError,
+    TranscriptResult,
+    extract_video_id,
+    fetch_transcript,
+)
 
 # ----------------------------
 # Config / paths
@@ -51,6 +58,13 @@ SEEN_STATE_RETENTION_HOURS = 96
 
 MODEL = os.environ.get("MODEL_NAME", "claude-haiku-4-5-20251001")
 MAX_LLM_CALLS = 30
+
+# Where single-episode transcripts are written. Kept out of the repo (the CI
+# workflow uploads this directory as a downloadable artifact instead).
+TRANSCRIPTS_DIR = Path(os.environ.get("NED_TRANSCRIPTS_DIR", str(REPO_ROOT / "transcripts")))
+# Cap the transcript text handed to the LLM. An hour of speech is ~9k words;
+# 60k characters comfortably covers a long episode while bounding token spend.
+TRANSCRIPT_LLM_MAX_CHARS = int(os.environ.get("NED_TRANSCRIPT_LLM_MAX_CHARS", "60000"))
 
 
 # ----------------------------
@@ -106,6 +120,220 @@ def llm_summarise(hit: dict, llm_calls: list[int]) -> str | None:
     except Exception as exc:
         print(f"[ned/llm] LLM failed: {exc}")
         return None
+
+
+def llm_transcript_digest(source_url: str, transcript: str, llm_calls: list[int]) -> str | None:
+    """Summarise a full episode transcript into Ned's digest format.
+
+    Uses the same Anthropic client, model and call-cap plumbing as
+    `llm_summarise`, but with a prompt tuned for a long single-source
+    transcript (an interview or podcast episode) rather than a one-line news
+    hit. Returns the digest markdown, or None if the cap is reached, no API key
+    is set, or the call fails.
+    """
+    if llm_calls[0] >= MAX_LLM_CALLS:
+        return None
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return None
+
+    llm_calls[0] += 1
+    clipped = transcript[:TRANSCRIPT_LLM_MAX_CHARS]
+    truncated_note = ""
+    if len(transcript) > TRANSCRIPT_LLM_MAX_CHARS:
+        truncated_note = (
+            "\n\n[Note: the transcript was truncated for length; summarise what "
+            "is present.]"
+        )
+    prompt = (
+        "You are Ned, a markets news analyst. Below is the full transcript of a "
+        "single YouTube episode (an interview, podcast or briefing). Produce a "
+        "concise digest for a busy portfolio investor.\n\n"
+        f"Source: {source_url}\n\n"
+        "Structure your answer as:\n"
+        "1. **TL;DR** — 2-3 sentences on what this episode is about.\n"
+        "2. **Key points** — 5-8 bullets of the most important claims, "
+        "numbers, or arguments made.\n"
+        "3. **Companies / tickers mentioned** — any listed companies discussed, "
+        "with a few words on the context (or 'none' if not applicable).\n"
+        "4. **So what** — 1-2 sentences on why a shareholder should care.\n\n"
+        "Be factual and do not invent figures that are not in the transcript.\n\n"
+        f"--- TRANSCRIPT ---\n{clipped}{truncated_note}"
+    )
+    try:
+        client = anthropic.Anthropic(api_key=api_key)
+        resp = client.messages.create(
+            model=MODEL,
+            max_tokens=1500,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return (resp.content[0].text or "").strip()
+    except Exception as exc:
+        print(f"[ned/llm] Transcript digest LLM failed: {exc}")
+        return None
+
+
+# ----------------------------
+# Single-episode transcript pipeline
+# ----------------------------
+def _save_transcripts(result: TranscriptResult) -> tuple[Path, Path]:
+    """Write the plain and timestamped transcripts to disk. Returns their paths."""
+    TRANSCRIPTS_DIR.mkdir(parents=True, exist_ok=True)
+    stamp = dt.datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+    base = f"{result.video_id}_{stamp}"
+    plain_path = TRANSCRIPTS_DIR / f"{base}.txt"
+    ts_path = TRANSCRIPTS_DIR / f"{base}.timestamped.txt"
+    plain_path.write_text(result.plain_text, encoding="utf-8")
+    ts_path.write_text(result.timestamped_text, encoding="utf-8")
+    return plain_path, ts_path
+
+
+def _transcript_email(source_url: str, result: TranscriptResult, digest: str | None) -> tuple[str, str]:
+    """Build (plain, html) for a single-episode transcript digest, in Ned's style."""
+    import html as htmlmod
+
+    watch_url = f"https://www.youtube.com/watch?v={result.video_id}"
+    header = f"Transcript digest — {result.video_id} ({result.caption_kind} captions)"
+
+    # Plain text
+    lines = [
+        "Ned the News Agent",
+        "=" * 18,
+        header,
+        f"Source: {source_url}",
+        "",
+    ]
+    if digest:
+        lines.append(digest)
+    else:
+        lines.append(
+            "(LLM digest unavailable — transcript saved to file. See attached / artifact.)"
+        )
+    plain = "\n".join(lines)
+
+    # HTML — reuse Ned's dark-navy scheme; digest markdown rendered lightly.
+    digest_html = _digest_markdown_to_html(digest) if digest else (
+        '<div style="font-size:13px;color:#CBD5E1;">LLM digest unavailable — '
+        'the transcript was saved to file.</div>'
+    )
+    body_html = (
+        '<div style="padding:18px;background:#0B1220;color:#E5E7EB;'
+        'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;">'
+        '<div style="font-size:22px;font-weight:900;margin-bottom:6px;">Ned the News Agent</div>'
+        f'<div style="opacity:0.9;font-size:14px;margin-bottom:4px;">{htmlmod.escape(header)}</div>'
+        f'<div style="font-size:12px;margin-bottom:18px;">'
+        f'<a href="{htmlmod.escape(watch_url)}" style="color:#60A5FA;text-decoration:none;">'
+        f'{htmlmod.escape(watch_url)}</a></div>'
+        '<div style="padding:14px;background:#1E293B;border-radius:10px;">'
+        f'{digest_html}</div>'
+        '</div>'
+    )
+    return plain, body_html
+
+
+def _digest_markdown_to_html(md: str) -> str:
+    """Very small markdown renderer for the digest: bold, bullets, paragraphs."""
+    import html as htmlmod
+    import re as _re
+
+    def inline(text: str) -> str:
+        text = htmlmod.escape(text)
+        return _re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
+
+    html_parts: list[str] = []
+    in_list = False
+    for raw in md.splitlines():
+        line = raw.rstrip()
+        stripped = line.lstrip()
+        is_bullet = stripped.startswith(("- ", "* ", "• "))
+        if is_bullet:
+            if not in_list:
+                html_parts.append('<ul style="margin:6px 0 10px 18px;padding:0;">')
+                in_list = True
+            item = stripped[2:].strip()
+            html_parts.append(
+                f'<li style="font-size:13px;color:#E5E7EB;margin:3px 0;">{inline(item)}</li>'
+            )
+        else:
+            if in_list:
+                html_parts.append("</ul>")
+                in_list = False
+            if stripped:
+                html_parts.append(
+                    f'<div style="font-size:13px;color:#E5E7EB;margin:6px 0;">{inline(stripped)}</div>'
+                )
+    if in_list:
+        html_parts.append("</ul>")
+    return "".join(html_parts)
+
+
+def run_transcript_digest(url: str) -> int:
+    """Fetch a single YouTube episode transcript, save it, summarise it, and
+    email a digest in Ned's format.
+
+    Returns a process exit code (0 on success, 1 on a handled failure).
+    """
+    print(f"[ned/transcript] Requested URL: {url}")
+    try:
+        video_id = extract_video_id(url)
+    except TranscriptError as exc:
+        print(f"[ned/transcript] {exc}")
+        return 1
+    print(f"[ned/transcript] Video ID: {video_id}")
+
+    try:
+        result = fetch_transcript(video_id)
+    except TranscriptError as exc:
+        # Captions disabled / none found / network — a clear message, no crash.
+        print(f"[ned/transcript] {exc}")
+        _maybe_email(
+            subject=f"Ned — transcript fetch failed — {video_id}",
+            plain=f"Could not fetch transcript for {url}\n\n{exc}",
+            html=(
+                '<div style="padding:18px;background:#0B1220;color:#E5E7EB;">'
+                f'<b>Transcript fetch failed for</b> {video_id}<br>{exc}</div>'
+            ),
+        )
+        return 1
+
+    print(
+        f"[ned/transcript] Got {len(result.segments)} segments "
+        f"({result.caption_kind} captions, {result.language_code or '?'}); "
+        f"{len(result.plain_text)} chars of plain text"
+    )
+
+    plain_path, ts_path = _save_transcripts(result)
+    print(f"[ned/transcript] Saved plain transcript      -> {plain_path}")
+    print(f"[ned/transcript] Saved timestamped transcript -> {ts_path}")
+
+    # Hand the clean text to the LLM digest step.
+    llm_calls = [0]
+    digest = llm_transcript_digest(url, result.plain_text, llm_calls)
+    if digest:
+        print("[ned/transcript] LLM digest produced.")
+    else:
+        print("[ned/transcript] LLM digest unavailable (no key / cap / error).")
+
+    plain, html = _transcript_email(url, result, digest)
+    _maybe_email(
+        subject=f"Ned — Transcript digest — {video_id}",
+        plain=plain,
+        html=html,
+    )
+    return 0
+
+
+def _maybe_email(subject: str, plain: str, html: str) -> None:
+    """Send via Ned's SMTP path when email env is configured; else print."""
+    if all(os.environ.get(k) for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD")):
+        try:
+            send_email(subject, plain, html)
+            print("[ned/transcript] Email sent.")
+            return
+        except Exception as exc:
+            print(f"[ned/transcript] Email send failed: {exc}")
+    print("[ned/transcript] Email not configured — digest below:\n")
+    print(plain)
 
 
 # ----------------------------
@@ -218,7 +446,33 @@ def write_dashboard_json(
 # ----------------------------
 # Main
 # ----------------------------
-def main():
+def main(argv: list[str] | None = None):
+    parser = argparse.ArgumentParser(
+        prog="ned",
+        description="Ned the News Agent — media scanner and transcript fetcher.",
+    )
+    parser.add_argument(
+        "--transcript",
+        metavar="YOUTUBE_URL",
+        default=None,
+        help=(
+            "Fetch a single YouTube episode's transcript, save it, summarise it, "
+            "and email the digest. If omitted, Ned runs its normal channel/feed "
+            "scan. Falls back to the NED_TRANSCRIPT_URL environment variable."
+        ),
+    )
+    args = parser.parse_args(argv)
+
+    # A pasted link (CLI flag or workflow input via env) switches Ned into
+    # single-episode transcript mode instead of the daily scan.
+    transcript_url = args.transcript or os.environ.get("NED_TRANSCRIPT_URL", "").strip()
+    if transcript_url:
+        return run_transcript_digest(transcript_url)
+
+    return run_scan()
+
+
+def run_scan():
     # Load portfolio
     with open(TICKERS_PATH) as f:
         ticker_data = yaml.safe_load(f) or {}
@@ -295,4 +549,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)

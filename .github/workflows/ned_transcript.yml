@@ -1,0 +1,52 @@
+name: Ned Transcript Fetcher
+
+# Manual, on-demand single-episode YouTube transcript fetcher.
+# Paste a YouTube link into the "Run workflow" box and Ned will fetch the
+# transcript, save it, summarise it with the same LLM step it uses elsewhere,
+# and email the digest. The raw transcripts are uploaded as an artifact.
+#
+# This is separate from the scheduled "Ned News Agent" scan on purpose: it
+# takes an input, runs a different code path, and must not touch the daily
+# digest or the Pages deploy.
+
+on:
+  workflow_dispatch:
+    inputs:
+      youtube_url:
+        description: "YouTube episode link (watch?v=…, youtu.be/…, or /shorts/…)"
+        required: true
+        type: string
+
+jobs:
+  transcript:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ned.txt
+
+      - name: Fetch transcript + digest
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Passed via env (not the run: line) so an odd URL can't be shell-injected.
+          NED_TRANSCRIPT_URL: ${{ inputs.youtube_url }}
+        run: |
+          python -m ned.main
+
+      - name: Upload transcripts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ned-transcripts
+          path: transcripts/
+          if-no-files-found: ignore

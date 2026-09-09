@@ -1,5 +1,68 @@
 [
   {
+    "last_run": "2026-09-09",
+    "silence": false,
+    "high_impact": [],
+    "material": [],
+    "fyi": [
+      {
+        "ticker": "ABB",
+        "title": "Update - Notification of buy-back - ABB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.4KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137457"
+      },
+      {
+        "ticker": "BXB",
+        "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 11.1KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137447"
+      },
+      {
+        "ticker": "BXB",
+        "title": "2026 Sustainability Review 41\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 10.1MB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137427"
+      },
+      {
+        "ticker": "BXB",
+        "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137400"
+      },
+      {
+        "ticker": "CSL",
+        "title": "Update - Notification of buy-back - CSL 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 11.9KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137216"
+      },
+      {
+        "ticker": "CSL",
+        "title": "Application for quotation of securities - CSL 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 17.1KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137210"
+      },
+      {
+        "ticker": "CSL",
+        "title": "Notification regarding unquoted securities - CSL 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.3KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137208"
+      },
+      {
+        "ticker": "PWH",
+        "title": "Ceasing to be a substantial holder 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.8MB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137297"
+      },
+      {
+        "ticker": "PWH",
+        "title": "Change of Director's Interest Notice - Kees Weel 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 322.8KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137156"
+      },
+      {
+        "ticker": "PWH",
+        "title": "Change of Director's Interest Notice - Matthew Bryson 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 319.0KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137154"
+      },
+      {
+        "ticker": "WDS",
+        "title": "Update - Dividend/Distribution - WDS 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 16.2KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137619"
+      }
+    ]
+  },
+  {
     "last_run": "2026-09-08",
     "silence": false,
     "high_impact": [],
@@ -64,59 +127,6 @@
         "ticker": "VHY",
         "title": "Outstanding Securities Aug 2026 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 328.3KB",
         "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136614"
-      }
-    ]
-  },
-  {
-    "last_run": "2026-09-07",
-    "silence": false,
-    "high_impact": [],
-    "material": [],
-    "fyi": [
-      {
-        "ticker": "ABB",
-        "title": "Update - Notification of buy-back - ABB 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 11.9KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136435"
-      },
-      {
-        "ticker": "BHP",
-        "title": "Update - Dividend/Distribution - BHP 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 19.7KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136273"
-      },
-      {
-        "ticker": "BXB",
-        "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 11.1KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136350"
-      },
-      {
-        "ticker": "BXB",
-        "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136292"
-      },
-      {
-        "ticker": "CPU",
-        "title": "Notification of cessation of securities - CPU 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 10.8KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136344"
-      },
-      {
-        "ticker": "CPU",
-        "title": "Notification regarding unquoted securities - CPU 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.8KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136343"
-      },
-      {
-        "ticker": "CPU",
-        "title": "Change of Director's Interest Notice 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 475.3KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136342"
-      },
-      {
-        "ticker": "RMD",
-        "title": "Statement of CDIs on issue - RMD 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 8.5KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136527"
-      },
-      {
-        "ticker": "RMD",
-        "title": "Statement of changes in beneficial ownership 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03136236"
       }
     ]
   }

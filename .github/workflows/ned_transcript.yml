@@ -9,7 +9,7 @@ name: Ned Transcript Fetcher
 # blocks caption requests from cloud/datacentre IPs (GitHub-hosted runners get
 # a RequestBlocked/IpBlocked error), whereas the self-hosted runner uses a
 # residential IP that YouTube serves normally. The runner's PC must be on and
-# the runner service running for a dispatch to start (it queues otherwise).
+# the runner process running for a dispatch to start (it queues otherwise).
 #
 # This is separate from the scheduled "Ned News Agent" scan on purpose: it
 # takes an input, runs a different code path, and must not touch the daily
@@ -28,9 +28,10 @@ jobs:
     runs-on: [self-hosted, Windows]
     defaults:
       run:
-        # Git Bash is installed on the runner (see CLAUDE.md) so the same
-        # bash steps work as on the cloud runners.
-        shell: bash
+        # PowerShell is always on PATH on Windows; Git Bash isn't reliably
+        # discoverable from the runner process, so bash steps fail with
+        # "command not found" even when Git for Windows is installed.
+        shell: pwsh
 
     steps:
       - uses: actions/checkout@v4
@@ -39,12 +40,15 @@ jobs:
         run: |
           # Use the machine's own Python (3.14) rather than setup-python, which
           # would try to populate a tool cache this runner doesn't have.
-          PY="python"
-          command -v "$PY" >/dev/null 2>&1 || PY="/c/Users/mr_co/AppData/Local/Programs/Python/Python314/python.exe"
-          echo "Using Python: $PY"
-          "$PY" --version
-          "$PY" -m pip install --upgrade pip
-          "$PY" -m pip install -r requirements-ned.txt
+          $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
+          if (-not (Test-Path $py)) {
+            # Fall back to whatever "python" resolves to on PATH.
+            $py = "python"
+          }
+          Write-Host "Using Python: $py"
+          & $py --version
+          & $py -m pip install --upgrade pip
+          & $py -m pip install -r requirements-ned.txt
 
       - name: Fetch transcript + digest
         env:
@@ -55,9 +59,9 @@ jobs:
           # Passed via env (not the run: line) so an odd URL can't be shell-injected.
           NED_TRANSCRIPT_URL: ${{ inputs.youtube_url }}
         run: |
-          PY="python"
-          command -v "$PY" >/dev/null 2>&1 || PY="/c/Users/mr_co/AppData/Local/Programs/Python/Python314/python.exe"
-          "$PY" -m ned.main
+          $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
+          if (-not (Test-Path $py)) { $py = "python" }
+          & $py -m ned.main
 
       - name: Upload transcripts
         if: always()

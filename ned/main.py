@@ -46,6 +46,7 @@ from ned.youtube_transcript_fetcher import (
     extract_video_id,
     fetch_transcript,
 )
+from ned.podcast_transcript_fetcher import fetch_podcast_transcript
 
 # ----------------------------
 # Config / paths
@@ -323,6 +324,99 @@ def run_transcript_digest(url: str) -> int:
     return 0
 
 
+def run_podcast_digest(url: str) -> int:
+    """Fetch a single podcast episode, transcribe it with Whisper, save the
+    transcript, summarise it, and email the digest in Ned's format.
+
+    Returns a process exit code (0 on success, 1 on a handled failure).
+    """
+    print(f"[ned/podcast] Requested URL: {url}")
+    try:
+        result = fetch_podcast_transcript(url)
+    except TranscriptError as exc:
+        print(f"[ned/podcast] {exc}")
+        _maybe_email(
+            subject="Ned — podcast transcript fetch failed",
+            plain=f"Could not fetch podcast transcript for {url}\n\n{exc}",
+            html=(
+                '<div style="padding:18px;background:#0B1220;color:#E5E7EB;">'
+                f'<b>Podcast transcript fetch failed for</b> {htmlmod_escape(url)}'
+                f'<br>{htmlmod_escape(str(exc))}</div>'
+            ),
+        )
+        return 1
+
+    print(
+        f"[ned/podcast] Got {len(result.segments)} segments; "
+        f"{len(result.plain_text)} chars of plain text"
+    )
+
+    plain_path, ts_path = _save_transcripts(result)
+    print(f"[ned/podcast] Saved plain transcript      -> {plain_path}")
+    print(f"[ned/podcast] Saved timestamped transcript -> {ts_path}")
+
+    llm_calls = [0]
+    digest = llm_transcript_digest(url, result.plain_text, llm_calls)
+    if digest:
+        print("[ned/podcast] LLM digest produced.")
+    else:
+        print("[ned/podcast] LLM digest unavailable (no key / cap / error).")
+
+    plain, html = _podcast_email(url, result, digest)
+    _maybe_email(
+        subject=f"Ned — Podcast digest — {result.video_id}",
+        plain=plain,
+        html=html,
+    )
+    return 0
+
+
+def htmlmod_escape(s: str) -> str:
+    """Local shim so run_podcast_digest doesn't need to import at module top."""
+    import html as _h
+    return _h.escape(s)
+
+
+def _podcast_email(source_url: str, result: TranscriptResult, digest: str | None) -> tuple[str, str]:
+    """Same shape as _transcript_email but the header + source link name the
+    podcast episode rather than a YouTube video."""
+    import html as htmlmod
+
+    header = f"Podcast digest — {result.video_id}"
+    lines = [
+        "Ned the News Agent",
+        "=" * 18,
+        header,
+        f"Source: {source_url}",
+        "",
+    ]
+    if digest:
+        lines.append(digest)
+    else:
+        lines.append(
+            "(LLM digest unavailable — transcript saved to file. See attached / artifact.)"
+        )
+    plain = "\n".join(lines)
+
+    digest_html = _digest_markdown_to_html(digest) if digest else (
+        '<div style="font-size:13px;color:#CBD5E1;">LLM digest unavailable — '
+        'the transcript was saved to file.</div>'
+    )
+    body_html = (
+        '<div style="padding:18px;background:#0B1220;color:#E5E7EB;'
+        'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;">'
+        '<div style="font-size:22px;font-weight:900;margin-bottom:6px;">Ned the News Agent</div>'
+        f'<div style="opacity:0.9;font-size:14px;margin-bottom:4px;">{htmlmod.escape(header)}</div>'
+        f'<div style="font-size:12px;margin-bottom:18px;">'
+        f'<a href="{htmlmod.escape(source_url)}" style="color:#60A5FA;text-decoration:none;">'
+        f'{htmlmod.escape(source_url)}</a></div>'
+        '<div style="padding:14px;background:#1E293B;border-radius:10px;">'
+        f'{digest_html}</div>'
+        '</div>'
+    )
+    return plain, body_html
+
+
 def _maybe_email(subject: str, plain: str, html: str) -> None:
     """Send via Ned's SMTP path when email env is configured; else print."""
     if all(os.environ.get(k) for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD")):
@@ -461,13 +555,28 @@ def main(argv: list[str] | None = None):
             "scan. Falls back to the NED_TRANSCRIPT_URL environment variable."
         ),
     )
+    parser.add_argument(
+        "--podcast",
+        metavar="PODCAST_URL",
+        default=None,
+        help=(
+            "Fetch a single podcast episode (direct .mp3, Apple Podcasts link, "
+            "or RSS feed URL), transcribe it via the OpenAI Whisper API, save "
+            "it, summarise it and email the digest. Falls back to the "
+            "NED_PODCAST_URL environment variable."
+        ),
+    )
     args = parser.parse_args(argv)
 
     # A pasted link (CLI flag or workflow input via env) switches Ned into
-    # single-episode transcript mode instead of the daily scan.
+    # single-episode transcript / podcast mode instead of the daily scan.
     transcript_url = args.transcript or os.environ.get("NED_TRANSCRIPT_URL", "").strip()
     if transcript_url:
         return run_transcript_digest(transcript_url)
+
+    podcast_url = args.podcast or os.environ.get("NED_PODCAST_URL", "").strip()
+    if podcast_url:
+        return run_podcast_digest(podcast_url)
 
     return run_scan()
 

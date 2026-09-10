@@ -28,10 +28,12 @@ jobs:
     runs-on: [self-hosted, Windows]
     defaults:
       run:
-        # PowerShell is always on PATH on Windows; Git Bash isn't reliably
-        # discoverable from the runner process, so bash steps fail with
-        # "command not found" even when Git for Windows is installed.
-        shell: pwsh
+        # Windows PowerShell 5.1 (invoked as `powershell`) ships with every
+        # supported Windows version. `pwsh` refers to PowerShell 7+, which
+        # this runner doesn't have installed; `bash` needs Git Bash on PATH,
+        # which the runner process can't find. `powershell` is the only
+        # shell we can rely on being available.
+        shell: powershell
 
     steps:
       - uses: actions/checkout@v4

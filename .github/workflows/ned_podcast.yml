@@ -68,6 +68,12 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           # Passed via env (not the run: line) so an odd URL can't be shell-injected.
           NED_PODCAST_URL: ${{ inputs.podcast_url }}
+          # This step can run several minutes (download + compress + one or
+          # more Whisper calls). Python fully buffers stdout when it isn't a
+          # TTY, so without this every log line lands at once when the
+          # process exits instead of as it happens — confirmed on a live run
+          # where nothing appeared in the log until the very end.
+          PYTHONUNBUFFERED: "1"
         run: |
           python -m ned.main
 

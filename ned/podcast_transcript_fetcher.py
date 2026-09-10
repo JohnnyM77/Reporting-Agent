@@ -14,8 +14,9 @@
 #   5. Return a TranscriptResult identical in shape to the YouTube fetcher's,
 #      so downstream code (digest LLM step, email, save-to-file) is unchanged.
 #
-# ffmpeg is pre-installed on ubuntu-latest GitHub runners, so no setup is
-# needed there. Locally you need it on PATH.
+# ffmpeg is NOT preinstalled on ubuntu-latest GitHub runners as of this
+# writing — the workflow installs it explicitly (`apt-get install ffmpeg`)
+# before this module is imported. Locally you need it on PATH too.
 
 from __future__ import annotations
 
@@ -265,9 +266,9 @@ def _require_ffmpeg() -> str:
     if not path:
         raise TranscriptError(
             "ffmpeg is not installed / not on PATH. It's needed to compress "
-            "the audio for Whisper. On ubuntu-latest runners it's preinstalled; "
-            "locally, install it (macOS: `brew install ffmpeg`; Ubuntu: "
-            "`apt-get install ffmpeg`; Windows: winget / choco)."
+            "the audio for Whisper. The GitHub Actions workflow installs it "
+            "via apt-get; locally, install it yourself (macOS: `brew install "
+            "ffmpeg`; Ubuntu: `apt-get install ffmpeg`; Windows: winget / choco)."
         )
     return path
 

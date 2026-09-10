@@ -13,7 +13,8 @@ name: Ned Podcast Transcript Fetcher
 #     runner there.
 #   * Podcast MP3 hosts (CDNs, Libsyn, Simplecast, etc.) do NOT block cloud
 #     IPs — normal HTTP downloads work fine, so no home PC is required.
-#   * ffmpeg is preinstalled on ubuntu-latest.
+#   * ffmpeg is installed via apt-get in this workflow (not preinstalled on
+#     ubuntu-latest, contrary to earlier assumption — confirmed on a live run).
 #
 # Required secrets (all already exist from other workflows except OPENAI_API_KEY):
 #   OPENAI_API_KEY     — Whisper API (~$0.006/min ≈ 36c for a 60-min episode)
@@ -41,9 +42,17 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Verify ffmpeg is available
+      - name: Install ffmpeg
         run: |
+          # Not actually preinstalled on this runner image (confirmed via a
+          # live run — "ffmpeg: command not found"). Install it explicitly
+          # rather than assuming; `| head -1` on the verify line would also
+          # mask a missing binary since a pipe's exit status is the last
+          # command's (head), not ffmpeg's, so check the real exit code too.
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
           ffmpeg -version | head -1
+          command -v ffmpeg
 
       - name: Install deps
         run: |

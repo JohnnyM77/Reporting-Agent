@@ -188,9 +188,11 @@ class _StreamingResponse:
         return False
 
 
-def _stub_ffmpeg(monkeypatch):
-    """Skip real ffmpeg calls by copying the source bytes as the "compressed"
-    output, and by treating _split_into_chunks as identity."""
+def _stub_ffmpeg(monkeypatch, duration_seconds: float = 300.0):
+    """Skip real ffmpeg/ffprobe calls: copy source bytes as the "compressed"
+    output, treat _split_into_chunks as a byte-count split, and report a
+    fixed duration (default 5 min — short enough not to trigger duration-
+    based chunking unless a test explicitly wants that)."""
     def fake_require_ffmpeg():
         return "/bin/true"
 
@@ -212,6 +214,7 @@ def _stub_ffmpeg(monkeypatch):
     monkeypatch.setattr(podcast_mod, "_require_ffmpeg", fake_require_ffmpeg)
     monkeypatch.setattr(podcast_mod, "_compress_for_whisper", fake_compress)
     monkeypatch.setattr(podcast_mod, "_split_into_chunks", fake_split)
+    monkeypatch.setattr(podcast_mod, "_audio_duration_seconds", lambda path: duration_seconds)
 
 
 def _payload(size: int) -> bytes:
@@ -285,6 +288,134 @@ def test_chunking_kicks_in_and_offsets_timestamps(monkeypatch):
     # All strictly non-decreasing
     for a, b in zip(starts, starts[1:]):
         assert b >= a
+
+
+def test_duration_triggers_chunking_even_under_size_cap(monkeypatch):
+    """A long-but-small file (a live ~85-minute episode compressed to 15.3 MB,
+    comfortably under the 24 MB cap) must still be chunked — size alone isn't
+    the trigger, since a single very long Whisper request was what actually
+    died on a live run."""
+    _stub_ffmpeg(monkeypatch, duration_seconds=podcast_mod._CHUNK_SECONDS + 60)
+    small_audio = _payload(2 * 1024 * 1024)  # 2 MB — well under the size cap
+
+    def fake_get(url, **kw):
+        return _StreamingResponse(small_audio)
+
+    calls: list[Path] = []
+
+    def fake_transcribe(path):
+        calls.append(path)
+        return f"chunk{len(calls)}", [
+            {"text": f"chunk{len(calls)}", "start": 0.0, "duration": 1.0},
+        ]
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    monkeypatch.setattr(podcast_mod, "_transcribe_one", fake_transcribe)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+
+    podcast_mod.fetch_podcast_transcript("https://example.com/long-but-small.mp3")
+    assert len(calls) == 2, "duration over the threshold must trigger chunking"
+
+
+def test_short_file_under_both_thresholds_is_a_single_call(monkeypatch):
+    _stub_ffmpeg(monkeypatch, duration_seconds=120.0)  # 2 min, well under threshold
+    small_audio = _payload(2 * 1024 * 1024)
+
+    def fake_get(url, **kw):
+        return _StreamingResponse(small_audio)
+
+    calls: list[Path] = []
+
+    def fake_transcribe(path):
+        calls.append(path)
+        return "single call", [{"text": "single call", "start": 0.0, "duration": 1.0}]
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    monkeypatch.setattr(podcast_mod, "_transcribe_one", fake_transcribe)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+
+    podcast_mod.fetch_podcast_transcript("https://example.com/short.mp3")
+    assert len(calls) == 1
+
+
+def test_transcribe_retries_transient_connection_errors_then_succeeds(monkeypatch, tmp_path):
+    audio = tmp_path / "audio.ogg"
+    audio.write_bytes(_payload(4096 * 2))
+
+    attempts = {"n": 0}
+
+    def fake_post(url, files=None, data=None, headers=None, timeout=None):
+        attempts["n"] += 1
+        if attempts["n"] < 3:
+            raise podcast_mod.requests.exceptions.ConnectionError(
+                "Remote end closed connection without response"
+            )
+
+        class _R:
+            status_code = 200
+            text = ""
+
+            def json(self):
+                return {"text": "recovered after retries", "segments": []}
+
+        return _R()
+
+    sleeps: list[float] = []
+    monkeypatch.setattr(podcast_mod.time, "sleep", lambda s: sleeps.append(s))
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    monkeypatch.setattr(podcast_mod.requests, "post", fake_post)
+
+    text, segs = podcast_mod._transcribe_one(audio)
+    assert attempts["n"] == 3
+    assert len(sleeps) == 2, "should back off before each retry, not before the first attempt"
+    assert text == "recovered after retries"
+
+
+def test_transcribe_gives_up_after_max_attempts(monkeypatch, tmp_path):
+    audio = tmp_path / "audio.ogg"
+    audio.write_bytes(_payload(4096 * 2))
+
+    attempts = {"n": 0}
+
+    def fake_post(url, files=None, data=None, headers=None, timeout=None):
+        attempts["n"] += 1
+        raise podcast_mod.requests.exceptions.ConnectionError("still broken")
+
+    monkeypatch.setattr(podcast_mod.time, "sleep", lambda s: None)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    monkeypatch.setattr(podcast_mod.requests, "post", fake_post)
+
+    with pytest.raises(TranscriptError) as ei:
+        podcast_mod._transcribe_one(audio)
+    assert attempts["n"] == podcast_mod._MAX_WHISPER_ATTEMPTS
+    assert "attempts" in str(ei.value).lower()
+    assert "ConnectionError" in str(ei.value)
+
+
+def test_transcribe_does_not_retry_http_error_responses(monkeypatch, tmp_path):
+    """A 4xx/5xx HTTP response is a real failure (bad key, rejected file) —
+    retrying it wastes time and won't change the outcome, so it must not be
+    retried the way a network-level exception is."""
+    audio = tmp_path / "audio.ogg"
+    audio.write_bytes(_payload(4096 * 2))
+
+    attempts = {"n": 0}
+
+    class _R:
+        status_code = 500
+        text = "server error"
+
+    def fake_post(url, files=None, data=None, headers=None, timeout=None):
+        attempts["n"] += 1
+        return _R()
+
+    monkeypatch.setattr(podcast_mod.time, "sleep", lambda s: pytest.fail("should not sleep/retry on HTTP error"))
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    monkeypatch.setattr(podcast_mod.requests, "post", fake_post)
+
+    with pytest.raises(TranscriptError):
+        podcast_mod._transcribe_one(audio)
+    assert attempts["n"] == 1
 
 
 def test_transcribe_raises_when_no_api_key(monkeypatch, tmp_path):

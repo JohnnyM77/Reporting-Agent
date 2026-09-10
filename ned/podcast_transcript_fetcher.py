@@ -8,9 +8,17 @@
 #      RSS <enclosure> URLs and raw .mp3 links are used as-is).
 #   2. Download the audio to a local file.
 #   3. Compress it with ffmpeg to 16kHz mono Opus so it fits under Whisper's
-#      25 MB per-request cap in one call. If it still doesn't, we split into
-#      chunks and transcribe each.
+#      25 MB per-request cap in one call. If it's still oversized, OR if it's
+#      simply long (a live run against an ~85-minute episode had its Whisper
+#      request die mid-flight with RemoteDisconnected — the file was well
+#      under the size cap at 15 MB, but one HTTP call covering that much
+#      audio was apparently fragile over whatever network path sits between
+#      the runner and OpenAI), we split into ~20-minute chunks and
+#      transcribe each separately.
 #   4. Transcribe with OpenAI's Whisper API (whisper-1) — no local ML deps.
+#      Each Whisper call retries a few times with backoff on transient
+#      connection errors (not on 4xx/5xx HTTP responses, which are treated
+#      as real failures).
 #   5. Return a TranscriptResult identical in shape to the YouTube fetcher's,
 #      so downstream code (digest LLM step, email, save-to-file) is unchanged.
 #
@@ -26,6 +34,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
@@ -46,6 +55,15 @@ _COMPRESSED_SAMPLE_RATE = "16000"
 _CHUNK_SECONDS = 20 * 60  # 20-minute chunks if we have to split
 _HTTP_TIMEOUT = 60
 _USER_AGENT = "Mozilla/5.0 (Ned; podcast transcript fetcher; +https://github.com/JohnnyM77/Reporting-Agent)"
+
+# Whisper request retries: a live run against an ~85-minute episode (15.3 MB
+# compressed, under the size cap) died with
+# "ConnectionError: Remote end closed connection without response" after
+# several minutes — a transient drop somewhere between the runner and
+# OpenAI, not a client-side timeout. Retried network-level failures only;
+# a 4xx/5xx HTTP response is a real failure and is never retried.
+_MAX_WHISPER_ATTEMPTS = 3
+_RETRY_BACKOFF_SECONDS = (5, 20)
 
 _ITUNES_LOOKUP = "https://itunes.apple.com/lookup"
 # Anything ending in these extensions we treat as a direct audio URL.
@@ -311,6 +329,27 @@ def _split_into_chunks(src: Path, out_dir: Path) -> list[Path]:
     return sorted(out_dir.glob("chunk-*.ogg"))
 
 
+def _audio_duration_seconds(path: Path) -> float:
+    """Duration of an audio file via ffprobe (ships alongside ffmpeg)."""
+    ffprobe = shutil.which("ffprobe")
+    if not ffprobe:
+        raise TranscriptError(
+            "ffprobe is not installed / not on PATH. It ships with ffmpeg — "
+            "install ffmpeg to get it too."
+        )
+    cmd = [
+        ffprobe, "-v", "error",
+        "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1",
+        str(path),
+    ]
+    try:
+        out = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        return float(out.stdout.strip())
+    except (subprocess.CalledProcessError, ValueError) as exc:
+        raise TranscriptError(f"ffprobe failed to read audio duration: {exc}")
+
+
 def _transcribe_one(audio_path: Path) -> tuple[str, list[dict]]:
     """Whisper-1 transcription of a single file <= 25 MB.
 
@@ -328,21 +367,41 @@ def _transcribe_one(audio_path: Path) -> tuple[str, list[dict]]:
     # Prefer verbose_json so we get timestamped segments for the .timestamped.txt
     # save. Fall back to plain text if the SDK / API stops supporting it.
     url = "https://api.openai.com/v1/audio/transcriptions"
-    with open(audio_path, "rb") as fh:
-        files = {"file": (audio_path.name, fh, "application/octet-stream")}
-        data = {"model": "whisper-1", "response_format": "verbose_json"}
+    resp = None
+    last_exc: Exception | None = None
+    for attempt in range(1, _MAX_WHISPER_ATTEMPTS + 1):
         try:
-            resp = requests.post(
-                url,
-                files=files,
-                data=data,
-                headers={"Authorization": f"Bearer {api_key}"},
-                timeout=15 * 60,   # 15 min upload+processing ceiling
+            with open(audio_path, "rb") as fh:
+                files = {"file": (audio_path.name, fh, "application/octet-stream")}
+                data = {"model": "whisper-1", "response_format": "verbose_json"}
+                resp = requests.post(
+                    url,
+                    files=files,
+                    data=data,
+                    headers={"Authorization": f"Bearer {api_key}"},
+                    timeout=15 * 60,   # 15 min upload+processing ceiling
+                )
+            break
+        except requests.exceptions.RequestException as exc:
+            # Network-level failure (connection reset, timeout, etc.) — retry.
+            # An HTTP 4xx/5xx response is not this branch; it's handled below
+            # and never retried, since retrying won't fix a bad key or a
+            # rejected file.
+            last_exc = exc
+            more_attempts_left = attempt < _MAX_WHISPER_ATTEMPTS
+            print(
+                f"[ned/podcast] Whisper request attempt {attempt}/{_MAX_WHISPER_ATTEMPTS} "
+                f"failed ({type(exc).__name__}: {exc}); "
+                + ("retrying…" if more_attempts_left else "giving up.")
             )
-        except Exception as exc:
-            raise TranscriptError(
-                f"Whisper API request failed: {type(exc).__name__}: {exc}"
-            )
+            if more_attempts_left:
+                time.sleep(_RETRY_BACKOFF_SECONDS[attempt - 1])
+
+    if resp is None:
+        raise TranscriptError(
+            f"Whisper API request failed after {_MAX_WHISPER_ATTEMPTS} attempts: "
+            f"{type(last_exc).__name__}: {last_exc}"
+        )
 
     if resp.status_code >= 400:
         raise TranscriptError(
@@ -377,9 +436,22 @@ def _transcribe_one(audio_path: Path) -> tuple[str, list[dict]]:
 
 
 def _transcribe_prepared(compressed: Path, work_dir: Path) -> tuple[str, list[dict]]:
-    """Transcribe the compressed file, chunking if it's still oversized."""
+    """Transcribe the compressed file, chunking if it's oversized OR long.
+
+    Chunking on size alone isn't enough: a live run against an ~85-minute
+    episode (15.3 MB compressed, comfortably under the 25 MB cap) still had
+    its single Whisper request die mid-flight with a connection reset after
+    several minutes. Splitting by duration too keeps each individual request
+    short, which is both faster to retry and less exposed to whatever in the
+    network path was killing the long-lived connection.
+    """
     size = compressed.stat().st_size
-    if size <= _WHISPER_MAX_BYTES:
+    duration = _audio_duration_seconds(compressed)
+    print(
+        f"[ned/podcast] Compressed audio: {size / (1024 * 1024):.1f} MB, "
+        f"{duration / 60:.1f} min"
+    )
+    if size <= _WHISPER_MAX_BYTES and duration <= _CHUNK_SECONDS:
         return _transcribe_one(compressed)
 
     chunks = _split_into_chunks(compressed, work_dir)

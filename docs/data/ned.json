@@ -1,55 +1,66 @@
 {
   "agent": "Ned",
-  "last_run": "2026-09-10T01:15:15.808371Z",
+  "last_run": "2026-09-11T01:16:45.211830Z",
   "youtube_hits": 0,
-  "news_hits": 44,
-  "total_hits": 44,
-  "critical_high_count": 4,
+  "news_hits": 59,
+  "total_hits": 59,
+  "critical_high_count": 9,
   "status": "ok",
   "items": [
     {
       "tickers": [
-        "ATP"
+        "DRO"
       ],
-      "title": "Atlas Pearls (ASX:ATP) Balances Pearl Production Growth With Dividend Discipline - kalkine.com.au",
-      "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNdEc1OFc5WTFXanFRXzRySGdnWFE3bVZRb3FYSThjeFBPbjVwOVRwNHpKcERhM1o3RWNtZE9HMVpQMmNob2hPY2RmUThrczNxZi01OXhTLUtUUlZCWXZ3OWs4cFREMTVKdWZBUE5VZXJVYXZYZFhpQTZyX3RhSjlhdlh1MkRMazcwQkZjTlRyUlVFZHZvajZiaUk1SE9JV0ducXhEM3NwdE8wX0wteE1YbGFST24?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "Atlas Pearls is balancing growth in pearl production with disciplined dividend payments, signaling management's commitment to both expanding the business and rewarding shareholders.",
-      "published": "2026-09-09T09:10:00+00:00"
-    },
-    {
-      "tickers": [
-        "TWE"
-      ],
-      "title": "Treasury Wine Estates (ASX:TWE): Weaker FY26 Earnings Meet a More Focused Luxury Wine Strategy - kalkine.com.au",
-      "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxNR0dXU0NxS3oyTjNPM1EyUDI2dlF3MUZ5QmRHbTRaUGx2ZmtMbXpjQkdVZGowRkpDVUhhY2F5QURwNVRiUHR3ZXd2X3BNWHdOV09wQVRLdTFOaUJqVDFPV0MzTUQyUzdvamFpZzMwMWFhMmdLZHQ3aE1TcmtiQmxGX3YtU0U3NzlGUXg0R1E0X3BkT3ZiS0padHlXRVlCOXdzTGNUMUx5cG0wX1RnUllWeHRDeWRqQ1p6VG9XbVZzaDZUOFlYN3c?oc=5",
+      "title": "Former MYOB executive appointed DroneShield CFO as full-year committed revenue tops $250m - Business News Australia",
+      "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxQQ05KOFFrT2JlSFFvQ3R0SUNWT3EyeGRLZ0ZYbkFTSkZRX0xoMUU3WXMwRXQ2UUdNVmp6azM5RGh2OEd3UVVkTnVrYnVNeV96MW1QS1FPeXltR3EzenZWaEc4Tm81SndhY3lZTDBEQzVyMWJmNmdDUnJ4dWZIM19na2hJOTREWHZYcHo3RVpVZFh4c1U1RzlEdDAwTU8tRUpGU0VPWGJsZ01HRnJsaWtWbU5MdG9SMFNGM1pnVDBfX2ZSc2RjSGZNZmlyUnRaeEZmaXfSAd4BQVVfeXFMTW5EYkIyY3BkUnB1REVwOW9NbURGU1lDNW0tUkxZbjFHVGJkcXk0QXFZYmlvSHJPeE5wUUdJNHAtRTk4Z01ROFhsNWJuYnpPdC0yT0hfN3NmeWxlbW1POUdWVEFEdmR4ZlpSUG1CLTRjdm9aWklXdFR3VE00WUJablNEckJuVmUxN0xwX3lSSWY1WkQ3c1BJVjZVUUJTUFk2UENGaXBvbC0yVFZzZjBBbnRNRDY3dGxwUFF1eF9JU2cwS3VGLWVuM2QzcXVodXctZXlubmZaYWtSU1lPMDlB?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
       "summary": "",
-      "published": "2026-09-09T11:20:00+00:00"
+      "published": "2026-09-10T02:28:17+00:00"
     },
     {
       "tickers": [
-        "BHP"
+        "DRO"
       ],
-      "title": "Which Metal Now Drives BHP's Earnings Mix (ASX:BHP)? - Kalkine Media",
-      "url": "https://news.google.com/rss/articles/CBMilgFBVV95cUxNS0lvT2xsSHdjTHlwOXUtMjZkS1JKTm1HOHRZb2VMQUFqVnpyLURkUWNkTXRZd0dxUVRpSndVc3BoVGNXT1dnb1d4R2k3SDJkcUhoUVNNRk01czRXVGE1WEdiRXJTdi1TanMzeDdDZnIwYTJ4MGpWclBLY1B4cWlDMkRUa1RFS3NlZGRJR1VacVNIeVNuOXc?oc=5",
+      "title": "DroneShield (ASX:DRO) lands ex-Afterpay CFO as committed revenue crosses A$251m - Stocks Down Under",
+      "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxPZUc4UncxVFU5a0JMQ1lrSkpPTy1uQVQ4TVpfazdzQ0RCLU1pWlltZU5IZExEVDFpRGtmaWZZblgzeGItX1Qtb1p4RjMzcHZjTDR6dnZ1cTctRmJYNGJQLVFCTHNuQVBEelJnWUtsdVlkZHNONTdDS1Y3cVVnSHBCYzMtMXBCY0h2bi02QV9iaXk?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
-      "summary": "[not material]\n\nThe snippet doesn't provide specific information about what actually happened or which metal is driving earnings\u2014it's only a headline question without the underlying details needed to assess shareholder impact.",
-      "published": "2026-09-10T00:45:00+00:00"
+      "summary": "",
+      "published": "2026-09-10T01:02:46+00:00"
     },
     {
       "tickers": [
         "WDS"
       ],
-      "title": "Woodside CEO contender stepping down after 25 years - The West Australian",
-      "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxObkJ4V0taaDlZMHVSZk55ZzFhZmhKVlhTOWpCVXhCeWZWUW04V3FCOUpqcVFIVlk4VGJqN1I4X0xKN0tQRjF5ZFNXb1huMkVlRjlZOGoxdG1sTlJNRGJQNFgyMG9HMExWZlFnZjd2STZnU0NvVklUbnB4TmNLZTFrZ3RNMEZzdHM1Ni1nUDBRZFZ4OGF2bGRJWTVVWjltUHhWOU1zU2tOMGNwRk5oblI5R0JaV2NCUXVMcDR5UWxUcUk?oc=5",
+      "title": "Woodside Energy Group (ASX:WDS): What follows interim result? - kalkinemedia.com",
+      "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxORklMYkhtWEZOSnZzN0lVU3g2U2ptbnNUdjNLd0ZqZ2tEc1pNTUM0U1ZBQUFlbWl4MGxoS19OUWN1NkszOUZxMExRSW9qSks5ci1sSmdZbWk0NlpXMG5GcWdaLTRRRzV5YWliMHdHQ2FnZU5Ba3EyZ1VESFN6X2dwT1c1aTRDVW9qbFhmTy10SlNTV1k1VFZpMzJxeUVTa19r?oc=5",
       "source": "Google News",
-      "level": "HIGH",
+      "level": "CRITICAL",
       "summary": "",
-      "published": "2026-09-10T00:14:00+00:00"
+      "published": "2026-09-10T03:39:00+00:00"
+    },
+    {
+      "tickers": [
+        "WDS"
+      ],
+      "title": "Woodside Energy Group Confirms Exchange Rates for USD 0.57 Per Share Interim Dividend - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxOTjd5SXh5enhMbUFFcXViRWtYUjJmRXdxdzFFbHJqN04wLVdqYTRvS2toZm9SakJ4Q2Q0aVFxSUR5dGlUSUc5aEVLLVVMSkdIV2I4R1hTbzBERWNrN21YaGNURm8tX3NzNnNCcGM2WWFPVUs5MWY4aHVaek1LRlVYdks1S2Z2MkZtZFd3a3BsSW1iRkkxNXdlRGE5TnRIVGM1NkFKN1h1bV9JdGNYR25lZklwRllkRUVqSWZSbDhhdDhMVmVk?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-09T05:11:23+00:00"
+    },
+    {
+      "tickers": [
+        "CSL"
+      ],
+      "title": "CSL (ASX:CSL): Can stabilise after its earnings reset? - kalkinemedia.com",
+      "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQcGZYY3BTWk5IOEU1Z0dYZjZHOU1yQTF5U2pBSjNhMGtfek91MXRtdHBJWnlacXlBazJLS2FsWTY3NFBoSUdseENGVjlBNG1jejBaR2xLRms0VHA0QUNvSVFVUW1Tb1RWbTZFaTBBRG9Mc2laN3k3a2tXVEU0X1BucWpUdEZXT1JRUHFJX1FqR2RIYjZzN0hQTERLenB0ZVk1QzhxNFhB?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "[not material]\n\nThe snippet is too vague to determine what specific event occurred or its implications for shareholders - it only poses a question about stabilization after an \"earnings reset\" without providing actual news content.",
+      "published": "2026-09-10T03:44:00+00:00"
     }
   ]
 }

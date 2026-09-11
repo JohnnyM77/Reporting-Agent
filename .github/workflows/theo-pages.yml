@@ -36,10 +36,15 @@ on:
   # worth publishing, and re-deploying unchanged content costs nothing.
   workflow_run:
     workflows:
-      - "Daily Announcement Digest"    # Bob   — daily,  23:13 UTC
-      - "Ned News Agent"               # Ned   — daily,  23:30 UTC
-      - "Wally Watchlist Screening"    # Wally — Friday, 22:30 UTC
-      - "Selling Sally Weekly Review"  # Sally — Sunday, 00:00 UTC
+      - "Daily Announcement Digest"        # Bob   — daily,  23:13 UTC
+      - "Ned News Agent"                   # Ned   — daily,  23:30 UTC
+      - "Wally Watchlist Screening"        # Wally — Friday, 22:30 UTC
+      - "Selling Sally Weekly Review"      # Sally — Sunday, 00:00 UTC
+      # Manual on-demand single-episode digests. They commit a new entry
+      # to docs/data/transcripts.json which the dashboard renders, so a
+      # Pages deploy has to follow their completion too.
+      - "Ned Transcript Fetcher"           # YouTube — self-hosted, on demand
+      - "Ned Podcast Transcript Fetcher"   # Podcast — ubuntu-latest, on demand
     types: [completed]
     branches: [main]
 

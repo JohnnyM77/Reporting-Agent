@@ -206,6 +206,13 @@ def test_run_transcript_digest_saves_files_and_reports(monkeypatch, tmp_path, ca
     import ned.main as ned_main
 
     monkeypatch.setattr(ned_main, "TRANSCRIPTS_DIR", tmp_path)
+    # Isolate the dashboard history file too — a successful run appends to it
+    # and would otherwise write into the real repo's docs/data/ on every test
+    # run.
+    monkeypatch.setattr(
+        ned_main, "_TRANSCRIPTS_HISTORY_PATH",
+        tmp_path / "docs" / "data" / "transcripts.json",
+    )
     # No email env, no LLM key -> prints digest, no crash.
     for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD", "ANTHROPIC_API_KEY"):
         monkeypatch.delenv(k, raising=False)
@@ -262,3 +269,91 @@ def test_main_routes_env_var_to_transcript(monkeypatch):
 
     ned_main.main([])
     assert called["url"] == "https://youtu.be/oay6t8vh7b4"
+
+
+# ---------------------------------------------------------------------------
+# transcripts.json persistence (feeds the dashboard section)
+# ---------------------------------------------------------------------------
+def _yt_run_result():
+    return TranscriptResult(
+        video_id="oay6t8vh7b4",
+        language="English",
+        language_code="en",
+        is_generated=False,
+        plain_text="clean transcript body",
+        timestamped_text="[00:00] clean transcript body",
+        segments=[{"text": "clean transcript body", "start": 0.0}],
+    )
+
+
+def test_youtube_run_appends_transcripts_history(monkeypatch, tmp_path):
+    """A successful YouTube run must append one entry to
+    docs/data/transcripts.json (the file the dashboard section reads)."""
+    import json as _json
+    import ned.main as ned_main
+
+    hist_path = tmp_path / "docs" / "data" / "transcripts.json"
+    monkeypatch.setattr(ned_main, "_TRANSCRIPTS_HISTORY_PATH", hist_path)
+    monkeypatch.setattr(ned_main, "TRANSCRIPTS_DIR", tmp_path)
+    for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD", "ANTHROPIC_API_KEY"):
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setattr(ned_main, "fetch_transcript", lambda vid, **kw: _yt_run_result())
+
+    rc = ned_main.run_transcript_digest("https://www.youtube.com/watch?v=oay6t8vh7b4")
+    assert rc == 0
+    data = _json.loads(hist_path.read_text())
+    assert isinstance(data, list) and len(data) == 1
+    e = data[0]
+    assert e["kind"] == "youtube"
+    assert e["source_url"] == "https://www.youtube.com/watch?v=oay6t8vh7b4"
+    assert e["video_id"] == "oay6t8vh7b4"
+    assert e["caption_kind"] == "manual"
+    assert "timestamp" in e and e["timestamp"].endswith("Z")
+
+
+def test_transcripts_history_dedupes_and_caps(monkeypatch, tmp_path):
+    """Re-running the same episode updates the entry in place, and the file
+    is capped at _TRANSCRIPTS_HISTORY_MAX."""
+    import json as _json
+    import ned.main as ned_main
+
+    hist_path = tmp_path / "docs" / "data" / "transcripts.json"
+    monkeypatch.setattr(ned_main, "_TRANSCRIPTS_HISTORY_PATH", hist_path)
+    monkeypatch.setattr(ned_main, "_TRANSCRIPTS_HISTORY_MAX", 3)
+
+    # Seed 4 entries — one of them a duplicate of what we're about to append.
+    hist_path.parent.mkdir(parents=True, exist_ok=True)
+    hist_path.write_text(_json.dumps([
+        {"kind": "youtube", "source_url": "https://x/1", "n": 1},
+        {"kind": "youtube", "source_url": "https://x/2", "n": 2},
+        {"kind": "youtube", "source_url": "https://x/3", "n": 3},
+        {"kind": "youtube", "source_url": "https://x/dup", "n": 4},
+    ]))
+
+    ned_main._append_transcript_history({
+        "kind": "youtube",
+        "source_url": "https://x/dup",
+        "title": "updated",
+    })
+
+    data = _json.loads(hist_path.read_text())
+    # Cap is 3, dup was replaced (not appended), newest-first order.
+    assert len(data) == 3
+    assert data[0]["source_url"] == "https://x/dup"
+    assert data[0]["title"] == "updated"
+    assert not any(e.get("n") == 4 for e in data), "old dup should have been removed"
+
+
+def test_transcripts_history_survives_a_corrupt_file(monkeypatch, tmp_path):
+    """A malformed docs/data/transcripts.json must not kill the run."""
+    import json as _json
+    import ned.main as ned_main
+
+    hist_path = tmp_path / "docs" / "data" / "transcripts.json"
+    hist_path.parent.mkdir(parents=True, exist_ok=True)
+    hist_path.write_text("not valid json { : :")
+    monkeypatch.setattr(ned_main, "_TRANSCRIPTS_HISTORY_PATH", hist_path)
+
+    ned_main._append_transcript_history({"kind": "youtube", "source_url": "https://x/1"})
+    data = _json.loads(hist_path.read_text())
+    assert isinstance(data, list) and len(data) == 1

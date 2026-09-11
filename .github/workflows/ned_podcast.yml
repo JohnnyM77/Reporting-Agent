@@ -35,6 +35,10 @@ on:
 jobs:
   transcript:
     runs-on: ubuntu-latest
+    # Needed so the commit step at the end can push docs/data/transcripts.json
+    # + the rebuilt docs/index.html back to the branch.
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -84,3 +88,25 @@ jobs:
           name: ned-podcast-transcripts
           path: transcripts/
           if-no-files-found: ignore
+
+      - name: Commit dashboard update
+        # Same pattern the other agents use (Bob, Ned, Wally): commit the
+        # data JSON, pull --rebase to absorb anything that landed while we
+        # ran, rebuild the dashboard from the fresh data, and push. Runs
+        # even on a fetch failure so any partial entry (e.g. a "failed to
+        # fetch" record) still lands on the dashboard.
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f docs/data/transcripts.json ]; then
+            git add docs/data/transcripts.json
+            git diff --staged --quiet || git commit -m "Ned transcripts data [skip ci]"
+            git pull --rebase origin HEAD
+            python scripts/build_dashboard.py
+            git add docs/index.html
+            git diff --staged --quiet || git commit -m "Dashboard update — Ned transcripts [skip ci]"
+            git push origin HEAD
+          else
+            echo "No transcripts.json produced this run; nothing to commit."
+          fi

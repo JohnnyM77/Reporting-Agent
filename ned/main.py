@@ -268,6 +268,55 @@ def _digest_markdown_to_html(md: str) -> str:
     return "".join(html_parts)
 
 
+# The transcript history file lives alongside Bob/Ned/Wally/Sally's data
+# under docs/data/. The dashboard build reads it and renders a section; each
+# workflow run commits+pushes it, and the Pages workflow re-deploys on
+# workflow_run (see .github/workflows/theo-pages.yml).
+_TRANSCRIPTS_HISTORY_PATH = REPO_ROOT / "docs" / "data" / "transcripts.json"
+# Keep the last N entries. Enough to browse a few weeks of listens; small
+# enough that the JSON stays under 200 KB even with 5-sentence digests.
+_TRANSCRIPTS_HISTORY_MAX = 40
+
+
+def _append_transcript_history(entry: dict) -> None:
+    """Append one transcript entry to docs/data/transcripts.json.
+
+    Ordered newest-first (matches every other agent's JSON), capped at
+    _TRANSCRIPTS_HISTORY_MAX. Never raises — a failure here must not
+    kill the run, since the email is what the user actually asked for
+    and the dashboard update is a bonus.
+    """
+    try:
+        _TRANSCRIPTS_HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
+        existing: list[dict] = []
+        if _TRANSCRIPTS_HISTORY_PATH.exists():
+            try:
+                existing = json.loads(_TRANSCRIPTS_HISTORY_PATH.read_text() or "[]")
+                if not isinstance(existing, list):
+                    existing = []
+            except Exception:
+                existing = []
+        # De-dupe on (kind, source_url) so re-running the same episode
+        # updates the entry in place rather than piling up rows.
+        key = (entry.get("kind"), entry.get("source_url"))
+        existing = [
+            e for e in existing
+            if (e.get("kind"), e.get("source_url")) != key
+        ]
+        existing.insert(0, entry)
+        existing = existing[:_TRANSCRIPTS_HISTORY_MAX]
+        _TRANSCRIPTS_HISTORY_PATH.write_text(
+            json.dumps(existing, indent=2), encoding="utf-8"
+        )
+        print(
+            f"[ned/transcript] Wrote transcript entry to "
+            f"{_TRANSCRIPTS_HISTORY_PATH.relative_to(REPO_ROOT)} "
+            f"({len(existing)} entries total)"
+        )
+    except Exception as exc:
+        print(f"[ned/transcript] Could not update transcripts history: {exc}")
+
+
 def run_transcript_digest(url: str) -> int:
     """Fetch a single YouTube episode transcript, save it, summarise it, and
     email a digest in Ned's format.
@@ -321,6 +370,16 @@ def run_transcript_digest(url: str) -> int:
         plain=plain,
         html=html,
     )
+    _append_transcript_history({
+        "timestamp": dt.datetime.utcnow().isoformat() + "Z",
+        "kind": "youtube",
+        "source_url": url,
+        "title": result.video_id,      # YouTube's video_id; no title available
+        "video_id": result.video_id,
+        "caption_kind": result.caption_kind,
+        "digest_markdown": digest or "",
+        "chars": len(result.plain_text),
+    })
     return 0
 
 
@@ -368,6 +427,21 @@ def run_podcast_digest(url: str) -> int:
         plain=plain,
         html=html,
     )
+    _append_transcript_history({
+        "timestamp": dt.datetime.utcnow().isoformat() + "Z",
+        "kind": "podcast",
+        "source_url": url,
+        # video_id is a readable slug on the podcast path (built from the
+        # episode/show title in fetch_podcast_transcript); prefer it over
+        # the raw source URL as the display title.
+        "title": result.video_id,
+        "video_id": result.video_id,
+        # is_generated is False when a published RSS transcript was used,
+        # True when we fell back to Whisper.
+        "used_whisper": bool(result.is_generated),
+        "digest_markdown": digest or "",
+        "chars": len(result.plain_text),
+    })
     return 0
 
 

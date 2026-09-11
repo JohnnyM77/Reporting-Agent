@@ -1,0 +1,18 @@
+{
+  "annual_div_cents": {},
+  "annual_eps_cents": {
+    "2023": -19.0,
+    "2024": -9.5,
+    "2025": -9.0,
+    "2026": -4.0
+  },
+  "last_updated": "2026-09-11",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2023": "yfinance",
+    "2024": "yfinance",
+    "2025": "yfinance",
+    "2026": "yfinance"
+  },
+  "ticker": "SDR.AX"
+}

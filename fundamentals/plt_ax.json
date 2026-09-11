@@ -1,0 +1,16 @@
+{
+  "annual_div_cents": {},
+  "annual_eps_cents": {
+    "2022": -3.73,
+    "2023": -7.99,
+    "2024": -8.53
+  },
+  "last_updated": "2026-09-11",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2022": "yfinance",
+    "2023": "yfinance",
+    "2024": "yfinance"
+  },
+  "ticker": "PLT.AX"
+}

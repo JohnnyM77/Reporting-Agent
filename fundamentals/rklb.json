@@ -1,0 +1,26 @@
+{
+  "annual_div_cents": {},
+  "annual_eps_cents": {
+    "2019": -176.32,
+    "2020": -112.21,
+    "2021": -118.0,
+    "2022": -21.0,
+    "2023": -25.0,
+    "2024": -31.0,
+    "2025": -37.0,
+    "2026": -8.0
+  },
+  "last_updated": "2026-09-11",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2019": "alphavantage",
+    "2020": "alphavantage",
+    "2021": "alphavantage",
+    "2022": "alphavantage",
+    "2023": "alphavantage",
+    "2024": "alphavantage",
+    "2025": "alphavantage",
+    "2026": "alphavantage"
+  },
+  "ticker": "RKLB"
+}

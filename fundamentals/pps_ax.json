@@ -1,0 +1,23 @@
+{
+  "annual_div_cents": {
+    "2022": 5.0,
+    "2024": 1.0,
+    "2025": 2.25,
+    "2026": 2.5
+  },
+  "annual_eps_cents": {
+    "2023": 3.0,
+    "2024": 1.8,
+    "2025": 2.8,
+    "2026": 1.3
+  },
+  "last_updated": "2026-09-11",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2023": "yfinance",
+    "2024": "yfinance",
+    "2025": "yfinance",
+    "2026": "yfinance"
+  },
+  "ticker": "PPS.AX"
+}

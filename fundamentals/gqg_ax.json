@@ -1,0 +1,24 @@
+{
+  "annual_div_cents": {
+    "2022": 8.29,
+    "2023": 9.0,
+    "2024": 13.21,
+    "2025": 19.54,
+    "2026": 15.07
+  },
+  "annual_eps_cents": {
+    "2022": 8.0,
+    "2023": 10.0,
+    "2024": 15.0,
+    "2025": 16.0
+  },
+  "last_updated": "2026-09-11",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2022": "yfinance",
+    "2023": "yfinance",
+    "2024": "yfinance",
+    "2025": "yfinance"
+  },
+  "ticker": "GQG.AX"
+}

@@ -1,0 +1,18 @@
+{
+  "annual_div_cents": {},
+  "annual_eps_cents": {
+    "2023": -3.2,
+    "2024": -3.6,
+    "2025": -3.8,
+    "2026": -5.3
+  },
+  "last_updated": "2026-09-11",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2023": "yfinance",
+    "2024": "yfinance",
+    "2025": "yfinance",
+    "2026": "yfinance"
+  },
+  "ticker": "OCC.AX"
+}

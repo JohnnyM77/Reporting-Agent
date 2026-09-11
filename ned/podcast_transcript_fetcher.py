@@ -2,12 +2,25 @@
 #
 # Single-episode podcast transcript fetcher for Ned the News Agent.
 #
-# Podcasts don't ship with captions, so we have to make our own transcript:
-#   1. Resolve the pasted URL to a direct audio URL (Apple Podcasts episode
-#      links get resolved via the iTunes lookup API + the podcast's RSS feed;
-#      RSS <enclosure> URLs and raw .mp3 links are used as-is).
-#   2. Download the audio to a local file.
-#   3. Compress it with ffmpeg to 16kHz mono Opus so it fits under Whisper's
+# Two paths, cheapest first:
+#
+#   FREE PATH — <podcast:transcript>
+#     A growing number of podcast RSS feeds publish an already-made transcript
+#     alongside the audio, using the Podcasting 2.0 <podcast:transcript> tag
+#     (namespace: https://podcastindex.org/namespace/1.0). If the matched
+#     <item> carries one, we download and parse that file directly (VTT,
+#     SRT, or plain text) — no audio download, no ffmpeg, no Whisper call,
+#     no cost. This is both faster and more accurate: the transcript was
+#     produced by the show itself, often reviewed by a human.
+#
+#   PAID PATH — Whisper
+#     When no published transcript exists, or when parsing it fails, we
+#     fall back to the audio pipeline:
+#       1. Resolve the pasted URL to a direct audio URL (Apple Podcasts
+#          links go via the iTunes lookup API + the podcast's RSS feed;
+#          RSS <enclosure> URLs and raw .mp3 links are used as-is).
+#       2. Download the audio to a local file.
+#   3. (Whisper path continued) Compress with ffmpeg to 16kHz mono Opus so it fits under Whisper's
 #      25 MB per-request cap in one call. If it's still oversized, OR if it's
 #      simply long (a live run against an ~85-minute episode had its Whisper
 #      request die mid-flight with RemoteDisconnected — the file was well
@@ -78,6 +91,31 @@ class ResolvedPodcast:
     episode_title: str = ""
     show_title: str = ""
     source_kind: str = "direct"  # "direct" | "apple" | "rss"
+    # Populated when the RSS <item> carries a <podcast:transcript> tag. When
+    # set, we can skip the audio download + ffmpeg + Whisper path entirely
+    # and read the show's own transcript instead.
+    transcript_url: str = ""
+    transcript_type: str = ""    # "text/plain" | "text/vtt" | "application/srt" | …
+
+
+# The Podcasting 2.0 namespace transcripts live under. Feeds occasionally
+# omit or vary the URI, so at parse time we compare by local tag name too
+# rather than requiring an exact namespace match.
+_PODCAST_NS = "https://podcastindex.org/namespace/1.0"
+
+# When a feed publishes several <podcast:transcript> entries (e.g. both VTT
+# and SRT), we prefer plain text > VTT > SRT — all fine, but plain text
+# needs no timestamp parsing.
+_TRANSCRIPT_TYPE_PRIORITY = {
+    "text/plain": 0,
+    "text/html": 1,      # rare; we strip tags before use
+    "text/vtt": 2,
+    "application/srt": 3,
+    "application/x-subrip": 3,
+    # Unknown or JSON: not currently parsed, deprioritised so a parseable
+    # type wins when the feed offers both.
+    "": 9,
+}
 
 
 # ---------------------------------------------------------------------------
@@ -146,18 +184,50 @@ def _resolve_apple(url: str) -> ResolvedPodcast:
             "the audio."
         )
 
-    # 2. RSS -> the matching item's enclosure URL
-    audio_url, ep_title = _episode_from_rss(feed_url, episode_id)
-    return ResolvedPodcast(
-        audio_url=audio_url,
-        episode_title=ep_title,
-        show_title=show_title,
-        source_kind="apple",
-    )
+    # 2. RSS -> the matching item's enclosure URL (and, if the show
+    #    publishes one, its <podcast:transcript>).
+    partial = _episode_from_rss(feed_url, episode_id)
+    partial.show_title = show_title
+    partial.source_kind = "apple"
+    return partial
 
 
-def _episode_from_rss(feed_url: str, episode_id: str) -> tuple[str, str]:
-    """Return (audio_url, title) from a podcast RSS feed.
+def _local_name(tag: str) -> str:
+    """`{ns}foo` -> `foo`, `foo` -> `foo`. Namespace-lenient tag matching."""
+    return tag.split("}", 1)[-1] if "}" in tag else tag
+
+
+def _pick_transcript(item: ET.Element) -> tuple[str, str]:
+    """Return (transcript_url, transcript_type) if the RSS <item> carries a
+    parseable <podcast:transcript>, else ("", "").
+
+    A feed may declare multiple entries — one per format. We pick by the
+    priority table above so a parseable type wins when the feed offers
+    both. Unknown types fall through with a default priority so they can
+    still be used if nothing better exists.
+    """
+    best: tuple[int, str, str] | None = None
+    for child in item:
+        if _local_name(child.tag) != "transcript":
+            continue
+        turl = (child.get("url") or "").strip()
+        if not turl:
+            continue
+        ttype = (child.get("type") or "").strip().lower()
+        priority = _TRANSCRIPT_TYPE_PRIORITY.get(ttype, 5)
+        if best is None or priority < best[0]:
+            best = (priority, turl, ttype)
+    if best is None:
+        return "", ""
+    return best[1], best[2]
+
+
+def _episode_from_rss(feed_url: str, episode_id: str) -> ResolvedPodcast:
+    """Return a partly-populated ResolvedPodcast from a podcast RSS feed.
+
+    Sets `audio_url`, `episode_title`, and — if the matched <item> carries
+    a <podcast:transcript> tag — `transcript_url` + `transcript_type`.
+    The caller fills in `show_title` and `source_kind`.
 
     Matching order for the requested episode:
       1. item whose <guid> ends with the Apple episode id
@@ -183,40 +253,61 @@ def _episode_from_rss(feed_url: str, episode_id: str) -> tuple[str, str]:
 
     # RSS 2.0: <channel><item>...</item></channel>. Feeds vary on namespaces
     # for enclosure and guid, so search broadly.
-    items = list(root.iter("item"))
+    items = [el for el in root.iter() if _local_name(el.tag) == "item"]
     if not items:
         raise TranscriptError("Podcast RSS feed contains no <item> entries.")
 
     def _enclosure_url(item: ET.Element) -> str:
-        enc = item.find("enclosure")
-        if enc is not None and enc.get("url"):
-            return enc.get("url", "")
+        for child in item:
+            if _local_name(child.tag) == "enclosure" and child.get("url"):
+                return child.get("url", "")
         # Fall back to <link> only when it looks like an audio URL — many feeds
         # put a webpage link there.
-        link = item.findtext("link", "").strip()
-        return link if _looks_like_audio_url(link) else ""
+        for child in item:
+            if _local_name(child.tag) == "link":
+                link = (child.text or "").strip()
+                if _looks_like_audio_url(link):
+                    return link
+        return ""
 
     def _title(item: ET.Element) -> str:
-        return (item.findtext("title") or "").strip()
+        for child in item:
+            if _local_name(child.tag) == "title":
+                return (child.text or "").strip()
+        return ""
+
+    def _guid(item: ET.Element) -> str:
+        for child in item:
+            if _local_name(child.tag) == "guid":
+                return (child.text or "").strip()
+        return ""
+
+    def _to_resolved(it: ET.Element, audio_url: str) -> ResolvedPodcast:
+        turl, ttype = _pick_transcript(it)
+        return ResolvedPodcast(
+            audio_url=audio_url,
+            episode_title=_title(it),
+            transcript_url=turl,
+            transcript_type=ttype,
+        )
 
     # Match by guid or URL-embedded episode id.
     if episode_id:
         for it in items:
-            guid = (it.findtext("guid") or "").strip()
-            if guid.endswith(episode_id):
+            if _guid(it).endswith(episode_id):
                 url = _enclosure_url(it)
                 if url:
-                    return url, _title(it)
+                    return _to_resolved(it, url)
         for it in items:
             url = _enclosure_url(it)
             if url and episode_id in url:
-                return url, _title(it)
+                return _to_resolved(it, url)
 
     # Fall back to the newest item with an enclosure.
     for it in items:
         url = _enclosure_url(it)
         if url:
-            return url, _title(it)
+            return _to_resolved(it, url)
     raise TranscriptError(
         "Could not find an audio enclosure for that episode in the RSS feed."
     )
@@ -239,16 +330,178 @@ def resolve_podcast_url(url: str) -> ResolvedPodcast:
         return ResolvedPodcast(audio_url=url, source_kind="direct")
     # RSS feed URL pasted directly (no episode selector) — take the newest.
     if url.lower().endswith((".xml", ".rss")) or "/rss" in url.lower() or "/feed" in url.lower():
-        audio_url, ep_title = _episode_from_rss(url, episode_id="")
-        return ResolvedPodcast(
-            audio_url=audio_url, episode_title=ep_title, source_kind="rss"
-        )
+        partial = _episode_from_rss(url, episode_id="")
+        partial.source_kind = "rss"
+        return partial
 
     raise TranscriptError(
         f"Don't know how to resolve this URL to a podcast episode: {url!r}. "
         "Paste a direct .mp3/.m4a URL, an Apple Podcasts episode link, or an "
         "RSS feed URL."
     )
+
+
+# ---------------------------------------------------------------------------
+# Published transcript (RSS <podcast:transcript>) — the free path
+# ---------------------------------------------------------------------------
+# Timestamps in WebVTT ("00:12:34.567") and SRT ("00:12:34,567") differ only
+# in the fractional-second separator. This regex accepts either, and also
+# tolerates the shorter mm:ss.mmm form some VTT files use for cues under
+# an hour.
+_TIMESTAMP_RE = re.compile(r"(?:(\d+):)?(\d{1,2}):(\d{1,2})[.,](\d{1,3})")
+_CUE_LINE_RE = re.compile(
+    r"^\s*(" + _TIMESTAMP_RE.pattern + r")\s+-->\s+(" + _TIMESTAMP_RE.pattern + r")"
+)
+_STRIP_VTT_TAGS_RE = re.compile(r"<[^>]+>")
+
+
+def _parse_timestamp(match: re.Match) -> float:
+    hours = int(match.group(1) or 0)
+    minutes = int(match.group(2))
+    seconds = int(match.group(3))
+    frac = match.group(4)
+    return hours * 3600 + minutes * 60 + seconds + float(f"0.{frac}")
+
+
+def _parse_vtt_or_srt(body: str) -> list[dict]:
+    """Parse a WebVTT or SRT transcript into our {text, start, duration} shape.
+
+    Both formats are cue-based: an optional identifier line, a
+    "start --> end" timestamp line, one or more text lines, then a blank
+    line. WebVTT can carry inline tags like <v Speaker> and <c.classname>
+    which we strip so the LLM sees clean text.
+    """
+    segments: list[dict] = []
+    lines = body.splitlines()
+    i = 0
+    n = len(lines)
+    while i < n:
+        line = lines[i].strip()
+        cue = _CUE_LINE_RE.match(line)
+        if not cue:
+            i += 1
+            continue
+        # Timestamps are the 1st and 6th capture groups (each nested regex
+        # contributes 5 groups: outer wrapper + h/m/s/frac). We re-match the
+        # start / end timestamps to get the numeric values.
+        ts_matches = list(_TIMESTAMP_RE.finditer(line))
+        start = _parse_timestamp(ts_matches[0])
+        end = _parse_timestamp(ts_matches[1]) if len(ts_matches) > 1 else start
+        # Following lines up to the next blank are the cue's text.
+        text_parts: list[str] = []
+        i += 1
+        while i < n and lines[i].strip():
+            text_parts.append(lines[i])
+            i += 1
+        text = " ".join(text_parts)
+        text = _STRIP_VTT_TAGS_RE.sub("", text).strip()
+        text = re.sub(r"\s+", " ", text)
+        if text:
+            segments.append({
+                "text": text,
+                "start": start,
+                "duration": max(0.0, end - start),
+            })
+        # Advance past the blank line to the next cue.
+        while i < n and not lines[i].strip():
+            i += 1
+    return segments
+
+
+def _parse_plain_text(body: str) -> list[dict]:
+    """Wrap a plain-text transcript in a single segment.
+
+    We don't have timestamps to work with; the .timestamped.txt file will
+    just show [00:00] for the whole thing, and that's fine — the LLM
+    digest step doesn't care about timestamps.
+    """
+    clean = re.sub(r"\s+", " ", body).strip()
+    if not clean:
+        return []
+    return [{"text": clean, "start": 0.0, "duration": 0.0}]
+
+
+def _strip_html(body: str) -> str:
+    """Extremely small HTML text extractor for text/html transcripts.
+
+    Not a real parser — just enough to unwrap the paragraphs a captioning
+    service typically emits when it publishes as text/html rather than
+    text/plain. Anything more elaborate falls back to Whisper anyway.
+    """
+    return re.sub(r"<[^>]+>", " ", body)
+
+
+def _fetch_published_transcript(resolved: ResolvedPodcast) -> tuple[str, list[dict]] | None:
+    """Try the show's own <podcast:transcript> file. Returns
+    (plain_text, segments) on success, or None when we should fall back to
+    the audio + Whisper path.
+
+    Never raises — a failed download, an unsupported type, or a parse that
+    yields zero segments all return None so the caller can fall back
+    cleanly. The Whisper path is the safety net.
+    """
+    if not resolved.transcript_url:
+        return None
+
+    print(
+        f"[ned/podcast] Show publishes a transcript "
+        f"({resolved.transcript_type or 'unknown type'}); "
+        f"fetching {resolved.transcript_url}"
+    )
+    try:
+        resp = requests.get(
+            resolved.transcript_url,
+            timeout=_HTTP_TIMEOUT,
+            headers={"User-Agent": _USER_AGENT, "Accept": "*/*"},
+        )
+        resp.raise_for_status()
+    except Exception as exc:
+        print(
+            f"[ned/podcast] Published transcript download failed "
+            f"({type(exc).__name__}: {exc}); falling back to Whisper."
+        )
+        return None
+
+    body = resp.text or ""
+    ttype = (resolved.transcript_type or "").lower()
+
+    # If the feed didn't declare a type, sniff from the body's first line.
+    if not ttype:
+        head = body.lstrip()[:16].upper()
+        if head.startswith("WEBVTT"):
+            ttype = "text/vtt"
+        elif re.match(r"^\d+\s*\n\s*\d", body.lstrip()):
+            ttype = "application/srt"
+        else:
+            ttype = "text/plain"
+
+    if ttype in ("text/vtt", "application/srt", "application/x-subrip"):
+        segments = _parse_vtt_or_srt(body)
+    elif ttype == "text/html":
+        segments = _parse_plain_text(_strip_html(body))
+    elif ttype == "text/plain":
+        segments = _parse_plain_text(body)
+    else:
+        print(
+            f"[ned/podcast] Published transcript type {ttype!r} not supported; "
+            "falling back to Whisper."
+        )
+        return None
+
+    if not segments:
+        print(
+            "[ned/podcast] Published transcript parsed to zero segments; "
+            "falling back to Whisper."
+        )
+        return None
+
+    from ned.youtube_transcript_fetcher import _clean_plain_text
+    plain_text = _clean_plain_text(segments)
+    print(
+        f"[ned/podcast] Using published transcript: {len(segments)} segment(s), "
+        f"{len(plain_text)} chars — no Whisper call needed."
+    )
+    return plain_text, segments
 
 
 # ---------------------------------------------------------------------------
@@ -503,21 +756,31 @@ def fetch_podcast_transcript(url: str) -> TranscriptResult:
         f"episode={resolved.episode_title!r})"
     )
 
-    with tempfile.TemporaryDirectory(prefix="ned-podcast-") as td:
-        work = Path(td)
-        raw = work / "audio.bin"
-        _download_audio(resolved.audio_url, raw)
-        raw_mb = raw.stat().st_size / (1024 * 1024)
-        print(f"[ned/podcast] Downloaded {raw_mb:.1f} MB")
+    # FREE PATH — the show's own <podcast:transcript>, when the RSS feed
+    # publishes one. No audio download, no Whisper, no cost. Returns None
+    # on any failure so we fall back cleanly to the paid path.
+    published = _fetch_published_transcript(resolved)
+    if published is not None:
+        plain_text, segments = published
+        used_whisper = False
+    else:
+        # PAID PATH — download the audio and run it through Whisper.
+        with tempfile.TemporaryDirectory(prefix="ned-podcast-") as td:
+            work = Path(td)
+            raw = work / "audio.bin"
+            _download_audio(resolved.audio_url, raw)
+            raw_mb = raw.stat().st_size / (1024 * 1024)
+            print(f"[ned/podcast] Downloaded {raw_mb:.1f} MB")
 
-        compressed = work / "audio.ogg"
-        _compress_for_whisper(raw, compressed)
-        comp_mb = compressed.stat().st_size / (1024 * 1024)
-        print(f"[ned/podcast] Compressed to {comp_mb:.1f} MB (16kHz mono Opus)")
+            compressed = work / "audio.ogg"
+            _compress_for_whisper(raw, compressed)
+            comp_mb = compressed.stat().st_size / (1024 * 1024)
+            print(f"[ned/podcast] Compressed to {comp_mb:.1f} MB (16kHz mono Opus)")
 
-        plain_text, segments = _transcribe_prepared(compressed, work)
-        print(f"[ned/podcast] Whisper returned {len(segments)} segment(s), "
-              f"{len(plain_text)} chars")
+            plain_text, segments = _transcribe_prepared(compressed, work)
+            print(f"[ned/podcast] Whisper returned {len(segments)} segment(s), "
+                  f"{len(plain_text)} chars")
+        used_whisper = True
 
     # Reuse the same helpers as YouTube for the timestamped file.
     from ned.youtube_transcript_fetcher import _clean_plain_text, _timestamped_text
@@ -531,7 +794,10 @@ def fetch_podcast_transcript(url: str) -> TranscriptResult:
         video_id=slug,
         language="English",
         language_code="en",
-        is_generated=True,       # Whisper output is machine-generated
+        # Whisper output is machine-generated; a published <podcast:transcript>
+        # was produced by the show itself (often reviewed by a human), so
+        # tag it as manual.
+        is_generated=used_whisper,
         plain_text=plain,
         timestamped_text=ts,
         segments=segments,

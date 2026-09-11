@@ -1,8 +1,12 @@
 name: JM Watch List
 tickers:
+  - ARB.AX
   - AR9.AX
   - QOR.AX
+  - WTC.AX
+  - PME.AX
   - AD8.AX
+  - XRO.AX
   - CAT.AX
   - SDR.AX
   - PNV.AX
@@ -11,19 +15,71 @@ tickers:
   - MVP.AX
   - AVA.AX
   - EOS.AX
+  - CSL.AX
+  - REA.AX
   - RTH.AX
+  - COH.AX
   - SDV.AX
   - CPU.AX
   - AHC.AX
   - ASX.AX
   - XRG.AX
+  - RMD.AX
   - LAU.AX
+  - ABB.AX
   - ABV.AX
   - XRF.AX
+  - SOL.AX
   - ATP.AX
+  - TLC.AX
+  - PWH.AX
   - BXB.AX
   - MFT.NZ
   - SHA.AX
+  - WHC.AX
+  - S32.AX
+  - MQG.AX
+  - FMG.AX
   - LYL.AX
+  - CBA.AX
+  - WES.AX
   - MSV.AX
+  - WDS.AX
+  - WOW.AX
   - SPZ.AX
+  - TLS.AX
+  - NHC.AX
+  - BHP.AX
+  - DBI.AX
+
+# Buy prices follow the ticker across lists (priority JM > Aussie Tech >
+# Cornerstone > Nap Taker). A ticker is flagged when its price is at or
+# below the value below. UK names carry GBX pence as written.
+targets:
+  ARB.AX: 22
+  PME.AX: 100
+  XRO.AX: 83.14
+  CAT.AX: 3.06
+  SDR.AX: 5.27
+  TWE.AX: 6.15
+  CSL.AX: 113.4
+  REA.AX: 150
+  COH.AX: 120
+  AHC.AX: 0.38
+  RMD.AX: 32
+  ABB.AX: 3.5
+  XRF.AX: 1.75
+  SOL.AX: 35
+  TLC.AX: 5
+  PWH.AX: 8
+  WHC.AX: 6
+  MQG.AX: 120
+  FMG.AX: 8
+  CBA.AX: 80
+  WES.AX: 50
+  WOW.AX: 25
+  SPZ.AX: 0.84
+  TLS.AX: 3.5
+  NHC.AX: 4
+  BHP.AX: 40
+  DBI.AX: 4.3

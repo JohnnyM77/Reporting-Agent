@@ -7,15 +7,35 @@ tickers:
   - OFX.AX
   - 360.AX
   - APX.AX
+  - TNE.AX
+  - SEK.AX
   - AIM.AX
   - OCL.AX
+  - CAR.AX
   - MP1.AX
   - IPH.AX
   - IRE.AX
   - EOL.AX
+  - MAQ.AX
+  - NXT.AX
   - CDA.AX
   - DTL.AX
   - SGH.AX
   - IMB.AX
   - SHJ.AX
+  - DDR.AX
   - AFL.AX
+
+# Buy prices follow the ticker across lists (priority JM > Aussie Tech >
+# Cornerstone > Nap Taker). A ticker is flagged when its price is at or
+# below the value below. UK names carry GBX pence as written.
+targets:
+  CGS.AX: 2.15
+  360.AX: 18.39
+  TNE.AX: 20
+  CAR.AX: 30
+  IPH.AX: 4.71
+  MAQ.AX: 60
+  NXT.AX: 8
+  DTL.AX: 7.02
+  DDR.AX: 9

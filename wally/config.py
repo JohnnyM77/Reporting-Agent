@@ -48,6 +48,7 @@ STANDARD_WATCHLISTS = [
     "watchlists/tii_watchlist.yaml",
     "watchlists/jm_watchlist.yaml",
     "watchlists/aussie_tech_watchlist.yaml",
+    "watchlists/naptaker_watchlist.yaml",
 ]
 TII75_WATCHLIST = "watchlists/tii75_watchlist.yaml"
 

@@ -223,14 +223,34 @@ Whatever unit a buy price is in, the quote Wally screens it against must match:
 UK names are quoted in pence on their home exchange, so a pence buy price
 compares correctly there.
 
-The TII watchlist (tickers + buy prices) is synced from the user's
-`Watchlists_Aug_26` spreadsheet (TII sheet, "Buy Below" column). The three
-standard watchlists are de-duplicated in priority order **TII → JM → Aussie
-Tech**: a ticker that appears in more than one is kept only in the
-highest-priority list. `tii75_watchlist.yaml` is a separate canonical list and
-stays untouched at exactly 30. `config/tii_portfolio_targets.yaml` (`buy_below`,
-used for the email's Portfolio Targets block) is a separate, older source and
-may lag the spreadsheet.
+There are four standard watchlists, de-duplicated in priority order
+**JM → Aussie Tech → Cornerstone → Nap Taker**: a ticker that appears in more
+than one is kept only in the highest-priority list. **Buy prices follow the
+ticker**, not the list — a global price map (Cornerstone's Buy-Below preferred,
+else Nap Taker's) is attached to whichever list each ticker lands in, so a name
+that moves into JM/Aussie Tech still carries its buy price and stays flagged.
+
+The lists and where their names/prices come from:
+
+- **JM Watch List** (`jm_watchlist.yaml`) and **Aussie Tech Watchlist**
+  (`aussie_tech_watchlist.yaml`) — the user's own ticker lists (from
+  `Watchlists_Aug_26`), no native buy prices; they inherit prices via the map.
+- **Cornerstone Watchlist** (`tii_watchlist.yaml`) — the list formerly named
+  "TII Watchlist", renamed so the source's buy prices aren't published under
+  their brand. Filename kept as `tii_watchlist.yaml`; the display `name:` is
+  "Cornerstone Watchlist" and `_load_portfolio_targets` maps that name to
+  `config/tii_portfolio_targets.yaml`. Buy prices from the TII sheet's
+  "Buy Below" column, GBX pence as written.
+- **Nap Taker Investing** (`naptaker_watchlist.yaml`) — analyst buy
+  recommendations under two years old, merged from the five Motley Fool
+  scorecard tabs (Buy status only), deliberately not named after the source.
+  Buy price = the price at the date of recommendation. US names are stored bare
+  (no `.AX`); a few source tickers needed correcting off the intact concatenated
+  name column (e.g. AMD, GOAT, SGLLV, HWM, TTD).
+
+`tii75_watchlist.yaml` is a separate canonical list and stays untouched at
+exactly 30. `config/tii_portfolio_targets.yaml` (`buy_below`, used for the
+email's Portfolio Targets block) is a separate, older source and may lag.
 
 `TickerScreenResult` gained `near_low`, `target_price`, `below_target` and
 `distance_to_target_pct` (all defaulted, so the empty/error constructors in

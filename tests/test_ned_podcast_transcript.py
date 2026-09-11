@@ -779,3 +779,39 @@ def test_fetch_sniffs_type_when_rss_declares_none(monkeypatch):
     )
     assert res.is_generated is False
     assert "Hello world" in res.plain_text
+
+
+def test_podcast_run_appends_transcripts_history(monkeypatch, tmp_path):
+    """A successful podcast run must append one entry with the podcast-shape
+    fields (used_whisper reflecting the actual path taken)."""
+    import json as _json
+    import ned.main as ned_main
+
+    hist_path = tmp_path / "docs" / "data" / "transcripts.json"
+    monkeypatch.setattr(ned_main, "_TRANSCRIPTS_HISTORY_PATH", hist_path)
+    monkeypatch.setattr(ned_main, "TRANSCRIPTS_DIR", tmp_path)
+    for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD", "ANTHROPIC_API_KEY"):
+        monkeypatch.delenv(k, raising=False)
+
+    fake = TranscriptResult(
+        video_id="motley-fool-money-mailbag",
+        language="English",
+        language_code="en",
+        # is_generated=True on this dataclass = "Whisper was used", the way
+        # fetch_podcast_transcript sets it. The history entry should mirror it.
+        is_generated=True,
+        plain_text="podcast body",
+        timestamped_text="[00:00] podcast body",
+        segments=[{"text": "podcast body", "start": 0.0}],
+    )
+    monkeypatch.setattr(ned_main, "fetch_podcast_transcript", lambda url: fake)
+
+    rc = ned_main.run_podcast_digest("https://podcasts.apple.com/x/id1?i=42")
+    assert rc == 0
+    data = _json.loads(hist_path.read_text())
+    assert len(data) == 1
+    e = data[0]
+    assert e["kind"] == "podcast"
+    assert e["source_url"] == "https://podcasts.apple.com/x/id1?i=42"
+    assert e["video_id"] == "motley-fool-money-mailbag"
+    assert e["used_whisper"] is True

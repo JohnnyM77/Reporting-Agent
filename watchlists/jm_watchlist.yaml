@@ -1,4 +1,5 @@
 name: JM Watch List
+notes: "Personal list. Income names moved to the Income watchlist."
 tickers:
   - ARB.AX
   - AR9.AX
@@ -31,7 +32,6 @@ tickers:
   - XRF.AX
   - SOL.AX
   - ATP.AX
-  - TLC.AX
   - PWH.AX
   - BXB.AX
   - MFT.NZ
@@ -41,20 +41,15 @@ tickers:
   - MQG.AX
   - FMG.AX
   - LYL.AX
-  - CBA.AX
   - WES.AX
   - MSV.AX
   - WDS.AX
-  - WOW.AX
   - SPZ.AX
-  - TLS.AX
   - NHC.AX
-  - BHP.AX
   - DBI.AX
 
-# Buy prices follow the ticker across lists (priority JM > Aussie Tech >
-# Cornerstone > Nap Taker). A ticker is flagged when its price is at or
-# below the value below. UK names carry GBX pence as written.
+# Buy prices follow the ticker across lists (priority Income > JM >
+# Aussie Tech > Cornerstone > Nap Taker). Flagged at or below the price.
 targets:
   ARB.AX: 22
   PME.AX: 100
@@ -70,16 +65,11 @@ targets:
   ABB.AX: 3.5
   XRF.AX: 1.75
   SOL.AX: 35
-  TLC.AX: 5
   PWH.AX: 8
   WHC.AX: 6
   MQG.AX: 120
   FMG.AX: 8
-  CBA.AX: 80
   WES.AX: 50
-  WOW.AX: 25
   SPZ.AX: 0.84
-  TLS.AX: 3.5
   NHC.AX: 4
-  BHP.AX: 40
   DBI.AX: 4.3

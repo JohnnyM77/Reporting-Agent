@@ -14,7 +14,6 @@ tickers:
   - FDC.AX
   - FERG
   - REH.AX
-  - PNI.AX
   - CME
   - KAR.AX
   - APE.AX
@@ -25,7 +24,6 @@ tickers:
   - LSEG
   - BATRK
   - HLS.AX
-  - EVT.AX
   - IFT.AX
   - GTK.AX
   - MIN.AX
@@ -36,23 +34,16 @@ tickers:
   - BRG.AX
   - CSU
   - RMV
-  - MAF.AX
   - DMP.AX
   - RHC.AX
   - COL.AX
-  - WPR.AX
   - AIA.AX
-  - SHL.AX
   - ANN.AX
   - PLS.AX
   - GMG.AX
   - FPH.AX
   - RUL.AX
-  - ANZ.AX
-  - NAB.AX
-  - WBC.AX
   - SIG.AX
-  - CNU.AX
   - BKW.AX
   - HUB.AX
   - NWL.AX
@@ -61,13 +52,11 @@ tickers:
   - AAI
   - AWC.AX
   - FND
-  - TCL.AX
   - ORG.AX
   - RIO.AX
 
-# Buy prices follow the ticker across lists (priority JM > Aussie Tech >
-# Cornerstone > Nap Taker). A ticker is flagged when its price is at or
-# below the value below. UK names carry GBX pence as written.
+# Buy prices follow the ticker across lists (priority Income > JM >
+# Aussie Tech > Cornerstone > Nap Taker). Flagged at or below the price.
 targets:
   JBH.AX: 70
   PMV.AX: 14
@@ -81,7 +70,6 @@ targets:
   FDC.AX: 3
   FERG: 190
   REH.AX: 10
-  PNI.AX: 15
   CME: 230
   KAR.AX: 1
   APE.AX: 20
@@ -92,7 +80,6 @@ targets:
   LSEG: "9,500.00p"
   BATRK: 45
   HLS.AX: 0.7
-  EVT.AX: 12
   IFT.AX: 9
   GTK.AX: 8.23
   MIN.AX: 50
@@ -103,21 +90,14 @@ targets:
   BRG.AX: 25
   CSU: 3500
   RMV: "550.00p"
-  MAF.AX: 3
   DMP.AX: 20.77
   RHC.AX: 25
   COL.AX: 18
-  WPR.AX: 2.2
   AIA.AX: 6
-  SHL.AX: 25
   ANN.AX: 25
   GMG.AX: 23
   FPH.AX: 22
-  ANZ.AX: 20
-  NAB.AX: 24
-  WBC.AX: 20
   SIG.AX: 2
-  CNU.AX: 8
   HUB.AX: 40
   NWL.AX: 15
   AWC.AX: 1.4

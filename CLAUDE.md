@@ -223,14 +223,21 @@ Whatever unit a buy price is in, the quote Wally screens it against must match:
 UK names are quoted in pence on their home exchange, so a pence buy price
 compares correctly there.
 
-There are four standard watchlists, de-duplicated in priority order
-**JM → Aussie Tech → Cornerstone → Nap Taker**: a ticker that appears in more
-than one is kept only in the highest-priority list. **Buy prices follow the
-ticker**, not the list — a global price map (Cornerstone's Buy-Below preferred,
-else Nap Taker's) is attached to whichever list each ticker lands in, so a name
-that moves into JM/Aussie Tech still carries its buy price and stays flagged.
+There are five standard watchlists, de-duplicated in priority order
+**Income → JM → Aussie Tech → Cornerstone → Nap Taker**: a ticker that appears
+in more than one is kept only in the highest-priority list. **Buy prices follow
+the ticker**, not the list — a global price map (Cornerstone's Buy-Below
+preferred, else Nap Taker's) is attached to whichever list each ticker lands in,
+so a name that moves lists still carries its buy price and stays flagged.
 
 The lists and where their names/prices come from:
+
+- **Income Watchlist** (`income_watchlist.yaml`) — the best dividend payers
+  pulled out of every other list (except TII75): names with a ~4%+ cash yield
+  plus the franked blue-chip anchors (big-four banks, BHP, Telstra, Transurban,
+  the income REITs). Yield traps (GQG, ADH, IPH — high yield only because the
+  price collapsed) and broken theses (LAU) are deliberately excluded. Highest
+  priority, so these names live here rather than in JM/Cornerstone/Nap Taker.
 
 - **JM Watch List** (`jm_watchlist.yaml`) and **Aussie Tech Watchlist**
   (`aussie_tech_watchlist.yaml`) — the user's own ticker lists (from

@@ -500,3 +500,282 @@ def test_run_podcast_digest_reports_fetch_error(monkeypatch, tmp_path, capsys):
     rc = ned_main.run_podcast_digest("https://podcasts.apple.com/x/id1?i=1")
     assert rc == 1
     assert "apple returned nothing" in capsys.readouterr().out.lower()
+
+
+# ---------------------------------------------------------------------------
+# Published <podcast:transcript> — the free path
+# ---------------------------------------------------------------------------
+_RSS_WITH_TRANSCRIPT_XML = b"""<?xml version="1.0"?>
+<rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
+  <channel>
+    <title>Example Show</title>
+    <item>
+      <title>Newest Episode</title>
+      <guid>https://example.com/eps/42</guid>
+      <enclosure url="https://cdn.example.com/eps/42.mp3" type="audio/mpeg"/>
+      <podcast:transcript url="https://cdn.example.com/eps/42.vtt" type="text/vtt"/>
+      <podcast:transcript url="https://cdn.example.com/eps/42.srt" type="application/srt"/>
+    </item>
+  </channel>
+</rss>
+"""
+
+
+def test_rss_extracts_podcast_transcript_tag(monkeypatch):
+    """The RSS parser should surface the <podcast:transcript> tag and prefer
+    VTT over SRT when both are declared."""
+    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
+        if "itunes.apple.com" in url:
+            return _FakeResponse(json_body={"results": [{
+                "feedUrl": "https://example.com/feed.rss",
+                "collectionName": "Example Show",
+            }]})
+        return _FakeResponse(content=_RSS_WITH_TRANSCRIPT_XML)
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    resolved = podcast_mod.resolve_podcast_url(
+        "https://podcasts.apple.com/us/podcast/x/id111?i=42"
+    )
+    assert resolved.transcript_url == "https://cdn.example.com/eps/42.vtt"
+    assert resolved.transcript_type == "text/vtt"
+
+
+def test_rss_transcript_absent_when_no_tag(monkeypatch):
+    """The pre-existing RSS (no podcast:transcript) leaves both fields empty
+    so downstream code takes the Whisper fallback."""
+    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
+        if "itunes.apple.com" in url:
+            return _FakeResponse(json_body={"results": [{
+                "feedUrl": "https://example.com/feed.rss",
+            }]})
+        return _FakeResponse(content=_RSS_XML)
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    resolved = podcast_mod.resolve_podcast_url(
+        "https://podcasts.apple.com/us/podcast/x/id111?i=42"
+    )
+    assert resolved.transcript_url == ""
+    assert resolved.transcript_type == ""
+
+
+def test_pick_transcript_priority_plain_over_vtt_over_srt():
+    """Plain text wins over VTT wins over SRT, regardless of order in the XML."""
+    xml = """<item xmlns:podcast="https://podcastindex.org/namespace/1.0">
+      <podcast:transcript url="https://x/1.srt" type="application/srt"/>
+      <podcast:transcript url="https://x/2.vtt" type="text/vtt"/>
+      <podcast:transcript url="https://x/3.txt" type="text/plain"/>
+    </item>"""
+    import xml.etree.ElementTree as _ET
+    item = _ET.fromstring(xml)
+    turl, ttype = podcast_mod._pick_transcript(item)
+    assert ttype == "text/plain"
+    assert turl == "https://x/3.txt"
+
+
+# ---------------------------------------------------------------------------
+# VTT + SRT parsers
+# ---------------------------------------------------------------------------
+_VTT_SAMPLE = """WEBVTT
+
+00:00:00.000 --> 00:00:04.500
+<v Bob>Hello world</v>
+
+00:00:04.500 --> 00:00:07.000
+This is a test.
+
+00:01:02.500 --> 00:01:05.000
+<c.speaker>Second speaker</c> here.
+"""
+
+
+_SRT_SAMPLE = """1
+00:00:00,000 --> 00:00:04,500
+Hello world
+
+2
+00:00:04,500 --> 00:00:07,000
+This is a test.
+
+3
+00:01:02,500 --> 00:01:05,000
+Second speaker here.
+"""
+
+
+def test_parse_vtt_strips_tags_and_reads_timestamps():
+    segs = podcast_mod._parse_vtt_or_srt(_VTT_SAMPLE)
+    assert len(segs) == 3
+    assert segs[0]["text"] == "Hello world"
+    assert segs[0]["start"] == 0.0
+    assert segs[0]["duration"] == 4.5
+    assert segs[1]["text"] == "This is a test."
+    assert segs[2]["start"] == 62.5
+    assert segs[2]["text"] == "Second speaker here."
+
+
+def test_parse_srt_reads_comma_separator():
+    segs = podcast_mod._parse_vtt_or_srt(_SRT_SAMPLE)
+    assert len(segs) == 3
+    assert segs[0]["text"] == "Hello world"
+    # SRT uses comma as decimal separator — must be handled identically to VTT.
+    assert segs[0]["duration"] == 4.5
+    assert segs[2]["start"] == 62.5
+
+
+def test_parse_plain_text_wraps_in_single_segment():
+    segs = podcast_mod._parse_plain_text("Hello   world.\n\nSecond   line.")
+    assert len(segs) == 1
+    assert segs[0]["text"] == "Hello world. Second line."
+    assert segs[0]["start"] == 0.0
+
+
+def test_parse_empty_yields_no_segments():
+    assert podcast_mod._parse_vtt_or_srt("") == []
+    assert podcast_mod._parse_plain_text("   \n\n  ") == []
+
+
+# ---------------------------------------------------------------------------
+# End-to-end free path
+# ---------------------------------------------------------------------------
+def test_fetch_uses_published_transcript_and_skips_whisper(monkeypatch):
+    """When the RSS carries a transcript, the fetcher must skip audio download,
+    ffmpeg, and Whisper entirely — no OpenAI cost, no ffmpeg process."""
+
+    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
+        if "itunes.apple.com" in url:
+            return _FakeResponse(json_body={"results": [{
+                "feedUrl": "https://example.com/feed.rss",
+                "collectionName": "Example Show",
+            }]})
+        if url == "https://example.com/feed.rss":
+            return _FakeResponse(content=_RSS_WITH_TRANSCRIPT_XML)
+        if url == "https://cdn.example.com/eps/42.vtt":
+            return _FakeResponse(content=_VTT_SAMPLE.encode("utf-8"))
+        raise AssertionError(
+            f"unexpected GET {url!r} — audio download should have been skipped"
+        )
+
+    # Wire in "explode if called" stubs for the audio path so a regression is
+    # loud rather than silent.
+    def _explode(*a, **kw):
+        raise AssertionError("Whisper path must not be reached when a published transcript exists")
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    monkeypatch.setattr(podcast_mod, "_download_audio", _explode)
+    monkeypatch.setattr(podcast_mod, "_compress_for_whisper", _explode)
+    monkeypatch.setattr(podcast_mod, "_transcribe_prepared", _explode)
+    monkeypatch.setattr(podcast_mod, "_transcribe_one", _explode)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)   # proof there's no key path
+
+    res = podcast_mod.fetch_podcast_transcript(
+        "https://podcasts.apple.com/us/podcast/x/id111?i=42"
+    )
+    assert res.is_generated is False, "published transcript is not machine output"
+    assert "Hello world" in res.plain_text
+    assert "This is a test." in res.plain_text
+    assert res.timestamped_text.startswith("[00:00] Hello world")
+
+
+def test_fetch_falls_back_to_whisper_when_transcript_download_fails(monkeypatch):
+    """A published transcript whose download 500s must fall back cleanly to
+    the audio path rather than propagate the HTTP error."""
+    _stub_ffmpeg(monkeypatch, duration_seconds=60.0)
+
+    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
+        if "itunes.apple.com" in url:
+            return _FakeResponse(json_body={"results": [{
+                "feedUrl": "https://example.com/feed.rss",
+                "collectionName": "Example Show",
+            }]})
+        if url == "https://example.com/feed.rss":
+            return _FakeResponse(content=_RSS_WITH_TRANSCRIPT_XML)
+        if url == "https://cdn.example.com/eps/42.vtt":
+            return _FakeResponse(status=500, content=b"error")
+        # audio download
+        return _StreamingResponse(_payload(2 * 1024 * 1024))
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    monkeypatch.setattr(
+        podcast_mod, "_transcribe_one",
+        lambda p: ("whisper output", [{"text": "whisper output", "start": 0.0, "duration": 1.0}]),
+    )
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+
+    res = podcast_mod.fetch_podcast_transcript(
+        "https://podcasts.apple.com/us/podcast/x/id111?i=42"
+    )
+    assert res.is_generated is True, "fallback was Whisper output"
+    assert res.plain_text == "whisper output"
+
+
+def test_fetch_falls_back_when_published_transcript_type_is_unsupported(monkeypatch):
+    """A feed that publishes a transcript in an unknown type (e.g. JSON) must
+    fall back to Whisper rather than error."""
+    xml = b"""<?xml version="1.0"?>
+<rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
+  <channel>
+    <item>
+      <enclosure url="https://cdn.example.com/eps/42.mp3" type="audio/mpeg"/>
+      <podcast:transcript url="https://cdn.example.com/eps/42.json" type="application/json"/>
+    </item>
+  </channel>
+</rss>"""
+    _stub_ffmpeg(monkeypatch, duration_seconds=60.0)
+
+    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
+        if "itunes.apple.com" in url:
+            return _FakeResponse(json_body={"results": [{"feedUrl": "https://example.com/feed.rss"}]})
+        if url == "https://example.com/feed.rss":
+            return _FakeResponse(content=xml)
+        if url.endswith(".json"):
+            return _FakeResponse(content=b'{"segments":[]}')
+        return _StreamingResponse(_payload(2 * 1024 * 1024))
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    monkeypatch.setattr(
+        podcast_mod, "_transcribe_one",
+        lambda p: ("whisper output", [{"text": "whisper output", "start": 0.0, "duration": 1.0}]),
+    )
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+
+    res = podcast_mod.fetch_podcast_transcript(
+        "https://podcasts.apple.com/us/podcast/x/id111?i=42"
+    )
+    assert res.is_generated is True
+
+
+def test_fetch_sniffs_type_when_rss_declares_none(monkeypatch):
+    """A <podcast:transcript> without a type= attribute is still usable: the
+    body's first line ('WEBVTT') identifies it as VTT, so the fetcher parses
+    it and skips Whisper."""
+    xml = b"""<?xml version="1.0"?>
+<rss version="2.0" xmlns:podcast="https://podcastindex.org/namespace/1.0">
+  <channel>
+    <item>
+      <enclosure url="https://cdn.example.com/eps/42.mp3" type="audio/mpeg"/>
+      <podcast:transcript url="https://cdn.example.com/eps/42.txt"/>
+    </item>
+  </channel>
+</rss>"""
+
+    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
+        if "itunes.apple.com" in url:
+            return _FakeResponse(json_body={"results": [{"feedUrl": "https://example.com/feed.rss"}]})
+        if url == "https://example.com/feed.rss":
+            return _FakeResponse(content=xml)
+        if url.endswith(".txt"):
+            return _FakeResponse(content=_VTT_SAMPLE.encode("utf-8"))
+        raise AssertionError("no fallback expected")
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    monkeypatch.setattr(podcast_mod, "_download_audio",
+                        lambda *a, **kw: pytest.fail("must not download audio"))
+    monkeypatch.setattr(podcast_mod, "_transcribe_one",
+                        lambda *a, **kw: pytest.fail("must not call Whisper"))
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+
+    res = podcast_mod.fetch_podcast_transcript(
+        "https://podcasts.apple.com/us/podcast/x/id111?i=42"
+    )
+    assert res.is_generated is False
+    assert "Hello world" in res.plain_text

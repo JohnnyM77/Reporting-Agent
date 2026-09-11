@@ -45,9 +45,11 @@ WALLY_EXCLUDED_TICKERS: frozenset[str] = _load_excluded_etfs()
 # whole below-target trigger was dead while looking completely healthy.
 # The stale copy has been deleted so there is only one place to edit.
 STANDARD_WATCHLISTS = [
-    "watchlists/tii_watchlist.yaml",
+    "watchlists/income_watchlist.yaml",
     "watchlists/jm_watchlist.yaml",
     "watchlists/aussie_tech_watchlist.yaml",
+    "watchlists/tii_watchlist.yaml",
+    "watchlists/naptaker_watchlist.yaml",
 ]
 TII75_WATCHLIST = "watchlists/tii75_watchlist.yaml"
 

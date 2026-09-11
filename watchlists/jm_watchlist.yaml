@@ -1,8 +1,13 @@
 name: JM Watch List
+notes: "Personal list. Income names moved to the Income watchlist."
 tickers:
+  - ARB.AX
   - AR9.AX
   - QOR.AX
+  - WTC.AX
+  - PME.AX
   - AD8.AX
+  - XRO.AX
   - CAT.AX
   - SDR.AX
   - PNV.AX
@@ -11,19 +16,60 @@ tickers:
   - MVP.AX
   - AVA.AX
   - EOS.AX
+  - CSL.AX
+  - REA.AX
   - RTH.AX
+  - COH.AX
   - SDV.AX
   - CPU.AX
   - AHC.AX
   - ASX.AX
   - XRG.AX
+  - RMD.AX
   - LAU.AX
+  - ABB.AX
   - ABV.AX
   - XRF.AX
+  - SOL.AX
   - ATP.AX
+  - PWH.AX
   - BXB.AX
   - MFT.NZ
   - SHA.AX
+  - WHC.AX
+  - S32.AX
+  - MQG.AX
+  - FMG.AX
   - LYL.AX
+  - WES.AX
   - MSV.AX
+  - WDS.AX
   - SPZ.AX
+  - NHC.AX
+  - DBI.AX
+
+# Buy prices follow the ticker across lists (priority Income > JM >
+# Aussie Tech > Cornerstone > Nap Taker). Flagged at or below the price.
+targets:
+  ARB.AX: 22
+  PME.AX: 100
+  XRO.AX: 83.14
+  CAT.AX: 3.06
+  SDR.AX: 5.27
+  TWE.AX: 6.15
+  CSL.AX: 113.4
+  REA.AX: 150
+  COH.AX: 120
+  AHC.AX: 0.38
+  RMD.AX: 32
+  ABB.AX: 3.5
+  XRF.AX: 1.75
+  SOL.AX: 35
+  PWH.AX: 8
+  WHC.AX: 6
+  MQG.AX: 120
+  FMG.AX: 8
+  WES.AX: 50
+  SPZ.AX: 0.84
+  NHC.AX: 4
+  DBI.AX: 4.3

@@ -1,0 +1,62 @@
+name: Income Watchlist
+notes: "Best dividend payers pulled from every watchlist (ex TII75). Yield traps and broken theses excluded."
+tickers:
+  - ANZ.AX
+  - BHP.AX
+  - CBA.AX
+  - CNU.AX
+  - CWP.AX
+  - DDR.AX
+  - EVT.AX
+  - FID.AX
+  - HVN.AX
+  - JIN.AX
+  - MAF.AX
+  - MMS.AX
+  - NAB.AX
+  - NHF.AX
+  - PNI.AX
+  - QAL.AX
+  - RGN.AX
+  - SGLLV.AX
+  - SHL.AX
+  - SRV.AX
+  - SUL.AX
+  - TCL.AX
+  - TLC.AX
+  - TLS.AX
+  - UNI.AX
+  - WBC.AX
+  - WOW.AX
+  - WPR.AX
+
+# Buy prices follow the ticker across lists (priority Income > JM >
+# Aussie Tech > Cornerstone > Nap Taker). Flagged at or below the price.
+targets:
+  ANZ.AX: 20
+  BHP.AX: 40
+  CBA.AX: 80
+  CNU.AX: 8
+  CWP.AX: 7.15
+  DDR.AX: 9
+  EVT.AX: 12
+  FID.AX: 8.37
+  HVN.AX: 4.53
+  JIN.AX: 7.27
+  MAF.AX: 3
+  MMS.AX: 12.72
+  NAB.AX: 24
+  NHF.AX: 6.74
+  PNI.AX: 15
+  QAL.AX: 2.82
+  RGN.AX: 2.31
+  SGLLV.AX: 12.95
+  SHL.AX: 25
+  SRV.AX: 6.25
+  SUL.AX: 12.85
+  TLC.AX: 5
+  TLS.AX: 3.5
+  UNI.AX: 8.09
+  WBC.AX: 20
+  WOW.AX: 25
+  WPR.AX: 2.2

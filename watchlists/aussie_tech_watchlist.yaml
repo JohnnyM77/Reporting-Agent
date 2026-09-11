@@ -1,4 +1,5 @@
 name: Aussie Tech Watchlist
+notes: "Aussie tech names."
 tickers:
   - DOC.AX
   - AI1.AX
@@ -7,15 +8,32 @@ tickers:
   - OFX.AX
   - 360.AX
   - APX.AX
+  - TNE.AX
+  - SEK.AX
   - AIM.AX
   - OCL.AX
+  - CAR.AX
   - MP1.AX
   - IPH.AX
   - IRE.AX
   - EOL.AX
+  - MAQ.AX
+  - NXT.AX
   - CDA.AX
   - DTL.AX
   - SGH.AX
   - IMB.AX
   - SHJ.AX
   - AFL.AX
+
+# Buy prices follow the ticker across lists (priority Income > JM >
+# Aussie Tech > Cornerstone > Nap Taker). Flagged at or below the price.
+targets:
+  CGS.AX: 2.15
+  360.AX: 18.39
+  TNE.AX: 20
+  CAR.AX: 30
+  IPH.AX: 4.71
+  MAQ.AX: 60
+  NXT.AX: 8
+  DTL.AX: 7.02

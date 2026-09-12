@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-09-11T13:13:33.541040+00:00",
+  "last_run": "2026-09-12T00:33:28.340005+00:00",
   "watchlists": {
     "TII Watchlist": {
       "run_timestamp": "2026-09-05T00:14:37.686675+00:00",
@@ -321,7 +321,7 @@
       ]
     },
     "JM Watch List": {
-      "run_timestamp": "2026-09-11T13:01:27.393594+00:00",
+      "run_timestamp": "2026-09-12T00:27:17.717156+00:00",
       "total": 46,
       "flagged_count": 12,
       "flagged": [
@@ -484,7 +484,7 @@
       ]
     },
     "Aussie Tech Watchlist": {
-      "run_timestamp": "2026-09-11T13:02:21.130963+00:00",
+      "run_timestamp": "2026-09-12T00:28:01.503554+00:00",
       "total": 24,
       "flagged_count": 7,
       "flagged": [
@@ -582,7 +582,7 @@
       ]
     },
     "TII75 Watchlist": {
-      "run_timestamp": "2026-09-11T13:13:33.541040+00:00",
+      "run_timestamp": "2026-09-12T00:33:28.340005+00:00",
       "total": 30,
       "flagged_count": 7,
       "flagged": [
@@ -630,9 +630,9 @@
           "company_name": "National Beverage Corp.",
           "current_price": 30.90999984741211,
           "low_52w": 30.530000686645508,
-          "high_52w": 40.349998474121094,
+          "high_52w": 39.18000030517578,
           "distance_to_low_pct": 1.2446745896498506,
-          "below_high_pct": 23.395288683253433,
+          "below_high_pct": 21.107709018244144,
           "near_low": true,
           "target_price": null,
           "below_target": false,
@@ -643,9 +643,9 @@
           "company_name": "O'Reilly Automotive, Inc.",
           "current_price": 85.51000213623047,
           "low_52w": 82.7300033569336,
-          "high_52w": 107.81999969482422,
+          "high_52w": 107.80999755859375,
           "distance_to_low_pct": 3.360327168491386,
-          "below_high_pct": 20.691891691467625,
+          "below_high_pct": 20.684533834854633,
           "near_low": true,
           "target_price": null,
           "below_target": false,
@@ -656,9 +656,9 @@
           "company_name": "Pool Corporation",
           "current_price": 175.75999450683594,
           "low_52w": 175.24000549316406,
-          "high_52w": 329.79998779296875,
+          "high_52w": 328.2799987792969,
           "distance_to_low_pct": 0.29672962643918616,
-          "below_high_pct": 46.70709490226879,
+          "below_high_pct": 46.46034020945649,
           "near_low": true,
           "target_price": null,
           "below_target": false,
@@ -680,7 +680,7 @@
       ]
     },
     "Income Watchlist": {
-      "run_timestamp": "2026-09-11T13:00:36.453413+00:00",
+      "run_timestamp": "2026-09-12T00:26:29.485918+00:00",
       "total": 28,
       "flagged_count": 18,
       "flagged": [
@@ -921,7 +921,7 @@
       ]
     },
     "Cornerstone Watchlist": {
-      "run_timestamp": "2026-09-11T13:02:53.158519+00:00",
+      "run_timestamp": "2026-09-12T00:28:26.542573+00:00",
       "total": 53,
       "flagged_count": 15,
       "flagged": [
@@ -1123,7 +1123,7 @@
       ]
     },
     "Nap Taker Investing": {
-      "run_timestamp": "2026-09-11T13:03:55.832752+00:00",
+      "run_timestamp": "2026-09-12T00:29:19.582486+00:00",
       "total": 45,
       "flagged_count": 29,
       "flagged": [
@@ -1170,9 +1170,9 @@
           "ticker": "ASML",
           "company_name": "ASML Holding N.V.",
           "current_price": 1687.4300537109375,
-          "low_52w": 804.1599731445312,
+          "low_52w": 813.8699951171875,
           "high_52w": 1989.43994140625,
-          "distance_to_low_pct": 109.83760819536047,
+          "distance_to_low_pct": 107.33410296910724,
           "below_high_pct": 15.180648654406456,
           "near_low": false,
           "target_price": 1750.31,

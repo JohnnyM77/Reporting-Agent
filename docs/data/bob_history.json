@@ -1,5 +1,12 @@
 [
   {
+    "last_run": "2026-09-12",
+    "silence": true,
+    "high_impact": [],
+    "material": [],
+    "fyi": []
+  },
+  {
     "last_run": "2026-09-11",
     "silence": false,
     "high_impact": [],
@@ -34,62 +41,6 @@
         "ticker": "RMD",
         "title": "Statement of changes in beneficial ownership 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 13.6KB",
         "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03138343"
-      }
-    ]
-  },
-  {
-    "last_run": "2026-09-10",
-    "silence": false,
-    "high_impact": [
-      {
-        "ticker": "DRO",
-        "title": "Chief Financial Officer Appointment & Trading Update 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 325.3KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03138013",
-        "type": "trading_update",
-        "analysis": {
-          "what_they_said": "FY2026 Committed Revenue hit $251M as at 8 September 2026, up from $240M reported on 21 August 2026 \u2014 a $11M increase in ~18 days. This puts them at the low end of the FY2026 revenue outlook range of $250M-$270M. FY2027+ committed revenue backlog is only $46M. First order received for new RfRecon AI-enabled device (explicitly flagged as non-material). New CFO Rebecca Lowde appointed, starting 2 November 2026; incumbent CFO Carla Balanco departing after 8 years.",
-          "vs_prior_guidance": "In-line, just barely. The $251M figure technically enters the $250M-$270M guidance range but sits at the absolute floor of that range with roughly 3.5 months of the fiscal year still to run (announcement dated 10 September 2026). Management is framing entry into the bottom of the range as a 'milestone' \u2014 that is spin. There is still $19M of range headroom to fill and no upgrade to the top end was signalled.",
-          "the_numbers": "FY2026 Committed Revenue: $251M (as at 8 Sep 2026) vs prior $240M (21 Aug 2026). FY2026 guidance range: $250M-$270M. FY2027+ committed revenue backlog: $46M \u2014 this number is thin for a business purportedly scaling globally and deserves scrutiny. RfRecon order size: not disclosed, described as 'not material'. No earnings, EBITDA, margin, or cash figures provided.",
-          "why_happening": "Demand conversion from existing pipeline of Western government/military customers. RfRecon new product gaining initial traction. No cost, margin, or operational drivers discussed \u2014 announcement is purely a revenue milestone and personnel update.",
-          "balance_sheet": "No balance sheet or cash information provided. New CFO's background includes capital raises ($1.5B at Afterpay) and debt refinancing (MYOB), which could signal future capital management activity, but this is speculative. No immediate funding needs flagged explicitly.",
-          "red_flags": [
-            "FY2027+ committed backlog of only $46M is extremely thin relative to a $250M+ FY2026 revenue base \u2014 implies very low revenue visibility beyond this year and potential revenue cliff risk",
-            "Committed Revenue is barely inside the bottom of guidance range with ~3.5 months left in FY2026; management calling this a 'milestone' overstates the achievement",
-            "Long-tenured CFO (8 years) departing at a critical scaling phase \u2014 timing and circumstances unexplained; 'decided to leave' is vague corporate speak",
-            "Zero disclosure on margins, earnings, or cash \u2014 a $250M revenue business providing no profitability update alongside a revenue milestone is a notable omission",
-            "RfRecon first order is explicitly non-material yet included as a headline item, padding the announcement",
-            "Committed Revenue metric definition includes 'scheduled for delivery' \u2014 not yet recognised revenue; delivery risk on the remaining portion of FY2026 range ($19M gap to top) is unquantified"
-          ],
-          "bottom_line": "This is a mildly positive but thin update \u2014 FY2026 revenue has scraped into the bottom of guidance range, but the $46M FY2027+ backlog is the number that should alarm investors as it implies almost no forward visibility for a company being valued on aggressive growth assumptions. The CFO departure of an 8-year veteran without explanation warrants direct follow-up.",
-          "key_questions": [
-            "Why is FY2027+ committed backlog only $46M \u2014 what is the pipeline conversion timeline and when should investors expect material FY2027 order flow given the current revenue run-rate above $250M?",
-            "What are the actual EBITDA and cash margins being generated on the $251M committed revenue base, and what is the cash position and burn/generation rate?",
-            "What were the real circumstances behind Carla Balanco's departure after 8 years, and why is a new CFO with a PE-backed software background being brought in at this specific juncture \u2014 is a capital raise, debt facility, or M&A transaction being contemplated?"
-          ]
-        }
-      }
-    ],
-    "material": [],
-    "fyi": [
-      {
-        "ticker": "ABB",
-        "title": "Update - Notification of buy-back - ABB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.4KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137942"
-      },
-      {
-        "ticker": "BXB",
-        "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 11.1KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03138021"
-      },
-      {
-        "ticker": "BXB",
-        "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137923"
-      },
-      {
-        "ticker": "DRO",
-        "title": "Chief Financial Officer Appointment & Trading Update 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 325.3KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03138013"
       }
     ]
   }

@@ -1,0 +1,11 @@
+# Aussie Tech Watchlist Portfolio Targets
+# Buy/Sell price ranges and maximum portfolio weightings
+# Used by Wally to provide detailed portfolio guidance in emails
+
+holdings:
+  - ticker: HPG.AX
+    company: HiPages Limited
+    buy_below: 0.75
+    sell_above: null
+    max_weight: null
+    currency: AUD

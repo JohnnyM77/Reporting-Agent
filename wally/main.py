@@ -65,6 +65,7 @@ def _load_portfolio_targets(watchlist_name: str) -> PortfolioTargets | None:
     targets_map = {
         "TII Watchlist": Path("config/tii_portfolio_targets.yaml"),
         "JM Watch List": Path("config/jm_portfolio_targets.yaml"),
+        "Aussie Tech Watchlist": Path("config/aussie_tech_portfolio_targets.yaml"),
     }
 
     targets_path = targets_map.get(watchlist_name)

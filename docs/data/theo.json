@@ -2,8 +2,8 @@
   "last_run": "2026-09-13",
   "thesis_count": 20,
   "drifting": 2,
-  "watch": 13,
-  "clean": 5,
+  "watch": 15,
+  "clean": 3,
   "theses": [
     {
       "ticker": "ABB",
@@ -390,7 +390,7 @@
       "grade": "A",
       "draft": false,
       "exited": true,
-      "verdict": "CLEAN",
+      "verdict": "WATCH",
       "pillars": [
         {
           "id": "P1",
@@ -410,7 +410,13 @@
       ],
       "irr": -0.13610757665894924,
       "multiple": 0.7523673149640412,
-      "findings": []
+      "findings": [
+        {
+          "code": "SIGNAL_UNANSWERED",
+          "severity": "WARN",
+          "message": "Sally: sally review on 2026-09-13 and nothing was written down either way"
+        }
+      ]
     },
     {
       "ticker": "MSV",
@@ -419,7 +425,7 @@
       "grade": "B",
       "draft": false,
       "exited": false,
-      "verdict": "CLEAN",
+      "verdict": "WATCH",
       "pillars": [
         {
           "id": "P1",
@@ -444,7 +450,13 @@
       ],
       "irr": 0.4090974521130322,
       "multiple": 1.6666670000000001,
-      "findings": []
+      "findings": [
+        {
+          "code": "SIGNAL_UNANSWERED",
+          "severity": "WARN",
+          "message": "Sally: sally review on 2026-09-13 and nothing was written down either way"
+        }
+      ]
     },
     {
       "ticker": "NHC",
@@ -482,7 +494,7 @@
         {
           "code": "SIGNAL_UNANSWERED",
           "severity": "WARN",
-          "message": "Sally: sally trim on 2026-09-06 and nothing was written down either way"
+          "message": "Sally: sally trim on 2026-09-13 and nothing was written down either way"
         }
       ]
     },
@@ -763,12 +775,28 @@
   ],
   "open_questions": [
     {
+      "ticker": "LAU",
+      "source": "Sally",
+      "kind": "SALLY_REVIEW",
+      "detail": "Hold but stop adding \u00b7 Tier 2: Review \u00b7 PE 12x \u00b7 78th valuation percentile",
+      "question": "Sally has flagged this for review. What does she see that your pillars do not cover?",
+      "date": "2026-09-13"
+    },
+    {
+      "ticker": "MSV",
+      "source": "Sally",
+      "kind": "SALLY_REVIEW",
+      "detail": "Hold but stop adding \u00b7 Tier 2: Review \u00b7 PE 8x \u00b7 91th valuation percentile",
+      "question": "Sally has flagged this for review. What does she see that your pillars do not cover?",
+      "date": "2026-09-13"
+    },
+    {
       "ticker": "NHC",
       "source": "Sally",
       "kind": "SALLY_TRIM",
-      "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 34x \u00b7 97th valuation percentile",
+      "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 35x \u00b7 98th valuation percentile",
       "question": "Sally says trim. You are not going to. What would have to be true about the price for you to change that answer \u2014 and is that written down as a kill condition anywhere?",
-      "date": "2026-09-06"
+      "date": "2026-09-13"
     }
   ],
   "no_thesis": []

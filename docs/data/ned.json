@@ -1,44 +1,10 @@
 {
   "agent": "Ned",
-  "last_run": "2026-09-12T01:18:54.562124Z",
+  "last_run": "2026-09-13T01:15:04.116526Z",
   "youtube_hits": 0,
-  "news_hits": 28,
-  "total_hits": 28,
-  "critical_high_count": 3,
+  "news_hits": 5,
+  "total_hits": 5,
+  "critical_high_count": 0,
   "status": "ok",
-  "items": [
-    {
-      "tickers": [
-        "BXB"
-      ],
-      "title": "Brambles (ASX:BXB) On Dividend And Sustainability Update As Fair Value Stays In Focus - simplywall.st",
-      "url": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxPX1VzMnYxMDlqTWpIaktGRmxoWUkwZXJTaGRCcXlieHRjZFJTQjhmMG9ndE1HWkVhcDV5RW9vUXkzNTlkekQxekU4U1RCWks0OFhnSU9aTnE3WTRzZ1ZKLW5RRnlzUzJIeUVMeTQyVV93VGVMcnpiT1E2Tk9BVFY0T3R5dDZKWEthRERYdUZnS0pfeGhucG15VzNrcE5KT3N0Njd6YmJJenBKRi0wNmhyb2ZhdERKcVoyenFtcW0yOFViV25FSlZaNXk5VmhGMHo2VWR3emhXZU7SAd4BQVVfeXFMT3lFZWc0VDVVZWtaUmRlTUZHeUhZS2FoREQ1enZ2aThIQ1dJa1dybWRiLWxXTm5acnJPSWV3N0dnamZLb1FCZDMza0w2SFF6RXdybEdpaUczY2NUTzkwOGVISjJWQmxNUkhjZ0NJRml1alhFckNScGpxQzRrWDhCbzFvSVRkbEVQUE80Y0VxMXVNcGJ6VTRjc2NCeVZhWkFlYkM0OUY4aXhoa1RGYy0zdEpmQVlrN2FCSmI5UzFxZVI3LXBMVldBNzFXTlg2dW1NcnlSUkU2bm5wd01Ta0RB?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "[not material]\n\nThe snippet is truncated and doesn't contain substantive information about what Brambles announced regarding dividends, sustainability, or fair value assessment.",
-      "published": "2026-09-11T23:32:08+00:00"
-    },
-    {
-      "tickers": [
-        "CSL"
-      ],
-      "title": "Phase III results for CSL Seqirus' MF59-adjuvanted flu vaccine - The Pharma Letter",
-      "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxONnpKYmw0T0tISkFaQkV2cGRjd0lPbDBJRk5rd1M3b3FQRUlDVnQxNnBSMXE1cGJjTGtEMmd2MDRWYlFSNTNkTG10ejQ4OVhWczVwRmJiWlhxVENRTjdFdGdZMFI0c080ZTJETUdmOFcybHJ0RFNDakVod3pVQmktbFRfOGdkN0QxRnA0U2J0VXNwS0lrd2Job1dXOUxGMGc4UkNSWE92OUdNZw?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "[not material]\n\nThe snippet is truncated and provides no details about the Phase III results, efficacy data, regulatory implications, or financial impact that would be material to CSL shareholders.",
-      "published": "2026-09-11T13:27:54+00:00"
-    },
-    {
-      "tickers": [
-        "CSL"
-      ],
-      "title": "What Changed for CSL (ASX:CSL) After the Guidance Cut? - Kalkine Media",
-      "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNZDlyT1hXZ1ZwWDF5djV0aG03TVppRTJ0WWdwMWlQQ1BaLUcwS0FmRXAtN053QTlTOVdDWnM1a1RYSWRxTVk0MzZ4UzVMUzY3Tk15aUw1UndhTUpuM29naUROMXhrVW4zRG9lNkZEdmxmQXUtZEtfanhOdG1scE55ZTQ0YzBqaks0b09MWktSLTVEXzcyWVExR2syd1U?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "CSL cut its guidance, which matters to shareholders because it signals lower expected earnings and typically triggers stock price declines and reassessment of the company's growth trajectory.",
-      "published": "2026-09-11T03:41:00+00:00"
-    }
-  ]
+  "items": []
 }

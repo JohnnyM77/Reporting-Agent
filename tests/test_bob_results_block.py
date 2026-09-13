@@ -866,3 +866,58 @@ def test_already_sent_today_guard(tmp_path):
         # Unreadable/corrupt means "no idea" — never suppress on a guess.
         dashboard.write_text("{not json")
         assert agent._already_sent_today() is False
+
+
+# ---------------------------------------------------------------------------
+# RESULTS_TICKER mode — pull the last HY/FY results from up to ~6 months back
+# ---------------------------------------------------------------------------
+
+def _ann(title, date, url):
+    return {"title": title, "date": date, "url": url}
+
+
+def test_results_cluster_keeps_only_the_latest_reporting_event():
+    """A 6-month lookback can return two reporting events; only the most recent
+    (release + presentation + Appendix 4E, landing within a day or two) is kept,
+    so an old half-year is never bundled in with the latest full-year."""
+    items = [
+        _ann("HPG FY25 Full Year Results",         "20/08/2025", "fy-release"),
+        _ann("FY25 Results Investor Presentation", "20/08/2025", "fy-deck"),
+        _ann("Appendix 4E and Annual Report",      "21/08/2025", "fy-4e"),
+        _ann("Change in substantial holding",      "05/08/2025", "noise"),
+        _ann("HY25 Half Year Results Presentation","25/02/2025", "old-hy"),
+        _ann("Quarterly Activities Report",        "30/07/2025", "quarterly"),
+    ]
+    kept = sorted(it["url"] for it in agent.most_recent_results_cluster(items))
+    assert kept == ["fy-4e", "fy-deck", "fy-release"]
+
+
+def test_results_cluster_empty_when_no_results_in_window():
+    """No HY/FY results in the fetched window -> empty, which drives the
+    'no recent results' note rather than a blank analysis."""
+    items = [
+        _ann("Trading Halt",                 "01/09/2025", "halt"),
+        _ann("Appendix 3Y",                  "02/09/2025", "3y"),
+        _ann("Quarterly Activities Report",  "30/07/2025", "q"),
+    ]
+    assert agent.most_recent_results_cluster(items) == []
+
+
+def test_results_cluster_undated_items_do_not_overflow():
+    """asx_fetch defaults undated items to today, but guard the helper anyway:
+    an all-undated results list must not raise on the date subtraction."""
+    items = [_ann("Full Year Results", "", "z"), _ann("Annual Report", "", "y")]
+    kept = {it["url"] for it in agent.most_recent_results_cluster(items)}
+    assert kept == {"z", "y"}
+
+
+def test_results_cluster_window_is_configurable():
+    items = [
+        _ann("Full Year Results",            "20/08/2025", "new"),
+        _ann("Half Year Results",            "01/08/2025", "mid"),  # 19 days earlier
+    ]
+    # Default 14-day window drops the older one...
+    assert [it["url"] for it in agent.most_recent_results_cluster(items)] == ["new"]
+    # ...a wider window keeps both.
+    kept = {it["url"] for it in agent.most_recent_results_cluster(items, window_days=30)}
+    assert kept == {"new", "mid"}

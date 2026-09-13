@@ -97,6 +97,14 @@ MAX_LLM_CALLS_PER_RUN = _int_env("MAX_LLM_CALLS", 25)
 # with MAX_PDFS.
 MAX_PDFS_PER_RUN = _int_env("MAX_PDFS", 30)
 
+# RESULTS_TICKER lookback. A results run reaches back this far to find a
+# ticker's most recent half-year or full-year report, because a company may
+# have last reported a month or two ago rather than in the normal 24h window.
+# ASX names report twice a year, so 180 days (~6 months) reliably catches the
+# latest reporting event without straddling two of them. Override with
+# RESULTS_LOOKBACK_DAYS.
+RESULTS_LOOKBACK_DAYS = _int_env("RESULTS_LOOKBACK_DAYS", 180)
+
 # Per-call output-token budgets. The default (4096) is enough for the terse
 # two-liners and the short structured memos on the other paths. The results
 # path is different: the model returns metrics JSON *plus* a full markdown
@@ -2132,6 +2140,37 @@ def likely_results_bundle_items(items_for_ticker: List[Dict]) -> List[Dict]:
     return [it for it in items_for_ticker if looks_like_results_title(it["title"])]
 
 
+def _item_date(it: Dict) -> dt.date:
+    """Parse an announcement item's dd/mm/yyyy date; dt.date.min if unparseable
+    so undated items sort oldest and never win 'most recent'."""
+    try:
+        return dt.datetime.strptime(str(it.get("date", "")), "%d/%m/%Y").date()
+    except Exception:
+        return dt.date.min
+
+
+def most_recent_results_cluster(items: List[Dict], window_days: int = 14) -> List[Dict]:
+    """From *items*, return only the results-titled announcements belonging to
+    the single most recent reporting event.
+
+    A results release, its investor presentation and the Appendix 4D/4E usually
+    land within a day or two of each other, so everything within *window_days*
+    of the newest results item is one event. Anything older is a prior report,
+    dropped — that's what keeps a 6-month RESULTS_TICKER lookback from bundling
+    last half-year's numbers in with the latest full-year's.
+    """
+    results = [it for it in items if looks_like_results_title(it["title"])]
+    if not results:
+        return []
+    newest = max(_item_date(it) for it in results)
+    # All results items undated (dt.date.min): nothing to cluster on, so keep
+    # them all rather than overflow on the subtraction below.
+    if newest <= dt.date.min + dt.timedelta(days=window_days):
+        return results
+    cutoff = newest - dt.timedelta(days=window_days)
+    return [it for it in results if _item_date(it) >= cutoff]
+
+
 def pick_report_and_deck_text(downloaded_texts: List[Tuple[str, str]]) -> Tuple[str, str]:
     pres = [(t, x) for (t, x) in downloaded_texts if "presentation" in t.lower() or "deck" in t.lower()]
     non_pres = [(t, x) for (t, x) in downloaded_texts if (t, x) not in pres]
@@ -2237,6 +2276,19 @@ def main():
     if force_rerun_tickers:
         log(f"FORCE_RERUN_TICKERS active: {sorted(force_rerun_tickers)}")
 
+    # RESULTS_TICKER: analyse a ticker's most recent HY/FY results even if it
+    # last reported weeks or months ago (up to RESULTS_LOOKBACK_DAYS). Unlike
+    # MANUAL_TICKER — 7-day window, every announcement listed as FYI — this
+    # reaches back ~6 months and surfaces ONLY the latest results, running the
+    # normal deep analysis on it. Built for "someone mentioned HPG, what were
+    # their last numbers?". Comma-separated; exclusive when set.
+    results_tickers = frozenset(
+        t.strip().upper()
+        for t in os.environ.get("RESULTS_TICKER", "").split(",")
+        if t.strip()
+    )
+    results_from_date = None
+
     # MANUAL_TICKER allows one-off analysis of tickers not in the portfolio,
     # limited to the last 7 days to avoid overwhelming result counts.
     # When set, ONLY these tickers are analyzed (exclusive mode).
@@ -2247,7 +2299,18 @@ def main():
         if t.strip()
     )
     manual_ticker_from_date = None
-    if manual_tickers:
+
+    # Mode precedence: RESULTS_TICKER > MANUAL_TICKER > normal portfolio run.
+    # The first two are exclusive one-offs — they replace the portfolio for the
+    # run and are never written to seen_state.
+    if results_tickers:
+        results_from_date = cutoff_dt_sgt(RESULTS_LOOKBACK_DAYS * 24).date()
+        log(
+            f"RESULTS_TICKER: last results for {sorted(results_tickers)} "
+            f"(exclusive mode, {RESULTS_LOOKBACK_DAYS}-day lookback, not saved to state)"
+        )
+        asx_tickers = list(results_tickers)
+    elif manual_tickers:
         log(f"MANUAL_TICKER: analyzing {sorted(manual_tickers)} (exclusive mode, one-off, not saved to state)")
         # Restrict to 7 days to avoid 50+ results
         manual_ticker_from_date = cutoff_dt_sgt(7 * 24).date()
@@ -2286,10 +2349,13 @@ def main():
     by_ticker: Dict[str, List[Dict]] = {}
     for t in asx_tickers:
         try:
-            # Forced tickers get the full ASX history window (no from_date filter)
-            # so a past result-day PDF can be found. Manual tickers are limited to
-            # 7 days to avoid overwhelming result counts.
-            if t in force_rerun_tickers:
+            # Results tickers reach back ~6 months for the last report. Forced
+            # tickers get the full ASX history window (no from_date filter) so a
+            # past result-day PDF can be found. Manual tickers are limited to 7
+            # days to avoid overwhelming result counts.
+            if t in results_tickers:
+                fetch_from = results_from_date
+            elif t in force_rerun_tickers:
                 fetch_from = None
             elif t in manual_tickers:
                 fetch_from = manual_ticker_from_date
@@ -2309,10 +2375,15 @@ def main():
             if not items:
                 continue
 
+            # Results mode is a one-off "what were their last numbers?" query, so
+            # it ignores seen_state (re-runs must work) and surfaces ONLY the most
+            # recent results — no six months of FYI headlines.
+            is_results_mode = ticker in results_tickers
+
             fresh_items: List[Dict] = []
             for it in items:
                 key = announcement_key(ticker, it["url"])
-                if key in seen_state and ticker not in force_rerun_tickers:
+                if key in seen_state and ticker not in force_rerun_tickers and not is_results_mode:
                     continue
                 it["seen_key"] = key
                 fresh_items.append(it)
@@ -2320,8 +2391,25 @@ def main():
             if not fresh_items:
                 continue
 
-            # FYI: every fresh announcement gets a headline entry
-            for it in fresh_items:
+            if is_results_mode:
+                fresh_items = most_recent_results_cluster(fresh_items)
+                if not fresh_items:
+                    note = (
+                        f"{ticker} — no half-year or full-year results found in the "
+                        f"last {RESULTS_LOOKBACK_DAYS} days. The company may not have "
+                        f"reported in that window."
+                    )
+                    asx_url = f"https://www.asx.com.au/markets/company/{ticker}"
+                    high_impact_blocks.append(f"{note}\nAnnouncements: {asx_url}\n")
+                    high_impact_items.append({
+                        "ticker": ticker, "title": "No recent results",
+                        "url": asx_url, "type": "results",
+                    })
+                    continue
+
+            # FYI: every fresh announcement gets a headline entry.
+            # Suppressed in results mode — the results card is the whole point.
+            for it in ([] if is_results_mode else fresh_items):
                 title = it["title"]
                 url = it["url"]
                 fyi_entry = f"{summarise_headline_two_lines(ticker, title)}\nOpen: {url}\n"
@@ -2586,15 +2674,25 @@ def main():
         bro_html += "</div>"
         send_email(bro_subject, bro_text, bro_html, to_addr=brother_email)
 
-    _emit_bob_dashboard_json(
-        high_impact=high_impact_items,
-        material=material_items,
-        fyi=fyi_items,
-        silence=not (high_impact_blocks or material_blocks or fyi_blocks),
-    )
-
-    save_seen_state(SEEN_STATE_PATH, prune_seen_state(seen_state_updated, SEEN_STATE_RETENTION_HOURS))
-    log(f"Seen-state updated with {run_seen_count} new announcement(s).")
+    # Exclusive one-off modes (RESULTS_TICKER / MANUAL_TICKER) email their
+    # analysis but must not touch shared state: writing bob.json would clobber
+    # the portfolio dashboard with a single ad-hoc ticker, and — because that
+    # write stamps last_run = today — would make the evening scheduled digest's
+    # catch-up guard think the digest had already gone out and stand it down.
+    # An ad-hoc "what were HPG's last numbers?" from a phone must never cost the
+    # user that night's portfolio digest.
+    one_off_mode = bool(results_tickers or manual_tickers)
+    if one_off_mode:
+        log("One-off mode: skipping bob.json / seen-state writes (dashboard and scheduled digest untouched).")
+    else:
+        _emit_bob_dashboard_json(
+            high_impact=high_impact_items,
+            material=material_items,
+            fyi=fyi_items,
+            silence=not (high_impact_blocks or material_blocks or fyi_blocks),
+        )
+        save_seen_state(SEEN_STATE_PATH, prune_seen_state(seen_state_updated, SEEN_STATE_RETENTION_HOURS))
+        log(f"Seen-state updated with {run_seen_count} new announcement(s).")
     log("Email sent.")
 
 

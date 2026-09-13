@@ -11,6 +11,10 @@ on:
         description: "Optional: analyze tickers not in your portfolio (comma-separated, limited to last 7 days). Leave blank to skip. Example: PME,SPZ,COH"
         required: false
         default: ""
+      results_ticker:
+        description: "Optional: pull a ticker's LAST half/full-year results (looks back ~6 months) and run the full analysis. Comma-separated. Example: HPG"
+        required: false
+        default: ""
   schedule:
     # 23:13 UTC = 07:13 SGT. GitHub's schedule event is best-effort — fires
     # queue on shared infrastructure and are delayed or dropped under load
@@ -78,6 +82,7 @@ jobs:
           SEEN_STATE_PATH: state_seen.json
           FORCE_RERUN_TICKERS: ${{ inputs.force_rerun_tickers }}
           MANUAL_TICKER: ${{ inputs.manual_ticker }}
+          RESULTS_TICKER: ${{ inputs.results_ticker }}
           # Lets main() gate the catch-up schedule without also gating a
           # manual dispatch, which must always run.
           RUN_TRIGGER: ${{ github.event_name }}

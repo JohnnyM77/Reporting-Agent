@@ -129,6 +129,35 @@ request past Claude's 32MB / 100-page whole-request limit. When that fallback
 fires, the prompt is told the text came from pypdf so the model prefers `n/a`
 over a misread figure.
 
+### Three manual run modes (workflow_dispatch inputs)
+`daily.yml` exposes three optional inputs, each mapping to an env var read in
+`main()`. Precedence when more than one is set: **RESULTS_TICKER > MANUAL_TICKER
+> FORCE_RERUN_TICKERS / normal**.
+
+| Input / env | Window | What it surfaces |
+|---|---|---|
+| `force_rerun_tickers` | full ASX history | re-runs listed tickers ignoring seen_state; adds non-portfolio names to the portfolio run |
+| `manual_ticker` | last 7 days | exclusive; every announcement as FYI plus any results |
+| `results_ticker` | last ~6 months (`RESULTS_LOOKBACK_DAYS`, default 180) | exclusive; ONLY the latest HY/FY results, full deep analysis, no FYI noise |
+
+`RESULTS_TICKER` is the "someone at the pub mentioned HPG — what were their last
+numbers?" path: a company may have last reported a month or two ago, outside the
+24h/7d windows. `most_recent_results_cluster` narrows the 6-month pull to the
+single newest reporting event (release + presentation + Appendix 4D/4E within
+~14 days of each other) so an old half-year is never bundled with a newer
+full-year. No results in the window → a plain "no results found in the last N
+days" note, never a blank card.
+
+**One-off modes never touch shared state.** When `RESULTS_TICKER` or
+`MANUAL_TICKER` is set, `main()` emails the analysis but skips both the
+`bob.json` write and the seen_state save. Two reasons: a single ad-hoc ticker
+must not clobber the portfolio dashboard, and — because the bob.json write
+stamps `last_run = today` — a morning phone query would otherwise trip the
+evening scheduled digest's catch-up guard (`_already_sent_today`) and stand the
+real digest down. An ad-hoc query must never cost that night's portfolio digest.
+This matches the log line manual mode always claimed ("one-off, not saved to
+state") but the code previously contradicted.
+
 ### Results detection is pattern-based, not a phrase list
 `looks_like_results_title` gates the entire results path: no match, no
 `deep_results_analysis`, no card, no PDF. It used to be a list of literal

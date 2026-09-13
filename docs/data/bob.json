@@ -1,7 +1,13 @@
 {
   "last_run": "2026-09-13",
-  "silence": true,
+  "silence": false,
   "high_impact": [],
   "material": [],
-  "fyi": []
+  "fyi": [
+    {
+      "ticker": "HPG",
+      "title": "Notification regarding unquoted securities - HPG 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137614"
+    }
+  ]
 }

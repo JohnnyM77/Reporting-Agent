@@ -110,7 +110,7 @@ holdings:
     currency: USD
 
   - ticker: LAU.AX
-    company: Laurion Mineral Exploration Corp
+    company: Lindsay Australia Limited
     buy_below: null
     sell_above: null
     max_weight: null

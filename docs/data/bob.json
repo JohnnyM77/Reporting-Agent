@@ -1,13 +1,58 @@
 {
-  "last_run": "2026-09-13",
+  "last_run": "2026-09-14",
   "silence": false,
   "high_impact": [],
-  "material": [],
+  "material": [
+    {
+      "ticker": "WDS",
+      "title": "Resignation of Director 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 133.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03138867",
+      "analysis": {
+        "what_happened": "WDS: Resignation of Director 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                 ",
+        "so_what": "Price-sensitive headline — open link for details."
+      }
+    }
+  ],
   "fyi": [
     {
-      "ticker": "HPG",
-      "title": "Notification regarding unquoted securities - HPG 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03137614"
+      "ticker": "ABB",
+      "title": "Update - Notification of buy-back - ABB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139015"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 11.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03138988"
+    },
+    {
+      "ticker": "BXB",
+      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03138943"
+    },
+    {
+      "ticker": "CSL",
+      "title": "Update - Dividend/Distribution - CSL 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03138931"
+    },
+    {
+      "ticker": "MSV",
+      "title": "Ceasing to be a substantial holder 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 766.5KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03138928"
+    },
+    {
+      "ticker": "MSV",
+      "title": "Change of Director's Interest Notice 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 254.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03138924"
+    },
+    {
+      "ticker": "TWE",
+      "title": "Notice of 2026 Annual General Meeting 24\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.5MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139043"
+    },
+    {
+      "ticker": "WDS",
+      "title": "Resignation of Director 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 133.0KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03138867"
     }
   ]
 }

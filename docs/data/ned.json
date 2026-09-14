@@ -1,10 +1,33 @@
 {
   "agent": "Ned",
-  "last_run": "2026-09-13T01:15:04.116526Z",
+  "last_run": "2026-09-14T01:17:57.754732Z",
   "youtube_hits": 0,
-  "news_hits": 5,
-  "total_hits": 5,
-  "critical_high_count": 0,
+  "news_hits": 12,
+  "total_hits": 12,
+  "critical_high_count": 2,
   "status": "ok",
-  "items": []
+  "items": [
+    {
+      "tickers": [
+        "DRO"
+      ],
+      "title": "DroneShield stock gains as FY2026 committed revenue hits USD 251 million - ad-hoc-news.de",
+      "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPY1ZhbmlweUhuSjgtbUZmdFhGc2N4dEl0a0VVRFE5U2ZRT29tbHRrMDRIT1hFazl2V2NVVksxbndTOUtUaDNZekJDWTEwZjdCRzNJcVNMMk55Z1BnZjBTZ0dhaGE2blU3cy01MUhxWkY2Z0xMSzV1aGdxOWxIbmJqNXFzSnV2endKZ2JtWDd5T3p5VUkyZ2tfZ2wwZ2E1bm1BSlk0dExRYi1peVRyZXhGcmlfUnhDREJIa09fRkhJV2U2RzloMFppYkV2TGQ4OHNq?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "DroneShield's committed revenue forecast of $251 million for FY2026 signals strong future growth potential and validates investor confidence in its counter-drone technology demand.",
+      "published": "2026-09-13T12:34:10+00:00"
+    },
+    {
+      "tickers": [
+        "WDS"
+      ],
+      "title": "How Much Dividend Income Could a Holding in Woodside Deliver? - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNZTNjV2VMZm51WG9NcmprUmR1dkRpUXkzMlBtcVJucHBhcnFvYVgtc1VRLV9IQzBGb291VlVNdkpJLWZTTDczTWJrU0h1U2hjbF9adHRUVWkzNkdDZ01jVnZZck5mU3ZHZ1JzWVVMLWJWd1otZGVCRjZkcEJ5dm9wQkpKV0xZS1VRRUh5SGhsdnpLeHZFRm1KTHk0eXItM3dGaWN6VVJ6Yw?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "[not material]\n\nThe snippet is incomplete and doesn't provide specific information about what happened with Woodside (WDS) or any concrete dividend details that would impact shareholders.",
+      "published": "2026-09-13T23:47:00+00:00"
+    }
+  ]
 }

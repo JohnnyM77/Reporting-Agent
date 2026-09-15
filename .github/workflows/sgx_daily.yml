@@ -1,0 +1,70 @@
+name: SGX Daily Announcements
+
+# Fetches SGX company announcements for every ticker in tickers.yaml's
+# `sgx:` section and uploads the raw JSON as an artifact.
+#
+# Runs on the self-hosted Windows runner (mr_co-runer) on purpose: SGX
+# blocks non-browser TLS fingerprints and its Flutter Web frontend
+# generates a signed authorizationtoken header client-side that only
+# fires from a real Chrome UA + real Chrome fingerprint. GitHub-hosted
+# ubuntu-latest cannot reach the announcements list endpoint even with
+# Playwright. See PR #164 for the diagnosis.
+#
+# This is a Round 1 workflow -- it fetches and stores. Integration with
+# Bob's LLM/email/Drive pipeline is Round 2.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tickers:
+        description: "Optional comma-separated SGX codes (defaults to tickers.yaml sgx section)"
+        required: false
+        default: ""
+      hours_back:
+        description: "Filter to last N hours (SGT); blank = no filter"
+        required: false
+        default: ""
+
+jobs:
+  fetch:
+    runs-on: [self-hosted, Windows]
+    defaults:
+      run:
+        shell: powershell
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Playwright + Chrome
+        run: |
+          $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
+          if (-not (Test-Path $py)) { $py = "python" }
+          & $py -m pip install --upgrade pip
+          & $py -m pip install playwright pyyaml
+          & $py -m playwright install chrome
+          # install chrome returns non-zero when already installed system-wide
+          $LASTEXITCODE = 0
+
+      - name: Fetch SGX announcements
+        env:
+          SGX_TICKERS_INPUT: ${{ github.event.inputs.tickers }}
+          SGX_HOURS_BACK_INPUT: ${{ github.event.inputs.hours_back }}
+        run: |
+          $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
+          if (-not (Test-Path $py)) { $py = "python" }
+          $args = @("sgx_fetch.py", "--out", "outputs/sgx/announcements.json")
+          if ($env:SGX_TICKERS_INPUT) {
+            $args += @("--tickers", $env:SGX_TICKERS_INPUT)
+          }
+          if ($env:SGX_HOURS_BACK_INPUT) {
+            $args += @("--hours-back", $env:SGX_HOURS_BACK_INPUT)
+          }
+          & $py @args
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sgx-announcements
+          path: outputs/sgx/
+          if-no-files-found: warn

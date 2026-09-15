@@ -25,6 +25,17 @@ asx:
 lse:
   RR.: Rolls-Royce Holdings plc
 
+# SGX codes (3-4 char native SGX codes, not Bloomberg tickers).
+# Fetched via sgx_fetch.py; requires the self-hosted Windows runner
+# (see sgx_fetch.py docstring for the reason).
+sgx:
+  D05: DBS Group Holdings Ltd
+  U11: United Overseas Bank Ltd
+  O39: Oversea-Chinese Banking Corporation Ltd
+  Z74: Singapore Telecommunications Ltd
+  F34: Wilmar International Ltd
+  C6L: Singapore Airlines Ltd
+
 # ETFs (VAS, VEU, VHY) are included for ASX announcements but skipped for news scanning
 etf_tickers:
   - VAS

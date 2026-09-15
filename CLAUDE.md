@@ -228,6 +228,75 @@ Digest blocks may now be either a plain string (escaped, pre-wrap) or a
 `{"text": ..., "html": ...}` dict for blocks that build their own email-safe
 HTML (`_block_text` / `_block_html` in `agent.py`).
 
+## Bob SG — Singapore Exchange announcements (V4, Round 1)
+
+Round 1 is fetch-only: `sgx_fetch.py` pulls the announcements list for
+every ticker in `tickers.yaml`'s `sgx:` section and writes JSON to
+`outputs/sgx/announcements.json`. Round 2 folds that into Bob's LLM /
+Google Doc / email pipeline. Nothing in `agent.py` or `daily.yml` has
+been touched by Round 1.
+
+### Why SGX must run on the self-hosted Windows runner
+Two independent SGX-side filters, both discovered during the spike
+sequence (#158 → #166):
+
+1. **TLS fingerprint filter.** `api.sgx.com` returns 403 to raw
+   `requests` calls (and to GitHub-hosted ubuntu runner IPs, even from
+   headless Chromium). Only a browser session that matches installed
+   Google Chrome gets through.
+2. **Signed `authorizationtoken` header.** `investors.sgx.com` is a
+   Flutter Web app that computes a ~130-char signed token client-side
+   and injects it on each `api.sgx.com` request. Without it, the
+   announcements list endpoint returns 401 even when everything else
+   about the request is right. There is no way to reproduce this token
+   from Python alone — it has to be captured from a live browser.
+
+`sgx_fetch.py` handles both by launching Playwright with
+`channel='chrome'` (installed Chrome, not bundled Chromium) and a real
+Chrome User-Agent (Playwright otherwise stamps `HeadlessChrome`), then
+navigating to the announcements page and intercepting the first
+`api.sgx.com` request that carries a non-empty `authorizationtoken`.
+
+**The token is not ticker-bound** (verified in #165), so one Playwright
+prime does the whole portfolio — subsequent REST calls use
+`context.request` with the captured token forwarded as a header.
+
+### The URL shape that returns real data
+Getting the query params right was itself a diagnostic round (#166 vs.
+the earlier zero-item response). The endpoint Flutter actually fires:
+
+```
+GET /announcements/v1.1/securitycode
+    ?value=D05&securityCodeParams=D05
+    &pagestart=0&pagesize=25
+    &periodstart=YYYYMMDD_HHMMSS&periodend=YYYYMMDD_HHMMSS
+    &exactsearch=true
+```
+
+Both `value` and `securityCodeParams` must echo the ticker (not the
+literal string `"securitycode"`). No `cat=` or `sub=` filters — those
+narrow the result set and return zero for a full company view. Both
+period bounds are compact SGT timestamps. All of that is encoded in
+`_list_url` and pinned by `tests/test_sgx_fetch.py::test_matches_flutter_shape`.
+
+### Row shape
+Each returned announcement dict carries the ASX-compatible core keys
+(`exchange`, `ticker`, `date`, `time`, `title`, `url`) so future
+downstream code doesn't need to branch on exchange, plus the SGX-native
+extras (`ref_id`, `id`, `sub`, `cat`, `category_name`, `issuer_name`,
+`submission_ts_ms`) that the eventual SGX classifier will key off.
+
+SGX classifies natively via `category_name` and `sub` codes (e.g.
+`ANNC13`=Share Buy Back, `ANNC15`=Employee Stock Option, `ANNC17`=
+Financial Statements, `ANNC18`=General Announcement) — much cleaner
+signal than ASX's title regex when Round 2 lands.
+
+### Workflow
+`.github/workflows/sgx_daily.yml` — manual dispatch only in Round 1
+(no cron). Runs on `[self-hosted, Windows]` using the PowerShell +
+machine-Python pattern from `ned_transcript.yml`. Uploads
+`outputs/sgx/` as an artifact.
+
 ## Wally the Watcher — target ("buy") prices
 
 Wally flags a ticker on two independent triggers now, not one:

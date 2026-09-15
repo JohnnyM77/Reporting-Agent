@@ -1,0 +1,43 @@
+name: SGX Spike
+
+# Manual-only. Probes the Singapore Exchange announcements API and PDF host
+# to prove out (or disprove) the endpoint shapes we plan to build sgx_fetch.py
+# against, without touching Bob's production pipeline. Uploads the raw
+# responses so we can inspect them without re-running.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: "SGX code to probe (default D05 = DBS Group Holdings)"
+        required: false
+        default: "D05"
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run SGX probe
+        env:
+          SGX_SPIKE_TICKER: ${{ github.event.inputs.ticker }}
+        run: python scripts/sgx_spike.py
+
+      - name: Upload probe outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sgx-spike-${{ github.event.inputs.ticker }}
+          path: outputs/sgx_spike/
+          if-no-files-found: warn

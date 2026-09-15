@@ -1,8 +1,8 @@
 name: SGX Spike
 
-# Manual-only. v3 launches headless Chromium against investors.sgx.com and
-# records every XHR/fetch the Flutter Web app makes at runtime — the only
-# way to see the real API endpoint, since v2 proved it isn't in the HTML.
+# v5: run on the self-hosted Windows runner with Playwright's channel='chrome'
+# (installed Google Chrome, not bundled headless Chromium). Tests whether
+# SGX's 401 on the announcements list is just anti-headless fingerprinting.
 
 on:
   workflow_dispatch:
@@ -14,18 +14,20 @@ on:
 
 jobs:
   probe:
-    name: probe (ubuntu-latest, Playwright)
-    runs-on: ubuntu-latest
+    name: probe (self-hosted Windows, real Chrome)
+    runs-on: [self-hosted, Windows]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install Playwright + Chromium
+      - name: Install Playwright + ensure Chrome
+        shell: bash
         run: |
-          pip install playwright
-          playwright install chromium --with-deps
+          python -m pip install --upgrade pip
+          python -m pip install playwright
+          # channel='chrome' uses installed Google Chrome. If it's not there,
+          # Playwright can install its own stable Chrome to a managed location.
+          python -m playwright install chrome || true
       - name: Run SGX probe
+        shell: bash
         env:
           SGX_SPIKE_TICKER: ${{ github.event.inputs.ticker }}
         run: python scripts/sgx_spike.py

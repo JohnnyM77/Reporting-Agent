@@ -228,13 +228,51 @@ Digest blocks may now be either a plain string (escaped, pre-wrap) or a
 `{"text": ..., "html": ...}` dict for blocks that build their own email-safe
 HTML (`_block_text` / `_block_html` in `agent.py`).
 
-## Bob SG — Singapore Exchange announcements (V4, Round 1)
+## Bob SG — Singapore Exchange announcements (V4)
 
-Round 1 is fetch-only: `sgx_fetch.py` pulls the announcements list for
-every ticker in `tickers.yaml`'s `sgx:` section and writes JSON to
-`outputs/sgx/announcements.json`. Round 2 folds that into Bob's LLM /
-Google Doc / email pipeline. Nothing in `agent.py` or `daily.yml` has
-been touched by Round 1.
+Round 1 landed the fetch (`sgx_fetch.py`). Round 2 adds the full daily
+digest: classifier + PDF fetcher + LLM analysis (results only) + Google
+Doc + email, all wired into `sgx_daily.yml` with a morning SGT cron.
+
+Layout — five top-level `sgx_*` modules keep the SGX path a clean
+horizontal split from `agent.py` (which stays ASX-only, untouched):
+
+| File | Role |
+|---|---|
+| `sgx_fetch.py` | Playwright prime + REST replay (Round 1) |
+| `sgx_classify.py` | Category-code -> bucket (RESULTS_HY_FY / DIVIDEND / SHARE_BUYBACK / ACQUISITION / …), title-regex fallback |
+| `sgx_pdf.py` | `links.sgx.com` URL -> local PDF(s). Handles both direct-PDF and HTML-landing-page cases |
+| `sgx_email.py` | Digest HTML/text builder — same table-only inline-styles shape as `agent.py`, `S$` prefix, "SGX" badge in header |
+| `sgx_agent.py` | Orchestrator: fetch → classify → PDF → LLM (for results) → Doc → email → seen-state |
+
+**No coupling to `agent.py`.** The ~40 lines of Anthropic-streaming
+plumbing and ~30 lines of Drive OAuth are duplicated in `sgx_agent.py`
+rather than imported. Reason: `import agent` drags in `weasyprint`,
+`pypdf`, `bs4`, and other deps the SGX box doesn't need for anything
+else, and any change to `agent.py` becomes an SGX regression risk.
+Round 3+ can promote the shared bits into `shared/` when a third caller
+appears.
+
+**SGX classification is metadata-driven, not title-regex.** Every SGX
+row carries `sub` (e.g. `ANNC17`), `cat` (e.g. `ANNC`), and
+`category_name` (e.g. "Financial Statements and Related"). We map those
+directly to Bob's buckets. Title regex is fallback only for the
+`ANNC18` General Announcement bucket. This is much cleaner than ASX's
+title regex (which lost BXB's FY26 release before being rewritten) — SGX
+gives us structured signal for free.
+
+**Seen-state file: `state_seen_sgx.json`.** Separate from ASX's
+`state_seen.json` — different exchange, different retention window,
+independent lifecycle. `sgx_daily.yml` restores/saves it via
+`actions/cache`, same pattern `daily.yml` uses for ASX.
+
+**Cron: `15 0 * * *` UTC = 08:15 SGT.** ~1h15m after SGX opens, long
+enough for the ~7am pre-open batch to have landed.
+
+Round 1 was fetch-only: `sgx_fetch.py` pulled the announcements list
+for every ticker in `tickers.yaml`'s `sgx:` section and wrote JSON to
+`outputs/sgx/announcements.json`. Round 2 keeps that path (via the
+`fetch_only=true` workflow dispatch input) as a diagnostic mode.
 
 ### Why SGX must run on the self-hosted Windows runner
 Two independent SGX-side filters, both discovered during the spike
@@ -292,10 +330,14 @@ Financial Statements, `ANNC18`=General Announcement) — much cleaner
 signal than ASX's title regex when Round 2 lands.
 
 ### Workflow
-`.github/workflows/sgx_daily.yml` — manual dispatch only in Round 1
-(no cron). Runs on `[self-hosted, Windows]` using the PowerShell +
-machine-Python pattern from `ned_transcript.yml`. Uploads
-`outputs/sgx/` as an artifact.
+`.github/workflows/sgx_daily.yml` — manual dispatch AND daily cron
+(`15 0 * * *` UTC). Runs on `[self-hosted, Windows]` using the
+PowerShell + machine-Python pattern from `ned_transcript.yml`. Reads
+`state_seen_sgx.json` via `actions/cache` for dedup across runs, runs
+`sgx_agent.py`, emails the digest via the same Gmail SMTP secrets ASX
+Bob uses. Dispatch inputs: `tickers` (override the yaml portfolio),
+`hours_back` (default 24), `dry_run` (preview only, no email or state
+change), `fetch_only` (Round 1 mode — just dump JSON, no LLM/email).
 
 ## Wally the Watcher — target ("buy") prices
 

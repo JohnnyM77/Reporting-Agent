@@ -39,6 +39,16 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 ANNOUNCEMENTS_HOST = "https://api.sgx.com"
 ANNOUNCEMENTS_PATH = "/announcements/v1.1/securitycode"
 
+# Chrome 153 UA, WITHOUT "HeadlessChrome". Playwright with channel='chrome'
+# in headless mode still stamps HeadlessChrome into the UA; overriding it
+# here makes both the UA and the sec-ch-ua header consistent with real
+# Chrome. If SGX filters on the UA, this closes the last gap.
+REAL_CHROME_UA = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/153.0.0.0 Safari/537.36"
+)
+
 
 def _log(msg: str) -> None:
     print(msg, flush=True)
@@ -82,6 +92,7 @@ async def run() -> int:
 
         context = await browser.new_context(
             viewport={"width": 1440, "height": 900},
+            user_agent=REAL_CHROME_UA,
         )
         page = await context.new_page()
 
@@ -117,8 +128,8 @@ async def run() -> int:
         else:
             _log("    (no securitycode request captured — Flutter never fired it)")
 
-        # Retry from context.request — carries the same cookies + real Chrome UA.
-        _log(f"\n[retry] context.request → {ANNOUNCEMENTS_PATH}")
+        # Retry from context.request -- carries the same cookies + real Chrome UA.
+        _log(f"\n[retry] context.request -> {ANNOUNCEMENTS_PATH}")
         for sub in ("ANNC17", "ANNC"):
             try:
                 resp = await context.request.get(

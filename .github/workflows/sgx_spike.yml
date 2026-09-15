@@ -1,9 +1,8 @@
 name: SGX Spike
 
-# Manual-only. Runs the same probe twice: once from GitHub's ubuntu-latest
-# (Bob's current runtime, cloud IP) and once from the self-hosted Windows
-# runner (residential IP). Comparing the two tells us which runner sgx_fetch.py
-# has to live behind for the real V4 build.
+# Manual-only. v3 launches headless Chromium against investors.sgx.com and
+# records every XHR/fetch the Flutter Web app makes at runtime — the only
+# way to see the real API endpoint, since v2 proved it isn't in the HTML.
 
 on:
   workflow_dispatch:
@@ -14,40 +13,19 @@ on:
         default: "D05"
 
 jobs:
-  probe_hosted:
-    name: probe (ubuntu-latest, cloud IP)
+  probe:
+    name: probe (ubuntu-latest, Playwright)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install
-        run: pip install requests
-      - name: Run SGX probe
-        env:
-          SGX_SPIKE_TICKER: ${{ github.event.inputs.ticker }}
-        run: python scripts/sgx_spike.py
-      - name: Upload artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sgx-spike-${{ github.event.inputs.ticker }}-hosted
-          path: outputs/sgx_spike/
-          if-no-files-found: warn
-
-  probe_selfhosted:
-    name: probe (self-hosted Windows, residential IP)
-    runs-on: [self-hosted, Windows]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install
-        shell: bash
+      - name: Install Playwright + Chromium
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install requests
+          pip install playwright
+          playwright install chromium --with-deps
       - name: Run SGX probe
-        shell: bash
         env:
           SGX_SPIKE_TICKER: ${{ github.event.inputs.ticker }}
         run: python scripts/sgx_spike.py
@@ -55,6 +33,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: sgx-spike-${{ github.event.inputs.ticker }}-selfhosted
+          name: sgx-spike-${{ github.event.inputs.ticker }}
           path: outputs/sgx_spike/
           if-no-files-found: warn

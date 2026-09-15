@@ -3,6 +3,9 @@ name: SGX Spike
 # v5: run on the self-hosted Windows runner with Playwright's channel='chrome'
 # (installed Google Chrome, not bundled headless Chromium). Tests whether
 # SGX's 401 on the announcements list is just anti-headless fingerprinting.
+#
+# Uses the same PowerShell + machine-Python pattern as ned_transcript.yml —
+# bash is not on PATH on this runner and setup-python has no tool cache here.
 
 on:
   workflow_dispatch:
@@ -16,21 +19,36 @@ jobs:
   probe:
     name: probe (self-hosted Windows, real Chrome)
     runs-on: [self-hosted, Windows]
+    defaults:
+      run:
+        shell: powershell
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Install Playwright + ensure Chrome
-        shell: bash
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install playwright
+          $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
+          if (-not (Test-Path $py)) { $py = "python" }
+          Write-Host "Using Python: $py"
+          & $py --version
+          & $py -m pip install --upgrade pip
+          & $py -m pip install playwright
           # channel='chrome' uses installed Google Chrome. If it's not there,
-          # Playwright can install its own stable Chrome to a managed location.
-          python -m playwright install chrome || true
+          # Playwright installs its own stable Chrome to a managed location.
+          & $py -m playwright install chrome
+          # Ignore install exit code — Chrome may already be installed system-wide
+          # in which case `install chrome` is a no-op that returns non-zero.
+          $LASTEXITCODE = 0
+
       - name: Run SGX probe
-        shell: bash
         env:
           SGX_SPIKE_TICKER: ${{ github.event.inputs.ticker }}
-        run: python scripts/sgx_spike.py
+        run: |
+          $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
+          if (-not (Test-Path $py)) { $py = "python" }
+          & $py scripts/sgx_spike.py
+
       - name: Upload artifact
         if: always()
         uses: actions/upload-artifact@v4

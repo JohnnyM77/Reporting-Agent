@@ -55,16 +55,28 @@ def _log(msg: str) -> None:
     print(msg, flush=True)
 
 
-def _fresh_periodstart() -> str:
-    sgt_now = dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=8)
-    return sgt_now.strftime("%Y%m%d_%H%M%S")
+def _sgt_stamp(offset: dt.timedelta = dt.timedelta(0)) -> str:
+    """Compact SGT timestamp SGX uses in periodstart/periodend."""
+    sgt = dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=8) + offset
+    return sgt.strftime("%Y%m%d_%H%M%S")
 
 
-def _list_url(ticker: str, sub: str = "ANNC17") -> str:
+def _list_url(ticker: str, sub: str = "ignored") -> str:
+    """Rebuilt to match the URL shape Flutter actually fires (from v6
+    capture): securityCodeParams echoes the ticker, no cat/sub filters,
+    both periodstart and periodend, exactsearch=true. v7's version had
+    literal 'securitycode' as securityCodeParams and added a cat=/sub=
+    filter Flutter doesn't send, so the API returned 200 with 0 rows."""
+    period_start = "20060916_160000"  # ~20 years back, matches Flutter's default
+    period_end = _sgt_stamp()
     return (
         f"{ANNOUNCEMENTS_HOST}{ANNOUNCEMENTS_PATH}"
-        f"?value={ticker}&cat=ANNC&securityCodeParams=securitycode"
-        f"&sub={sub}&pagestart=0&pagesize=250&periodstart={_fresh_periodstart()}"
+        f"?value={ticker}"
+        f"&securityCodeParams={ticker}"
+        f"&pagestart=0&pagesize=25"
+        f"&periodstart={period_start}"
+        f"&periodend={period_end}"
+        f"&exactsearch=true"
     )
 
 
@@ -130,26 +142,23 @@ async def run() -> int:
             token_a = tokens_a[-1]  # freshest
             _log(f"    token_a[:40] = {token_a[:40]!r}...")
             _log(f"\n[retry] LIST endpoint for {TICKER_A} WITH captured token")
-            for sub in ("ANNC17", "ANNC"):
-                try:
-                    resp = await context.request.get(
-                        _list_url(TICKER_A, sub=sub),
-                        headers={
-                            "Accept": "application/json, text/plain, */*",
-                            "Origin": "https://investors.sgx.com",
-                            "Referer": "https://investors.sgx.com/",
-                            "authorizationtoken": token_a,
-                            "content-type": "application/json; charset=UTF-8",
-                        },
-                    )
-                    body = await resp.text()
-                    _log(f"    sub={sub}: HTTP {resp.status}, {len(body)} bytes")
-                    _log(f"    first 800 chars: {body[:800]!r}")
-                    (OUT_DIR / f"list_{TICKER_A}_{sub}.body").write_text(
-                        body, encoding="utf-8"
-                    )
-                except Exception as exc:
-                    _log(f"    sub={sub}: exception {exc}")
+            try:
+                resp = await context.request.get(
+                    _list_url(TICKER_A),
+                    headers={
+                        "Accept": "application/json, text/plain, */*",
+                        "Origin": "https://investors.sgx.com",
+                        "Referer": "https://investors.sgx.com/",
+                        "authorizationtoken": token_a,
+                        "content-type": "application/json; charset=UTF-8",
+                    },
+                )
+                body = await resp.text()
+                _log(f"    HTTP {resp.status}, {len(body)} bytes")
+                _log(f"    first 1500 chars: {body[:1500]!r}")
+                (OUT_DIR / f"list_{TICKER_A}.body").write_text(body, encoding="utf-8")
+            except Exception as exc:
+                _log(f"    exception {exc}")
 
         # ---- Ticker B: same recipe, tests if token is ticker-bound ----
         current_bucket = tokens_b
@@ -164,7 +173,7 @@ async def run() -> int:
                 _log(f"\n[cross] LIST for {TICKER_B} with {TICKER_A}'s token (ticker-bound check)")
                 try:
                     resp = await context.request.get(
-                        _list_url(TICKER_B, sub="ANNC17"),
+                        _list_url(TICKER_B),
                         headers={
                             "Accept": "application/json",
                             "Origin": "https://investors.sgx.com",
@@ -174,14 +183,14 @@ async def run() -> int:
                         },
                     )
                     body = await resp.text()
-                    _log(f"    HTTP {resp.status}, {len(body)} bytes, first 200: {body[:200]!r}")
+                    _log(f"    HTTP {resp.status}, {len(body)} bytes, first 400: {body[:400]!r}")
                 except Exception as exc:
                     _log(f"    exception {exc}")
 
             _log(f"\n[retry] LIST for {TICKER_B} with its own token")
             try:
                 resp = await context.request.get(
-                    _list_url(TICKER_B, sub="ANNC17"),
+                    _list_url(TICKER_B),
                     headers={
                         "Accept": "application/json",
                         "Origin": "https://investors.sgx.com",
@@ -191,10 +200,8 @@ async def run() -> int:
                     },
                 )
                 body = await resp.text()
-                _log(f"    HTTP {resp.status}, {len(body)} bytes, first 800: {body[:800]!r}")
-                (OUT_DIR / f"list_{TICKER_B}_ANNC17.body").write_text(
-                    body, encoding="utf-8"
-                )
+                _log(f"    HTTP {resp.status}, {len(body)} bytes, first 1500: {body[:1500]!r}")
+                (OUT_DIR / f"list_{TICKER_B}.body").write_text(body, encoding="utf-8")
             except Exception as exc:
                 _log(f"    exception {exc}")
 

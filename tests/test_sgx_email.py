@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from sgx_email import build_email  # noqa: E402
+from sgx_email import build_email, build_analysis_pdf_html  # noqa: E402
 
 
 def _item(**kw):
@@ -165,24 +165,48 @@ class TestResultsCard:
         # the correct key was read.
         assert "60c" in html
 
-    def test_card_renders_full_analysis_inline(self):
-        """The full markdown analysis renders inline in the email body
-        (Google Doc plumbing removed -- everything ships in one email)."""
+    def test_email_body_does_not_inline_full_analysis(self):
+        """The deep analysis moved out of the email body into an attached
+        PDF (user wanted a forwardable file). The body must not contain
+        the markdown body content."""
         _, _, html = build_email(
             [(_item(sub="ANNC17"), "RESULTS_HY_FY", _analysis())],
             hours_back=24,
         )
-        # Markdown headings and lists come through as inline-styled HTML.
-        assert "Segment split" in html
-        assert "<h2" in html
-        assert "<ul" in html
-        assert "<li" in html
-        # Bold markdown gets a <strong> tag.
-        assert "<strong>Outlook:</strong>" in html
-        # And the "Full analysis" section header is present.
-        assert "Full analysis" in html
-        # No stray Google Doc link (Drive plumbing is gone).
+        # These strings only appear inside full_analysis markdown.
+        assert "Segment split" not in html
+        assert "<strong>Outlook:</strong>" not in html
+        # And there's a signpost telling the reader where the analysis is.
+        assert "attached as PDF" in html
+        # No stray Google Doc link either.
         assert "docs.google.com" not in html
+
+    def test_email_body_renders_source_pdf_links(self):
+        """When the item carries _pdf_sources, the card renders each one
+        as a clickable link -- source PDFs are LINKED, not attached."""
+        item = _item(sub="ANNC17")
+        item["_pdf_sources"] = [
+            ("https://links.sgx.com/1.0.0/annc/x/perf.pdf", "Performance Summary"),
+            ("https://links.sgx.com/1.0.0/annc/x/cfo.pdf", "CFO Presentation"),
+        ]
+        _, _, html = build_email(
+            [(item, "RESULTS_HY_FY", _analysis())],
+            hours_back=24,
+        )
+        assert "Source PDFs" in html
+        assert "Performance Summary" in html
+        assert "CFO Presentation" in html
+        assert "https://links.sgx.com/1.0.0/annc/x/perf.pdf" in html
+        assert "https://links.sgx.com/1.0.0/annc/x/cfo.pdf" in html
+
+    def test_email_body_omits_source_pdf_block_when_none(self):
+        """No _pdf_sources -> no 'Source PDFs' block (rather than an
+        empty section)."""
+        _, _, html = build_email(
+            [(_item(sub="ANNC17"), "RESULTS_HY_FY", _analysis())],
+            hours_back=24,
+        )
+        assert "Source PDFs" not in html
 
     def test_no_analysis_falls_back_to_two_liner(self):
         """A results item that failed LLM analysis still renders -- as a
@@ -196,3 +220,40 @@ class TestResultsCard:
         assert "Revenue" not in html
         # But the source link still appears.
         assert "links.sgx.com" in html
+
+
+class TestAnalysisPdfHtml:
+    """The standalone HTML that sgx_agent renders to a PDF and attaches
+    to the email. This is what the user forwards to friends -- it must
+    be self-contained (a complete document) and carry the deep analysis
+    the email body deliberately omits."""
+
+    def test_is_a_complete_html_document(self):
+        html = build_analysis_pdf_html(_item(sub="ANNC17"), _analysis())
+        assert "<!doctype html>" in html.lower()
+        assert "<html" in html
+        assert "</html>" in html
+        # A4 print rule for Chrome print-to-PDF.
+        assert "@page" in html
+        assert "A4" in html
+
+    def test_carries_the_full_analysis_body(self):
+        html = build_analysis_pdf_html(_item(sub="ANNC17"), _analysis())
+        # Everything the email body deliberately omits must live here.
+        assert "Segment split" in html
+        assert "<strong>Outlook:</strong>" in html
+        assert "Full analysis" in html
+
+    def test_carries_the_metric_table_and_summary(self):
+        html = build_analysis_pdf_html(_item(sub="ANNC17"), _analysis())
+        # Metric labels + at least one populated value + the YoY column.
+        assert "Underlying NPAT" in html
+        assert "S$2,890m" in html
+        assert "+11% YoY" in html
+        # Summary from the analysis dict.
+        assert "Solid first half" in html
+
+    def test_no_analysis_body_renders_placeholder(self):
+        analysis = _analysis(full_analysis="")
+        html = build_analysis_pdf_html(_item(sub="ANNC17"), analysis)
+        assert "No deep analysis available" in html

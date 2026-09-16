@@ -253,15 +253,29 @@ becomes an SGX regression risk. Round 3+ can promote the shared bits
 into `shared/` when a third caller appears.
 
 **No Google Drive on the SGX path.** ASX Bob writes a native Google Doc
-per results item; SGX Bob deliberately doesn't. The full markdown
-analysis renders inline in the email card (`_markdown_to_email_html` in
-`sgx_email.py` — same tiny subset ASX Bob's Doc builder used, but with
-email-safe inline styles), and the source PDFs from the announcement
-landing page are attached to the email as `application/pdf`. One email
-carries the metric table, the summary, the full analysis and the raw
-source documents — no follow-up click needed. Attachment total is capped
-at 20MB so a huge annual report doesn't fail the send; anything over the
-cap is dropped and the source-announcement link still points at SGX.
+per results item; SGX Bob deliberately doesn't.
+
+The email body carries the metric card, the short summary, and clickable
+**links** to the source PDFs on SGX (rendered from the `source_url` on
+each `FetchedPdf` — see `sgx_pdf.py`). The deep analysis (`full_analysis`
+markdown) does NOT render in the email body; it goes into a standalone
+**PDF attached** to the email so the user can forward one file to
+friends. This split is intentional:
+
+- Source PDFs → **linked** (not attached) so the email stays lightweight
+  and Gmail doesn't warn about size; the originals live on SGX anyway.
+- Analysis PDF → **attached** so it forwards cleanly as a self-contained
+  file rather than an inline HTML block that reflows when re-emailed.
+
+The analysis PDF is rendered by `_render_analysis_pdf` in `sgx_agent.py`
+via Playwright + installed Chrome (`channel='chrome'`, headless,
+`page.pdf()`). Chrome is already provisioned on the self-hosted Windows
+runner for `sgx_fetch`'s token-prime step, so this adds no dependencies.
+The HTML for that PDF is built by `build_analysis_pdf_html` in
+`sgx_email.py` — a complete `<!doctype html>` document with an `@page A4`
+rule, the same metric table as the email card, the summary, and the full
+markdown analysis. Attachment total is capped at 20MB but the analysis
+PDFs are ~50-200KB each, so the cap is really just a safety net.
 
 **Metric JSON keys are load-bearing.** `sgx_email._results_card_html`
 reads `dividend_ordinary` (not `ordinary_dividend`) and `change_pct`

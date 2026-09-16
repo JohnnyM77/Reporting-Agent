@@ -18,11 +18,12 @@ Public API
         out_dir: Path,
         max_pdfs: int = 6,
         log=print,
-    ) -> List[Path]
+    ) -> List[FetchedPdf]
 
-Returns the local paths of downloaded PDFs (in landing-page order), empty
-list on any error. Each file is written with an announcement-derived name
-into `out_dir`.
+Each `FetchedPdf` carries the local `path` (bytes-on-disk for the LLM
+call), the `source_url` on SGX (so the email can link straight to the
+PDF instead of attaching it), and the `name` from the landing page.
+Returned in landing-page order. Empty list on any error.
 
 Does NOT need the SGX API's authorizationtoken — links.sgx.com is the
 public document host and serves PDFs to plain `requests` calls from any
@@ -35,11 +36,26 @@ from __future__ import annotations
 import re
 import urllib.parse
 from pathlib import Path
-from typing import Callable, List, Optional
+from typing import Callable, List, NamedTuple, Optional
 from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
+
+
+class FetchedPdf(NamedTuple):
+    """One downloaded PDF plus enough context to link back to it.
+
+    - `path` is the local file, for feeding to Anthropic as a document.
+    - `source_url` is the live URL on SGX / links.sgx.com. The email
+      builder renders these as clickable "Source PDFs" so users can
+      forward or share the originals without us re-hosting them.
+    - `name` is the display name from the landing page, used both for
+      the local filename and as the link text.
+    """
+    path: Path
+    source_url: str
+    name: str
 
 # Chrome-ish UA -- links.sgx.com is loose but a real UA avoids default filters.
 USER_AGENT = (
@@ -150,11 +166,12 @@ def fetch_announcement_pdfs(
     max_pdfs: int = 6,
     log: Callable[[str], None] = print,
     session: Optional[requests.Session] = None,
-) -> List[Path]:
-    """Resolve `url` to one or more local PDF paths. Returns them in
-    landing-page order (or a single-item list for direct PDF URLs).
-    Returns [] on any failure -- callers should treat that as "PDF not
-    available, fall back to link-only in the email"."""
+) -> List[FetchedPdf]:
+    """Resolve `url` to one or more local PDFs plus their source URLs.
+    Returns FetchedPdf tuples in landing-page order (or a single-item
+    list for direct PDF URLs). Returns [] on any failure -- callers
+    should treat that as "PDF not available, fall back to link-only in
+    the email"."""
     if not url or not url.startswith("http"):
         log(f"[sgx-pdf] refusing non-http url {url!r}")
         return []
@@ -185,7 +202,10 @@ def fetch_announcement_pdfs(
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path.write_bytes(resp.content)
         log(f"[sgx-pdf] direct PDF -> {out_path.name} ({len(resp.content)} bytes)")
-        return [out_path]
+        # source_url is the final URL after redirects, so it points at
+        # the actual PDF rather than the announcement's opaque landing
+        # URL -- that way an email link opens the PDF directly.
+        return [FetchedPdf(path=out_path, source_url=resp.url, name=name)]
 
     # Landing-page case -- parse for PDF links.
     ct = (resp.headers.get("Content-Type") or "").lower()
@@ -207,13 +227,13 @@ def fetch_announcement_pdfs(
 
     log(f"[sgx-pdf] landing page has {len(pdf_links)} PDF link(s); "
         f"downloading up to {max_pdfs}")
-    saved: List[Path] = []
+    saved: List[FetchedPdf] = []
     for i, (pdf_url, name) in enumerate(pdf_links[:max_pdfs]):
         # Prefix numeric index to preserve landing-page order even if names
         # collide.
         out_path = out_dir / f"{i:02d}_{_safe_name(name)}"
         got = _download_pdf(session, pdf_url, out_path, log)
         if got:
-            saved.append(got)
+            saved.append(FetchedPdf(path=got, source_url=pdf_url, name=name))
             log(f"[sgx-pdf] saved {got.name}")
     return saved

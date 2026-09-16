@@ -15,9 +15,14 @@ Constraints (mirroring agent.py's email conventions):
 
 Round 2 renders full results cards only when the caller passes a parsed
 analysis dict; otherwise every item renders as a compact two-liner. The
-LLM plumbing lives in sgx_agent.py; the full markdown analysis lands
-inline in the results card (no separate Google Doc — the source PDFs
-are attached to the email instead).
+LLM plumbing lives in sgx_agent.py.
+
+The email body carries the metric card, a short summary, and links to
+the source PDFs on SGX (no PDF attachments — the user wanted lightweight
+links, not 4MB of duplicate attachments). The full markdown analysis
+renders into a standalone HTML document (build_analysis_pdf_html) that
+sgx_agent then prints to PDF via Playwright + Chrome and attaches to
+the email as a forwardable, shareable file.
 """
 
 from __future__ import annotations
@@ -243,31 +248,12 @@ def _markdown_to_email_html(md: str) -> str:
     return "".join(out)
 
 
-def _results_card_html(item: Dict, analysis: Dict) -> str:
-    """Full results card: metric table + short summary + full analysis
-    inline + source link. `analysis` is the parsed JSON from the LLM
-    (see sgx_agent's run_deep_results_analysis).
-
-    Currency prefix is always `S$` for SGX names (unlike ASX which uses
-    a bare `$` because the card context line already says A$).
-
-    The full markdown analysis is rendered inline in the email body —
-    Bob SG doesn't create a separate Google Doc anymore. The user asked
-    for one email with everything in it plus the source PDFs attached."""
-    ticker = item.get("ticker") or ""
-    issuer = item.get("issuer_name") or ""
-    period = analysis.get("period") or ""
-    period_type = analysis.get("period_type") or ""
+def _metric_rows_html(analysis: Dict, shade_light: str, shade_dark: str) -> str:
+    """Render the five metric rows. Shared between the email card and
+    the standalone analysis PDF so both stay in lockstep."""
     metrics = analysis.get("metrics") or {}
-    summary = (analysis.get("summary") or "").strip()
-    full_analysis_md = (analysis.get("full_analysis") or "").strip()
-
-    header_bits = [b for b in (ticker, issuer, period, period_type) if b]
-    header = " | ".join(header_bits)
-
-    metric_rows_html = ""
     # Keys MUST match RESULTS_HYFY_PROMPT's schema:
-    # dividend_ordinary + change_pct. Earlier versions of this file
+    # dividend_ordinary + change_pct. An earlier version of this file
     # used ordinary_dividend / change which never populated -> the
     # dividend row rendered "n/a" and the YoY column stayed blank for
     # every SGX report. Do not rename without updating the prompt too.
@@ -278,8 +264,9 @@ def _results_card_html(item: Dict, analysis: Dict) -> str:
         ("dividend_ordinary", "Ordinary dividend"),
         ("operating_cash_flow", "Operating cash flow"),
     ]
+    rows = ""
     for i, (key, label) in enumerate(metric_order):
-        shade = COLOR_RESULTS_ROW_SHADE if i % 2 == 0 else COLOR_RESULTS_CARD
+        shade = shade_light if i % 2 == 0 else shade_dark
         m = metrics.get(key) or {}
         value = (m.get("value") or "n/a").strip()
         change = (m.get("change_pct") or "").strip()
@@ -293,7 +280,7 @@ def _results_card_html(item: Dict, analysis: Dict) -> str:
                 f"<div style='color:{COLOR_RESULTS_MUTED}; font-size:11px;'>"
                 f"{_esc(basis)}</div>"
             )
-        metric_rows_html += (
+        rows += (
             f"<tr>"
             f"<td style='padding:8px 10px; background:{shade}; "
             f"color:{COLOR_RESULTS_LABEL}; font-size:13px;'>{_esc(label)}</td>"
@@ -302,24 +289,72 @@ def _results_card_html(item: Dict, analysis: Dict) -> str:
             f"{_esc(value)}{change_html}{basis_html}</td>"
             f"</tr>"
         )
+    return rows
 
-    full_analysis_html = ""
-    if full_analysis_md:
-        full_analysis_html = (
-            f"<div style='margin-top:14px; padding-top:12px; "
+
+def _results_card_html(item: Dict, analysis: Dict) -> str:
+    """Full results card in the email body: metric table + short summary
+    + links to source PDFs on SGX + link to the announcement landing page.
+
+    The deep analysis (full_analysis markdown) is NOT rendered here — it
+    goes into a standalone PDF the caller attaches to the email so the
+    user can forward it. `item['_pdf_sources']` is an optional list of
+    `(url, name)` tuples for the source PDF links; sgx_agent populates it
+    after `fetch_announcement_pdfs`.
+
+    Currency prefix is always `S$` for SGX names (unlike ASX which uses
+    a bare `$` because the card context line already says A$)."""
+    ticker = item.get("ticker") or ""
+    issuer = item.get("issuer_name") or ""
+    period = analysis.get("period") or ""
+    period_type = analysis.get("period_type") or ""
+    summary = (analysis.get("summary") or "").strip()
+    pdf_sources = item.get("_pdf_sources") or []
+
+    header_bits = [b for b in (ticker, issuer, period, period_type) if b]
+    header = " | ".join(header_bits)
+
+    metric_rows_html = _metric_rows_html(
+        analysis, COLOR_RESULTS_ROW_SHADE, COLOR_RESULTS_CARD,
+    )
+
+    # Source PDFs -- one link per attachment fetched from SGX. Preferred
+    # over attaching the PDFs to the email (which duplicates them and
+    # bloats the message) but still gives one-click access to the
+    # originals.
+    source_pdfs_html = ""
+    if pdf_sources:
+        items_html = "".join(
+            f"<li style='margin:3px 0; font-size:12px;'>"
+            f"<a href='{_esc(url)}' "
+            f"style='color:#2563EB; text-decoration:underline;'>"
+            f"{_esc(name)}</a></li>"
+            for url, name in pdf_sources
+        )
+        source_pdfs_html = (
+            f"<div style='margin-top:12px; padding-top:10px; "
             f"border-top:1px solid #E5E7EB;'>"
-            f"<div style='font-weight:700; font-size:12px; "
+            f"<div style='font-weight:700; font-size:11px; "
             f"color:{COLOR_RESULTS_LABEL}; text-transform:uppercase; "
-            f"letter-spacing:0.5px; margin-bottom:6px;'>Full analysis</div>"
-            f"{_markdown_to_email_html(full_analysis_md)}"
+            f"letter-spacing:0.5px; margin-bottom:4px;'>Source PDFs</div>"
+            f"<ul style='margin:0; padding-left:18px;'>{items_html}</ul>"
             f"</div>"
         )
+
+    # Note the deep analysis is in the attached PDF -- so a reader who
+    # only glances at the email body still knows there's more.
+    analysis_note_html = (
+        f"<div style='margin-top:10px; font-size:12px; "
+        f"color:{COLOR_RESULTS_MUTED}; font-style:italic;'>"
+        f"Full deep analysis attached as PDF."
+        f"</div>"
+    )
 
     source_link_html = ""
     source = item.get("url") or ""
     if source:
         source_link_html = (
-            f"<div style='margin-top:8px; font-size:12px;'>"
+            f"<div style='margin-top:6px; font-size:12px;'>"
             f"<a href='{_esc(source)}' "
             f"style='color:#2563EB; text-decoration:underline;'>"
             f"Source announcement (SGX)</a></div>"
@@ -344,9 +379,85 @@ def _results_card_html(item: Dict, analysis: Dict) -> str:
         f"<div style='padding:12px; color:{COLOR_RESULTS_VALUE}; "
         f"font-size:13px; line-height:1.5;'>"
         f"{_esc(summary) if summary else '<em>Summary unavailable.</em>'}"
-        f"{full_analysis_html}{source_link_html}"
+        f"{analysis_note_html}{source_pdfs_html}{source_link_html}"
         f"</div>"
         f"</div>"
+    )
+
+
+def build_analysis_pdf_html(item: Dict, analysis: Dict) -> str:
+    """Standalone HTML document for the attached analysis PDF.
+
+    Full-page A4-friendly rendering: ticker + issuer + period header,
+    metric table, summary, then the full deep analysis rendered from
+    markdown. Emitted as a complete document (<!doctype>, <html>, <head>,
+    <body>) with a light theme -- suitable for printing to PDF via
+    headless Chrome. Kept in one function so sgx_agent can call it
+    directly without knowing anything about page layout."""
+    ticker = item.get("ticker") or ""
+    issuer = item.get("issuer_name") or ""
+    period = analysis.get("period") or ""
+    period_type = analysis.get("period_type") or ""
+    title = item.get("title") or ""
+    summary = (analysis.get("summary") or "").strip()
+    full_md = (analysis.get("full_analysis") or "").strip()
+
+    header_bits = [b for b in (ticker, issuer, period, period_type) if b]
+    header = " | ".join(header_bits)
+
+    metric_rows_html = _metric_rows_html(
+        analysis,
+        shade_light="#F1F5F2",
+        shade_dark="#FFFFFF",
+    )
+
+    if full_md:
+        analysis_body_html = _markdown_to_email_html(full_md)
+    else:
+        analysis_body_html = (
+            "<p style='color:#6B7280; font-style:italic;'>"
+            "No deep analysis available (LLM returned no content)."
+            "</p>"
+        )
+
+    doc_title = f"{ticker} {period} SGX analysis" if ticker else "SGX analysis"
+
+    return (
+        "<!doctype html>"
+        "<html lang='en'>"
+        "<head>"
+        "<meta charset='utf-8'>"
+        f"<title>{_esc(doc_title)}</title>"
+        "<style>@page { size: A4; margin: 14mm 14mm 18mm; }</style>"
+        "</head>"
+        "<body style='margin:0; padding:0; background:#FFFFFF; "
+        "color:#111827; font-family:-apple-system, BlinkMacSystemFont, "
+        "Segoe UI, Roboto, Arial, sans-serif;'>"
+        f"<div style='padding:18px 20px; background:{COLOR_RESULTS_HEADER}; "
+        "color:#FFFFFF;'>"
+        f"<div style='font-size:18px; font-weight:800;'>{_esc(header)}</div>"
+        f"<div style='color:{COLOR_RESULTS_HEADER_SUB}; font-size:12px; "
+        f"margin-top:4px;'>reported in S$ (SGD) — figures as stated in the source"
+        f"</div>"
+        "</div>"
+        "<div style='padding:20px 22px;'>"
+        f"<div style='color:#6B7280; font-size:11px; margin-bottom:12px;'>"
+        f"SGX announcement: {_esc(title)}"
+        f"</div>"
+        "<table style='width:100%; border-collapse:collapse; "
+        "margin-bottom:18px;'>"
+        f"{metric_rows_html}"
+        "</table>"
+        f"<h2 style='font-size:14px; margin:0 0 6px; color:#111827;'>Summary</h2>"
+        f"<p style='margin:0 0 18px; font-size:13px; line-height:1.55; "
+        f"color:#111827;'>"
+        f"{_esc(summary) if summary else '<em>Summary unavailable.</em>'}"
+        f"</p>"
+        f"<h2 style='font-size:14px; margin:0 0 8px; color:#111827;'>"
+        f"Full analysis</h2>"
+        f"{analysis_body_html}"
+        "</div>"
+        "</body></html>"
     )
 
 

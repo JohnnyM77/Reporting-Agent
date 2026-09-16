@@ -29,6 +29,10 @@ on:
         description: "true = just run sgx_fetch.py and upload JSON (Round 1 mode); no LLM/email"
         required: false
         default: "false"
+      results_ticker:
+        description: "Comma-separated SGX codes -- pulls their LAST HY/FY report (looks back ~365 days), runs deep analysis, emails. Overrides portfolio; skips seen_state. Example: 5DD"
+        required: false
+        default: ""
   schedule:
     # 00:15 UTC = 08:15 SGT -- ~1h15m after SGX opens (9am SGT), long enough
     # for the ~7am pre-open batch to have landed.
@@ -90,6 +94,7 @@ jobs:
           # Dispatch inputs picked up in-Python
           BOB_SG_DRY_RUN_INPUT: ${{ github.event.inputs.dry_run }}
           BOB_SG_FETCH_ONLY_INPUT: ${{ github.event.inputs.fetch_only }}
+          BOB_SG_RESULTS_TICKER_INPUT: ${{ github.event.inputs.results_ticker }}
         run: |
           $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
           if (-not (Test-Path $py)) { $py = "python" }
@@ -112,6 +117,9 @@ jobs:
             $args = @("sgx_agent.py")
             if ($env:SGX_HOURS_BACK) {
               $args += @("--hours-back", $env:SGX_HOURS_BACK)
+            }
+            if ($env:BOB_SG_RESULTS_TICKER_INPUT) {
+              $args += @("--results-ticker", $env:BOB_SG_RESULTS_TICKER_INPUT)
             }
             if ($dryRun) { $args += "--dry-run" }
             & $py @args

@@ -84,11 +84,24 @@ SEEN_STATE_PATH = Path(os.environ.get("SEEN_STATE_SGX_PATH", "state_seen_sgx.jso
 SEEN_STATE_RETENTION_HOURS = 72
 HOURS_BACK_DEFAULT = int(os.environ.get("SGX_HOURS_BACK", "24"))
 
+# Results-ticker mode: how far back to look for a results release when the
+# user asks "get me 5DD's last half" outside the normal 24h window. Mirrors
+# ASX Bob's RESULTS_LOOKBACK_DAYS (180 by default). Micro-cap SG names like
+# Micro-Mechanics report once a year, so 180 days is usually enough for FY;
+# annual reporters that just missed it may need 365.
+RESULTS_LOOKBACK_DAYS = int(os.environ.get("SGX_RESULTS_LOOKBACK_DAYS", "365"))
+
 # Cap Round 2 to avoid a runaway reporting-morning bill. When several banks
 # report on the same day this will need loosening -- same problem Bob's ASX
 # path already solved.
 MAX_LLM_CALLS_PER_RUN = int(os.environ.get("SGX_MAX_LLM_CALLS", "10"))
 MAX_PDFS_PER_RUN = int(os.environ.get("SGX_MAX_PDFS", "20"))
+
+# Per-announcement PDF cap. SGX results releases commonly bundle 3-5 PDFs
+# under one announcement (per the DBS half-year screenshot: performance
+# summary + CFO deck + CEO deck + press statement). 10 is enough to catch
+# even the wordiest reporters without hitting Claude's 32MB request cap.
+MAX_PDFS_PER_ANNOUNCEMENT = int(os.environ.get("SGX_MAX_PDFS_PER_ANNOUNCEMENT", "10"))
 
 
 # --- utils -------------------------------------------------------------------
@@ -468,59 +481,138 @@ def _send_email(subject: str, body_text: str, body_html: str) -> bool:
         return False
 
 
-def run(hours_back: int, dry_run: bool = False) -> int:
-    _log(f"{BOB_SG_NAME} {BOB_SG_VERSION} -- hours_back={hours_back} "
-         f"dry_run={dry_run}")
-
-    tickers = _load_sgx_tickers(Path("tickers.yaml"))
-    if not tickers:
-        _log("[main] no SGX tickers in tickers.yaml -- exiting")
-        return 1
-    _log(f"[main] {len(tickers)} SGX ticker(s): {', '.join(tickers)}")
-
-    # 1. Fetch
-    from_date = (_sgt_now() - dt.timedelta(hours=hours_back)).date()
-    fetched: Dict[str, List[Dict]] = fetch_sgx_announcements(
-        tickers, from_date=from_date, log=_log,
-    )
-
-    # 2+3. Filter by time window + dedupe
-    seen = _prune_seen_state(_load_seen_state(SEEN_STATE_PATH),
-                             SEEN_STATE_RETENTION_HOURS)
-    fresh_items: List[Dict] = []
-    now_iso = _sgt_now().isoformat(timespec="seconds")
+def _select_items_default_mode(
+    fetched: Dict[str, List[Dict]],
+    tickers: List[str],
+    hours_back: int,
+    seen: Dict[str, str],
+) -> List[Dict]:
+    """Portfolio mode: everything in the last N hours that we haven't
+    already surfaced."""
+    out: List[Dict] = []
     for ticker in tickers:
         for item in fetched.get(ticker, []):
             if not _within_hours(item, hours_back):
                 continue
-            key = _announcement_key(item)
-            if key in seen:
+            if _announcement_key(item) in seen:
                 continue
-            fresh_items.append(item)
-    _log(f"[main] {len(fresh_items)} fresh announcement(s) after dedup + window")
+            out.append(item)
+    return out
 
-    # 4. Classify
+
+def _select_items_results_mode(
+    fetched: Dict[str, List[Dict]],
+    tickers: List[str],
+) -> List[Dict]:
+    """Results-ticker mode: the ONE most recent RESULTS_HY_FY item per
+    ticker, ignoring the 24h window (fetch was widened to
+    RESULTS_LOOKBACK_DAYS instead). Ignores seen_state — this is the
+    "someone at the pub asked about 5DD's last FY" path and should always
+    surface a result even if it's already been emailed before."""
+    out: List[Dict] = []
+    for ticker in tickers:
+        results = [
+            it for it in fetched.get(ticker, [])
+            if classify_sgx_announcement(it) == "RESULTS_HY_FY"
+        ]
+        if not results:
+            _log(f"[results-mode] {ticker}: no results in last "
+                 f"{RESULTS_LOOKBACK_DAYS} days")
+            continue
+        # Newest first by submission timestamp.
+        results.sort(
+            key=lambda it: it.get("submission_ts_ms") or 0, reverse=True,
+        )
+        top = results[0]
+        _log(f"[results-mode] {ticker}: picked {top.get('ref_id')} "
+             f"({top.get('date')} — {top.get('title')[:80]})")
+        out.append(top)
+    return out
+
+
+def run(
+    hours_back: int,
+    dry_run: bool = False,
+    results_tickers: Optional[List[str]] = None,
+) -> int:
+    """Main pipeline. Two modes:
+
+      1. Default (portfolio) — fetches the last `hours_back` hours for
+         every ticker in tickers.yaml sgx:, dedupes via seen_state,
+         classifies, deep-analyses results items, emails.
+      2. Results-ticker (`results_tickers` non-empty) — fetches the last
+         RESULTS_LOOKBACK_DAYS for those tickers, picks the ONE most
+         recent RESULTS_HY_FY item per ticker, runs deep analysis, emails.
+         Ignores seen_state entirely (this is the "get me 5DD's last FY"
+         path — must always surface a result).
+    """
+    is_results_mode = bool(results_tickers)
+    _log(f"{BOB_SG_NAME} {BOB_SG_VERSION} -- "
+         f"mode={'results-ticker' if is_results_mode else 'portfolio'} "
+         f"hours_back={hours_back} dry_run={dry_run}")
+
+    if is_results_mode:
+        tickers = [t.strip().upper() for t in results_tickers if t and t.strip()]
+        lookback_days = RESULTS_LOOKBACK_DAYS
+        _log(f"[main] results-ticker mode: {len(tickers)} ticker(s): "
+             f"{', '.join(tickers)} — lookback {lookback_days} days")
+    else:
+        tickers = _load_sgx_tickers(Path("tickers.yaml"))
+        if not tickers:
+            _log("[main] no SGX tickers in tickers.yaml -- exiting")
+            return 1
+        _log(f"[main] portfolio mode: {len(tickers)} ticker(s): "
+             f"{', '.join(tickers)}")
+
+    # 1. Fetch — wider window in results-ticker mode.
+    if is_results_mode:
+        from_date = (_sgt_now() - dt.timedelta(days=RESULTS_LOOKBACK_DAYS)).date()
+    else:
+        from_date = (_sgt_now() - dt.timedelta(hours=hours_back)).date()
+    fetched: Dict[str, List[Dict]] = fetch_sgx_announcements(
+        tickers, from_date=from_date, log=_log,
+    )
+
+    # 2+3. Select the items to process (mode-specific).
+    seen = (
+        {} if is_results_mode
+        else _prune_seen_state(_load_seen_state(SEEN_STATE_PATH),
+                               SEEN_STATE_RETENTION_HOURS)
+    )
+    now_iso = _sgt_now().isoformat(timespec="seconds")
+    if is_results_mode:
+        items_to_process = _select_items_results_mode(fetched, tickers)
+    else:
+        items_to_process = _select_items_default_mode(
+            fetched, tickers, hours_back, seen,
+        )
+    _log(f"[main] {len(items_to_process)} item(s) to process")
+
+    # 4. Classify + 5. Deep-analyse results items.
     classified: List[Tuple[Dict, str, Optional[Dict]]] = []
     counters = {"llm_calls": 0, "pdfs_downloaded": 0}
     drive_folder = os.environ.get("GDRIVE_SGX_ANALYSIS_FOLDER_ID", "").strip()
 
     with tempfile.TemporaryDirectory(prefix="sgx_pdfs_") as pdf_root:
         pdf_root_path = Path(pdf_root)
-        for item in fresh_items:
+        for item in items_to_process:
             bucket = classify_sgx_announcement(item)
             analysis: Optional[Dict] = None
 
-            # 5. Deep analysis for results items only.
             if bucket == "RESULTS_HY_FY":
                 ticker = item.get("ticker") or "UNK"
                 item_dir = pdf_root_path / (item.get("ref_id") or ticker)
+                # SGX bundles all report + presentation + press release
+                # PDFs under one landing page. Grab them all (up to the
+                # per-announcement cap) and pass them together to Claude.
                 pdfs = fetch_announcement_pdfs(
                     item.get("url") or "",
                     item_dir,
-                    max_pdfs=6,
+                    max_pdfs=MAX_PDFS_PER_ANNOUNCEMENT,
                     log=_log,
                 )
                 counters["pdfs_downloaded"] += len(pdfs)
+                _log(f"[main] {ticker}: got {len(pdfs)} PDF(s) from landing page")
                 if counters["pdfs_downloaded"] > MAX_PDFS_PER_RUN:
                     _log(f"[main] PDF cap reached -- skipping analysis for {ticker}")
                 elif pdfs:
@@ -530,13 +622,17 @@ def run(hours_back: int, dry_run: bool = False) -> int:
 
             classified.append((item, bucket, analysis))
 
-    # 6. Build + 7. send email
+    # 6. Build email.
     model_label = os.environ.get("CLAUDE_MODEL", CLAUDE_MODEL_DEFAULT)
     subject, body_text, body_html = build_email(
         classified,
-        hours_back=hours_back,
+        hours_back=hours_back if not is_results_mode else RESULTS_LOOKBACK_DAYS * 24,
         model_label=model_label,
     )
+    # In results-ticker mode, prefix the subject so it's obvious this
+    # isn't the scheduled portfolio digest.
+    if is_results_mode:
+        subject = f"[RESULTS] {subject} — {','.join(tickers)}"
 
     _log(f"[main] classified: "
          f"{sum(1 for _, b, _ in classified if b == 'RESULTS_HY_FY')} results, "
@@ -555,23 +651,49 @@ def run(hours_back: int, dry_run: bool = False) -> int:
 
     _send_email(subject, body_text, body_html)
 
-    # 8. Save seen state (only for items we actually processed)
-    for item in fresh_items:
-        seen[_announcement_key(item)] = now_iso
-    _save_seen_state(SEEN_STATE_PATH, seen)
-    _log(f"[main] seen_state updated ({len(seen)} entries)")
+    # 7. Save seen state — portfolio mode only. Results-ticker mode is
+    # explicitly one-off (mirrors ASX Bob's RESULTS_TICKER contract).
+    if not is_results_mode:
+        for item in items_to_process:
+            seen[_announcement_key(item)] = now_iso
+        _save_seen_state(SEEN_STATE_PATH, seen)
+        _log(f"[main] seen_state updated ({len(seen)} entries)")
+    else:
+        _log("[main] results-ticker mode: seen_state NOT touched (one-off)")
     return 0
 
 
 def _cli() -> int:
     parser = argparse.ArgumentParser(description="Bob SG daily digest orchestrator.")
-    parser.add_argument("--hours-back", type=int, default=HOURS_BACK_DEFAULT,
-                        help=f"Window in hours (default {HOURS_BACK_DEFAULT})")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Build the digest but don't send email or update seen state.")
+    parser.add_argument(
+        "--hours-back", type=int, default=HOURS_BACK_DEFAULT,
+        help=f"Portfolio-mode window in hours (default {HOURS_BACK_DEFAULT}).",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Build the digest but don't send email or update seen state.",
+    )
+    parser.add_argument(
+        "--results-ticker", default=None,
+        help="Comma-separated SGX codes to pull the LAST HY/FY results for "
+             f"(looks back {RESULTS_LOOKBACK_DAYS} days). Overrides the "
+             "portfolio; skips seen_state. Example: --results-ticker 5DD",
+    )
     args = parser.parse_args()
+
+    results_tickers: Optional[List[str]] = None
+    if args.results_ticker:
+        results_tickers = [
+            t.strip().upper() for t in args.results_ticker.split(",")
+            if t.strip()
+        ]
+
     try:
-        return run(hours_back=args.hours_back, dry_run=args.dry_run)
+        return run(
+            hours_back=args.hours_back,
+            dry_run=args.dry_run,
+            results_tickers=results_tickers,
+        )
     except Exception as exc:
         _log(f"[main] FATAL {exc.__class__.__name__}: {exc}")
         _log(traceback.format_exc())

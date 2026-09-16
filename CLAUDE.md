@@ -468,6 +468,28 @@ so any non-ASCII char in a print / log line stops being a load-bearing
 bug. Same fix belongs anywhere else that runs on the Windows runner
 and prints unicode.
 
+**Python `read_text()` on Windows is cp1252 too — same platform, same
+gotcha, different failure mode.** Python 3.14's `Path.read_text()`
+defaults to `locale.getpreferredencoding(False)`, which is cp1252 on
+the Windows runner. When `build_dashboard.py` reads a `slinger.json`
+whose Windows-side sgx_agent write correctly used
+`encoding='utf-8'`, the on-disk bytes `0xC2 0xA2` (UTF-8 for `¢`) get
+decoded as cp1252 to two characters `Â¢`. `_update_slinger_history`
+then writes that mojibake back to `slinger_history.json` as
+`"\\u00c2\\u00a2"`. On the ubuntu Publish site runner the default is
+UTF-8 so the same file reads correctly and gets rewritten as
+`"\\u00a2"` — so every Publish site run tries to "fix" the mojibake,
+produces a working-tree diff on `slinger_history.json`, and if that
+file isn't in the `git add` list the follow-up `git pull --rebase`
+bails with **"cannot pull with rebase: You have unstaged changes"**
+and takes the whole publish down. That's what left the D05 run's
+Slinger card unpublished. Fixes:
+1. `_load(name)` in `build_dashboard.py` reads as UTF-8 explicitly.
+2. `slinger_history.json` is in the theo-pages `git add` list so
+   platform-cycle diffs get committed rather than blocking the rebase.
+Regression pinned in
+`tests/test_build_dashboard_slinger.py::test_load_reads_utf8_regardless_of_locale`.
+
 **JSON parser: `_parse_analysis_json` in `sgx_agent.py`** progresses
 through four fallbacks, cheapest first, each preserving content
 exactly:

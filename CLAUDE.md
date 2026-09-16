@@ -370,7 +370,11 @@ PowerShell + machine-Python pattern from `ned_transcript.yml`. Reads
 `sgx_agent.py`, emails the digest via the same Gmail SMTP secrets ASX
 Bob uses. Dispatch inputs: `tickers` (override the yaml portfolio),
 `hours_back` (default 24), `dry_run` (preview only, no email or state
-change), `fetch_only` (Round 1 mode — just dump JSON, no LLM/email).
+change), `fetch_only` (Round 1 mode — just dump JSON, no LLM/email),
+`results_ticker` (pull LAST HY/FY report + deep analysis), and
+`results_hint` (free-form context appended to every LLM call — use it
+when the report doesn't make the shape of the business obvious, e.g.
+"Haw Par's main asset is its UOB stake, not Tiger Balm trading").
 
 ## Wally the Watcher — target ("buy") prices
 

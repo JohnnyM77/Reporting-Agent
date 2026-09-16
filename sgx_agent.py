@@ -15,18 +15,23 @@ Pipeline
     3. Dedupe via seen_state              -- state_seen_sgx.json
     4. Classify (sgx_classify)            -- by SGX sub/category, not title
     5. For RESULTS_HY_FY items only:
-         a. Download PDFs (sgx_pdf)
+         a. Download PDFs (sgx_pdf)       -- each carries a source_url
          b. Anthropic streaming call with native PDF blocks + RESULTS_HYFY_PROMPT
          c. Parse structured JSON (metric table + summary + full_analysis)
+         d. Render the deep analysis to a standalone PDF via Playwright
     6. Build email (sgx_email)            -- 3 buckets, same shape as ASX Bob;
-                                             full_analysis rendered inline in
-                                             the results card
+                                             email body carries metric card,
+                                             summary, links to source PDFs
     7. Send via SMTP                      -- same env vars as agent.py; the
-                                             source PDFs get attached
+                                             analysis PDF(s) are attached so
+                                             the user can forward them
     8. Save seen_state
 
-The Google Doc / Drive plumbing was removed at the user's request: one
-email, full analysis inline, source PDFs attached.
+Design note: the source PDFs are LINKED (not attached) so the email
+stays lightweight; the analysis is ATTACHED as a PDF because the user
+wants a self-contained forwardable file rather than an inline body
+block. Rendered via Playwright + installed Chrome (already required by
+sgx_fetch, so no new deps).
 
 Env
 ---
@@ -61,8 +66,8 @@ import yaml
 
 from sgx_fetch import fetch_sgx_announcements
 from sgx_classify import classify_sgx_announcement
-from sgx_pdf import fetch_announcement_pdfs
-from sgx_email import build_email, BOB_SG_NAME, BOB_SG_VERSION
+from sgx_pdf import fetch_announcement_pdfs, FetchedPdf
+from sgx_email import build_email, build_analysis_pdf_html, BOB_SG_NAME, BOB_SG_VERSION
 from shared.pdf_llm import (
     LLM_FAILED,
     LLM_SKIPPED,
@@ -288,6 +293,44 @@ def _anthropic_call(
         _log(f"[llm] ERROR {exc.__class__.__name__}: {exc}")
         counters["last_llm_error"] = f"{exc.__class__.__name__}: {exc}"
         return LLM_FAILED
+
+
+# --- analysis PDF rendering -------------------------------------------------
+
+def _render_analysis_pdf(html: str, out_path: Path) -> bool:
+    """Print `html` to `out_path` using Playwright + installed Chrome.
+
+    Chrome is already provisioned on the self-hosted Windows runner for
+    sgx_fetch's token-prime step, so this adds no deps. `page.pdf` only
+    works with Chromium-family browsers, which channel='chrome' is."""
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception as exc:
+        _log(f"[analysis-pdf] playwright not available: {exc}")
+        return False
+    try:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        with sync_playwright() as p:
+            browser = p.chromium.launch(channel="chrome", headless=True)
+            try:
+                page = browser.new_page()
+                # `load` waits for external resources -- fine here because
+                # we author self-contained HTML (no <img>/<script>/CSS refs).
+                page.set_content(html, wait_until="load")
+                page.pdf(
+                    path=str(out_path),
+                    format="A4",
+                    print_background=True,
+                    margin={"top": "14mm", "right": "14mm",
+                            "bottom": "18mm", "left": "14mm"},
+                )
+            finally:
+                browser.close()
+        _log(f"[analysis-pdf] wrote {out_path.name} ({out_path.stat().st_size}B)")
+        return True
+    except Exception as exc:
+        _log(f"[analysis-pdf] render failed: {exc.__class__.__name__}: {exc}")
+        return False
 
 
 # --- deep results analysis --------------------------------------------------
@@ -522,9 +565,9 @@ def run(
     import contextlib
     classified: List[Tuple[Dict, str, Optional[Dict]]] = []
     counters = {"llm_calls": 0, "pdfs_downloaded": 0}
-    # PDFs collected from every results item, in the order downloaded.
-    # Attached to the outbound email as `application/pdf` so the user
-    # gets the source documents alongside the inline analysis.
+    # Attachments to the outbound email -- the analysis PDF(s) we render
+    # ourselves. Source PDFs from SGX are LINKED in the body (via
+    # item['_pdf_sources']), not attached, to keep the email lightweight.
     email_pdfs: List[Path] = []
 
     with contextlib.ExitStack() as stack:
@@ -541,19 +584,37 @@ def run(
                 # SGX bundles all report + presentation + press release
                 # PDFs under one landing page. Grab them all (up to the
                 # per-announcement cap) and pass them together to Claude.
-                pdfs = fetch_announcement_pdfs(
+                fetched: List[FetchedPdf] = fetch_announcement_pdfs(
                     item.get("url") or "",
                     item_dir,
                     max_pdfs=MAX_PDFS_PER_ANNOUNCEMENT,
                     log=_log,
                 )
-                counters["pdfs_downloaded"] += len(pdfs)
-                _log(f"[main] {ticker}: got {len(pdfs)} PDF(s) from landing page")
+                counters["pdfs_downloaded"] += len(fetched)
+                _log(f"[main] {ticker}: got {len(fetched)} PDF(s) from landing page")
+                # Stash (source_url, name) tuples on the item so the
+                # email card renders them as clickable "Source PDFs".
+                item["_pdf_sources"] = [(f.source_url, f.name) for f in fetched]
+
                 if counters["pdfs_downloaded"] > MAX_PDFS_PER_RUN:
                     _log(f"[main] PDF cap reached -- skipping analysis for {ticker}")
-                elif pdfs:
-                    analysis = _run_results_analysis(item, pdfs, counters)
-                email_pdfs.extend(pdfs)
+                elif fetched:
+                    analysis = _run_results_analysis(
+                        item, [f.path for f in fetched], counters,
+                    )
+
+                # Render the standalone analysis PDF and attach it. Only
+                # when we have a parsed analysis dict -- a token-cap or
+                # API-fail result would render an empty page.
+                if analysis:
+                    pdf_html = build_analysis_pdf_html(item, analysis)
+                    period = (analysis.get("period") or "results").replace(" ", "")
+                    safe_period = re.sub(r"[^A-Za-z0-9._-]+", "", period) or "results"
+                    analysis_pdf = (
+                        pdf_root_path / f"{ticker}_{safe_period}_analysis.pdf"
+                    )
+                    if _render_analysis_pdf(pdf_html, analysis_pdf):
+                        email_pdfs.append(analysis_pdf)
 
             classified.append((item, bucket, analysis))
 
@@ -574,8 +635,8 @@ def run(
              f"{sum(1 for _, b, _ in classified if b != 'OTHER' and b != 'RESULTS_HY_FY')} material, "
              f"{sum(1 for _, b, _ in classified if b == 'OTHER')} fyi")
         _log(f"[main] LLM calls: {counters['llm_calls']}/{MAX_LLM_CALLS_PER_RUN}, "
-             f"PDFs: {counters['pdfs_downloaded']}/{MAX_PDFS_PER_RUN}, "
-             f"email attachments: {len(email_pdfs)}")
+             f"source PDFs downloaded: {counters['pdfs_downloaded']}/{MAX_PDFS_PER_RUN}, "
+             f"analysis PDFs attached: {len(email_pdfs)}")
 
         if dry_run:
             out_dir = Path("outputs/sgx")

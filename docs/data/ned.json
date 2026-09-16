@@ -1,10 +1,176 @@
 {
   "agent": "Ned",
-  "last_run": "2026-09-15T01:40:03.800604Z",
+  "last_run": "2026-09-16T01:30:40.141031Z",
   "youtube_hits": 1,
-  "news_hits": 0,
-  "total_hits": 1,
-  "critical_high_count": 0,
+  "news_hits": 126,
+  "total_hits": 127,
+  "critical_high_count": 35,
   "status": "ok",
-  "items": []
+  "items": [
+    {
+      "tickers": [
+        "MSV"
+      ],
+      "title": "Mitchell Services (ASX:MSV) FY26 Results: Revenue, EBITDA, Rig Count and Dividends - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxNdjA4c3R6TUJnS0VnRWE4Y3ZCNWxOMnE3RjhIUE5vdVQxQkxtN1BOY0tkMFYtRjI0M2VvU0FkUjVQNFFFVWo3N0l1dTNmUFFjLXBMUHBoQXU0aTY3SFVXM0R4U3VnOUpkaVl3S1A5bzhmNDU0ZGhpa0xmSUQxZ0k2aERoVnRGZ1d3cEU3YVYzXzJ5QWVqRXVvRVhlM19KMEpFS3luZkJ6OEppbmZFZEFOX3BQMjREZWc?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-14T13:57:00+00:00"
+    },
+    {
+      "tickers": [
+        "NHC"
+      ],
+      "title": "ASX Preview: Australian Shares to Fall as Gold Slides, Oil Surge; New Hope Fiscal 2026 Earnings, Revenue Down - Yahoo Finance Australia",
+      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQb210ZXlJZldCSkVLQ0hFVmxBMFVEVmpnWlZzWjBoU05wdlVpUU9XVnJNcXJKWnBBOXFHZ3N0dXZxd1h3NGxycEJjV1lGY0pMb2FnV25ndEVranBrUHRPNldnY1pwNnpwQ0NKN2VPT2hPeDJlNzkza24xM3NZUFNsRjV4UlJLR2ZabkxZ?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-15T00:09:00+00:00"
+    },
+    {
+      "tickers": [
+        "NHC"
+      ],
+      "title": "ASX Preview: Australian Shares to Fall as Gold Slides, Oil Surge; New Hope Fiscal 2026 Earnings, Revenue Down - marketscreener.com",
+      "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxNQ1Z0V19sODZwbGRoMVZ6a0JxM1J5WjlTSTl3NzFlWV9XcFlld0FjakJjalJkNEI2Rkp1SmhHd1VkWElWUU9sOEYySl9yTTIwNE9XZ1lBUDF1OEk1SmhfZXR0cWhxaU51NlRNdUZ1NlZtaGVOMktTak5VXzJod0xicC1nd3NvYkgtaUxRenBKazZzNFVuTGxnZ3JNWmdQcnZOdl9aZGhlT3dsLTdVaW1aaWh5aHM1UzI1ZjNCRF96c0JpSFMwak9leTh3c2tVQXZ5ajdRR1ZHQThlcHMyRFpvUXdSWQ?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-15T00:10:15+00:00"
+    },
+    {
+      "tickers": [
+        "DRO"
+      ],
+      "title": "DroneShield stock extends losses as investors weigh HY26 earnings and guidance - ad-hoc-news.de",
+      "url": "https://news.google.com/rss/articles/CBMizAFBVV95cUxOTkFBMGxQd3JmNW9vUDByZFhOS0hnRlpXNFo3aU9qMDd5UWhiQXdjdGo4R1A1emJWTUhLY2ZUZ25mbFUtb2t5bk9VS0N6SWVOYi1WTzU2eGdCMUh1TkFraVp0dzlsU0E2T3k2dHZkZVJFYkkxUm1aVlFxTVUxTFVXZ19SaDJIMFNwaWxoZVFJVkNWNHRGdDQyQXlRdlhERFZFdTcxUTdacTNpUURwTk9jUnNfWkRPaGZ4NnNFcjdpazk2ODZDZmRpUEVtVWg?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-15T12:29:51+00:00"
+    },
+    {
+      "tickers": [
+        "PWH"
+      ],
+      "title": "PWR Holdings (ASX:PWH) Increases Its Dividend Alongside Advanced Cooling Revenue - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOWVBEUFFyWmlLMnhSRThZQUNKQXU1bUxhSlFzT1FlWWE5NTFlQnlpaC16aWlUUjcxLUhkU0NmaVQ0VENjTDJzT3JxTVBmZjZ5UmQxNGotSEFkSlJ1NC12LTg2TkdPUUQ3QWVfRHctM2pzclBycG1Ecy1ZVVdJdWw2SGp2bGlHeV8xblBodV9YQUVtNTN4X0JubmZUSW00bFkyZlJZbm4weEpva0p4a3N1N3piVDFLaDJ2?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-15T07:33:00+00:00"
+    },
+    {
+      "tickers": [
+        "WDS"
+      ],
+      "title": "Why did crude\u2019s rise lift Woodside\u2019s (ASX:WDS) ASX 200 profit result? - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOSXhCcGZoUnBqOFpqb1ZLM0NrSmRyQllFUFFvVnFXZEpPZXNYSlVDbndiZzN5b2g0Rmk4T0JXSGNuYjFZV0p1RGx6WE4zc3RjUjZTODA3ZHJFeTBHajBQSkZEYU1FNXFVb1pQV1JTdTRmRGVvVzM2N2RGUGJfYnBkY0JaaHg5T1E4Y09WS1FsQ2RUbXA0TTktMi1SS2hxMG5iMWNOUnctQ1I?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-14T08:38:00+00:00"
+    },
+    {
+      "tickers": [
+        "WDS"
+      ],
+      "title": "Why did Woodside\u2019s (ASX:WDS) result land alongside a crude-price rally? - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQUW1pcVphelJIOEQzV1cyOFpfZmk4QVA4ZTNsdU9iV1RLX3JVVnRBYzdYTTJYanhOb1phVlM3ZUxBdlNFVXJQaVc1Vmp2V2lQWTJteno2anJwdVd3eGstUzBjNTBjUFA0a3hfcXNhU01zY000cEFpQVo0U1haWTM1Nkc3Y2ZEUVVLS25mRVEtdzJzUF95TWVjM01lckkzLXJVU0k1Vk1ZQVp0Rkg4T2c?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-14T19:05:00+00:00"
+    },
+    {
+      "tickers": [
+        "CSL"
+      ],
+      "title": "Is CSL\u2019s (ASX:CSL) ASX 200 buyback the right move after its FY result? - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxNQU1mejc0NjA3Szg3bTJ2bW5DMjFMMllkNlMzZjhhZmV6TllFejgxN1ZLYnRtU2RFT1lyMWMycjI0YlJod2JxVDN3OG9tc0RaR3BYZGdxTGM1Z0dxR0VYT0ZmaHZFTTFjVk1rV3dWMVh2QTA3ZmJmZVNMM25KaHpEanJfdWJTUDBkU2NadS0tM2JpZTN3WFM3Wm02UUZQck1QbXpOdkNhMzRTYTllemRZdA?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-14T16:36:00+00:00"
+    },
+    {
+      "tickers": [
+        "CSL"
+      ],
+      "title": "CSL:ASX Announcement - Update - Notification of buy-back - CSL - 15 Sep 2026 - Market Index",
+      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxOQVoyUlVELXVyQlhTRmt6aU5OUzY3dWxIX3Q2aG1vUjhROE9kX0IxUU51SC10dV9xR2JEZ0xoRldmRGRMbGxkVmNGVXJKQm1NLXIwQ01sQnF6VUZ3cmZJam1KS19aSFRCdzJqc2NJMXk5cHV2Z0dNd3dwNV82TW1yVWl5bGFnSF9Ydmx3d1ZUeWhxb3J6ZExTQjRVMWEwUQ?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "",
+      "published": "2026-09-15T23:38:40+00:00"
+    },
+    {
+      "tickers": [
+        "TWE"
+      ],
+      "title": "ASX Consumer Stocks: Earnings Outlook for Coles, Treasury Wine Estates and Metcash - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOTlQ2TTdvMDRGM3RrVWNZNTgwOGFFSERGcktRMTByb3hBU0tDNnN0Tmx6bzJCbmZ0OERsSXl2eXFBQU9UUVdzUUx2N2IwSFhpQjFXTlc4LW1Md0hWS1BQQzlqZEtYaktjRmJTY1RTYm1tQTV2VGQzYzJOdlJOS1Fubm9qUWNWaU9TNFdmMFFSLU1QeENfY2FWanBRaU53dWpjYlRFS2tvaUhJUXVRenZmUmpDSlpFMDV1?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-14T08:48:00+00:00"
+    },
+    {
+      "tickers": [
+        "AHC"
+      ],
+      "title": "Austco Healthcare (ASX:AHC): Can Recurring Revenue and Hospital Demand Support the Next Stage of Growth? - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxPazVBTGZ0ajJGT1JoYUMtMXZmc3JpYVpPU3dYSk1BQjJvaFc5Y3Q1aHJJdjJlTlYwOElmVFNHTXRGRTJNYW0wTFdGMHpnX2VmTDgxXzhfNlgyeEJOLWxSZV96eEJ0anJpSzRGYTZ2VGlTQU16VjJsRVk3bzJ3bHBoMDRJRy1wNlJIdURydkxoZFA3aW9Jc3hOWmwyZWIyYTdSck1uWXFkRUs0WVNoQUxrRXN0T052MkQ3QjNkZUpxazZXRWNrOTBDZFgyeDVjSmtMTEh2Mg?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "[not material]\n\nThe article title is a speculative question about growth prospects rather than reporting a specific company event or development that would materially impact shareholders.",
+      "published": "2026-09-14T12:29:00+00:00"
+    },
+    {
+      "tickers": [
+        "BXB"
+      ],
+      "title": "How did pooling volumes shape Brambles\u2019 (ASX:BXB) ASX 200 FY result? - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxOQUladlRHcUhuRFU1MUNPZkU3cDhDc1lnTjF6M2lBTUFqd3VtRFlXRXczWGU1OUk4YTdGM0UwUTlDX3RJRkMxSGFZWGZraFAxQUUydUVqaEh3a21yb2xOWkhBWUNhM0xGOWVubUg4cTFZa0M4LWpsMFpyT2ZNRlctcGExbHR5LTZkVldBMkJiWUhhdjhFeEp6SUxzU3pLT3BYaXp6VkRoWmhIZ1pPSzhzengyNkdYaE9Pek53UmotNlBuMEtpSGpkNEFMdw?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "[not material]\n\nThe snippet is incomplete and doesn't provide enough information about what actually happened with Brambles' results or why pooling volumes matter to shareholders.",
+      "published": "2026-09-14T16:49:00+00:00"
+    },
+    {
+      "tickers": [
+        "CPU"
+      ],
+      "title": "What does Computershare\u2019s (ASX:CPU) ASX 100 registry technology add to its result? - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQODgtcmo0aURMMEhPQkVQVzZ4N1pxTU1mOXN3cnpPbE9BaWctNEgwUFlDQ3Y2eVRuQ0NOMzRhUEFsUHdGeTM1Y0N1MWVUOE1QQkZYbFhEai0xanJ1bnpMb0xreTA4V1ZOWGxEemZtQ2JIRThVM2ZTWWZVZkdFaWxZZURJazhwT01GVFRqRzJ3RWhTSVlTbWdpMUZmQlZmLWx5WUFOWEhRc2NKTHlOTW5ua2ZLVHFRNXVONTZSREFlWk0?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-14T19:29:00+00:00"
+    },
+    {
+      "tickers": [
+        "ABB"
+      ],
+      "title": "Aussie Broadband Executes On-Market Buy-Back of 231,039 Shares on 14 September 2026 - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxPdmlTMlRJYWYwUHZVQUhEN3Q5U3YtRDJRaFdjN2dOMlc4Rk1JR25EQmZCY2xDLVBWaDFMN1ZzZVhlV1ROZDVtTTROa2dUcFRNaTZMUHhkVDhMTGRHakZCYXJ2S2lkYUVDbG4xTlktOVE4VHh6T1U0dURlQnd6eWlRRm9hVFhIRGtldjhrUW9pWVQ3Q3dXc1F6X2lhR2JWcjRiR1NTdl9pNFdKTnVKME8tZzNRbWpLZ0cyTjFZOUJhM3dqNC1PbHdJUQ?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "[not material]\n\nThis news is about Aussie Broadband (ABB), which is an Australian telecommunications company, but your portfolio ticker ABB refers to ABB Ltd, the Swiss-based electrical engineering conglomerate.",
+      "published": "2026-09-15T01:49:27+00:00"
+    },
+    {
+      "tickers": [
+        "RMD"
+      ],
+      "title": "Sleep Device Maker ResMed Gets an Upgrade. Analysts See a Lot to Like. - Barron's",
+      "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE5DeDFoUXg1ZFJpdVBqakxUYzZIYWk3VDJGOXRMYVlScmN5bVlfSDdHd0lJR2FNQ296OUlhRXFTdVg4YVNBVGp2N2dVS29xUGl3WnB2T05rSll3bWUyYU5sdGZDU2NNcV9weENyR0lRTWRuM280UGlpS0czdEJzQQ?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "",
+      "published": "2026-09-15T20:07:00+00:00"
+    }
+  ]
 }

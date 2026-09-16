@@ -138,15 +138,48 @@ def _two_liner_for_item(item: Dict) -> str:
     return "\n".join(parts)
 
 
-def _markdown_to_email_html(md: str) -> str:
-    """Tiny markdown subset -> email-safe inline-styled HTML.
+def _markdown_to_email_html(md: str, *, pdf_mode: bool = False) -> str:
+    """Tiny markdown subset -> inline-styled HTML.
 
-    Same subset the sgx_agent Doc builder used to emit (headings,
-    paragraphs, lists, pipe tables) but rendered with inline styles so
-    Gmail/Outlook don't strip anything. Deliberately not a general
-    markdown engine — matches what RESULTS_HYFY_PROMPT actually emits."""
+    Supports: headings h1/h2/h3, paragraphs, unordered lists (`- `/`* `),
+    pipe tables, blockquotes (`> ...` -> styled callout), bold and
+    italics inline. Deliberately not a general markdown engine --
+    matches what RESULTS_HYFY_PROMPT emits.
+
+    `pdf_mode=True` bumps sizing/spacing/section-header styling for
+    print (larger base font, colored + underlined `##` section headers,
+    page-break-inside:avoid on tables/blockquotes) so the standalone
+    analysis PDF reads like a report, not a form. Left as the default
+    `False` for the email card so it stays glance-sized."""
     if not md:
         return ""
+
+    # Sizing knobs -- one place per pdf vs email.
+    if pdf_mode:
+        base_size, base_line = "13px", "1.6"
+        h1_size, h2_size, h3_size = "22px", "16px", "13px"
+        p_margin, ul_margin, li_margin = "8px 0", "8px 0", "4px 0"
+        table_size = "12px"
+        h2_style = (
+            "font-weight:700; color:#111827; margin:24px 0 10px 0; "
+            "padding-bottom:6px; border-bottom:2px solid #14532D; "
+            "letter-spacing:0.02em; text-transform:uppercase;"
+        )
+        h3_style = (
+            "font-weight:700; color:#374151; margin:16px 0 6px 0; "
+            "text-transform:uppercase; letter-spacing:0.05em;"
+        )
+        table_break = "page-break-inside:avoid; break-inside:avoid;"
+        quote_break = "page-break-inside:avoid; break-inside:avoid;"
+    else:
+        base_size, base_line = "13px", "1.5"
+        h1_size, h2_size, h3_size = "18px", "16px", "14px"
+        p_margin, ul_margin, li_margin = "6px 0", "8px 0", "2px 0"
+        table_size = "13px"
+        h2_style = "color:#111827; font-weight:700;"
+        h3_style = "color:#111827; font-weight:600;"
+        table_break = ""
+        quote_break = ""
 
     def esc(s: str) -> str:
         return htmlmod.escape(s or "")
@@ -185,25 +218,48 @@ def _markdown_to_email_html(md: str) -> str:
             while i < len(lines) and "|" in lines[i]:
                 row_cells = [c.strip() for c in lines[i].strip().strip("|").split("|")]
                 cells_html = "".join(
-                    f"<td style='padding:6px 8px; border-top:1px solid #E5E7EB; "
-                    f"color:{COLOR_RESULTS_VALUE}; font-size:13px;'>"
+                    f"<td style='padding:6px 10px; border-top:1px solid #E5E7EB; "
+                    f"color:{COLOR_RESULTS_VALUE}; font-size:{table_size};'>"
                     f"{inline(c)}</td>"
                     for c in row_cells
                 )
                 rows_html.append(f"<tr>{cells_html}</tr>")
                 i += 1
             header_html = "".join(
-                f"<th style='padding:6px 8px; text-align:left; "
+                f"<th style='padding:6px 10px; text-align:left; "
                 f"background:{COLOR_RESULTS_ROW_SHADE}; "
-                f"color:{COLOR_RESULTS_LABEL}; font-size:12px;'>"
+                f"color:{COLOR_RESULTS_LABEL}; font-size:{table_size};'>"
                 f"{inline(c)}</th>"
                 for c in header_cells
             )
             out.append(
                 f"<table style='width:100%; border-collapse:collapse; "
-                f"margin:10px 0; font-family:-apple-system, Segoe UI, Arial, "
-                f"sans-serif;'><thead><tr>{header_html}</tr></thead>"
+                f"margin:12px 0; {table_break} font-family:-apple-system, "
+                f"Segoe UI, Arial, sans-serif;'>"
+                f"<thead><tr>{header_html}</tr></thead>"
                 f"<tbody>{''.join(rows_html)}</tbody></table>"
+            )
+            continue
+
+        # Blockquote block: consecutive lines starting with `> `. Renders
+        # as a left-bar callout so the LLM can visually mark the one
+        # sentence the reader must not miss ("the bull case is X; the
+        # bear case is Y" etc). Bob's ASX card doesn't need this but a
+        # forwarded PDF does.
+        if stripped.startswith(">"):
+            close_ul()
+            quote_lines = []
+            while i < len(lines) and lines[i].strip().startswith(">"):
+                quote_lines.append(lines[i].strip().lstrip(">").strip())
+                i += 1
+            body = "<br>".join(inline(x) for x in quote_lines if x)
+            out.append(
+                f"<div style='margin:12px 0; padding:10px 14px; "
+                f"background:#F1F5F2; border-left:4px solid #14532D; "
+                f"color:#111827; font-size:{base_size}; "
+                f"line-height:{base_line}; {quote_break}'>"
+                f"{body}"
+                f"</div>"
             )
             continue
 
@@ -215,37 +271,39 @@ def _markdown_to_email_html(md: str) -> str:
         if stripped.startswith("### "):
             close_ul()
             out.append(
-                f"<h3 style='margin:14px 0 6px; font-size:14px; "
-                f"color:{COLOR_RESULTS_VALUE};'>{inline(stripped[4:])}</h3>"
+                f"<h3 style='font-size:{h3_size}; {h3_style}'>"
+                f"{inline(stripped[4:])}</h3>"
             )
         elif stripped.startswith("## "):
             close_ul()
             out.append(
-                f"<h2 style='margin:16px 0 8px; font-size:16px; "
-                f"color:{COLOR_RESULTS_VALUE};'>{inline(stripped[3:])}</h2>"
+                f"<h2 style='font-size:{h2_size}; {h2_style}'>"
+                f"{inline(stripped[3:])}</h2>"
             )
         elif stripped.startswith("# "):
             close_ul()
             out.append(
-                f"<h1 style='margin:18px 0 10px; font-size:18px; "
-                f"color:{COLOR_RESULTS_VALUE};'>{inline(stripped[2:])}</h1>"
+                f"<h1 style='font-size:{h1_size}; margin:18px 0 12px; "
+                f"color:{COLOR_RESULTS_VALUE}; font-weight:800;'>"
+                f"{inline(stripped[2:])}</h1>"
             )
         elif stripped.startswith(("- ", "* ")):
             if not in_ul:
                 out.append(
-                    "<ul style='margin:8px 0; padding-left:20px; "
-                    "line-height:1.5;'>"
+                    f"<ul style='margin:{ul_margin}; padding-left:22px; "
+                    f"line-height:{base_line};'>"
                 )
                 in_ul = True
             out.append(
-                f"<li style='margin:2px 0; font-size:13px; "
+                f"<li style='margin:{li_margin}; font-size:{base_size}; "
                 f"color:{COLOR_RESULTS_VALUE};'>{inline(stripped[2:])}</li>"
             )
         else:
             close_ul()
             out.append(
-                f"<p style='margin:6px 0; font-size:13px; line-height:1.5; "
-                f"color:{COLOR_RESULTS_VALUE};'>{inline(stripped)}</p>"
+                f"<p style='margin:{p_margin}; font-size:{base_size}; "
+                f"line-height:{base_line}; color:{COLOR_RESULTS_VALUE};'>"
+                f"{inline(stripped)}</p>"
             )
         i += 1
     close_ul()
@@ -275,9 +333,23 @@ def _metric_rows_html(analysis: Dict, shade_light: str, shade_dark: str) -> str:
         value = (m.get("value") or "n/a").strip()
         change = (m.get("change_pct") or "").strip()
         basis = (m.get("basis") or "").strip()
+
+        # Colour the YoY change: green for +ve, red for -ve, muted grey
+        # for anything else (n/a, n/m, unsigned). Reads instantly on the
+        # metric card without breaking the ASCII text-mode fallback.
         change_html = ""
         if change:
-            change_html = f" <span style='color:{COLOR_RESULTS_MUTED};'>({_esc(change)})</span>"
+            c_norm = change.strip().lstrip("(").rstrip(")")
+            if c_norm.startswith("+"):
+                change_colour = "#15803D"  # green-700
+            elif c_norm.startswith("-"):
+                change_colour = "#B91C1C"  # red-700
+            else:
+                change_colour = COLOR_RESULTS_MUTED
+            change_html = (
+                f" <span style='color:{change_colour}; font-weight:600;'>"
+                f"({_esc(change)})</span>"
+            )
         basis_html = ""
         if basis:
             basis_html = (
@@ -286,10 +358,13 @@ def _metric_rows_html(analysis: Dict, shade_light: str, shade_dark: str) -> str:
             )
         rows += (
             f"<tr>"
-            f"<td style='padding:8px 10px; background:{shade}; "
-            f"color:{COLOR_RESULTS_LABEL}; font-size:13px;'>{_esc(label)}</td>"
-            f"<td style='padding:8px 10px; background:{shade}; "
-            f"color:{COLOR_RESULTS_VALUE}; font-size:13px; text-align:right;'>"
+            f"<td style='padding:10px 12px; background:{shade}; "
+            f"color:{COLOR_RESULTS_LABEL}; font-size:13px; "
+            f"border-bottom:1px solid #E5E7EB;'>{_esc(label)}</td>"
+            f"<td style='padding:10px 12px; background:{shade}; "
+            f"color:{COLOR_RESULTS_VALUE}; font-size:14px; "
+            f"font-weight:600; text-align:right; "
+            f"border-bottom:1px solid #E5E7EB;'>"
             f"{_esc(value)}{change_html}{basis_html}</td>"
             f"</tr>"
         )
@@ -401,28 +476,120 @@ def build_analysis_pdf_html(item: Dict, analysis: Dict) -> str:
     ticker = item.get("ticker") or ""
     issuer = item.get("issuer_name") or ""
     period = analysis.get("period") or ""
-    period_type = analysis.get("period_type") or ""
+    period_type = (analysis.get("period_type") or "").replace("_", " ")
+    currency = analysis.get("currency") or "SGD"
     title = item.get("title") or ""
     summary = (analysis.get("summary") or "").strip()
     full_md = (analysis.get("full_analysis") or "").strip()
 
-    header_bits = [b for b in (ticker, issuer, period, period_type) if b]
-    header = " | ".join(header_bits)
+    generated = dt.datetime.now(dt.timezone.utc).astimezone(SGT)
+    generated_str = f"{generated.day} {generated.strftime('%b %Y')} SGT"
 
-    metric_rows_html = _metric_rows_html(
-        analysis,
-        shade_light="#F1F5F2",
-        shade_dark="#FFFFFF",
+    # --- Cover header. Big ticker/issuer, period pill, generated-on
+    # date. Filed under "the reader forwards this PDF, so page one has
+    # to earn attention".
+    period_pill = ""
+    if period:
+        period_pill = (
+            f"<span style='display:inline-block; margin-left:10px; "
+            f"padding:3px 10px; background:rgba(255,255,255,0.16); "
+            f"color:#FFFFFF; font-size:13px; font-weight:600; "
+            f"border-radius:999px; vertical-align:middle;'>"
+            f"{_esc(period)}{' &middot; ' + _esc(period_type) if period_type else ''}"
+            f"</span>"
+        )
+    cover = (
+        f"<div style='padding:24px 28px 22px; background:{COLOR_RESULTS_HEADER}; "
+        f"color:#FFFFFF; page-break-after:avoid;'>"
+        f"<div style='font-size:10px; text-transform:uppercase; "
+        f"letter-spacing:2px; color:{COLOR_RESULTS_HEADER_SUB}; "
+        f"margin-bottom:6px;'>"
+        f"Singapore Slinger &middot; SGX Results Analysis"
+        f"</div>"
+        f"<div style='font-size:28px; font-weight:800; line-height:1.15; "
+        f"margin-bottom:4px;'>{_esc(ticker) or 'SGX'}"
+        f"{period_pill}</div>"
+        f"<div style='font-size:15px; font-weight:400; "
+        f"color:{COLOR_RESULTS_HEADER_SUB}; line-height:1.4;'>"
+        f"{_esc(issuer) if issuer else ''}"
+        f"</div>"
+        f"<div style='margin-top:14px; font-size:11px; "
+        f"color:{COLOR_RESULTS_HEADER_SUB}; border-top:1px solid "
+        f"rgba(255,255,255,0.18); padding-top:10px;'>"
+        f"Reported in {_esc(currency)} &middot; figures as stated in the source "
+        f"&middot; generated {generated_str}"
+        f"</div>"
+        f"</div>"
     )
 
+    source_line = (
+        f"<div style='margin:14px 0 4px; color:#6B7280; font-size:11px; "
+        f"font-style:italic;'>SGX announcement: {_esc(title)}</div>"
+    )
+
+    # --- Metric table. Bordered rows, larger figures, section header.
+    metric_rows_html = _metric_rows_html(
+        analysis,
+        shade_light="#F7F9F7",
+        shade_dark="#FFFFFF",
+    )
+    metric_block = (
+        f"<h2 style='font-size:16px; font-weight:700; color:#111827; "
+        f"margin:18px 0 8px; padding-bottom:6px; "
+        f"border-bottom:2px solid {COLOR_RESULTS_HEADER}; "
+        f"text-transform:uppercase; letter-spacing:0.05em;'>"
+        f"Key metrics</h2>"
+        f"<table style='width:100%; border-collapse:collapse; "
+        f"border:1px solid #E5E7EB; page-break-inside:avoid; "
+        f"break-inside:avoid;'>{metric_rows_html}</table>"
+    )
+
+    # --- Summary. Callout-styled so the "verdict first" line the prompt
+    # asks for actually reads that way.
+    summary_html = (
+        f"<h2 style='font-size:16px; font-weight:700; color:#111827; "
+        f"margin:22px 0 8px; padding-bottom:6px; "
+        f"border-bottom:2px solid {COLOR_RESULTS_HEADER}; "
+        f"text-transform:uppercase; letter-spacing:0.05em;'>"
+        f"Summary &mdash; the verdict</h2>"
+        f"<div style='margin:8px 0 18px; padding:12px 16px; "
+        f"background:#F7F9F7; border-left:4px solid {COLOR_RESULTS_HEADER}; "
+        f"font-size:14px; line-height:1.6; color:#111827; "
+        f"page-break-inside:avoid; break-inside:avoid;'>"
+        f"{_esc(summary) if summary else '<em>Summary unavailable.</em>'}"
+        f"</div>"
+    )
+
+    # --- Full analysis. Renders through the markdown converter in
+    # pdf_mode so headings, tables, blockquotes and lists all pick up
+    # print-friendly sizing + page-break control.
     if full_md:
-        analysis_body_html = _markdown_to_email_html(full_md)
+        analysis_body_html = _markdown_to_email_html(full_md, pdf_mode=True)
     else:
         analysis_body_html = (
             "<p style='color:#6B7280; font-style:italic;'>"
             "No deep analysis available (LLM returned no content)."
             "</p>"
         )
+    analysis_block = (
+        f"<h2 style='font-size:16px; font-weight:700; color:#111827; "
+        f"margin:26px 0 8px; padding-bottom:6px; "
+        f"border-bottom:2px solid {COLOR_RESULTS_HEADER}; "
+        f"text-transform:uppercase; letter-spacing:0.05em;'>"
+        f"Deep analysis</h2>"
+        f"{analysis_body_html}"
+    )
+
+    footer = (
+        f"<div style='margin-top:34px; padding-top:12px; "
+        f"border-top:1px solid #E5E7EB; color:#6B7280; font-size:10px; "
+        f"line-height:1.5;'>"
+        f"Prepared by Singapore Slinger, an automated SGX results "
+        f"analyst. Not investment advice. Verify figures against the "
+        f"source filing on links.sgx.com before acting on any number "
+        f"in this document."
+        f"</div>"
+    )
 
     doc_title = f"{ticker} {period} SGX analysis" if ticker else "SGX analysis"
 
@@ -432,34 +599,26 @@ def build_analysis_pdf_html(item: Dict, analysis: Dict) -> str:
         "<head>"
         "<meta charset='utf-8'>"
         f"<title>{_esc(doc_title)}</title>"
-        "<style>@page { size: A4; margin: 14mm 14mm 18mm; }</style>"
+        # A4 with running footer showing page numbers. Chrome honours
+        # @page counter markers for print-to-PDF.
+        "<style>"
+        "@page { size: A4; margin: 16mm 14mm 18mm; "
+        "@bottom-right { content: 'Page ' counter(page) ' of ' counter(pages); "
+        "font: 9px/1 -apple-system, Segoe UI, Arial, sans-serif; color:#9CA3AF; } }"
+        "body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }"
+        "h2 { page-break-after: avoid; break-after: avoid; }"
+        "</style>"
         "</head>"
         "<body style='margin:0; padding:0; background:#FFFFFF; "
         "color:#111827; font-family:-apple-system, BlinkMacSystemFont, "
         "Segoe UI, Roboto, Arial, sans-serif;'>"
-        f"<div style='padding:18px 20px; background:{COLOR_RESULTS_HEADER}; "
-        "color:#FFFFFF;'>"
-        f"<div style='font-size:18px; font-weight:800;'>{_esc(header)}</div>"
-        f"<div style='color:{COLOR_RESULTS_HEADER_SUB}; font-size:12px; "
-        f"margin-top:4px;'>reported in S$ (SGD) — figures as stated in the source"
-        f"</div>"
-        "</div>"
-        "<div style='padding:20px 22px;'>"
-        f"<div style='color:#6B7280; font-size:11px; margin-bottom:12px;'>"
-        f"SGX announcement: {_esc(title)}"
-        f"</div>"
-        "<table style='width:100%; border-collapse:collapse; "
-        "margin-bottom:18px;'>"
-        f"{metric_rows_html}"
-        "</table>"
-        f"<h2 style='font-size:14px; margin:0 0 6px; color:#111827;'>Summary</h2>"
-        f"<p style='margin:0 0 18px; font-size:13px; line-height:1.55; "
-        f"color:#111827;'>"
-        f"{_esc(summary) if summary else '<em>Summary unavailable.</em>'}"
-        f"</p>"
-        f"<h2 style='font-size:14px; margin:0 0 8px; color:#111827;'>"
-        f"Full analysis</h2>"
-        f"{analysis_body_html}"
+        f"{cover}"
+        "<div style='padding:18px 24px 24px;'>"
+        f"{source_line}"
+        f"{metric_block}"
+        f"{summary_html}"
+        f"{analysis_block}"
+        f"{footer}"
         "</div>"
         "</body></html>"
     )

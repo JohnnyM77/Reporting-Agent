@@ -242,7 +242,10 @@ class TestAnalysisPdfHtml:
         # Everything the email body deliberately omits must live here.
         assert "Segment split" in html
         assert "<strong>Outlook:</strong>" in html
-        assert "Full analysis" in html
+        # The redesigned PDF labels the section "Deep analysis" rather
+        # than "Full analysis" -- keep this pinned so the header cannot
+        # regress to empty prose without breaking a test.
+        assert "Deep analysis" in html
 
     def test_carries_the_metric_table_and_summary(self):
         html = build_analysis_pdf_html(_item(sub="ANNC17"), _analysis())
@@ -257,3 +260,81 @@ class TestAnalysisPdfHtml:
         analysis = _analysis(full_analysis="")
         html = build_analysis_pdf_html(_item(sub="ANNC17"), analysis)
         assert "No deep analysis available" in html
+
+    def test_cover_header_carries_ticker_and_issuer(self):
+        """First page must lead with ticker + issuer at report-scale
+        typography. The redesigned PDF has a full cover header (bigger
+        than the old inline title line) so the recipient forwarding it
+        sees the name of the company on page one."""
+        html = build_analysis_pdf_html(_item(sub="ANNC17"), _analysis())
+        assert "Singapore Slinger" in html
+        assert "SGX Results Analysis" in html
+        # The ticker appears at 28px in the cover -- easy check: it
+        # appears at least twice (cover + doc <title>).
+        assert html.count("D05") >= 2
+
+    def test_footer_disclaimer(self):
+        """Every forwarded PDF must carry the not-investment-advice line
+        and a pointer back to SGX for verification."""
+        html = build_analysis_pdf_html(_item(sub="ANNC17"), _analysis())
+        assert "Not investment advice" in html
+        assert "links.sgx.com" in html
+
+    def test_blockquote_markdown_renders_as_callout(self):
+        """A `> ...` line in full_analysis should render as a bordered
+        callout in the PDF -- gives the model a way to flag one
+        must-not-miss sentence."""
+        analysis = _analysis(full_analysis=(
+            "## Setup\n\n"
+            "> Bottom line: revenue was strong, cash was not.\n\n"
+            "Body paragraph."
+        ))
+        html = build_analysis_pdf_html(_item(sub="ANNC17"), analysis)
+        assert "Bottom line: revenue was strong" in html
+        assert "border-left:4px solid" in html
+
+    def test_positive_change_renders_green(self):
+        """YoY should be colour-coded so the reader clocks the sign at
+        a glance. The fixture has +11% underlying NPAT -- render as a
+        green figure."""
+        html = build_analysis_pdf_html(_item(sub="ANNC17"), _analysis())
+        # green-700 is the positive-change colour.
+        assert "#15803D" in html
+
+    def test_negative_change_renders_red(self):
+        analysis = _analysis()
+        analysis["metrics"]["underlying_npat"]["change_pct"] = "-14% YoY"
+        html = build_analysis_pdf_html(_item(sub="ANNC17"), analysis)
+        assert "#B91C1C" in html
+        assert "-14% YoY" in html
+
+
+class TestMarkdownConverter:
+    """The markdown-to-HTML shim renders what RESULTS_HYFY_PROMPT
+    actually emits. It runs in two flavours -- default (email card) and
+    pdf_mode (larger, print-friendly). Pin both."""
+
+    def test_pdf_mode_has_bigger_section_headers(self):
+        from sgx_email import _markdown_to_email_html
+        md = "## Segments\n\nBody."
+        email_html = _markdown_to_email_html(md, pdf_mode=False)
+        pdf_html = _markdown_to_email_html(md, pdf_mode=True)
+        # pdf_mode adds an accent underline on H2s -- easy signature.
+        assert "border-bottom:2px solid" in pdf_html
+        assert "border-bottom:2px solid" not in email_html
+
+    def test_blockquote_renders_in_both_modes(self):
+        from sgx_email import _markdown_to_email_html
+        md = "> Buy the dip."
+        for mode in (False, True):
+            html = _markdown_to_email_html(md, pdf_mode=mode)
+            assert "Buy the dip" in html
+            assert "border-left:4px solid" in html
+
+    def test_multiline_blockquote_stays_one_block(self):
+        from sgx_email import _markdown_to_email_html
+        md = "> Line one.\n> Line two."
+        html = _markdown_to_email_html(md, pdf_mode=True)
+        # Both lines land in the same callout container (one border-left).
+        assert html.count("border-left:4px solid") == 1
+        assert "Line one" in html and "Line two" in html

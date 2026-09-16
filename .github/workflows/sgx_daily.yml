@@ -46,6 +46,13 @@ on:
 jobs:
   digest:
     runs-on: [self-hosted, Windows]
+    # `contents: write` lets the "Commit dashboard update" step push
+    # slinger.json + rebuilt index.html back to main. Without it the
+    # push fails with HTTP 403 "Permission to ... denied to
+    # github-actions[bot]" -- what killed the first C07 run right at
+    # the end after the analysis had otherwise landed.
+    permissions:
+      contents: write
     defaults:
       run:
         shell: powershell

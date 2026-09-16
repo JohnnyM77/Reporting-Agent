@@ -247,7 +247,10 @@ def _anthropic_call(
         prefix = "\n\n".join(batch.fallback_sections)
         content = ((prefix + "\n\n" + user_prompt) if prefix else user_prompt)[:100_000]
 
-    model = os.environ.get("CLAUDE_MODEL", CLAUDE_MODEL_DEFAULT)
+    # `or` -- an EMPTY env var (GH sets missing secrets to "") should fall
+    # back to the default, not pass "" to Anthropic which then 400s with
+    # "model: String should have at least 1 character".
+    model = os.environ.get("CLAUDE_MODEL") or CLAUDE_MODEL_DEFAULT
     max_tokens = CLAUDE_RESULTS_MAX_TOKENS
     counters["llm_calls"] += 1
     counters.pop("last_stop_reason", None)
@@ -633,7 +636,7 @@ def run(
             classified.append((item, bucket, analysis))
 
     # 6. Build email.
-    model_label = os.environ.get("CLAUDE_MODEL", CLAUDE_MODEL_DEFAULT)
+    model_label = os.environ.get("CLAUDE_MODEL") or CLAUDE_MODEL_DEFAULT
     subject, body_text, body_html = build_email(
         classified,
         hours_back=hours_back if not is_results_mode else RESULTS_LOOKBACK_DAYS * 24,

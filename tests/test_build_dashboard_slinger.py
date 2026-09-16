@@ -175,6 +175,27 @@ def test_update_slinger_history_dedupes_identical_reruns(tmp_path, monkeypatch):
     assert [x["last_run"] for x in h_final] == ["2026-09-15", "2026-09-14"]
 
 
+def test_load_reads_utf8_regardless_of_locale(tmp_path, monkeypatch):
+    """_load must read JSON as UTF-8 explicitly. On Windows Python 3.14
+    the default encoding is cp1252, which corrupts `¢` (0xC2 0xA2
+    UTF-8) into mojibake `Â¢`. That's what made slinger_history.json
+    thrash between platforms and killed the Publish site step for the
+    D05 run -- pin the fix."""
+    bd = _load_build_dashboard()
+    monkeypatch.setattr(bd, "DATA_DIR", tmp_path)
+    # Write a value containing a cent sign as raw UTF-8 bytes.
+    payload = {"metrics": {"eps": {"value": "427¢"}}}
+    (tmp_path / "slinger.json").write_text(
+        __import__("json").dumps(payload, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    loaded = bd._load("slinger.json")
+    val = loaded["metrics"]["eps"]["value"]
+    assert val == "427¢"
+    # Should be the single cent codepoint, not the Â¢ mojibake pair.
+    assert [hex(ord(c)) for c in val] == ["0x34", "0x32", "0x37", "0xa2"]
+
+
 def test_update_slinger_history_returns_existing_when_slinger_missing(tmp_path, monkeypatch):
     """A dashboard rebuild triggered by (say) Theo, with no new Slinger
     data, must return the on-disk history unchanged -- otherwise the

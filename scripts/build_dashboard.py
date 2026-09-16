@@ -62,10 +62,16 @@ def favicon_data_uri(path: Path = FAVICON_PATH) -> str:
 # ---------------------------------------------------------------------------
 
 def _load(name: str) -> dict:
+    """Load an agent's dashboard JSON. Reads as UTF-8 explicitly so the
+    Windows runner's Python 3.14 (which still defaults `read_text(encoding='utf-8')` to
+    cp1252) does not mojibake `¢` -> `Â¢` and cycle differently against
+    the ubuntu Publish site runner -- that's what left
+    docs/data/slinger_history.json thrashing between platforms and made
+    every Publish site run try to "fix" the mojibake."""
     path = DATA_DIR / name
     if path.exists():
         try:
-            return json.loads(path.read_text())
+            return json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             pass
     return {}
@@ -611,7 +617,7 @@ def _update_slinger_history(slinger: dict) -> list[dict]:
     if not slinger or not slinger.get("last_run"):
         # No Slinger data to record; return whatever is already on disk.
         try:
-            existing = json.loads((DATA_DIR / "slinger_history.json").read_text())
+            existing = json.loads((DATA_DIR / "slinger_history.json").read_text(encoding='utf-8'))
             return existing if isinstance(existing, list) else []
         except Exception:
             return []
@@ -620,7 +626,7 @@ def _update_slinger_history(slinger: dict) -> list[dict]:
     history: list[dict] = []
     if hist_path.exists():
         try:
-            loaded = json.loads(hist_path.read_text())
+            loaded = json.loads(hist_path.read_text(encoding='utf-8'))
             if isinstance(loaded, list):
                 history = [h for h in loaded if isinstance(h, dict)]
         except Exception:
@@ -635,7 +641,7 @@ def _update_slinger_history(slinger: dict) -> list[dict]:
     if not history or _sig(history[0]) != _sig(slinger):
         history = [slinger] + history
     history = history[:2]
-    hist_path.write_text(json.dumps(history, indent=2))
+    hist_path.write_text(json.dumps(history, indent=2), encoding='utf-8')
     return history
 
 
@@ -706,7 +712,7 @@ def _update_bob_history(bob: dict) -> list[dict]:
     if not bob or not bob.get("last_run"):
         # No Bob data to record; return whatever is already on disk.
         try:
-            existing = json.loads((DATA_DIR / "bob_history.json").read_text())
+            existing = json.loads((DATA_DIR / "bob_history.json").read_text(encoding='utf-8'))
             return existing if isinstance(existing, list) else []
         except Exception:
             return []
@@ -715,7 +721,7 @@ def _update_bob_history(bob: dict) -> list[dict]:
     history: list[dict] = []
     if hist_path.exists():
         try:
-            loaded = json.loads(hist_path.read_text())
+            loaded = json.loads(hist_path.read_text(encoding='utf-8'))
             if isinstance(loaded, list):
                 history = [h for h in loaded if isinstance(h, dict)]
         except Exception:
@@ -730,7 +736,7 @@ def _update_bob_history(bob: dict) -> list[dict]:
     if not history or _sig(history[0]) != _sig(bob):
         history = [bob] + history
     history = history[:2]
-    hist_path.write_text(json.dumps(history, indent=2))
+    hist_path.write_text(json.dumps(history, indent=2), encoding='utf-8')
     return history
 
 
@@ -1150,7 +1156,7 @@ def _load_transcripts() -> list[dict]:
     if not path.exists():
         return []
     try:
-        data = json.loads(path.read_text())
+        data = json.loads(path.read_text(encoding='utf-8'))
     except Exception:
         return []
     return data if isinstance(data, list) else []

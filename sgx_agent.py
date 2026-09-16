@@ -227,7 +227,17 @@ def _anthropic_call(
         _log("[llm] ANTHROPIC_API_KEY not set")
         return LLM_FAILED
 
-    attachments = [PdfAttachment(pdf_path=p) for p in pdf_paths]
+    # PdfAttachment takes name + pdf_bytes; we read the bytes off disk here
+    # so shared/pdf_llm can pick between a native document block and a
+    # pypdf-extracted fallback per its own size/page rules.
+    attachments: List[PdfAttachment] = []
+    for p in pdf_paths:
+        try:
+            data = p.read_bytes()
+        except Exception as exc:
+            _log(f"[llm] could not read {p.name}: {exc}")
+            continue
+        attachments.append(PdfAttachment(name=p.name, pdf_bytes=data))
     batch = build_pdf_attachments(attachments, log=_log)
     if batch.any_native:
         content: object = list(batch.document_blocks) + [

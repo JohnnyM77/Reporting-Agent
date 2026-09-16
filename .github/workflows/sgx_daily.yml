@@ -137,10 +137,16 @@ jobs:
           key: sgx-seen-state-${{ github.ref_name }}-${{ github.run_id }}
 
       # Publish to the shared dashboard. The Slinger run wrote
-      # docs/data/slinger.json; rebuild docs/index.html and commit both
-      # with [skip ci] so this push does not re-trigger. The Publish
-      # site workflow picks up the workflow_run completion event and
-      # deploys. Same pattern daily.yml uses for ASX Bob.
+      # docs/data/slinger.json; rebuild docs/index.html and commit
+      # everything with [skip ci] so this push does not re-trigger.
+      # The Publish site workflow picks up the workflow_run completion
+      # event and deploys. Same pattern daily.yml uses for ASX Bob.
+      #
+      # ASCII-only inside this PowerShell block: the runner reads
+      # workflow scripts as cp1252, so a bare em dash in a commit
+      # message breaks the parser mid-file with "The string is missing
+      # the terminator". That killed the first LCC run -- keep hyphens
+      # plain here even if it reads uglier.
       - name: Commit dashboard update
         if: always()
         run: |
@@ -157,10 +163,13 @@ jobs:
             }
             git pull --rebase origin $env:GITHUB_REF_NAME
             & $py scripts/build_dashboard.py
-            git add docs/index.html docs/data/bob_history.json
+            # slinger_history.json is the last-two-runs rolling record;
+            # bob_history.json is Bob's equivalent and is rewritten on
+            # every build (no-op when Bob's data has not changed).
+            git add docs/index.html docs/data/bob_history.json docs/data/slinger_history.json
             git diff --staged --quiet
             if ($LASTEXITCODE -ne 0) {
-              git commit -m "Dashboard update — Slinger [skip ci]"
+              git commit -m "Dashboard update -- Slinger [skip ci]"
               $LASTEXITCODE = 0
             }
             git push origin ("HEAD:" + $env:GITHUB_REF_NAME)

@@ -407,9 +407,36 @@ identical, and Slinger's card adds a **Source PDFs** link list (SGX
 hosts them, so the dashboard just links back). Material/FYI items only
 carry `ticker` + `title` + `url`, so they render as compact rows.
 
+**Last-two-runs history.** `_update_slinger_history` keeps
+`docs/data/slinger_history.json` — the two newest distinct runs,
+newest first — mirroring Bob's `bob_history.json`. `_slinger_section`
+renders the current run open and the previous one collapsed in a
+`<details>` block. The sgx_daily workflow's dashboard-commit step
+`git add`s `slinger_history.json` alongside `slinger.json` and the
+rebuilt `index.html`. Deduping is signature-based so a rebuild
+triggered by another agent (Theo/Bob/Ned) with no new Slinger data
+doesn't churn the file.
+
+**PowerShell + Unicode gotcha (do not "modernise" the commit
+message).** The Slinger dashboard-commit step runs in PowerShell on
+the self-hosted Windows runner, which reads workflow scripts as
+cp1252. A bare em dash `—` in a commit message like `"Dashboard update
+— Slinger [skip ci]"` breaks the parser mid-file with `The string is
+missing the terminator: "`, kills the commit + push, and the site
+never picks up Slinger's data even though the run's other steps
+succeeded (email sent, `slinger.json` written to disk, then thrown
+away when the runner cleans up). Keep the step's git commit messages
+ASCII-only — the fix that got LCC's second run to publish uses `--`,
+not em dash.
+
 The Publish site workflow (`theo-pages.yml`) has `Singapore Slinger
 Daily` in its `workflow_run` triggers so a Slinger run completing kicks
-off a Pages redeploy — same pattern Bob/Ned/Wally/Sally use.
+off a Pages redeploy — same pattern Bob/Ned/Wally/Sally use. Note the
+Pages workflow fires on completion regardless of the triggering run's
+conclusion (deliberate — a run that emailed then tripped on a later
+step has still committed data worth publishing), so a red Slinger
+whose commit step failed will still trigger a redeploy — it just
+deploys the pre-Slinger state.
 
 ## Wally the Watcher — target ("buy") prices
 

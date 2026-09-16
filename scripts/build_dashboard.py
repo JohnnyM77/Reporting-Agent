@@ -454,37 +454,31 @@ def _slinger_hi_item_card(item: dict) -> str:
     )
 
 
-def _slinger_section(data: dict) -> str:
-    """SGX equivalent of _bob_section -- HIGH IMPACT (with metric card),
-    MATERIAL and FYI, keyed off the same JSON shape as bob.json.
+def _slinger_plain_row(item: dict) -> str:
+    """Compact material/fyi row for Slinger. Its items carry only
+    ticker+title+url (no analysis.what_happened / so_what like Bob's),
+    so the shape is deliberately plainer than Bob's `_mat_item_row`."""
+    return (
+        f"<tr>"
+        f"<td><strong style='color:#60a5fa'>{_esc(item.get('ticker',''))}</strong></td>"
+        f"<td style='color:#e2e8f0;font-size:12px'>{_esc(item.get('title','')[:120])}</td>"
+        f"<td><a href='{item.get('url','')}' target='_blank' "
+        f"style='color:#60a5fa;font-size:11px'>Open ↗</a></td>"
+        f"</tr>"
+    )
 
-    Rendered with an SGX badge in the card header so it doesn't get
-    mistaken for Bob's ASX card at a glance."""
-    if not data:
-        return ""
 
-    run_date = _fmt_date(data.get("last_run"))
+def _slinger_run_blocks(data: dict) -> str:
+    """The high-impact / material / FYI blocks for one Slinger run.
+
+    Pulled out of ``_slinger_section`` so the same rendering serves
+    both the current digest and the retained previous one (mirrors
+    Bob's ``_bob_run_blocks``)."""
     hi = data.get("high_impact", [])
     mat = data.get("material", [])
     fyi = data.get("fyi", [])
-    silence = data.get("silence", False)
-
-    status_dot = "#ef4444" if hi else "#22c55e"
-    status_text = f"{len(hi)} HIGH IMPACT" if hi else ("SILENCE" if silence else "All clear")
 
     hi_cards = "".join(_slinger_hi_item_card(item) for item in hi)
-
-    # MATERIAL / FYI rows -- Slinger items only carry title + url (no
-    # analysis.what_happened / so_what), so keep the shape simple.
-    def _plain_row(item: dict) -> str:
-        return (
-            f"<tr>"
-            f"<td><strong style='color:#60a5fa'>{_esc(item.get('ticker',''))}</strong></td>"
-            f"<td style='color:#e2e8f0;font-size:12px'>{_esc(item.get('title','')[:120])}</td>"
-            f"<td><a href='{item.get('url','')}' target='_blank' "
-            f"style='color:#60a5fa;font-size:11px'>Open ↗</a></td>"
-            f"</tr>"
-        )
 
     _no_hi   = "<p style='color:#64748b;font-size:13px'>No high-impact announcements</p>"
     _no_mat  = "<tr><td style='color:#64748b;padding:6px 0'>No material announcements</td></tr>"
@@ -495,7 +489,7 @@ def _slinger_section(data: dict) -> str:
         + (hi_cards if hi_cards else _no_hi)
     ) if hi else ""
 
-    mat_rows = "".join(_plain_row(m) for m in mat[:10])
+    mat_rows = "".join(_slinger_plain_row(m) for m in mat[:10])
     if len(mat) > 10:
         mat_rows += (
             f"<tr><td colspan='3' style='color:#64748b;font-size:11px;padding:6px 0'>"
@@ -508,7 +502,7 @@ def _slinger_section(data: dict) -> str:
         + "</table>"
     ) if mat else ""
 
-    fyi_rows = "".join(_plain_row(f) for f in fyi[:15])
+    fyi_rows = "".join(_slinger_plain_row(f) for f in fyi[:15])
     if len(fyi) > 15:
         fyi_rows += (
             f"<tr><td colspan='3' style='color:#64748b;font-size:11px'>"
@@ -521,6 +515,49 @@ def _slinger_section(data: dict) -> str:
         + "</table>"
     )
 
+    return hi_block + mat_block + fyi_block
+
+
+def _slinger_section(data: dict, history: list[dict] | None = None) -> str:
+    """Slinger's card: the current digest, plus the previous run kept
+    collapsed below it (mirrors ``_bob_section``). ``history`` is the
+    rolling list written by ``_update_slinger_history`` -- newest
+    first, current run at index 0, at most two entries.
+
+    SGX badge in the header so it does not get mistaken for Bob's ASX
+    card at a glance."""
+    if not data:
+        return ""
+
+    run_date = _fmt_date(data.get("last_run"))
+    hi = data.get("high_impact", [])
+    silence = data.get("silence", False)
+
+    status_dot = "#ef4444" if hi else "#22c55e"
+    status_text = f"{len(hi)} HIGH IMPACT" if hi else ("SILENCE" if silence else "All clear")
+
+    current_blocks = _slinger_run_blocks(data)
+
+    previous_html = ""
+    prior = (history or [])[1:2]
+    if prior:
+        prev = prior[0]
+        prev_date = _fmt_date(prev.get("last_run"))
+        prev_hi = len(prev.get("high_impact", []))
+        prev_mat = len(prev.get("material", []))
+        prev_fyi = len(prev.get("fyi", []))
+        previous_html = (
+            "<details style='margin-top:20px;border-top:1px solid #334155;padding-top:12px'>"
+            "<summary style='cursor:pointer;color:#94a3b8;font-size:13px;font-weight:600'>"
+            f"◷ Previous run — {prev_date} "
+            f"<span style='color:#64748b;font-weight:400'>"
+            f"({prev_hi} high-impact · {prev_mat} material · {prev_fyi} FYI)</span>"
+            "</summary>"
+            "<div style='margin-top:10px;opacity:0.85'>"
+            + _slinger_run_blocks(prev)
+            + "</div></details>"
+        )
+
     return f"""
     <div class="agent-card">
       <div class="card-header">
@@ -528,15 +565,57 @@ def _slinger_section(data: dict) -> str:
           <span class="agent-name">Singapore Slinger
             <span style="display:inline-block;margin-left:6px;padding:2px 8px;background:#ef4444;color:#fff;font-size:11px;border-radius:4px;vertical-align:middle;letter-spacing:0.5px">SGX</span>
           </span>
-          <span class="agent-role">Daily SGX Digest &middot; slings information from the Singapore Exchange</span>
+          <span class="agent-role">Daily SGX Digest &middot; last two runs kept</span>
         </div>
         <div style="text-align:right">
           <div><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{status_dot};margin-right:6px"></span><span style="font-size:13px;color:#e2e8f0">{status_text}</span></div>
           <div style="font-size:12px;color:#64748b;margin-top:4px">Last run: {run_date}</div>
         </div>
       </div>
-      {hi_block}{mat_block}{fyi_block}
+      {current_blocks}
+      {previous_html}
     </div>"""
+
+
+def _update_slinger_history(slinger: dict) -> list[dict]:
+    """Keep the last two distinct Slinger runs in
+    docs/data/slinger_history.json.
+
+    Mirrors ``_update_bob_history``. Slinger overwrites slinger.json
+    every run, so without this the site would only ever show the most
+    recent digest. This prepends the current run when its content
+    differs from the top of the history and truncates to two, so a
+    plain dashboard rebuild (Theo/Wally/Ned, or an identical re-run)
+    never churns the file. Returns the history, newest first."""
+    if not slinger or not slinger.get("last_run"):
+        # No Slinger data to record; return whatever is already on disk.
+        try:
+            existing = json.loads((DATA_DIR / "slinger_history.json").read_text())
+            return existing if isinstance(existing, list) else []
+        except Exception:
+            return []
+
+    hist_path = DATA_DIR / "slinger_history.json"
+    history: list[dict] = []
+    if hist_path.exists():
+        try:
+            loaded = json.loads(hist_path.read_text())
+            if isinstance(loaded, list):
+                history = [h for h in loaded if isinstance(h, dict)]
+        except Exception:
+            history = []
+
+    def _sig(d: dict) -> str:
+        return json.dumps(
+            {k: d.get(k) for k in ("last_run", "silence", "high_impact", "material", "fyi")},
+            sort_keys=True,
+        )
+
+    if not history or _sig(history[0]) != _sig(slinger):
+        history = [slinger] + history
+    history = history[:2]
+    hist_path.write_text(json.dumps(history, indent=2))
+    return history
 
 
 def _bob_section(data: dict, history: list[dict] | None = None) -> str:
@@ -1173,6 +1252,7 @@ def build_dashboard() -> None:
     bob = _load("bob.json")
     bob_history = _update_bob_history(bob)
     slinger = _load("slinger.json")
+    slinger_history = _update_slinger_history(slinger)
     wally = _load("wally.json")
     sally = _load("sally.json")
     theo = _load("theo.json")
@@ -1287,7 +1367,7 @@ def build_dashboard() -> None:
   </header>
   <main>
     {_bob_section(bob, bob_history)}
-    {_slinger_section(slinger)}
+    {_slinger_section(slinger, slinger_history)}
     {_wally_section(wally)}
     {_sally_section(sally)}
     {_theo_section(theo)}

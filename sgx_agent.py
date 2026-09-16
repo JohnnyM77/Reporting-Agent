@@ -364,21 +364,66 @@ def _run_results_analysis(
 
     hint_block = ""
     if results_hint.strip():
+        # Hint goes at the top so the model reads it before the schema
+        # boilerplate and treats the whole analysis through that lens.
+        # A hint appended at the end tends to get skimmed after the
+        # model has already committed to the shape of the response --
+        # which is exactly what "the analysis was crap on C07" was.
         hint_block = (
-            f"\n\nUser-supplied context (weight this in your analysis, "
-            f"especially where it points to what matters vs. what's noise):\n"
-            f"{results_hint.strip()}"
+            "IMPORTANT CONTEXT for this specific company (read first, "
+            "weight heavily throughout your analysis -- especially in "
+            "the full_analysis section):\n"
+            f"{results_hint.strip()}\n\n"
         )
 
+    # Slinger-side instructions layered on top of the shared
+    # RESULTS_HYFY_PROMPT. The shared prompt calls the full_analysis
+    # section "goes to a Google Doc, not the email" -- that's true for
+    # ASX Bob but wrong for Slinger, where full_analysis IS the file
+    # the user forwards to peers. Restate the expectation so the model
+    # writes to that audience and depth. Also flag SGX-specific shapes
+    # (many holding companies / cross-listed stakes) so the model
+    # doesn't render a pure-P&L card for a NAV-driven name.
+    slinger_notes = (
+        "You are writing as the Singapore Slinger -- SGX-focused, "
+        "buyside-forensic, sceptical. Additional expectations on top "
+        "of the shared schema:\n"
+        "- The `full_analysis` markdown is attached to the recipient's "
+        "email as a standalone PDF that they forward to sophisticated "
+        "peers. Write it to that bar. Substance over template: real "
+        "numbers, real segment splits, real balance-sheet lines, not "
+        "corporate boilerplate. Every claim carries a figure or "
+        "explicit page-reference to the source. Aim for 800-1500 "
+        "words of actual analysis, not filler.\n"
+        "- SGX has many listed investment / holding companies (JC&C, "
+        "Haw Par, Jardine Matheson, F&N, UOL, etc.) where reported "
+        "P&L understates the real story -- underlying stake value, "
+        "NAV per share vs price, see-through earnings and dividend "
+        "flow-through from associates matter more than headline "
+        "revenue. If the source or the user-supplied context above "
+        "indicates the issuer is a holding company or has material "
+        "associate/JV stakes, weight NAV / associate contribution / "
+        "sum-of-parts in your analysis and say so explicitly in the "
+        "summary and the Bottom line.\n"
+        "- The issuer reports in Singapore dollars (SGD) by default. "
+        "Set `currency` to what the report actually states (SGD, USD, "
+        "IDR are all common on SGX) and prefix values with the "
+        "explicit currency: S$, US$, Rp. Never leave a figure with a "
+        "bare $ prefix -- readers will misread it as USD.\n"
+    )
+
     user = (
+        f"{hint_block}"
         f"Ticker: {ticker}\n"
         f"Issuer: {issuer}\n"
-        f"Title: {title}\n\n"
-        f"The attached PDF(s) contain the full results release / statements. "
-        f"Return your response as strict JSON per the system prompt schema. "
-        f"Note this issuer reports in Singapore dollars (SGD) — reflect that "
-        f"in every metric's currency and prefix figures with S$."
-        f"{hint_block}"
+        f"Announcement title: {title}\n\n"
+        f"The attached PDF(s) are this issuer's official results "
+        f"release, financial statements and (sometimes) press release "
+        f"or investor deck for this reporting period.\n\n"
+        f"{slinger_notes}\n"
+        f"Return your response as strict JSON per the system-prompt "
+        f"schema. No preamble, no markdown fences, no text outside the "
+        f"JSON object."
     )
     text = _anthropic_call(pdf_paths, RESULTS_HYFY_PROMPT, user, counters)
     if text in (LLM_SKIPPED, LLM_FAILED):

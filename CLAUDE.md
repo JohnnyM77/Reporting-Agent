@@ -288,6 +288,33 @@ rule, the same metric table as the email card, the summary, and the full
 markdown analysis. Attachment total is capped at 20MB but the analysis
 PDFs are ~50-200KB each, so the cap is really just a safety net.
 
+The PDF is a **standalone report the user forwards to peers**, so its
+layout matters more than the email card's:
+
+- Cover header with big ticker + issuer + period pill + generated-on
+  timestamp + currency line, on the deep-green SGX bar.
+- Metric table: bordered rows, YoY colour-coded (green +ve / red -ve /
+  muted grey n/a), basis label under each figure.
+- Summary rendered as a bordered callout ("verdict first") -- the
+  five-sentence line the prompt asks for.
+- Deep analysis rendered through `_markdown_to_email_html(pdf_mode=True)`
+  which bumps sizing, adds accent-underline section headers on `##`,
+  page-break-inside:avoid on tables + blockquotes, and supports `> ...`
+  blockquotes as bordered callouts (a way for the LLM to flag one
+  must-not-miss sentence).
+- Chrome print-CSS `@page @bottom-right` footer gives page X of Y
+  numbers; a disclaimer + "verify on links.sgx.com" line closes the
+  document.
+
+The user prompt to Claude is structured deliberately: **hint FIRST**
+(so the model reads context before schema boilerplate), then a
+Slinger-specific block noting SGX holding-company patterns, quality
+expectations (audience: sophisticated peers, target 800-1500 words of
+real numbers), and currency-prefix rules (S$/US$/Rp — never bare `$`).
+Ordering matters -- an earlier version appended the hint at the end
+and the C07 (JC&C) analysis came back generic-P&L-shaped, ignoring
+the Astra hint entirely.
+
 **Metric JSON keys are load-bearing.** `sgx_email._results_card_html`
 reads `dividend_ordinary` (not `ordinary_dividend`) and `change_pct`
 (not `change`) — those are the keys the `RESULTS_HYFY_PROMPT` schema

@@ -58,11 +58,18 @@ def _load(name: str) -> dict:
 
 
 def _fmt_date(iso: str | None) -> str:
+    """Format an ISO timestamp as ``4 Aug 2026`` (no leading zero on day).
+
+    Uses ``d.day`` + strftime for the rest so it works on Windows too.
+    ``%-d`` is a POSIX extension; on Windows strftime raises
+    ``ValueError: Invalid format string`` and the whole dashboard build
+    dies, taking Slinger's publish step down with it -- Bob's ubuntu
+    runner never trips this, Slinger's self-hosted Windows runner did."""
     if not iso:
         return "Never"
     try:
         d = datetime.fromisoformat(iso.replace("Z", "+00:00"))
-        return d.strftime("%-d %b %Y")
+        return f"{d.day} {d.strftime('%b %Y')}"
     except Exception:
         return iso
 
@@ -1259,7 +1266,8 @@ def build_dashboard() -> None:
     ned = _load("ned.json")
     transcripts = _load_transcripts()
 
-    generated_at = datetime.utcnow().strftime("%-d %b %Y %H:%M UTC")
+    _now_utc = datetime.utcnow()
+    generated_at = f"{_now_utc.day} {_now_utc.strftime('%b %Y %H:%M UTC')}"
 
     html = f"""<!DOCTYPE html>
 <html lang="en">

@@ -15,7 +15,9 @@ Constraints (mirroring agent.py's email conventions):
 
 Round 2 renders full results cards only when the caller passes a parsed
 analysis dict; otherwise every item renders as a compact two-liner. The
-LLM/Google-Doc plumbing lives in sgx_agent.py.
+LLM plumbing lives in sgx_agent.py; the full markdown analysis lands
+inline in the results card (no separate Google Doc — the source PDFs
+are attached to the email instead).
 """
 
 from __future__ import annotations
@@ -127,35 +129,160 @@ def _two_liner_for_item(item: Dict) -> str:
     return "\n".join(parts)
 
 
+def _markdown_to_email_html(md: str) -> str:
+    """Tiny markdown subset -> email-safe inline-styled HTML.
+
+    Same subset the sgx_agent Doc builder used to emit (headings,
+    paragraphs, lists, pipe tables) but rendered with inline styles so
+    Gmail/Outlook don't strip anything. Deliberately not a general
+    markdown engine — matches what RESULTS_HYFY_PROMPT actually emits."""
+    if not md:
+        return ""
+
+    def esc(s: str) -> str:
+        return htmlmod.escape(s or "")
+
+    def inline(s: str) -> str:
+        # Bold (**...**) and italics (*...*), applied to already-escaped text.
+        out = esc(s)
+        out = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", out)
+        out = re.sub(r"(?<!\*)\*(?!\s)([^*\n]+?)\*(?!\*)", r"<em>\1</em>", out)
+        return out
+
+    lines = md.splitlines()
+    out: List[str] = []
+    i = 0
+    in_ul = False
+
+    def close_ul() -> None:
+        nonlocal in_ul
+        if in_ul:
+            out.append("</ul>")
+            in_ul = False
+
+    while i < len(lines):
+        raw = lines[i].rstrip()
+        stripped = raw.strip()
+
+        # Pipe table: header row, separator row, body rows.
+        if (
+            "|" in raw and i + 1 < len(lines)
+            and re.match(r"^\s*\|?\s*:?-{3,}", lines[i + 1])
+        ):
+            close_ul()
+            header_cells = [c.strip() for c in raw.strip().strip("|").split("|")]
+            i += 2  # skip separator
+            rows_html: List[str] = []
+            while i < len(lines) and "|" in lines[i]:
+                row_cells = [c.strip() for c in lines[i].strip().strip("|").split("|")]
+                cells_html = "".join(
+                    f"<td style='padding:6px 8px; border-top:1px solid #E5E7EB; "
+                    f"color:{COLOR_RESULTS_VALUE}; font-size:13px;'>"
+                    f"{inline(c)}</td>"
+                    for c in row_cells
+                )
+                rows_html.append(f"<tr>{cells_html}</tr>")
+                i += 1
+            header_html = "".join(
+                f"<th style='padding:6px 8px; text-align:left; "
+                f"background:{COLOR_RESULTS_ROW_SHADE}; "
+                f"color:{COLOR_RESULTS_LABEL}; font-size:12px;'>"
+                f"{inline(c)}</th>"
+                for c in header_cells
+            )
+            out.append(
+                f"<table style='width:100%; border-collapse:collapse; "
+                f"margin:10px 0; font-family:-apple-system, Segoe UI, Arial, "
+                f"sans-serif;'><thead><tr>{header_html}</tr></thead>"
+                f"<tbody>{''.join(rows_html)}</tbody></table>"
+            )
+            continue
+
+        if not stripped:
+            close_ul()
+            i += 1
+            continue
+
+        if stripped.startswith("### "):
+            close_ul()
+            out.append(
+                f"<h3 style='margin:14px 0 6px; font-size:14px; "
+                f"color:{COLOR_RESULTS_VALUE};'>{inline(stripped[4:])}</h3>"
+            )
+        elif stripped.startswith("## "):
+            close_ul()
+            out.append(
+                f"<h2 style='margin:16px 0 8px; font-size:16px; "
+                f"color:{COLOR_RESULTS_VALUE};'>{inline(stripped[3:])}</h2>"
+            )
+        elif stripped.startswith("# "):
+            close_ul()
+            out.append(
+                f"<h1 style='margin:18px 0 10px; font-size:18px; "
+                f"color:{COLOR_RESULTS_VALUE};'>{inline(stripped[2:])}</h1>"
+            )
+        elif stripped.startswith(("- ", "* ")):
+            if not in_ul:
+                out.append(
+                    "<ul style='margin:8px 0; padding-left:20px; "
+                    "line-height:1.5;'>"
+                )
+                in_ul = True
+            out.append(
+                f"<li style='margin:2px 0; font-size:13px; "
+                f"color:{COLOR_RESULTS_VALUE};'>{inline(stripped[2:])}</li>"
+            )
+        else:
+            close_ul()
+            out.append(
+                f"<p style='margin:6px 0; font-size:13px; line-height:1.5; "
+                f"color:{COLOR_RESULTS_VALUE};'>{inline(stripped)}</p>"
+            )
+        i += 1
+    close_ul()
+    return "".join(out)
+
+
 def _results_card_html(item: Dict, analysis: Dict) -> str:
-    """Full results card: metric table + short summary + link. `analysis`
-    is the parsed JSON from the LLM (see sgx_agent's run_deep_results_analysis).
-    Currency prefix is always `S$` for SGX names (unlike ASX which uses a
-    bare `$` because the card context line already says A$)."""
+    """Full results card: metric table + short summary + full analysis
+    inline + source link. `analysis` is the parsed JSON from the LLM
+    (see sgx_agent's run_deep_results_analysis).
+
+    Currency prefix is always `S$` for SGX names (unlike ASX which uses
+    a bare `$` because the card context line already says A$).
+
+    The full markdown analysis is rendered inline in the email body —
+    Bob SG doesn't create a separate Google Doc anymore. The user asked
+    for one email with everything in it plus the source PDFs attached."""
     ticker = item.get("ticker") or ""
     issuer = item.get("issuer_name") or ""
     period = analysis.get("period") or ""
     period_type = analysis.get("period_type") or ""
     metrics = analysis.get("metrics") or {}
     summary = (analysis.get("summary") or "").strip()
-    doc_url = analysis.get("doc_url") or ""
+    full_analysis_md = (analysis.get("full_analysis") or "").strip()
 
     header_bits = [b for b in (ticker, issuer, period, period_type) if b]
     header = " | ".join(header_bits)
 
     metric_rows_html = ""
+    # Keys MUST match RESULTS_HYFY_PROMPT's schema:
+    # dividend_ordinary + change_pct. Earlier versions of this file
+    # used ordinary_dividend / change which never populated -> the
+    # dividend row rendered "n/a" and the YoY column stayed blank for
+    # every SGX report. Do not rename without updating the prompt too.
     metric_order = [
         ("revenue", "Revenue"),
         ("underlying_npat", "Underlying NPAT"),
         ("underlying_eps", "Underlying EPS"),
-        ("ordinary_dividend", "Ordinary dividend"),
+        ("dividend_ordinary", "Ordinary dividend"),
         ("operating_cash_flow", "Operating cash flow"),
     ]
     for i, (key, label) in enumerate(metric_order):
         shade = COLOR_RESULTS_ROW_SHADE if i % 2 == 0 else COLOR_RESULTS_CARD
         m = metrics.get(key) or {}
         value = (m.get("value") or "n/a").strip()
-        change = (m.get("change") or "").strip()
+        change = (m.get("change_pct") or "").strip()
         basis = (m.get("basis") or "").strip()
         change_html = ""
         if change:
@@ -176,19 +303,23 @@ def _results_card_html(item: Dict, analysis: Dict) -> str:
             f"</tr>"
         )
 
-    doc_link_html = ""
-    if doc_url:
-        doc_link_html = (
-            f"<div style='margin-top:8px; font-size:12px;'>"
-            f"<a href='{_esc(doc_url)}' "
-            f"style='color:#2563EB; text-decoration:underline;'>"
-            f"Full analysis (Google Doc)</a></div>"
+    full_analysis_html = ""
+    if full_analysis_md:
+        full_analysis_html = (
+            f"<div style='margin-top:14px; padding-top:12px; "
+            f"border-top:1px solid #E5E7EB;'>"
+            f"<div style='font-weight:700; font-size:12px; "
+            f"color:{COLOR_RESULTS_LABEL}; text-transform:uppercase; "
+            f"letter-spacing:0.5px; margin-bottom:6px;'>Full analysis</div>"
+            f"{_markdown_to_email_html(full_analysis_md)}"
+            f"</div>"
         )
+
     source_link_html = ""
     source = item.get("url") or ""
     if source:
         source_link_html = (
-            f"<div style='margin-top:4px; font-size:12px;'>"
+            f"<div style='margin-top:8px; font-size:12px;'>"
             f"<a href='{_esc(source)}' "
             f"style='color:#2563EB; text-decoration:underline;'>"
             f"Source announcement (SGX)</a></div>"
@@ -213,7 +344,7 @@ def _results_card_html(item: Dict, analysis: Dict) -> str:
         f"<div style='padding:12px; color:{COLOR_RESULTS_VALUE}; "
         f"font-size:13px; line-height:1.5;'>"
         f"{_esc(summary) if summary else '<em>Summary unavailable.</em>'}"
-        f"{doc_link_html}{source_link_html}"
+        f"{full_analysis_html}{source_link_html}"
         f"</div>"
         f"</div>"
     )

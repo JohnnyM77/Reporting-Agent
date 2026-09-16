@@ -64,10 +64,9 @@ jobs:
           if (-not (Test-Path $py)) { $py = "python" }
           & $py -m pip install --upgrade pip
           # Full agent deps -- superset of Round 1's fetch-only deps.
+          # No google-api deps: the SGX path emails PDFs directly, no Drive.
           & $py -m pip install playwright pyyaml requests beautifulsoup4 pypdf `
-                                anthropic `
-                                google-api-python-client google-auth `
-                                google-auth-httplib2 google-auth-oauthlib
+                                anthropic
           & $py -m playwright install chrome
           # install chrome exits non-zero when already present system-wide
           $LASTEXITCODE = 0
@@ -84,13 +83,9 @@ jobs:
           # LLM
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_MODEL: ${{ secrets.CLAUDE_MODEL }}
-          # Google Drive OAuth (same secrets Bob's ASX path uses)
-          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
-          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
-          GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
-          # Optional: a separate Drive folder for SGX analysis Docs so they
-          # don't mix with the ASX ones. Set this secret in GH to enable.
-          GDRIVE_SGX_ANALYSIS_FOLDER_ID: ${{ secrets.GDRIVE_SGX_ANALYSIS_FOLDER_ID }}
+          # No Drive plumbing on the SGX path -- the full analysis
+          # renders inline in the email and the source PDFs are attached,
+          # so nothing needs to land in Google Drive.
           # Dispatch inputs picked up in-Python
           BOB_SG_DRY_RUN_INPUT: ${{ github.event.inputs.dry_run }}
           BOB_SG_FETCH_ONLY_INPUT: ${{ github.event.inputs.fetch_only }}

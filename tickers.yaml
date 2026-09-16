@@ -33,7 +33,6 @@ sgx:
   U11: United Overseas Bank Ltd
   O39: Oversea-Chinese Banking Corporation Ltd
   Z74: Singapore Telecommunications Ltd
-  F34: Wilmar International Ltd
   C6L: Singapore Airlines Ltd
 
 # ETFs (VAS, VEU, VHY) are included for ASX announcements but skipped for news scanning

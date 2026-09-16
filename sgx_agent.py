@@ -188,28 +188,150 @@ def _within_hours(item: Dict, hours: int) -> bool:
 
 # --- LLM -------------------------------------------------------------------
 
+def _sanitise_json_string_bodies(text: str) -> str:
+    """Escape raw control chars / invalid escapes inside JSON string
+    bodies. Ported from agent.py -- covers the "raw \\n in a markdown
+    blob" and "\\%" invalid-escape failure modes that show up on any
+    long full_analysis. Does NOT fix unescaped inner double-quotes;
+    _extract_full_analysis_raw handles that."""
+    out: List[str] = []
+    in_string = False
+    escaped = False
+    control_map = {"\n": "\\n", "\r": "\\r", "\t": "\\t"}
+    for ch in text:
+        if escaped:
+            if ch in '"\\/bfnrtu':
+                out.append(ch)
+            else:
+                out.pop()
+                out.append(ch)
+            escaped = False
+            continue
+        if in_string and ch == "\\":
+            out.append(ch)
+            escaped = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            out.append(ch)
+            continue
+        if in_string and ch in control_map:
+            out.append(control_map[ch])
+            continue
+        if in_string and ord(ch) < 0x20:
+            out.append("\\u%04x" % ord(ch))
+            continue
+        out.append(ch)
+    return "".join(out)
+
+
+def _extract_full_analysis_raw(text: str) -> Optional[Dict]:
+    """Last-ditch parse for the "unescaped inner quotes in full_analysis"
+    case. C07 hit this: the model wrote a long markdown blob containing
+    a quoted phrase like `"impairment of X, Y and Z."` inside the
+    `full_analysis` value without escaping the inner quotes, so
+    json.loads bailed on the whole object.
+
+    Strategy: cut `full_analysis` out of the input entirely, parse the
+    remaining JSON (which is small, well-behaved metrics + summary),
+    then re-attach the raw markdown body as `full_analysis`. Quotes,
+    backslashes, whatever the model wrote -- all preserved because
+    that value never has to be JSON-escaped."""
+    # Locate `, "full_analysis": "` (or just `"full_analysis": "` if
+    # it's the first field, though the prompt puts it last).
+    key_re = re.compile(
+        r'\s*,\s*"full_analysis"\s*:\s*"',
+        re.DOTALL,
+    )
+    m = key_re.search(text)
+    if not m:
+        # Try without a leading comma -- covers the case where the
+        # model reordered fields and full_analysis is first.
+        key_re = re.compile(r'"full_analysis"\s*:\s*"', re.DOTALL)
+        m = key_re.search(text)
+        if not m:
+            return None
+        # Rare enough that we bail rather than reconstruct.
+        return None
+
+    body_start = m.end()
+    # The body ends at the last `"` immediately preceding the closing
+    # `}` of the outer object (optionally with whitespace between).
+    tail_re = re.compile(r'"\s*}\s*\Z', re.DOTALL)
+    tail_m = tail_re.search(text[body_start:])
+    if not tail_m:
+        return None
+    markdown_body = text[body_start:body_start + tail_m.start()]
+
+    # Everything before `,\s*"full_analysis":` is the header JSON.
+    # Close it with `}` and parse.
+    header = text[:m.start()] + "}"
+    try:
+        parsed = json.loads(header)
+    except Exception:
+        # Header might still have string-body defects; try sanitising.
+        try:
+            parsed = json.loads(_sanitise_json_string_bodies(header))
+        except Exception:
+            return None
+    if not isinstance(parsed, dict):
+        return None
+    parsed["full_analysis"] = markdown_body
+    return parsed
+
+
 def _parse_analysis_json(text: str) -> Optional[Dict]:
-    """Simpler than agent.py's _parse_analysis_json (which does bracket
-    repair on truncated JSON). Round 2 tries a straight parse and an
-    outermost-{...}-span fallback; anything past that renders as "analysis
-    unavailable" and the raw text is stashed on the Doc for inspection."""
+    """Parse structured JSON from the LLM response.
+
+    Tries progressively harder, cheapest first, and every step
+    preserves the model's content exactly (no bracket-balancing --
+    truncation stays a parse_error rather than becoming a
+    plausible-looking cutoff card):
+
+      1. straight parse (after stripping code fences)
+      2. outermost `{...}` span, ignoring prose either side
+      3. that span with string bodies sanitised (control chars, bad
+         escapes -- the newline / \\% cases Bob's ASX path hit)
+      4. carve `full_analysis` out as raw text and re-parse the header
+         (the unescaped-inner-quote case C07 hit)
+    """
     if not text or text in (LLM_SKIPPED, LLM_FAILED):
         return None
     cleaned = re.sub(r"^```(?:json)?\s*", "", text.strip(), flags=re.MULTILINE)
     cleaned = re.sub(r"\s*```\s*$", "", cleaned.strip(), flags=re.MULTILINE).strip()
-    try:
-        parsed = json.loads(cleaned)
-        return parsed if isinstance(parsed, dict) else None
-    except Exception:
-        pass
+
+    def _load(candidate: str) -> Optional[Dict]:
+        try:
+            result = json.loads(candidate)
+        except (json.JSONDecodeError, ValueError):
+            return None
+        return result if isinstance(result, dict) else None
+
+    parsed = _load(cleaned)
+    if parsed is not None:
+        return parsed
+
     m = re.search(r"\{.*\}", cleaned, re.DOTALL)
     if not m:
         return None
-    try:
-        parsed = json.loads(m.group())
-        return parsed if isinstance(parsed, dict) else None
-    except Exception:
-        return None
+    span = m.group()
+
+    parsed = _load(span)
+    if parsed is not None:
+        return parsed
+
+    parsed = _load(_sanitise_json_string_bodies(span))
+    if parsed is not None:
+        _log("[parse] recovered JSON after sanitising string bodies")
+        return parsed
+
+    parsed = _extract_full_analysis_raw(span)
+    if parsed is not None:
+        _log("[parse] recovered JSON by extracting full_analysis raw "
+             "(unescaped inner quotes)")
+        return parsed
+
+    return None
 
 
 def _anthropic_call(

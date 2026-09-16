@@ -456,6 +456,40 @@ away when the runner cleans up). Keep the step's git commit messages
 ASCII-only — the fix that got LCC's second run to publish uses `--`,
 not em dash.
 
+**Python stdout on Windows is cp1252 too.** Same shape, different
+place: a `print(f"... → ...")` in `scripts/build_dashboard.py` crashes
+with `UnicodeEncodeError: 'charmap' codec can't encode character
+'\\u2192'` when the dashboard is rebuilt on the Windows runner (Bob's
+ubuntu never sees this). Killed the C07 rerun mid-way through
+`build_dashboard.py` -- `slinger.json` had already been committed but
+`index.html` never got rebuilt with the Slinger card. `build_dashboard.py`
+now calls `sys.stdout.reconfigure(encoding="utf-8")` at import time,
+so any non-ASCII char in a print / log line stops being a load-bearing
+bug. Same fix belongs anywhere else that runs on the Windows runner
+and prints unicode.
+
+**JSON parser: `_parse_analysis_json` in `sgx_agent.py`** progresses
+through four fallbacks, cheapest first, each preserving content
+exactly:
+
+1. Straight parse after stripping code fences.
+2. Outermost `{...}` span, ignoring prose either side.
+3. That span with string bodies sanitised (raw newlines re-encoded as
+   `\\n`, invalid escapes like `\\%` dropped) — Bob's SPZ failure mode.
+4. **Carve `full_analysis` out as raw text** and re-parse the header —
+   the C07 failure mode. The model wrote `"impairment of X, Y and Z."`
+   inside the `full_analysis` string with unescaped inner quotes, so
+   `json.loads` bailed on the whole object. Extracting the markdown
+   body separately means quotes / backslashes / anything inside
+   `full_analysis` never has to be JSON-escaped. Header JSON (small,
+   well-behaved metrics + summary) parses fine on its own, then the
+   raw markdown gets reattached. Regressions pinned in
+   `tests/test_sgx_parse.py`.
+
+No bracket-closing fallback — a truncated response stays a
+`parse_error` so a half-broken digest never renders like a clean one
+(same rule Bob's ASX path enforces).
+
 The Publish site workflow (`theo-pages.yml`) has `Singapore Slinger
 Daily` in its `workflow_run` triggers so a Slinger run completing kicks
 off a Pages redeploy — same pattern Bob/Ned/Wally/Sally use. Note the

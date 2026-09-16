@@ -8,8 +8,22 @@ from __future__ import annotations
 import base64
 import json
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
+
+# The Slinger runs this script on the self-hosted Windows runner, where
+# sys.stdout defaults to cp1252. Any non-ASCII char in a print() (a `→`
+# in a log line, an emoji in a section header) crashes the whole build
+# with UnicodeEncodeError, which killed the C07 rerun after slinger.json
+# had already been committed but before index.html was rebuilt with the
+# Slinger card. Force UTF-8 so console encoding stops being a load-
+# bearing bug.
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+except (AttributeError, ValueError):
+    pass
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = REPO_ROOT / "docs"
@@ -1390,7 +1404,7 @@ def build_dashboard() -> None:
 
     out = DOCS_DIR / "index.html"
     out.write_text(html, encoding="utf-8")
-    print(f"[dashboard] Written → {out}")
+    print(f"[dashboard] Written -> {out}")
 
 
 if __name__ == "__main__":

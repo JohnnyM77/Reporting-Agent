@@ -266,24 +266,37 @@ async def _fetch_all_async(
 
         page.on("request", lambda r: asyncio.create_task(_on_request(r)))
 
-        prime_ticker = tickers[0]
-        log(f"[sgx] priming token via {prime_ticker}...")
-        try:
-            await page.goto(
-                PRIME_URL_TEMPLATE.format(ticker=prime_ticker),
-                wait_until="networkidle",
-                timeout=PRIME_NAV_TIMEOUT_MS,
-            )
-        except Exception as exc:
-            log(f"[sgx] prime nav exception: {exc.__class__.__name__}: {exc}")
-        # Flutter fires late requests after networkidle briefly settles;
-        # tiny tail wait catches them.
-        await page.wait_for_timeout(PRIME_TAIL_WAIT_MS)
+        # Try priming up to N times, each attempt reloading the page and
+        # extending the wait. Flutter is flaky about firing the securitycode
+        # XHR immediately after nav; a first attempt that returns before the
+        # bundle finishes downloading catches no requests. Retrying with a
+        # longer tail wait covers that.
+        prime_attempts = [
+            (tickers[0], PRIME_TAIL_WAIT_MS),
+            (tickers[0], PRIME_TAIL_WAIT_MS * 3),
+            (tickers[-1] if len(tickers) > 1 else tickers[0], PRIME_TAIL_WAIT_MS * 3),
+        ]
+        for attempt_idx, (prime_ticker, tail_ms) in enumerate(prime_attempts):
+            log(f"[sgx] prime attempt {attempt_idx + 1}/{len(prime_attempts)} "
+                f"via {prime_ticker} (tail wait {tail_ms}ms)...")
+            try:
+                await page.goto(
+                    PRIME_URL_TEMPLATE.format(ticker=prime_ticker),
+                    wait_until="networkidle",
+                    timeout=PRIME_NAV_TIMEOUT_MS,
+                )
+            except Exception as exc:
+                log(f"[sgx]   nav exception: {exc.__class__.__name__}: {exc}")
+            await page.wait_for_timeout(tail_ms)
+            if token_holder:
+                break
+            log("[sgx]   no token captured this attempt")
 
         if not token_holder:
-            log("[sgx] FAILED to capture an authorizationtoken during prime "
-                "-- aborting. Investors.sgx.com may have changed shape or "
-                "the browser fingerprint is now blocked.")
+            log("[sgx] FAILED to capture an authorizationtoken after "
+                f"{len(prime_attempts)} attempt(s) -- aborting. "
+                "Investors.sgx.com may be rate-limiting this IP or the "
+                "browser fingerprint is now blocked.")
             await context.close()
             await browser.close()
             return results

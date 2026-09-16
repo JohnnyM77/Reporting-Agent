@@ -659,6 +659,17 @@ def run(
         _log(f"[main] DRY RUN -- wrote preview to {out_dir}/digest_preview.*")
         return 0
 
+    # Results-ticker mode with zero items is a failure (usually a token-
+    # prime flake). Don't send an empty "no results" digest -- the user
+    # asked for a specific report; if we couldn't find it, they should
+    # see the failure in the workflow log instead of a misleading empty
+    # email that looks like the report doesn't exist.
+    if is_results_mode and not classified:
+        _log("[main] results-ticker mode with 0 items -- NOT sending email "
+             "(likely a token-prime failure or the ticker has no results "
+             "in the lookback window). Re-run the dispatch to retry.")
+        return 3
+
     _send_email(subject, body_text, body_html)
 
     # 7. Save seen state — portfolio mode only. Results-ticker mode is

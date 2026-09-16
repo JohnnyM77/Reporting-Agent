@@ -1,7 +1,8 @@
-name: SGX Daily Announcements
+name: Singapore Slinger Daily
 
-# Bob SG V4 Round 2 -- full daily orchestrator.
-# Fetches, classifies, analyses (results only), emails.
+# Singapore Slinger V4 R2 -- full daily orchestrator for SGX.
+# Fetches, classifies, analyses (results only), emails, publishes to
+# the shared dashboard.
 #
 # Runs on the self-hosted Windows runner (mr_co-runer) on purpose: SGX
 # blocks non-browser TLS fingerprints and its Flutter Web frontend
@@ -75,7 +76,7 @@ jobs:
           # install chrome exits non-zero when already present system-wide
           $LASTEXITCODE = 0
 
-      - name: Run Bob SG
+      - name: Run Singapore Slinger
         env:
           # Fetch
           SGX_TICKERS_INPUT: ${{ github.event.inputs.tickers }}
@@ -134,6 +135,38 @@ jobs:
         with:
           path: state_seen_sgx.json
           key: sgx-seen-state-${{ github.ref_name }}-${{ github.run_id }}
+
+      # Publish to the shared dashboard. The Slinger run wrote
+      # docs/data/slinger.json; rebuild docs/index.html and commit both
+      # with [skip ci] so this push does not re-trigger. The Publish
+      # site workflow picks up the workflow_run completion event and
+      # deploys. Same pattern daily.yml uses for ASX Bob.
+      - name: Commit dashboard update
+        if: always()
+        run: |
+          $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
+          if (-not (Test-Path $py)) { $py = "python" }
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if (Test-Path docs/data/slinger.json) {
+            git add docs/data/slinger.json
+            git diff --staged --quiet
+            if ($LASTEXITCODE -ne 0) {
+              git commit -m "Slinger data [skip ci]"
+              $LASTEXITCODE = 0
+            }
+            git pull --rebase origin $env:GITHUB_REF_NAME
+            & $py scripts/build_dashboard.py
+            git add docs/index.html docs/data/bob_history.json
+            git diff --staged --quiet
+            if ($LASTEXITCODE -ne 0) {
+              git commit -m "Dashboard update — Slinger [skip ci]"
+              $LASTEXITCODE = 0
+            }
+            git push origin ("HEAD:" + $env:GITHUB_REF_NAME)
+          } else {
+            Write-Host "[dashboard] slinger.json not written this run -- skipping commit"
+          }
 
       - name: Upload artifacts
         if: always()

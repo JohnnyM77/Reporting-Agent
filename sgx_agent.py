@@ -678,6 +678,14 @@ def run(
 
         _send_email(subject, body_text, body_html, attachments=email_pdfs)
 
+        # 7a. Dashboard JSON. Written for every real run (portfolio and
+        # results-ticker) so a one-off query shows up on the site until
+        # the next scheduled portfolio run replaces it. This is a
+        # deliberate departure from Bob's "one-off never touches the
+        # dashboard" rule -- ASX Bob has a catch-up cron the dashboard
+        # write would trip; Slinger doesn't.
+        _write_dashboard_json(classified)
+
     # 7. Save seen state — portfolio mode only. Results-ticker mode is
     # explicitly one-off (mirrors ASX Bob's RESULTS_TICKER contract).
     if not is_results_mode:
@@ -690,8 +698,89 @@ def run(
     return 0
 
 
+# --- dashboard JSON ---------------------------------------------------------
+
+# Shape mirrors docs/data/bob.json so scripts/build_dashboard.py can reuse
+# the same rendering helpers (_hi_item_card / _mat_item_row / etc). The
+# results items carry an `analysis` sub-dict with the same metric-key
+# schema (`dividend_ordinary`, `change_pct`), so Bob's `_flatten_metrics`
+# just works. `type` on high-impact items follows Bob's _BADGE_COLOURS
+# keys.
+SLINGER_DASHBOARD_JSON = Path(__file__).resolve().parent / "docs" / "data" / "slinger.json"
+
+
+_BUCKET_TO_TYPE = {
+    "RESULTS_HY_FY": "results",
+    "ACQUISITION": "acquisition",
+    "CAPITAL_OR_DEBT_RAISE": "capital",
+    "TRADING_UPDATE": "trading_update",
+}
+
+
+def _dashboard_item(item: Dict, bucket: str, analysis: Optional[Dict]) -> Dict:
+    out: Dict = {
+        "ticker": item.get("ticker") or "",
+        "title": item.get("title") or "",
+        "url": item.get("url") or "",
+    }
+    if bucket in _BUCKET_TO_TYPE:
+        out["type"] = _BUCKET_TO_TYPE[bucket]
+    if item.get("issuer_name"):
+        out["issuer_name"] = item["issuer_name"]
+    pdf_sources = item.get("_pdf_sources") or []
+    if pdf_sources:
+        out["source_pdfs"] = [{"url": u, "name": n} for u, n in pdf_sources]
+    if analysis:
+        # Drop the raw model text if any -- it belongs in the attached
+        # PDF, not the dashboard JSON.
+        clean = {k: v for k, v in analysis.items() if k != "_raw_text"}
+        out["analysis"] = clean
+    return out
+
+
+def _write_dashboard_json(
+    classified: List[Tuple[Dict, str, Optional[Dict]]],
+) -> None:
+    """Write docs/data/slinger.json in the same shape as bob.json.
+
+    Called after a successful email send. The Publish site workflow
+    picks this up via `workflow_run` and republishes the combined
+    dashboard. Silent no-op if we can't write for any reason -- the
+    email already went out, no need to fail the run over the dashboard."""
+    high_impact: List[Dict] = []
+    material: List[Dict] = []
+    fyi: List[Dict] = []
+    for item, bucket, analysis in classified:
+        row = _dashboard_item(item, bucket, analysis)
+        if bucket == "RESULTS_HY_FY" or bucket == "ACQUISITION" \
+                or bucket == "CAPITAL_OR_DEBT_RAISE" \
+                or bucket == "TRADING_UPDATE":
+            high_impact.append(row)
+        elif bucket in ("DIVIDEND", "SHARE_BUYBACK", "CONTRACT_MATERIAL"):
+            material.append(row)
+        else:
+            fyi.append(row)
+
+    data = {
+        "last_run": _sgt_now().date().isoformat(),
+        "silence": False,
+        "high_impact": high_impact,
+        "material": material,
+        "fyi": fyi,
+    }
+    try:
+        SLINGER_DASHBOARD_JSON.parent.mkdir(parents=True, exist_ok=True)
+        SLINGER_DASHBOARD_JSON.write_text(
+            json.dumps(data, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        _log(f"[main] dashboard JSON written -> {SLINGER_DASHBOARD_JSON}")
+    except Exception as exc:
+        _log(f"[main] dashboard JSON write failed: {exc.__class__.__name__}: {exc}")
+
+
 def _cli() -> int:
-    parser = argparse.ArgumentParser(description="Bob SG daily digest orchestrator.")
+    parser = argparse.ArgumentParser(description="Singapore Slinger daily digest orchestrator.")
     parser.add_argument(
         "--hours-back", type=int, default=HOURS_BACK_DEFAULT,
         help=f"Portfolio-mode window in hours (default {HOURS_BACK_DEFAULT}).",

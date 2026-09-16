@@ -67,7 +67,7 @@ def _analysis(**kw):
 class TestEmailStructure:
     def test_empty_produces_no_announcements_message(self):
         subject, text, html = build_email([], hours_back=24)
-        assert "Bob SG" in subject
+        assert "Singapore Slinger" in subject
         assert "No SGX announcements" in text
         assert "No SGX announcements" in html
 

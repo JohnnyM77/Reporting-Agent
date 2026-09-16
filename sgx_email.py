@@ -33,7 +33,11 @@ import re
 from typing import Dict, List, Optional, Tuple
 
 
-BOB_SG_NAME = "Bob SG"
+# Display name for the SGX bot. Renamed from "Bob SG" to "Singapore
+# Slinger" -- ASX Bob and Slinger are two distinct personas now, not one
+# bot with a regional suffix. The variable name stays BOB_SG_NAME to
+# avoid a churny rename across every import; only the string changed.
+BOB_SG_NAME = "Singapore Slinger"
 BOB_SG_VERSION = "V4 R2"
 
 SGT = dt.timezone(dt.timedelta(hours=8))

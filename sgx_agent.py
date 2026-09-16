@@ -2,12 +2,11 @@
 sgx_agent.py -- Bob SG orchestrator (V4 Round 2).
 
 Ties Round 1's fetch layer (sgx_fetch.py) to the classifier, PDF fetcher,
-LLM analysis (via shared/pdf_llm), Google Doc creation, and email sender.
-Runs standalone on the self-hosted Windows runner. Does NOT touch
-agent.py or the ASX Bob path -- deliberately duplicates the ~40 lines of
-LLM-plumbing and ~30 lines of Drive-plumbing rather than coupling to
-agent.py (which drags weasyprint / pypdf / bs4 imports the SGX box may
-not need for anything else).
+LLM analysis (via shared/pdf_llm), and email sender. Runs standalone on
+the self-hosted Windows runner. Does NOT touch agent.py or the ASX Bob
+path -- deliberately duplicates the ~40 lines of LLM-plumbing rather
+than coupling to agent.py (which drags weasyprint / pypdf / bs4 imports
+the SGX box may not need for anything else).
 
 Pipeline
 --------
@@ -18,19 +17,22 @@ Pipeline
     5. For RESULTS_HY_FY items only:
          a. Download PDFs (sgx_pdf)
          b. Anthropic streaming call with native PDF blocks + RESULTS_HYFY_PROMPT
-         c. Parse structured JSON
-         d. Create Google Doc from full_analysis field (optional)
-    6. Build email (sgx_email)            -- 3 buckets, same shape as ASX Bob
-    7. Send via SMTP                      -- same env vars as agent.py
+         c. Parse structured JSON (metric table + summary + full_analysis)
+    6. Build email (sgx_email)            -- 3 buckets, same shape as ASX Bob;
+                                             full_analysis rendered inline in
+                                             the results card
+    7. Send via SMTP                      -- same env vars as agent.py; the
+                                             source PDFs get attached
     8. Save seen_state
+
+The Google Doc / Drive plumbing was removed at the user's request: one
+email, full analysis inline, source PDFs attached.
 
 Env
 ---
     EMAIL_FROM, EMAIL_TO, EMAIL_APP_PASSWORD   -- SMTP (Gmail app password)
     ANTHROPIC_API_KEY                          -- Claude
     CLAUDE_MODEL                               -- optional, defaults inline
-    GDRIVE_CLIENT_ID / _SECRET / _REFRESH_TOKEN -- OAuth for Drive
-    GDRIVE_SGX_ANALYSIS_FOLDER_ID              -- Drive folder for analysis Docs
     SGX_HOURS_BACK                             -- window (default 24)
     SEEN_STATE_SGX_PATH                        -- seen-state file path
 
@@ -288,127 +290,21 @@ def _anthropic_call(
         return LLM_FAILED
 
 
-# --- Google Doc creation (optional) ----------------------------------------
-
-def _drive_service():
-    """OAuth-first, service-account fallback. Ported from agent.py's
-    drive_service() shape but self-contained. Returns None when no
-    credentials are configured -- callers treat Doc creation as
-    best-effort."""
-    client_id = os.environ.get("GDRIVE_CLIENT_ID", "").strip()
-    client_secret = os.environ.get("GDRIVE_CLIENT_SECRET", "").strip()
-    refresh_token = os.environ.get("GDRIVE_REFRESH_TOKEN", "").strip()
-
-    try:
-        from googleapiclient.discovery import build
-    except Exception:
-        _log("[drive] google-api-python-client not installed -- skipping Doc")
-        return None
-
-    if client_id and client_secret and refresh_token:
-        from google.oauth2.credentials import Credentials
-        creds = Credentials(
-            token=None,
-            refresh_token=refresh_token,
-            client_id=client_id,
-            client_secret=client_secret,
-            token_uri="https://oauth2.googleapis.com/token",
-            scopes=["https://www.googleapis.com/auth/drive.file"],
-        )
-        try:
-            return build("drive", "v3", credentials=creds, cache_discovery=False)
-        except Exception as exc:
-            _log(f"[drive] OAuth build failed: {exc}")
-            return None
-    _log("[drive] no OAuth creds set -- skipping Google Doc creation")
-    return None
-
-
-def _markdown_to_html(md: str) -> str:
-    """Tiny markdown subset -- headings, paragraphs, lists. Enough for
-    what RESULTS_HYFY_PROMPT emits. Deliberately NOT a general engine."""
-    if not md:
-        return "<p><em>No analysis text.</em></p>"
-    out: List[str] = []
-    in_ul = False
-    for raw in md.split("\n"):
-        line = raw.rstrip()
-        if not line.strip():
-            if in_ul:
-                out.append("</ul>")
-                in_ul = False
-            out.append("")
-            continue
-        if line.startswith("### "):
-            if in_ul:
-                out.append("</ul>"); in_ul = False
-            out.append(f"<h3>{line[4:].strip()}</h3>")
-        elif line.startswith("## "):
-            if in_ul:
-                out.append("</ul>"); in_ul = False
-            out.append(f"<h2>{line[3:].strip()}</h2>")
-        elif line.startswith("# "):
-            if in_ul:
-                out.append("</ul>"); in_ul = False
-            out.append(f"<h1>{line[2:].strip()}</h1>")
-        elif line.lstrip().startswith(("- ", "* ")):
-            if not in_ul:
-                out.append("<ul>"); in_ul = True
-            out.append(f"<li>{line.lstrip()[2:].strip()}</li>")
-        else:
-            if in_ul:
-                out.append("</ul>"); in_ul = False
-            out.append(f"<p>{line}</p>")
-    if in_ul:
-        out.append("</ul>")
-    return "\n".join(out)
-
-
-def _create_analysis_doc(
-    ticker: str, period: str, body_html: str, folder_id: str,
-) -> str:
-    """Create a native Google Doc for the deep analysis. Returns the
-    webViewLink, or "" on any failure (including Drive not configured)."""
-    if not folder_id:
-        return ""
-    service = _drive_service()
-    if service is None:
-        return ""
-    try:
-        from googleapiclient.http import MediaInMemoryUpload
-        today = _sgt_now().date().isoformat()
-        name = f"{ticker} {period or 'results'} SGX analysis {today}"
-        metadata = {
-            "name": name,
-            "parents": [folder_id],
-            "mimeType": "application/vnd.google-apps.document",
-        }
-        media = MediaInMemoryUpload(
-            body_html.encode("utf-8"), mimetype="text/html", resumable=False,
-        )
-        created = service.files().create(
-            body=metadata, media_body=media,
-            fields="id,webViewLink", supportsAllDrives=True,
-        ).execute()
-        link = created.get("webViewLink", "")
-        _log(f"[drive] Doc created for {ticker}: {link}")
-        return link
-    except Exception as exc:
-        _log(f"[drive] Doc create failed for {ticker}: {exc}")
-        return ""
-
-
 # --- deep results analysis --------------------------------------------------
 
 def _run_results_analysis(
     item: Dict,
     pdf_paths: List[Path],
     counters: Dict,
-    drive_folder: str,
 ) -> Optional[Dict]:
     """Run one results-item deep analysis. Returns the parsed analysis
-    dict (with a `doc_url` key added on success), or None if analysis
-    couldn't be produced."""
+    dict (metrics + summary + full_analysis markdown), or None if
+    analysis couldn't be produced.
+
+    The full_analysis markdown is rendered inline in the email card by
+    sgx_email — no separate Google Doc anymore. If JSON parsing fails,
+    the raw model text is stashed under `_raw_text` so the email can
+    still surface it (rather than dropping it entirely)."""
     ticker = item.get("ticker") or ""
     title = item.get("title") or ""
     issuer = item.get("issuer_name") or ""
@@ -439,37 +335,33 @@ def _run_results_analysis(
         _log(f"[results] {ticker}: JSON parse failed")
         return {
             "summary": "Analysis failed: could not parse model output. "
-                       "See Google Doc for raw text.",
+                       "Raw text preserved below.",
             "period": "",
             "period_type": "",
             "metrics": {},
+            "full_analysis": (
+                "## Raw model output (unparseable)\n\n"
+                f"{text}"
+            ),
             "_raw_text": text,
         }
-
-    # Attempt to create a Doc from the full_analysis markdown.
-    period = parsed.get("period") or ""
-    full_md = parsed.get("full_analysis") or ""
-    if full_md or parsed.get("_raw_text"):
-        header = (
-            f"<h1>{ticker} — {issuer} — {period}</h1>"
-            f"<p><em>SGX announcement: {title}</em></p>"
-        )
-        if full_md:
-            body_html = header + _markdown_to_html(full_md)
-        else:
-            body_html = (
-                header + "<h2>Raw model output (unparseable)</h2>"
-                f"<pre>{parsed.get('_raw_text', '')}</pre>"
-            )
-        parsed["doc_url"] = _create_analysis_doc(
-            ticker, period, body_html, drive_folder,
-        )
     return parsed
 
 
 # --- main pipeline ----------------------------------------------------------
 
-def _send_email(subject: str, body_text: str, body_html: str) -> bool:
+# Gmail rejects attachments totalling ~25MB. Cap conservatively and let
+# oversized PDFs go missing rather than fail the send outright — the
+# email still carries the source-announcement link.
+MAX_ATTACHMENT_TOTAL_BYTES = 20 * 1024 * 1024
+
+
+def _send_email(
+    subject: str,
+    body_text: str,
+    body_html: str,
+    attachments: Optional[List[Path]] = None,
+) -> bool:
     email_from = os.environ.get("EMAIL_FROM", "").strip()
     email_to = os.environ.get("EMAIL_TO", "").strip()
     app_pw = os.environ.get("EMAIL_APP_PASSWORD", "").strip()
@@ -482,6 +374,27 @@ def _send_email(subject: str, body_text: str, body_html: str) -> bool:
     msg["Subject"] = subject
     msg.set_content(body_text)
     msg.add_alternative(body_html, subtype="html")
+
+    total = 0
+    for pdf in attachments or []:
+        try:
+            data = pdf.read_bytes()
+        except Exception as exc:
+            _log(f"[email] could not read attachment {pdf.name}: {exc}")
+            continue
+        if total + len(data) > MAX_ATTACHMENT_TOTAL_BYTES:
+            _log(f"[email] attachment cap reached ({MAX_ATTACHMENT_TOTAL_BYTES}B) "
+                 f"-- skipping {pdf.name} ({len(data)}B)")
+            continue
+        msg.add_attachment(
+            data,
+            maintype="application",
+            subtype="pdf",
+            filename=pdf.name,
+        )
+        total += len(data)
+        _log(f"[email] attached {pdf.name} ({len(data)}B)")
+
     ctx = ssl.create_default_context()
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
@@ -602,12 +515,22 @@ def run(
     _log(f"[main] {len(items_to_process)} item(s) to process")
 
     # 4. Classify + 5. Deep-analyse results items.
+    # The temp dir must outlive the email send -- attachments are read
+    # from disk right before send. Manage it with an ExitStack so the
+    # dry-run path can bail early without leaking, and the send path
+    # keeps files alive until SMTP hands off.
+    import contextlib
     classified: List[Tuple[Dict, str, Optional[Dict]]] = []
     counters = {"llm_calls": 0, "pdfs_downloaded": 0}
-    drive_folder = os.environ.get("GDRIVE_SGX_ANALYSIS_FOLDER_ID", "").strip()
+    # PDFs collected from every results item, in the order downloaded.
+    # Attached to the outbound email as `application/pdf` so the user
+    # gets the source documents alongside the inline analysis.
+    email_pdfs: List[Path] = []
 
-    with tempfile.TemporaryDirectory(prefix="sgx_pdfs_") as pdf_root:
-        pdf_root_path = Path(pdf_root)
+    with contextlib.ExitStack() as stack:
+        pdf_root_path = Path(stack.enter_context(
+            tempfile.TemporaryDirectory(prefix="sgx_pdfs_")
+        ))
         for item in items_to_process:
             bucket = classify_sgx_announcement(item)
             analysis: Optional[Dict] = None
@@ -629,51 +552,51 @@ def run(
                 if counters["pdfs_downloaded"] > MAX_PDFS_PER_RUN:
                     _log(f"[main] PDF cap reached -- skipping analysis for {ticker}")
                 elif pdfs:
-                    analysis = _run_results_analysis(
-                        item, pdfs, counters, drive_folder,
-                    )
+                    analysis = _run_results_analysis(item, pdfs, counters)
+                email_pdfs.extend(pdfs)
 
             classified.append((item, bucket, analysis))
 
-    # 6. Build email.
-    model_label = os.environ.get("CLAUDE_MODEL") or CLAUDE_MODEL_DEFAULT
-    subject, body_text, body_html = build_email(
-        classified,
-        hours_back=hours_back if not is_results_mode else RESULTS_LOOKBACK_DAYS * 24,
-        model_label=model_label,
-    )
-    # In results-ticker mode, prefix the subject so it's obvious this
-    # isn't the scheduled portfolio digest.
-    if is_results_mode:
-        subject = f"[RESULTS] {subject} — {','.join(tickers)}"
+        # 6. Build email.
+        model_label = os.environ.get("CLAUDE_MODEL") or CLAUDE_MODEL_DEFAULT
+        subject, body_text, body_html = build_email(
+            classified,
+            hours_back=hours_back if not is_results_mode else RESULTS_LOOKBACK_DAYS * 24,
+            model_label=model_label,
+        )
+        # In results-ticker mode, prefix the subject so it's obvious this
+        # isn't the scheduled portfolio digest.
+        if is_results_mode:
+            subject = f"[RESULTS] {subject} — {','.join(tickers)}"
 
-    _log(f"[main] classified: "
-         f"{sum(1 for _, b, _ in classified if b == 'RESULTS_HY_FY')} results, "
-         f"{sum(1 for _, b, _ in classified if b != 'OTHER' and b != 'RESULTS_HY_FY')} material, "
-         f"{sum(1 for _, b, _ in classified if b == 'OTHER')} fyi")
-    _log(f"[main] LLM calls: {counters['llm_calls']}/{MAX_LLM_CALLS_PER_RUN}, "
-         f"PDFs: {counters['pdfs_downloaded']}/{MAX_PDFS_PER_RUN}")
+        _log(f"[main] classified: "
+             f"{sum(1 for _, b, _ in classified if b == 'RESULTS_HY_FY')} results, "
+             f"{sum(1 for _, b, _ in classified if b != 'OTHER' and b != 'RESULTS_HY_FY')} material, "
+             f"{sum(1 for _, b, _ in classified if b == 'OTHER')} fyi")
+        _log(f"[main] LLM calls: {counters['llm_calls']}/{MAX_LLM_CALLS_PER_RUN}, "
+             f"PDFs: {counters['pdfs_downloaded']}/{MAX_PDFS_PER_RUN}, "
+             f"email attachments: {len(email_pdfs)}")
 
-    if dry_run:
-        out_dir = Path("outputs/sgx")
-        out_dir.mkdir(parents=True, exist_ok=True)
-        (out_dir / "digest_preview.html").write_text(body_html, encoding="utf-8")
-        (out_dir / "digest_preview.txt").write_text(body_text, encoding="utf-8")
-        _log(f"[main] DRY RUN -- wrote preview to {out_dir}/digest_preview.*")
-        return 0
+        if dry_run:
+            out_dir = Path("outputs/sgx")
+            out_dir.mkdir(parents=True, exist_ok=True)
+            (out_dir / "digest_preview.html").write_text(body_html, encoding="utf-8")
+            (out_dir / "digest_preview.txt").write_text(body_text, encoding="utf-8")
+            _log(f"[main] DRY RUN -- wrote preview to {out_dir}/digest_preview.*")
+            return 0
 
-    # Results-ticker mode with zero items is a failure (usually a token-
-    # prime flake). Don't send an empty "no results" digest -- the user
-    # asked for a specific report; if we couldn't find it, they should
-    # see the failure in the workflow log instead of a misleading empty
-    # email that looks like the report doesn't exist.
-    if is_results_mode and not classified:
-        _log("[main] results-ticker mode with 0 items -- NOT sending email "
-             "(likely a token-prime failure or the ticker has no results "
-             "in the lookback window). Re-run the dispatch to retry.")
-        return 3
+        # Results-ticker mode with zero items is a failure (usually a token-
+        # prime flake). Don't send an empty "no results" digest -- the user
+        # asked for a specific report; if we couldn't find it, they should
+        # see the failure in the workflow log instead of a misleading empty
+        # email that looks like the report doesn't exist.
+        if is_results_mode and not classified:
+            _log("[main] results-ticker mode with 0 items -- NOT sending email "
+                 "(likely a token-prime failure or the ticker has no results "
+                 "in the lookback window). Re-run the dispatch to retry.")
+            return 3
 
-    _send_email(subject, body_text, body_html)
+        _send_email(subject, body_text, body_html, attachments=email_pdfs)
 
     # 7. Save seen state — portfolio mode only. Results-ticker mode is
     # explicitly one-off (mirrors ASX Bob's RESULTS_TICKER contract).

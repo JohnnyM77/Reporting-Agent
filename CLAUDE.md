@@ -242,16 +242,35 @@ horizontal split from `agent.py` (which stays ASX-only, untouched):
 | `sgx_fetch.py` | Playwright prime + REST replay (Round 1) |
 | `sgx_classify.py` | Category-code -> bucket (RESULTS_HY_FY / DIVIDEND / SHARE_BUYBACK / ACQUISITION / …), title-regex fallback |
 | `sgx_pdf.py` | `links.sgx.com` URL -> local PDF(s). Handles both direct-PDF and HTML-landing-page cases |
-| `sgx_email.py` | Digest HTML/text builder — same table-only inline-styles shape as `agent.py`, `S$` prefix, "SGX" badge in header |
-| `sgx_agent.py` | Orchestrator: fetch → classify → PDF → LLM (for results) → Doc → email → seen-state |
+| `sgx_email.py` | Digest HTML/text builder — same table-only inline-styles shape as `agent.py`, `S$` prefix, "SGX" badge in header, full markdown analysis rendered inline in the results card |
+| `sgx_agent.py` | Orchestrator: fetch → classify → PDF → LLM (for results) → email with PDFs attached → seen-state |
 
 **No coupling to `agent.py`.** The ~40 lines of Anthropic-streaming
-plumbing and ~30 lines of Drive OAuth are duplicated in `sgx_agent.py`
-rather than imported. Reason: `import agent` drags in `weasyprint`,
-`pypdf`, `bs4`, and other deps the SGX box doesn't need for anything
-else, and any change to `agent.py` becomes an SGX regression risk.
-Round 3+ can promote the shared bits into `shared/` when a third caller
-appears.
+plumbing are duplicated in `sgx_agent.py` rather than imported. Reason:
+`import agent` drags in `weasyprint`, `pypdf`, `bs4`, and other deps the
+SGX box doesn't need for anything else, and any change to `agent.py`
+becomes an SGX regression risk. Round 3+ can promote the shared bits
+into `shared/` when a third caller appears.
+
+**No Google Drive on the SGX path.** ASX Bob writes a native Google Doc
+per results item; SGX Bob deliberately doesn't. The full markdown
+analysis renders inline in the email card (`_markdown_to_email_html` in
+`sgx_email.py` — same tiny subset ASX Bob's Doc builder used, but with
+email-safe inline styles), and the source PDFs from the announcement
+landing page are attached to the email as `application/pdf`. One email
+carries the metric table, the summary, the full analysis and the raw
+source documents — no follow-up click needed. Attachment total is capped
+at 20MB so a huge annual report doesn't fail the send; anything over the
+cap is dropped and the source-announcement link still points at SGX.
+
+**Metric JSON keys are load-bearing.** `sgx_email._results_card_html`
+reads `dividend_ordinary` (not `ordinary_dividend`) and `change_pct`
+(not `change`) — those are the keys the `RESULTS_HYFY_PROMPT` schema
+tells the model to emit. Earlier code used the wrong names and the
+first live SGX results email came back with a blank YoY column and
+`n/a` in the dividend row despite the model returning real numbers.
+`tests/test_sgx_email.py::TestResultsCard::test_card_shows_yoy_change_column`
+and `test_card_renders_dividend_row` pin the correct schema.
 
 **SGX classification is metadata-driven, not title-regex.** Every SGX
 row carries `sub` (e.g. `ANNC17`), `cat` (e.g. `ANNC`), and

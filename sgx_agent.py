@@ -339,15 +339,18 @@ def _run_results_analysis(
     item: Dict,
     pdf_paths: List[Path],
     counters: Dict,
+    results_hint: str = "",
 ) -> Optional[Dict]:
     """Run one results-item deep analysis. Returns the parsed analysis
     dict (metrics + summary + full_analysis markdown), or None if
     analysis couldn't be produced.
 
-    The full_analysis markdown is rendered inline in the email card by
-    sgx_email — no separate Google Doc anymore. If JSON parsing fails,
-    the raw model text is stashed under `_raw_text` so the email can
-    still surface it (rather than dropping it entirely)."""
+    `results_hint` is a free-form paragraph appended to the user prompt
+    -- use it to give the model context Bob doesn't otherwise know (e.g.
+    "Haw Par's main asset is its holding in UOB, not the Tiger Balm
+    business, so the analysis should focus on the mark-to-market bank
+    stake and dividend flow-through, not consumer product revenue").
+    Passed through unchanged; the prompt is otherwise ticker-agnostic."""
     ticker = item.get("ticker") or ""
     title = item.get("title") or ""
     issuer = item.get("issuer_name") or ""
@@ -359,6 +362,14 @@ def _run_results_analysis(
         _log(f"[results] {ticker}: no PDFs -- skipping deep analysis")
         return None
 
+    hint_block = ""
+    if results_hint.strip():
+        hint_block = (
+            f"\n\nUser-supplied context (weight this in your analysis, "
+            f"especially where it points to what matters vs. what's noise):\n"
+            f"{results_hint.strip()}"
+        )
+
     user = (
         f"Ticker: {ticker}\n"
         f"Issuer: {issuer}\n"
@@ -367,6 +378,7 @@ def _run_results_analysis(
         f"Return your response as strict JSON per the system prompt schema. "
         f"Note this issuer reports in Singapore dollars (SGD) — reflect that "
         f"in every metric's currency and prefix figures with S$."
+        f"{hint_block}"
     )
     text = _anthropic_call(pdf_paths, RESULTS_HYFY_PROMPT, user, counters)
     if text in (LLM_SKIPPED, LLM_FAILED):
@@ -503,6 +515,7 @@ def run(
     hours_back: int,
     dry_run: bool = False,
     results_tickers: Optional[List[str]] = None,
+    results_hint: str = "",
 ) -> int:
     """Main pipeline. Two modes:
 
@@ -514,11 +527,16 @@ def run(
          recent RESULTS_HY_FY item per ticker, runs deep analysis, emails.
          Ignores seen_state entirely (this is the "get me 5DD's last FY"
          path — must always surface a result).
-    """
+
+    `results_hint` is passed to every deep-analysis LLM call for this
+    run. Use it to tell Bob what to weight when the report itself doesn't
+    make the shape of the business obvious -- e.g. "Haw Par's main asset
+    is its UOB stake, not Tiger Balm trading". Empty string = no hint."""
     is_results_mode = bool(results_tickers)
     _log(f"{BOB_SG_NAME} {BOB_SG_VERSION} -- "
          f"mode={'results-ticker' if is_results_mode else 'portfolio'} "
-         f"hours_back={hours_back} dry_run={dry_run}")
+         f"hours_back={hours_back} dry_run={dry_run} "
+         f"hint={'yes' if results_hint.strip() else 'no'}")
 
     if is_results_mode:
         tickers = [t.strip().upper() for t in results_tickers if t and t.strip()]
@@ -601,6 +619,7 @@ def run(
                 elif fetched:
                     analysis = _run_results_analysis(
                         item, [f.path for f in fetched], counters,
+                        results_hint=results_hint,
                     )
 
                 # Render the standalone analysis PDF and attach it. Only
@@ -687,6 +706,13 @@ def _cli() -> int:
              f"(looks back {RESULTS_LOOKBACK_DAYS} days). Overrides the "
              "portfolio; skips seen_state. Example: --results-ticker 5DD",
     )
+    parser.add_argument(
+        "--results-hint", default="",
+        help="Free-form context appended to every deep-analysis LLM call "
+             "for this run. Use it to steer the model on what matters vs. "
+             "what's noise (e.g. \"Haw Par's main asset is its UOB stake, "
+             "not Tiger Balm trading\").",
+    )
     args = parser.parse_args()
 
     results_tickers: Optional[List[str]] = None
@@ -701,6 +727,7 @@ def _cli() -> int:
             hours_back=args.hours_back,
             dry_run=args.dry_run,
             results_tickers=results_tickers,
+            results_hint=args.results_hint or "",
         )
     except Exception as exc:
         _log(f"[main] FATAL {exc.__class__.__name__}: {exc}")

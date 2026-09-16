@@ -33,6 +33,10 @@ on:
         description: "Comma-separated SGX codes -- pulls their LAST HY/FY report (looks back ~365 days), runs deep analysis, emails. Overrides portfolio; skips seen_state. Example: 5DD"
         required: false
         default: ""
+      results_hint:
+        description: "Optional context for the LLM -- appended to the user prompt for every deep-analysis call in this run. Use it when the report itself doesn't make the shape of the business obvious. Example: 'Haw Par's main asset is its UOB stake, not Tiger Balm trading.'"
+        required: false
+        default: ""
   schedule:
     # 00:15 UTC = 08:15 SGT -- ~1h15m after SGX opens (9am SGT), long enough
     # for the ~7am pre-open batch to have landed.
@@ -90,6 +94,7 @@ jobs:
           BOB_SG_DRY_RUN_INPUT: ${{ github.event.inputs.dry_run }}
           BOB_SG_FETCH_ONLY_INPUT: ${{ github.event.inputs.fetch_only }}
           BOB_SG_RESULTS_TICKER_INPUT: ${{ github.event.inputs.results_ticker }}
+          BOB_SG_RESULTS_HINT_INPUT: ${{ github.event.inputs.results_hint }}
         run: |
           $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
           if (-not (Test-Path $py)) { $py = "python" }
@@ -115,6 +120,9 @@ jobs:
             }
             if ($env:BOB_SG_RESULTS_TICKER_INPUT) {
               $args += @("--results-ticker", $env:BOB_SG_RESULTS_TICKER_INPUT)
+            }
+            if ($env:BOB_SG_RESULTS_HINT_INPUT) {
+              $args += @("--results-hint", $env:BOB_SG_RESULTS_HINT_INPUT)
             }
             if ($dryRun) { $args += "--dry-run" }
             & $py @args

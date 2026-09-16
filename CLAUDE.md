@@ -228,11 +228,22 @@ Digest blocks may now be either a plain string (escaped, pre-wrap) or a
 `{"text": ..., "html": ...}` dict for blocks that build their own email-safe
 HTML (`_block_text` / `_block_html` in `agent.py`).
 
-## Bob SG — Singapore Exchange announcements (V4)
+## Singapore Slinger — Singapore Exchange announcements (V4)
 
-Round 1 landed the fetch (`sgx_fetch.py`). Round 2 adds the full daily
-digest: classifier + PDF fetcher + LLM analysis (results only) + Google
-Doc + email, all wired into `sgx_daily.yml` with a morning SGT cron.
+The SGX bot is Singapore Slinger — "slings information" from SGX. It's a
+distinct persona from ASX Bob (their JSON shapes overlap by design, but
+the two are independent bots on the dashboard now, not "Bob with a
+regional badge"). The display name changed; the underlying `sgx_*`
+module and `BOB_SG_*` constant names stayed to avoid a churny rename
+across every import.
+
+Round 1 landed the fetch (`sgx_fetch.py`). Round 2 added the full daily
+digest: classifier + PDF fetcher + LLM analysis (results only) + email,
+all wired into `sgx_daily.yml` with a morning SGT cron. Round 3 wires
+the dashboard: Slinger writes `docs/data/slinger.json` after each real
+run, the sgx_daily workflow commits + pushes it, and
+`.github/workflows/theo-pages.yml` picks up the `Singapore Slinger Daily`
+`workflow_run` completion event and republishes the site.
 
 Layout — five top-level `sgx_*` modules keep the SGX path a clean
 horizontal split from `agent.py` (which stays ASX-only, untouched):
@@ -243,7 +254,7 @@ horizontal split from `agent.py` (which stays ASX-only, untouched):
 | `sgx_classify.py` | Category-code -> bucket (RESULTS_HY_FY / DIVIDEND / SHARE_BUYBACK / ACQUISITION / …), title-regex fallback |
 | `sgx_pdf.py` | `links.sgx.com` URL -> local PDF(s). Handles both direct-PDF and HTML-landing-page cases |
 | `sgx_email.py` | Digest HTML/text builder — same table-only inline-styles shape as `agent.py`, `S$` prefix, "SGX" badge in header, full markdown analysis rendered inline in the results card |
-| `sgx_agent.py` | Orchestrator: fetch → classify → PDF → LLM (for results) → email with PDFs attached → seen-state |
+| `sgx_agent.py` | Orchestrator: fetch → classify → PDF → LLM (for results) → email with PDFs attached → seen-state → dashboard JSON |
 
 **No coupling to `agent.py`.** The ~40 lines of Anthropic-streaming
 plumbing are duplicated in `sgx_agent.py` rather than imported. Reason:
@@ -363,18 +374,42 @@ Financial Statements, `ANNC18`=General Announcement) — much cleaner
 signal than ASX's title regex when Round 2 lands.
 
 ### Workflow
-`.github/workflows/sgx_daily.yml` — manual dispatch AND daily cron
-(`15 0 * * *` UTC). Runs on `[self-hosted, Windows]` using the
-PowerShell + machine-Python pattern from `ned_transcript.yml`. Reads
-`state_seen_sgx.json` via `actions/cache` for dedup across runs, runs
-`sgx_agent.py`, emails the digest via the same Gmail SMTP secrets ASX
-Bob uses. Dispatch inputs: `tickers` (override the yaml portfolio),
-`hours_back` (default 24), `dry_run` (preview only, no email or state
-change), `fetch_only` (Round 1 mode — just dump JSON, no LLM/email),
-`results_ticker` (pull LAST HY/FY report + deep analysis), and
-`results_hint` (free-form context appended to every LLM call — use it
-when the report doesn't make the shape of the business obvious, e.g.
-"Haw Par's main asset is its UOB stake, not Tiger Balm trading").
+`.github/workflows/sgx_daily.yml` (workflow name: **Singapore Slinger
+Daily**) — manual dispatch AND daily cron (`15 0 * * *` UTC). Runs on
+`[self-hosted, Windows]` using the PowerShell + machine-Python pattern
+from `ned_transcript.yml`. Reads `state_seen_sgx.json` via
+`actions/cache` for dedup across runs, runs `sgx_agent.py`, emails the
+digest via the same Gmail SMTP secrets ASX Bob uses, then commits +
+pushes `docs/data/slinger.json` and a rebuilt `docs/index.html` so the
+site republishes. Dispatch inputs: `tickers` (override the yaml
+portfolio), `hours_back` (default 24), `dry_run` (preview only, no
+email, no state change, no dashboard write), `fetch_only` (Round 1
+mode — just dump JSON, no LLM/email), `results_ticker` (pull LAST HY/FY
+report + deep analysis), and `results_hint` (free-form context appended
+to every LLM call — use it when the report doesn't make the shape of
+the business obvious, e.g. "Haw Par's main asset is its UOB stake, not
+Tiger Balm trading").
+
+### Dashboard integration
+Slinger writes `docs/data/slinger.json` (same shape as `bob.json`:
+`last_run` + `high_impact` / `material` / `fyi` arrays) after each
+non-dry-run. Written on both portfolio and results-ticker modes — a
+one-off `results_ticker` query does show up on the site until the next
+scheduled portfolio run overwrites it. This is a deliberate departure
+from ASX Bob's "one-off never touches the dashboard" rule; Bob has a
+catch-up cron the dashboard write would trip (see the `_already_sent_today`
+guard in `agent.py`), Slinger doesn't.
+
+`scripts/build_dashboard.py` renders `_slinger_section` between Bob's
+card and Wally's. High-impact items reuse Bob's `_render_analysis_sections`
+because the metrics JSON schema (`dividend_ordinary` + `change_pct`) is
+identical, and Slinger's card adds a **Source PDFs** link list (SGX
+hosts them, so the dashboard just links back). Material/FYI items only
+carry `ticker` + `title` + `url`, so they render as compact rows.
+
+The Publish site workflow (`theo-pages.yml`) has `Singapore Slinger
+Daily` in its `workflow_run` triggers so a Slinger run completing kicks
+off a Pages redeploy — same pattern Bob/Ned/Wally/Sally use.
 
 ## Wally the Watcher — target ("buy") prices
 

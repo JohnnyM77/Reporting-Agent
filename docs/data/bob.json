@@ -1,43 +1,58 @@
 {
-  "last_run": "2026-09-16",
+  "last_run": "2026-09-17",
   "silence": false,
   "high_impact": [],
-  "material": [],
+  "material": [
+    {
+      "ticker": "AR9",
+      "title": "archTIS Wins U.S. Regional Bank Contract 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 92.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140545",
+      "analysis": {
+        "what_happened": "archTIS secured a A$119K contract with a Nasdaq-listed U.S. regional bank to deploy its Spirion Sensitive Data Platform for data retention and lifecycle management, the second Spirion win in two weeks totalling A$564K in combined contract value.",
+        "so_what": "Deals are small (A$564K TCV in two weeks) but demonstrate early commercial traction for Spirion outside government/defence into financial services, validating the acquisition thesis and opening upsell opportunities into NC Protect and TDI — material to growth narrative but immaterial to near-term revenue."
+      }
+    }
+  ],
   "fyi": [
     {
       "ticker": "ABB",
       "title": "Update - Notification of buy-back - ABB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139967"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140467"
     },
     {
-      "ticker": "BHP",
-      "title": "BHP 2026 ESG Roundtable 31\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 3.2MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139976"
+      "ticker": "AR9",
+      "title": "archTIS Wins U.S. Regional Bank Contract 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 92.9KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140545"
     },
     {
       "ticker": "BXB",
       "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 11.1KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140023"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140405"
     },
     {
       "ticker": "BXB",
       "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139877"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 16.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139698"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Application for quotation of securities - BXB 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 16.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139696"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140377"
     },
     {
       "ticker": "CSL",
       "title": "Update - Notification of buy-back - CSL 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.3KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139907"
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140378"
+    },
+    {
+      "ticker": "CSL",
+      "title": "Notice of Meeting and Shareholder Pack 2026 29\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.1MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140363"
+    },
+    {
+      "ticker": "MSV",
+      "title": "Notice of Annual General Meeting/Proxy Form 16\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 887.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140362"
+    },
+    {
+      "ticker": "WDS",
+      "title": "Appendix 3Z 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 336.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140116"
     }
   ]
 }

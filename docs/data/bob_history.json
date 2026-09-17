@@ -1,5 +1,63 @@
 [
   {
+    "last_run": "2026-09-17",
+    "silence": false,
+    "high_impact": [],
+    "material": [
+      {
+        "ticker": "AR9",
+        "title": "archTIS Wins U.S. Regional Bank Contract 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 92.9KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140545",
+        "analysis": {
+          "what_happened": "archTIS secured a A$119K contract with a Nasdaq-listed U.S. regional bank to deploy its Spirion Sensitive Data Platform for data retention and lifecycle management, the second Spirion win in two weeks totalling A$564K in combined contract value.",
+          "so_what": "Deals are small (A$564K TCV in two weeks) but demonstrate early commercial traction for Spirion outside government/defence into financial services, validating the acquisition thesis and opening upsell opportunities into NC Protect and TDI \u2014 material to growth narrative but immaterial to near-term revenue."
+        }
+      }
+    ],
+    "fyi": [
+      {
+        "ticker": "ABB",
+        "title": "Update - Notification of buy-back - ABB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.4KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140467"
+      },
+      {
+        "ticker": "AR9",
+        "title": "archTIS Wins U.S. Regional Bank Contract 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 92.9KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140545"
+      },
+      {
+        "ticker": "BXB",
+        "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 11.1KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140405"
+      },
+      {
+        "ticker": "BXB",
+        "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140377"
+      },
+      {
+        "ticker": "CSL",
+        "title": "Update - Notification of buy-back - CSL 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.3KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140378"
+      },
+      {
+        "ticker": "CSL",
+        "title": "Notice of Meeting and Shareholder Pack 2026 29\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.1MB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140363"
+      },
+      {
+        "ticker": "MSV",
+        "title": "Notice of Annual General Meeting/Proxy Form 16\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 887.8KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140362"
+      },
+      {
+        "ticker": "WDS",
+        "title": "Appendix 3Z 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 336.1KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140116"
+      }
+    ]
+  },
+  {
     "last_run": "2026-09-16",
     "silence": false,
     "high_impact": [],
@@ -39,191 +97,6 @@
         "ticker": "CSL",
         "title": "Update - Notification of buy-back - CSL 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.3KB",
         "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139907"
-      }
-    ]
-  },
-  {
-    "last_run": "2026-09-15",
-    "silence": false,
-    "high_impact": [
-      {
-        "ticker": "NHC",
-        "title": "Presentation on Full Year Results 2026 24\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 4.4MB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139509",
-        "type": "results",
-        "analysis": {
-          "ticker": "NHC",
-          "period": "FY26",
-          "period_type": "full_year",
-          "currency": "AUD",
-          "metrics": {
-            "revenue": {
-              "value": "$1,767m",
-              "change_pct": "-0.5%",
-              "basis": "reported"
-            },
-            "underlying_npat": {
-              "value": "$161.0m",
-              "change_pct": "-63.4%",
-              "basis": "statutory"
-            },
-            "underlying_eps": {
-              "value": "19.1c",
-              "change_pct": "-63.3%",
-              "basis": "statutory"
-            },
-            "dividend_ordinary": {
-              "value": "30.0c",
-              "change_pct": "+17.6%",
-              "note": "fully franked final dividend only; total FY26 ordinary dividends declared 40.0cps (interim 10.0c + final 30.0c) vs FY25 34.0cps total"
-            },
-            "operating_cash_flow": {
-              "value": "$564.1m",
-              "change_pct": "-1.2%",
-              "basis": "reported"
-            }
-          },
-          "summary": "NHC delivered a volume beat \u2014 both saleable production (11.5Mt) and coal sales (11.8Mt) exceeded the top of guidance \u2014 but a 10% fall in realised coal price crushed earnings, with NPAT down 63% to $161m. Lower prices compounded by a 25% jump in D&A from Bengalla Growth Project capex and higher prime overburden movement drove the profit collapse despite broadly flat revenue. Operating cash flow held up at $564m (roughly matching FY25's $571m), so cash conversion was solid, but free cash flow of $371m was partly inflated by a 53% drop in Bengalla sustaining capex ($84m vs $178m at 80% basis). The 30cps fully franked final dividend (40cps full-year declared, up 18% on FY25's 34cps) signals confidence, but the payout looks aggressive relative to a $161m NPAT. The single biggest forward risk is a sustained thermal coal price retreat: the underlying margin per tonne has already compressed from $64.4/t to $45.0/t, and any move back toward the pre-Ukraine long-run average (~US$83/t) would render free cash flow inadequate to sustain current dividends and fund New Acland ramp-up capex simultaneously.",
-          "full_analysis": "## Executive summary\n- Revenue held near flat at $1,767m (-0.5%) as an 11.8% volume increase in coal sales almost entirely offset a 10% fall in realised price (incl. hedging) to $145.2/t; the business is running harder to stand still.\n- Underlying EBITDA collapsed 32.8% to $514m on lower price, higher prime overburden movement at Bengalla (pit re-sequencing post wet weather), and continued New Acland Stage 3 ramp-up costs.\n- NPAT fell 63.4% to $161m \u2014 disproportionate to the EBITDA decline \u2014 because D&A surged 25% to $238.7m as plant purchased for the Bengalla Growth Project and New Acland was depreciated; this is a structural cost headwind for at least 2-3 more years.\n- Operating cash of $564m was resilient, but free cash flow of $371m was materially supported by a deliberate 53% cut in Bengalla sustaining capex ($84m vs $178m, 80% basis) which raises questions about future maintenance requirements.\n- The 30cps fully franked final dividend lifts total FY26 declared ordinary dividends to 40cps, a payout that exceeds statutory NPAT per share of 19.1c \u2014 this is sustainable only if cash generation remains strong and is essentially a return-of-capital from the balance sheet's $778.5m cash stack.\n\n## Key numbers\n\n| Metric | FY26 | FY25 | Change |\n|---|---|---|---|\n| Revenue | $1,767m | $1,776m | -0.5% |\n| Underlying EBITDA | $514.3m | $765.8m | -32.8% |\n| EBITDA margin (implied) | ~29% | ~43% | -14pp |\n| D&A | $238.7m | $191.0m | +25.0% |\n| Net interest (expense) | ($19.7m) | ($16.4m) | +20.1% |\n| PBT (excl. non-regular) | $255.8m | $558.4m | -54.2% |\n| Non-regular items (pre-tax) | ($2.3m) | $42.9m | n/m |\n| Statutory NPAT | $161.0m | $439.4m | -63.4% |\n| Underlying NPAT | $161.0m | $439.4m | -63.4% (no separate underlying NPAT disclosed) |\n| EPS (statutory) | 19.1c | 52.0c | -63.3% |\n| Ordinary dividends declared (full year) | 40.0cps | 34.0cps | +17.6% |\n| Operating cash flow | $564.1m | $571m | -1.2% |\n| Free cash flow | $371m | $289m | +28.4% |\n| Available cash (incl. fixed income) | $778.5m | $707.3m | +10.1% |\n| Net debt/cash | Net cash (D/E 0.11x) | Net cash | n/m |\n| Realised price (incl. hedging) | $145.2/t | $161.4/t | -10.0% |\n| Group FOB cash cost (excl. royalties) | $88.9/t | $82.4/t | +7.9% |\n| Underlying margin (incl. hedging) | $45.0/t | $64.4/t | -30.1% |\n| Saleable coal production | 11.5Mt | 10.7Mt | +7.6% |\n| Coal sales | 11.8Mt | 10.5Mt | +11.8% |\n\nNote: NHC does not disclose a separate 'underlying NPAT' distinct from statutory NPAT. The $161m figure is statutory NPAT after non-regular items; non-regular items in FY26 were a small net charge of $2.3m pre-tax so there is negligible difference. Basis labelled 'statutory' throughout.\n\n## Quality of earnings\n- **Cash conversion:** Operating cash flow of $564.1m versus EBITDA of $514.3m implies cash conversion >100% of EBITDA \u2014 this is healthy and reflects working capital release (product stocks down 32% from 830kt to 564kt, drawing down inventory built during FY25 weather disruptions). Investors should note this stock drawdown is one-off in nature.\n- **Free cash flow:** FCF of $371m ($32/t) is up 28% on FY25's $289m despite lower earnings, almost entirely because Bengalla sustaining capex was cut by $93.8m (80% basis). Management revised sustaining capex guidance down mid-year to $100-130m from original levels; actual came in at $84m \u2014 even below the revised floor. The presentation attributes this to completion of major equipment purchases in FY25; investors should monitor whether deferred maintenance risk is building.\n- **D&A uplift is structural:** D&A of $238.7m (+$47.7m vs FY25) will remain elevated as the Bengalla Growth Project fleet and New Acland Stage 3 infrastructure depreciate over multi-year useful lives. This is a real cash cost in disguise \u2014 the capex has already been spent.\n- **Non-regular items:** FY26 saw a small $2.3m pre-tax charge vs a $42.9m credit in FY25 (the prior year credit likely included asset revaluations or gains). The swing of ~$45m pre-tax is a clean earnings headwind year-on-year.\n- **Receivables/DSO:** Not disclosed in this release. No red flags flagged.\n- **Capitalised costs:** New Acland Manning Vale West box-cut costs are being capitalised (explicitly excluded from the growth capex guidance of $65-75m road + up to $50m equipment). This is appropriate but means reported costs understate the cash being consumed on the QLD ramp.\n\n## Management framing\n**Assessment: Mixed \u2014 operationally transparent, financially promotional**\n- Management leads with operational outperformance (production and sales beat guidance top-end) and a strong 32.7% TSR \u2014 fair points, but the TSR is partly explained by a rebounding coal price off a FY25 floor, not management skill.\n- The headline slide frames the result as 'strong operational performance translating to increased shareholder returns' \u2014 this is misleading given NPAT fell 63%. The 'increased shareholder returns' refers to a higher dividend (40cps vs 34cps) which is being paid from a $778m cash pile, not from current earnings coverage.\n- The waterfall chart on the financial performance slide is well-constructed and transparent \u2014 it shows the $514m EBITDA, tax, investing, and dividend outflows clearly.\n- Management omits any explicit discussion of the risk that sustaining capex was artificially low in FY26, and does not disclose what normalised sustaining capex should be.\n- The TRIFR safety metric (up 20.7%) was demoted mid-year to a 'supplementary measure' in favour of HPEFR (down 38.3%). The timing of this metric reclassification when TRIFR was worsening is worth noting; management's explanation (industry trend toward HPEFR) is plausible but convenient.\n- No FY27 financial guidance provided \u2014 only operational production guidance ranges are implied from the growth slide. The absence of cost or earnings guidance is a gap.\n\n## Segments\n\n**Bengalla Mine (80% basis, NSW):**\n- Saleable production 8.2Mt (+4.1%), coal sales 8.2Mt (+3.6%)\n- FOB cash cost (excl. royalties) $81.3/t vs $76.5/t (+6.2%) \u2014 cost increase driven by higher prime overburden movement (50.9Mbcm, +10.8%) as pit was re-sequenced post wet weather; 2HFY26 returned to 13.4Mtpa ROM run-rate\n- Sustaining capex $84m (80%) vs $178m prior year \u2014 major drop reflects completion of growth fleet purchases in FY25\n- Margins remain healthy but compressed; the mine is the group's anchor asset\n\n**New Acland Mine (100%, QLD):**\n- Saleable production 3.3Mt (+17.3%), coal sales 3.6Mt (+37.0%) \u2014 significant ramp-up with stock drawdown also contributing to sales outpacing production\n- ROM strip ratio improved marginally to 2.6x from 2.7x\n- Still in ramp-up phase toward ~5Mtpa; Manning Vale West pit development is the critical FY27-FY28 milestone\n- Ongoing growth capex: road re-alignment ($65-75m total, $16m spent to date), equipment (up to $50m)\n\n**QBH (port):**\n- Export throughput 5.8Mt (+12.1%)\n\n**Malabar Resources/Maxwell Mine (25.97% equity interest, not consolidated):**\n- Longwall commissioned April 2026; still in ramp-up\n- FY26 sales 0.6Mt (+94%); targeting ~6Mtpa long-term\n- Equity accounted \u2014 contributes to group earnings but production is not in consolidated metrics\n\n## Balance sheet\n- Available cash (cash + fixed income) of $778.5m at 31 July 2026, up from $707.3m \u2014 a $71m increase despite $211m in dividends paid and $206m in investing cash outflows, testament to operating cash generation\n- Debt to equity of 0.11x \u2014 extremely conservative leverage\n- New $300m senior unsecured convertible notes (2.625%, due 2032) were issued and $293.3m of existing notes (4.25%, due 2029) were repurchased \u2014 a smart liability management exercise that reduces coupon cost and pushes maturity out 3 years. Net debt impact is approximately neutral\n- Net assets $2,615m; market cap $4,379m implies Price/Book of ~1.7x\n- No covenant concerns disclosed; balance sheet strength is genuine\n\n## Dividend and capital allocation\n- FY26 final dividend: 30.0cps fully franked, payable 15 October 2026\n- Total FY26 ordinary dividends declared: 40.0cps (10cps interim + 30cps final) vs 34.0cps in FY25 (+17.6%)\n- Dividends paid in FY26 (cash): $211m (includes FY25 final of 15cps and FY26 interim of 10cps)\n- The 40cps declared per share exceeds the 19.1cps EPS \u2014 the company is paying out more than 2x earnings as dividends. This is sustainable only because of the large cash balance and operating cash generation, but is not indefinitely repeatable if coal prices remain soft\n- Share buyback remains on foot but was not actively deployed in FY26 \u2014 understandable given capital required for New Acland ramp-up\n- Franking account appears substantial (management cites utilisation of 'significant franking account' as a reason for dividend preference over buybacks)\n- DRP active \u2014 $4.5m settled via DRP in FY26\n\n## Guidance and outlook\n- No formal FY27 financial (revenue, EBITDA, NPAT) guidance provided\n- Operational production targets implied by the growth slide: group saleable coal production growing toward ~15Mt long-term (Bengalla ~8Mt + New Acland ~5Mt + Maxwell equity share ~2Mt)\n- New Acland Manning Vale West box-cut is the key near-term catalyst \u2014 timing: road (FY26-FY27), haul pad (FY27), box-cut (FY27), coal mining (FY27-FY28)\n- Coal price outlook: management notes thermal coal pricing 'rebounded' in FY26 in response to Middle East conflict; spot gC NEWC 6000 at US$148/t at time of release vs long-run average of US$83/t \u2014 supportive but volatile\n- Sustaining capex for FY27 not guided; given FY26 came in well below the $100-130m revised guidance range, investors should seek clarification on normalised maintenance capex\n\n## Positives\n- Both saleable production (11.5Mt) and coal sales (11.8Mt) exceeded the top end of guidance \u2014 genuine operational outperformance\n- Operating cash flow of $564m is resilient and near flat year-on-year despite significantly lower coal prices, demonstrating cost discipline\n- Free cash flow of $371m ($32/t) is up 28% on pcp, providing genuine capacity for continued returns\n- Available cash of $778.5m and D/E of 0.11x give exceptional balance sheet optionality\n- Bengalla recovered to 13.4Mtpa run-rate in 2HFY26 \u2014 the weather disruption recovery is confirmed\n- New Acland coal sales up 37% to 3.6Mt \u2014 ramp-up is working\n- Successful convertible note refinancing reduces near-term liquidity risk and lowers coupon cost (4.25% to 2.625%)\n- 32.7% TSR over 12 months to July 2026 \u2014 shareholders were rewarded\n- Safety (HPEFR) improved 38.3%\n- Total dividend 40cps declared for FY26 vs 34cps in FY25 \u2014 management is sharing the cash pile with shareholders\n\n## Negatives / red flags\n- NPAT of $161m is down 63% \u2014 the earnings power of this business has halved from its FY25 level and is less than one-fifth of the FY23 peak ($1,087m)\n- D&A of $238.7m is now 47% of EBITDA, having grown 25% in one year \u2014 this structural cost headwind reduces optionality and will persist as New Acland assets are depreciated over their lives\n- FOB cash costs up 7.9% to $88.9/t group-wide \u2014 cost inflation continues; New Acland ramp-up drag means group-level cost should be monitored as Bengalla's $81.3/t is the 'clean' benchmark\n- Sustaining capex of $84m (80% Bengalla basis) was well below even the revised guidance of $100-130m \u2014 deferred maintenance risk is a question mark\n- The 40cps dividend declared represents >2x statutory EPS (19.1c) \u2014 not covered by earnings; sustainable only via cash balance drawdown\n- No FY27 financial guidance provided \u2014 investors are flying blind on earnings power in the next 12 months\n- Coal price is the dominant risk: a reversion toward the historical pre-energy-crisis average (US$83/t) would compress margins from $45/t toward breakeven/loss territory given current cost structure\n- New Acland Manning Vale West development carries execution risk; $16m of $65-75m road spend done \u2014 significant capex still ahead\n- Malabar/Maxwell investment is increasing (now 25.97%) but remains a pre-cash-flow asset consuming capital\n- TRIFR increased 20.7% \u2014 the worse of the two safety metrics was relegated to 'supplementary' status mid-year\n\n## Bottom line\n**Bull case:** Coal prices hold above US$130/t on sustained Middle East tension and Asian energy demand growth; New Acland ramps to 5Mtpa on schedule adding ~$100m+ incremental EBITDA by FY28; Bengalla sustains 13.4Mtpa ROM run-rate; $778m cash pile funds the dividend and growth capex without dilution; Maxwell Mine equity stake becomes a meaningful earnings contributor by FY28. On these assumptions NHC trades at a modest multiple to normalised FCF.\n\n**Bear case:** Thermal coal prices revert toward US$100/t (still above the pre-2021 average); group EBITDA falls toward $300-350m; D&A of ~$240m+ consumes most of the margin; the current 40cps dividend becomes unsustainable without balance sheet drawdown; New Acland development hits regulatory or cost overruns; the market applies an accelerating ESG discount to the valuation multiple.\n\n**What would change the view:** (1) FY27 coal price trajectory \u2014 any sustained move below US$120/t is materially negative for earnings coverage of dividends; (2) New Acland Manning Vale West box-cut commissioning timeline \u2014 delays compress the volume growth story; (3) FY27 sustaining capex guidance \u2014 if management discloses normalised capex requirements of $150m+, FCF will be materially below FY26's $371m; (4) Any asset write-down on North Surat (already impaired) or Malabar carrying value changes.",
-          "_status": "ok"
-        },
-        "doc_link": "",
-        "doc_error": "",
-        "pdf_path": "/tmp/NHC_FY26_2026-09-15.pdf"
-      },
-      {
-        "ticker": "VAS",
-        "title": "Annual Report 56\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 983.9KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139449",
-        "type": "results",
-        "analysis": {
-          "ticker": "VAS",
-          "period": "FY26",
-          "period_type": "full_year",
-          "currency": "AUD",
-          "metrics": {
-            "revenue": {
-              "value": "n/a",
-              "change_pct": "n/a",
-              "basis": "n/a"
-            },
-            "underlying_npat": {
-              "value": "n/a",
-              "change_pct": "n/a",
-              "basis": "n/a"
-            },
-            "underlying_eps": {
-              "value": "n/a",
-              "change_pct": "n/a",
-              "basis": "n/a"
-            },
-            "dividend_ordinary": {
-              "value": "n/a",
-              "change_pct": "n/a",
-              "note": "ETF distributions not dividends; see full analysis for per-unit distribution detail"
-            },
-            "operating_cash_flow": {
-              "value": "-$5,559.3m",
-              "change_pct": "n/m",
-              "basis": "reported"
-            }
-          },
-          "summary": "This is an annual report for a passive index ETF fund (VAS), not an operating company, so conventional NPAT, EPS, and dividend metrics do not apply. VAS (Vanguard Australian Shares Index Fund ETF class) delivered a total net return of +6.12% for FY26, modestly underperforming its S&P/ASX 300 benchmark of +6.16%, driven by weak capital growth of +2.98% as market gains cooled sharply from FY25's +9.95%. ETF class distributions per unit fell to approximately 325c (full year four quarters) from approximately 340c in FY25, reflecting lower portfolio income yield and a smaller capital gain component being distributed. Fund net assets grew strongly to $52.4bn (VAS ETF class: $25.3bn) from $44.0bn as net inflows of ~$3.85bn swamped redemptions. The single biggest risk for unitholders is Australian equity market valuation compression, with the fund's price risk sensitivity showing a -4%/+5% range implying up to -$2.1bn impact on operating profit at current fund size.",
-          "full_analysis": "## Executive summary\n- VAS is a passive index fund tracking the S&P/ASX 300; there is no underlying NPAT, EPS, or 'revenue' in any operating-company sense. All conventional P&L metrics are inapplicable and have been marked n/a.\n- Total fund net assets (VAS wholesale + ETF combined) grew to $52.4bn at 30 June 2026 from $44.0bn at 30 June 2025, a +$8.4bn or +19% increase driven by net inflows of ~$3.8bn (ETF class) plus positive market returns.\n- Operating profit before finance costs fell sharply to $2.80bn from $5.09bn in FY25, driven almost entirely by net gains on financial instruments collapsing to $1.27bn from $3.75bn \u2014 i.e. the Australian equity market rose far less in FY26 (+6%) than FY25 (+14%).\n- VAP (Property Securities Fund) posted a statutory operating loss of -$119.5m versus a profit of $762.3m in FY25, as A-REIT prices fell -4.8%: this is the starkest fund-level deterioration in the suite.\n- VETH (Ethically Conscious) also recorded an operating loss of -$8.6m versus profit of $125.8m in FY25.\n\n## Key numbers\n\n| Metric | FY26 | FY25 | Change |\n|---|---|---|---|\n| VAS total fund net assets | $52,433.5m | $43,988.9m | +19% |\n| VAS ETF class net assets | $25,295.1m | $20,638.0m | +23% |\n| VAS operating profit before finance costs | $2,799.7m | $5,087.9m | -45% |\n| VAS net gains on financial instruments | $1,265.7m | $3,749.0m | -66% |\n| VAS dividend income | $1,412.2m | $1,225.5m | +15% |\n| VAS distribution income | $170.0m | $151.8m | +12% |\n| VAS total expenses | $61.3m | $51.0m | +20% |\n| VAS Responsible Entity fees | $56.7m | $47.5m | +19% |\n| VAS ETF class distributions paid/payable FY26 | $692.9m | $602.5m | +15% |\n| VAS ETF class total return (net of fees) | +6.12% | +13.67% | -7.55pp |\n| VAS benchmark (S&P/ASX 300) return | +6.16% | +13.74% | -7.58pp |\n| VAS tracking difference (ETF class) | -0.04pp | -0.07pp | improved |\n| VAS cash from operations | -$5,559.3m | -$3,480.4m | worse |\n| VHY ETF class net assets | $7,624.4m | $4,940.4m | +54% |\n| VAP fund net assets (liability) | $5,782.9m | $5,895.3m | -2% |\n| VLC operating profit | $27.0m | $29.6m | -9% |\n| VSO operating profit | $112.1m | $120.5m | -7% |\n\nNote: Operating cash flow for VAS is deeply negative because gross purchases of financial instruments ($9.77bn) are classified as operating cash flows per fund accounting convention (AASB), reflecting the scale of inflows being invested. This is structurally normal for a rapidly growing index fund and should not be interpreted as cash burn in any corporate sense.\n\n## Quality of earnings\n- For an index fund, 'earnings quality' is assessed as tracking accuracy and income sustainability, not accruals versus cash.\n- VAS ETF class tracking difference was only -0.04pp (fund underperformed benchmark by 4bp), which is excellent and consistent with the 0.07% management cost.\n- Dividend and distribution income rose +15%/+12% respectively, reflecting genuine growth in underlying portfolio company payouts as the fund AUM grew.\n- The $1.27bn in net fair value gains is entirely mark-to-market and will fluctuate with the Australian equity market each year \u2014 it is not recurring in nature.\n- Operating cash flow is negative for VAS (-$5.6bn vs -$3.5bn in FY25) because fund inflows ($9.7bn applications) are immediately recycled into purchasing securities. This is standard for a growing passive fund; liquidity is excellent given 100% listed holdings.\n- Securities lending income for VAS was $11.0m (FY25: $11.2m), a modest and stable ancillary income stream.\n- No capitalised costs, no receivables quality issues, no inventory. All balance sheet items are financial assets at fair value.\n\n## Management framing\n**Rating: Transparent**\n- This is a statutory annual report with no investor presentation. There is no management commentary beyond the Directors' Report, which is factual and discloses both positive and negative outcomes.\n- The Directors' Report prominently discloses the VAP operating loss (-$119.5m vs +$762.3m prior year) and VAS profit decline (-45%) without any attempt to minimise or reframe.\n- Total return performance tables show all five years including negative years (FY22) without cherry-picking.\n- Management fees are disclosed in full (basis points and dollar amounts) and are unchanged year-on-year for all funds, which is consistent with Vanguard's low-cost mandate.\n- No non-GAAP metrics, no adjusted figures, no earnings guidance \u2014 entirely appropriate for a passive fund vehicle.\n- One minor omission: the report does not explicitly calculate or highlight per-unit distribution changes year-on-year in a summary table, requiring readers to derive these from the detailed note 9 distributions tables.\n\n## Segments\n**VAS (Vanguard Australian Shares Index ETF / S&P ASX 300)**\n- ETF class AUM: $25.3bn (+23% YoY). Total fund AUM: $52.4bn (+19%).\n- Total return ETF class: +6.12% vs benchmark +6.16%. Tracking error: 4bp.\n- ETF class distributions: $692.9m vs $602.5m (+15%).\n- ETF unit price: $109.29 at 30 June 2026 vs $106.30 at 30 June 2025.\n- RE fees (ETF class): 0.07% p.a.\n\n**VHY (Vanguard Australian Shares High Yield Fund / FTSE Australia High Dividend Yield)**\n- ETF class AUM: $7.6bn, up a striking +54% from $4.9bn \u2014 the fastest-growing fund in the suite.\n- Total return ETF class: +16.43% vs benchmark +16.71%. Tracking error: 28bp, wider than VAS but acceptable for a higher-yield screen.\n- ETF class distributions: $239.8m vs $402.9m (-41%) \u2014 significant fall due to timing and composition of distributions; operating profit was $1.14bn vs $0.71bn (+61%) driven by equity capital gains of $822m.\n- RE fees (ETF class): 0.25% p.a.\n\n**VAP (Vanguard Australian Property Securities Index Fund / S&P/ASX 300 A-REIT)**\n- Fund AUM (liability): $5.78bn, down from $5.90bn.\n- Total return ETF class: -2.00% vs benchmark -1.78%. Tracking difference: -22bp, the widest underperformance in the suite.\n- Operating loss: -$119.5m vs profit of $762.3m \u2014 driven by $309.9m unrealised losses on the A-REIT portfolio.\n- Distributions: ETF class $88.6m vs $129.2m (-31%).\n\n**VLC (Vanguard MSCI Australian Large Companies Index ETF)**\n- AUM (equity): $309.9m, up from $290.4m.\n- Total return: +9.10% vs benchmark +9.33%.\n- Operating profit: $27.0m vs $29.6m (-9%).\n- Distributions ETF class: $10.0m vs $13.2m (-24%).\n\n**VSO (Vanguard MSCI Australian Small Companies Index ETF)**\n- AUM (equity): $1,115.0m, up from $965.8m.\n- Total return: +11.73% vs benchmark +11.19% \u2014 VSO outperformed its benchmark, the only fund to do so materially.\n- Operating profit: $112.1m vs $120.5m (-7%).\n- Distributions ETF class: $54.0m vs $76.8m (-30%).\n\n**VETH (Vanguard Ethically Conscious Australian Shares Fund / FTSE Australia 300 Choice)**\n- AUM: $1.02bn, up from $0.90bn.\n- Total return ETF class: -0.56% vs benchmark -0.69% \u2014 outperformed by 13bp.\n- Operating loss: -$8.6m vs profit of $125.8m \u2014 unrealised losses of -$38.6m on the ethically screened portfolio.\n\n## Balance sheet\n- All funds hold 100% liquid ASX-listed equities and REITs. No leverage, no debt.\n- VAS: Financial assets at fair value $52.94bn vs $44.24bn. Net assets $52.43bn.\n- VHY: Financial assets $9.37bn vs $6.30bn. Dramatic growth reflecting large net inflows.\n- No covenants, no refinancing risk \u2014 these are fully-paid-up open-ended managed funds.\n- Cash positions are minimal and functionally zero across all funds (held for operational settlement only).\n- Securities lending is active: VAS had $854.8m on loan (FY25: $334.0m), generating $11.0m net income. Collateral coverage at 102-105% per lending agreements with JPM Chase as agent.\n- Level 3 securities (illiquid/stale-priced equities) totalling $23.9m transferred into Level 3 in VAS during the year \u2014 immaterial relative to fund size ($52.9bn) but noted as a disclosure.\n\n## Dividend and capital allocation\n- These are managed investment trusts, not dividend-paying companies. Distributions are passed through to unitholders from underlying portfolio income (dividends, trust distributions, realised gains).\n- VAS ETF class FY26 distributions per unit (CPU): Sep-25 109.59cpu, Dec-25 82.08cpu, Mar-26 84.79cpu, Jun-26 48.83cpu. Total ~325.3cpu vs ~339.3cpu in FY25 (decline of ~4%).\n- VHY ETF class FY26 distributions per unit: Sep-25 109.69cpu, Dec-25 65.83cpu, Mar-26 81.14cpu, Jun-26 40.65cpu. Total ~297.3cpu vs ~451.3cpu in FY25 (decline of ~34%) \u2014 the large fall reflects $150.2m December 2025 quarter distribution that was not repeated at similar scale.\n- VAP ETF class distributions fell to $88.6m from $129.2m (-31%), consistent with the A-REIT sector's lower distributions.\n- VETH: distributions grew modestly ($17.3m vs $14.5m, +19%) as the fund grows.\n- All income is passed through to unitholders; Vanguard as RE retains only the management fee.\n\n## Guidance and outlook\n- No forward guidance is provided. This is standard and appropriate for a passive index fund.\n- The Directors' Report states investment performance is not guaranteed and future returns will differ from past returns.\n- No specific market or distribution outlook is offered.\n\n## Positives\n- VAS tracked its benchmark to within 4bp, delivering excellent index replication at 0.07% p.a. ETF class management cost.\n- Combined VAS fund AUM grew $8.4bn (+19%) in a year of only +6% market returns, implying ~$3.8bn of net new investor inflows \u2014 strong organic growth.\n- VHY ETF class AUM surged +54% to $7.6bn, reflecting strong demand for high-yield strategies in the current income environment.\n- VHY operating profit +61% to $1.14bn as the high-yield strategy benefited from equity market gains skewed to dividend-paying stocks.\n- VSO (small companies ETF) outperformed its benchmark by 54bp, the only fund to do so meaningfully in FY26.\n- VETH outperformed its ethically-screened benchmark by 13bp.\n- Securities lending income at VAS of $11.0m provides a modest ongoing offset to management fees for unitholders.\n- Management costs unchanged across all funds \u2014 no fee creep despite scale growth.\n- No leverage, no counterparty credit risk beyond JPM Chase (rated A-1+), no illiquid assets of consequence.\n- Vanguard Super inflows into VAS wholesale class grew to $1.795bn AUM (from $957.5m) \u2014 captive institutional demand growing strongly.\n\n## Negatives / red flags\n- VAS total return of +6.12% is less than half the prior year's +13.67%. Investors buying on recent performance history will be disappointed.\n- VAP delivered -2.00% total return, erasing most of FY25's +13.42% gain. The A-REIT sector faces structural headwinds from higher-for-longer interest rates.\n- VHY ETF class distributions fell 34% per unit in FY26. Investors attracted to VHY for income faced a significant distribution cut despite the fund's strong capital return.\n- VETH posted a -0.56% total return \u2014 negative for the year \u2014 with the ethically-screened universe apparently more exposed to sectors that underperformed (technology, growth stocks reversed relative to FY25's +17.70%).\n- Operating cash outflows across the suite are large and growing (VAS: -$5.56bn vs -$3.48bn) driven by the volume of new purchases required to invest inflows. While structurally normal, any sudden reversal of inflows would create the opposite dynamic.\n- VAS tracking error vs benchmark widened slightly (still only 4bp) but the fund structurally cannot outperform its benchmark net of fees \u2014 this is a permanent feature, not a flaw, but investors should understand it.\n- Concentration in Vanguard Super and the Diversified/Balanced/Growth/High Growth index funds as wholesale unitholders: Vanguard High Growth alone holds 14.38% of VAS wholesale class. If any affiliated fund restructures its asset allocation, it could create a large forced seller.\n- VAP ETF class tracking error of -22bp (underperformed benchmark) is the widest in the suite and warrants monitoring.\n\n## Bottom line\n**Bull case:** Australian equities rerate higher in FY27 as the RBA cuts rates meaningfully, dividend income continues to grow, and Vanguard Super's structural inflows into VAS accelerate \u2014 delivering 12-14% total returns similar to FY25. VHY in particular would benefit from a dividend recovery cycle.\n\n**Bear case:** A-REIT and high-yield sectors remain under pressure as rates stay elevated; VAS delivers another mid-single digit return; VHY unitholders receive further distribution cuts; VAP continues losing AUM as investors rotate away from property securities. A sharp market correction (price risk sensitivity: -4% = -$2.1bn impact on VAS operating profit) would also trigger large redemptions across all funds.\n\n**What would change the view:** A sustained RBA rate cutting cycle would be the single most important catalyst for VAP recovery and would benefit VHY distribution sustainability. Conversely, evidence that Vanguard Super or the affiliated diversified funds are reducing their Australian equity allocations \u2014 reducing captive wholesale demand for VAS \u2014 would be a material structural negative for fund AUM stability.",
-          "_status": "ok"
-        },
-        "doc_link": "",
-        "doc_error": "",
-        "pdf_path": "/tmp/VAS_FY26_2026-09-15.pdf"
-      },
-      {
-        "ticker": "VHY",
-        "title": "Annual Report 56\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 983.9KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139449",
-        "type": "results",
-        "analysis": {
-          "executive_summary": [
-            "\u26a0\ufe0f Analysis failed \u2014 manual review needed (Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011Cf4MoutSVET9Ypj1depB3'})."
-          ],
-          "summary": "\u26a0\ufe0f Analysis failed \u2014 manual review needed (Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011Cf4MoutSVET9Ypj1depB3'}).",
-          "_status": "failed"
-        },
-        "doc_link": "",
-        "doc_error": "",
-        "pdf_path": "/tmp/VHY__2026-09-15.pdf"
-      }
-    ],
-    "material": [],
-    "fyi": [
-      {
-        "ticker": "ABB",
-        "title": "Update - Notification of buy-back - ABB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.4KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139549"
-      },
-      {
-        "ticker": "BHP",
-        "title": "BHP 2026 Proxy Form 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 722.9KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139444"
-      },
-      {
-        "ticker": "BHP",
-        "title": "BHP 2026 Notice of Annual General Meeting 28\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 5.9MB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139438"
-      },
-      {
-        "ticker": "BHP",
-        "title": "Change of Director's Interest Notice 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 331.6KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139368"
-      },
-      {
-        "ticker": "CSL",
-        "title": "Update - Notification of buy-back - CSL 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.2KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139484"
-      },
-      {
-        "ticker": "NHC",
-        "title": "Notification regarding unquoted securities - NHC 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.1KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139514"
-      },
-      {
-        "ticker": "NHC",
-        "title": "Presentation on Full Year Results 2026 24\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 4.4MB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139509"
-      },
-      {
-        "ticker": "NHC",
-        "title": "Full Year Results 2026 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 321.2KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139483"
-      },
-      {
-        "ticker": "NHC",
-        "title": "Appendix 4G and Corporate Governance Statement 2026 28\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 748.4KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139482"
-      },
-      {
-        "ticker": "NHC",
-        "title": "Dividend/Distribution - NHC 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.7KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139481"
-      },
-      {
-        "ticker": "NHC",
-        "title": "Appendix 4E and Annual Report 2026 209\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7MB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139480"
-      },
-      {
-        "ticker": "NHC",
-        "title": "New Hope Group Coal Resources and Reserves 2026 70\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 4.3MB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139447"
-      },
-      {
-        "ticker": "VAS",
-        "title": "Annual Report 56\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 983.9KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139449"
-      },
-      {
-        "ticker": "VHY",
-        "title": "Annual Report 56\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 983.9KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03139449"
       }
     ]
   }

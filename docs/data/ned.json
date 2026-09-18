@@ -1,77 +1,99 @@
 {
   "agent": "Ned",
-  "last_run": "2026-09-17T01:34:26.134555Z",
+  "last_run": "2026-09-18T01:21:54.498468Z",
   "youtube_hits": 0,
-  "news_hits": 53,
-  "total_hits": 53,
-  "critical_high_count": 9,
+  "news_hits": 60,
+  "total_hits": 60,
+  "critical_high_count": 11,
   "status": "ok",
   "items": [
     {
       "tickers": [
-        "NHC"
+        "AHC"
       ],
-      "title": "Earnings call transcript: New Hope Group lifts output and dividend in H2 2026 - Investing.com Australia",
-      "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxQUVNmY2VFYk1Xa0xYQjZRWkFaa0xZcnJuQmJmQ24xRDI2dUFyc0lVMWdLU2JBV2J5ZzBRdnliTUFScm9ZS2xadTlyckJlTEhUYXppV2ctVVphbWgwMDdTdWdCSk9OS1pBaGd5aGs5aGFGZDJjV2FJYVMxaGk1cGJUSUpyOTYyUlZ1M1F4RkZ1OFJ2VmV5UXFWQk05NVIxVUw1Q0UtcjBkaG9nWV80MnVHTE0yY3JqV2FsZlNvbExOel9PdmF2bEdra0Z2ZkdwMXdJdVhxazl3bl92dC1JaXQ2Y1diYw?oc=5",
+      "title": "Austco Healthcare Achieves Record FY26 Revenue of $94.2 Million and Net Profit Surges 52% to $9.0 Million - kalkinemedia.com",
+      "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxPcXdlbTVkbzhWSlFtSkZrRUNoQjgybGU5TThyeHdCaWcza3ctZ3R3WUQ1VFpkdkFFbEo3c3h4U2dCOTVPUjhVQ2t6UzdpdXhOaWd3WGV2aGExNGpHNnBpdnpGQlRfdHhLbURQSkxKbzQwY1JYM2ZMVWJ4Q0FzUTE1WS1CanR1WHVONzFGOEdhY2ZwajZaQk9ocW1MU2t2VnQzU0ZzaWRadXJCcEJKdG41Y2dGZGJpaFA5dWstZHE1WUtONkNLd2VnT3h5eU9FQzRPd0s5VDFObXE2QnVkaDNTUg?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
-      "summary": "",
-      "published": "2026-09-15T03:19:17+00:00"
+      "summary": "Austco Healthcare (AHC) delivered strong FY26 results with record revenue of $94.2M and a 52% surge in net profit to $9.0M, demonstrating robust operational performance and improved profitability that should drive shareholder value.",
+      "published": "2026-09-17T06:20:37+00:00"
     },
     {
       "tickers": [
-        "NHC"
+        "AHC"
       ],
-      "title": "New Hope Corporation (ASX:NHC) Resets Its Dividend Against Lower FY26 Profit - Kalkine",
-      "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOMkoyelJWTWJCWXdscTVEUl9ZQVdwTjdnbFlzWVpmbzItbHBpRWM5UHBzSHdYb210WFJyZ3QzS1lzcnhmRDhoMkNONFZQa0lHLVAxY1N5QXJ0MUtPQTM2OXkwMEo3YmJKWThlMlEzRk41Wm41aEtOMEFCMnRBRlV4SDJCd1ZfR0U3b09zS3gtSkxZRTV0blZFNmliTVprX1VHSXBabjBYZWlxYzFm?oc=5",
+      "title": "Austco Healthcare Reports Record FY26 Revenue of $94.2 Million and Net Profit of $9.0 Million - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxOeXM2T01LN3JEbXQ2d0hzSm90YUV2Z084TV9ucWFyN0lXdF9NSExBQWI4WWlxWFNfM1c2MlRac3psQURaX1pLUDFwUHF1RGV6cm1GNUM4NlpvRlZ2OTRtYnMyU2ZFcWhnWjFGMTY0aUZ1UkswMy1TdFhzb1RvU1BydkZQckp3SFFSdVdYU0xHRVRYX1pVd19hMDltSG9PQ0d2Q3UxSS1PUkN2SjBqSU44bTh3TWMteEpVbS1QRzRvcWU1Z3N6YXEtdEYtMA?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
-      "summary": "",
-      "published": "2026-09-16T04:34:00+00:00"
-    },
-    {
-      "tickers": [
-        "RR."
-      ],
-      "title": "Rolls-Royce SMR Launches Supplier Programme Backed by \u00a31.4 Billion of Contract Opportunities - Nuclear Industry Association",
-      "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOVXA3X3ZMNkJPZVpxM3RzbTNYNFBjNHVsTHRQMkJmRTFTc21zTTNpUy1fZmFlNGlNa1k2bTZiUDE3Y0dLSE9RemNIa0JQVmVrbTVqSVpIWjFKT1lsT2RtMzkwU1ZXQ1NkZFpKMG12amdGRVNBLXNLQVpOQ0lVczRKZGc4cTZndFpLMFhTMHNGY0otMV9NWmFrSTlFdDRINzRwek5waGlGNzBuZEV0OWhNNkhQdVU?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "",
-      "published": "2026-09-16T16:15:47+00:00"
-    },
-    {
-      "tickers": [
-        "ABB"
-      ],
-      "title": "Aussie Broadband Completes Buy-Back of 467,547 Shares on 15 September Under $115 Million On-Market Programme - Kalkine Media",
-      "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxNRVJYZDA5MmZlaDBxaFRiTTBYV29vX0NFQ0REQ0FrOThwN3kxTkcxNWtXYmdTY2pfcGNyZGYzTFlhdk1hdmFfLW1PYTBJSEhRUC1wcTlZWVJrcmY5XzdfeU1BU2laSXZiczdfbWVQMERpekZLTldwMTlRNFo5MmNMM1ZnNlA2SGNSNGZOWFR0UjNDdkpqcFM2MVNvRDFnbVdMcm1BRHVsRG1yS3RrOFhBcXMwSWJfZnlFYVBZaDdMcV9sQ2NzR1BzY3o1ZTBnaTlOaWx2cTVybDRqMW9aM0d2Um93NTA4T1Zr?oc=5",
-      "source": "Google News",
-      "level": "HIGH",
-      "summary": "[not material]\n\nThis news concerns Aussie Broadband, not ABB (ABB Ltd, the Swiss industrial technology company in your portfolio).",
-      "published": "2026-09-16T02:21:34+00:00"
+      "summary": "Austco Healthcare (AHC) posted record FY26 revenue of $94.2M and net profit of $9.0M, demonstrating strong operational performance and bottom-line profitability that should drive shareholder value.",
+      "published": "2026-09-17T06:20:37+00:00"
     },
     {
       "tickers": [
         "CSL"
       ],
-      "title": "CSL:ASX Announcement - Update - Notification of buy-back - CSL - 16 Sep 2026 - Market Index",
-      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxOanNneEVTZkZfUGV3TmUweXljRHNMX3J1SEcycjl1OFc0VFRzV2NoQmo5X2hBZzd2THpyUmtTeDBqbkNxYjdGTjBRSE1MeTFXT1psWEhMek52bG5OZXd5aVhackRlSlBUYnp1VkxuS285VFN2SzctLS04djJFVDkxZHQ3aDRYT01xX0pxUHNMQUdMRlkxVHpCWDRiQVR1dw?oc=5",
+      "title": "CSL Limited (ASX:CSL) FY26 Results: Revenue Steady at $15.8 Billion Amid Transformation Program - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQRnlKWXFrNU1kRnFZaVhTWl9SS0lCTUNSN09Xc1NsVHdQa01nMHNPY19YRW1rRU5GZHVrbHpZOGYwVWlibFgwX0cxcEtIc1VkZGg4WXFEazlVdmU3Qk9XX3RrMnBNX2VTUEswWGhQc085bjlVdHQ0S0lQMFFHNno2aE1nelRDRndYMWJBNy1FNV9BMjkxbmQ5T2o0YUtCOGxkYWhoUWVDLXN6R2w1LXNrX0RBc0ptcm5DbDVHTWV0LU5JN3pvQjNJ?oc=5",
       "source": "Google News",
-      "level": "HIGH",
-      "summary": "CSL announced an update to its share buyback program, which matters to shareholders as buybacks typically reduce share count and can support earnings per share and stock price.",
-      "published": "2026-09-15T23:38:40+00:00"
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-16T17:39:00+00:00"
+    },
+    {
+      "tickers": [
+        "CSL"
+      ],
+      "title": "CSL chair acknowledges \u2018disappointing\u2019 full-year performance - Capital Brief",
+      "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxNTjBxUE5tdXRVX2Rqc2J6bzVvZGhYN0JMT19YNnpsbkRwamNiVUgtWmFRaTVNQzZYUnBuSTRtNVRzZE1PTkhrS0FleHU1UlBJb01fUnRJeDhsVEFINUx5NzlBQ2h6bjlDYnZoQmJRMGNTd1VKcnJSOGZ6NEU5bFJWYUQzSGxnT3hHc245c1FqbW92ZlZIajNXNU5DZUZwXzFtOFVLM2lEc1RuVkYwd2NraVBOLVJVdWdHTHVQZnYxa2pkQTBQQmNqcGpBcldrRGc?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-17T00:39:00+00:00"
+    },
+    {
+      "tickers": [
+        "NHC"
+      ],
+      "title": "New Hope beats production guidance as coal prices tick up - miningmonthly.com",
+      "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxPMnJvRGVKVDVvUGFScUtVYWVGc0dQcWlqYmdWWTNkRXoyQ05TRnlybU5UbWNQNmNTQk84bzlxLWtjV2cxRWtjMWtrZS0taWkwcHVjaWtWQUVsVEZUX0h0UkJaR3BpMEFzQmRueWkxZEFHdkVDOUJyc29nZEM0Qk15S3ptaVptUGtKMW9UeXVTd2EybS1BVDcxV18tZmhlWVgxODVvZTVvQ1FyLXBTN3FF?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "",
+      "published": "2026-09-17T05:51:06+00:00"
+    },
+    {
+      "tickers": [
+        "BHP"
+      ],
+      "title": "What Could BHP (ASX:BHP) Mean for Dividend Stocks Now? - kalkinemedia.com",
+      "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQMVd3elRzaXRzTVp6aE9wSGdpek5RVlVFYXZCb1FybjlYR0RRYWlKWXcxWVE2R09SRW5CRGp6SVRMRFVUZWpMWHZCLUotaFRIekZLX0k2cnFSZHh1VUpDYmNiRm1wRGduanMxdEgyNGQySk10RFBMTGVQdnhNd2NrUFFCWHY0SWVubUpic29CN2JKcWdTd0lmbER3?oc=5",
+      "source": "Google News",
+      "level": "CRITICAL",
+      "summary": "[not material]\n\nThe headline poses a speculative question about dividend implications but the snippet provides no concrete news, developments, or material information about BHP's actual business or dividend policy.",
+      "published": "2026-09-17T11:08:00+00:00"
     },
     {
       "tickers": [
         "AR9"
       ],
-      "title": "archTIS secures US regional bank contract as Spirion gains commercial traction - Proactive financial news",
-      "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxQUEQ0d1cxOFo0dFY5QjBiOU44cUZ5am9wY2g5WENUUUF4SklCcG1qZEw1UFlXYmNib0dHNEVtOF9rNFVxT01wNVZMUGVGcktEWlZrMVdnSFNEZm5QYm14ekdNMDdhdVhrZDVjVHJyblktY0JvSk5obzlTeDVRLXFnSTNVLUlHOWhHRmcxVVFlR1dqdS12RDBZTFNyd2lXVmo1dDZodE5ucUNVSWIzSzByaHE5WnJCRFRiUFhicEVUVDFJWjJQQzdHOTlaWEJnZk9fRlB6X05lLVM3Tkk2Y056SXRNaw?oc=5",
+      "title": "AR9:ASX Announcement - archTIS Wins U.S. Regional Bank Contract - 17 Sep 2026 - Market Index",
+      "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQUzB6MTZ0dHpWYUJkVmFUTVRTTkdNZlVSd09ZMm9TT1J2NnlxVHRReG5VVzlLd0tKRXB3VEJuLWcxdkxaejRNSE5BZFc2UWhyUzQ4UTZvMU9XTTI3TjJyRkpsY2NoaEF0U0piV0hKRE4wTHZHVUlWb2lnaUpGMFl1dU1HX0RHejd6UnZ4WmJNT29QSVVhOEQ2Rkw3RF9mZjR6Q2pXaWhR?oc=5",
       "source": "Google News",
       "level": "HIGH",
-      "summary": "archTIS secured a US regional bank contract for its Spirion data protection software, demonstrating commercial traction in a key market that should drive revenue growth and validate the product's enterprise appeal.",
-      "published": "2026-09-17T01:14:49+00:00"
+      "summary": "# AR9 - archTIS Wins U.S. Regional Bank Contract\n\n**archTIS secured a new U.S. regional bank contract, expanding its revenue streams and demonstrating growing traction in the critical U.S. financial services market.**",
+      "published": "2026-09-17T17:13:46+00:00"
+    },
+    {
+      "tickers": [
+        "ABB"
+      ],
+      "title": "Aussie Broadband Cancels 3.05 Million Shares Under On-Market Buy-Back - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNMFcwcjhJc1dTdzN0U1cyTGhrbVVTbldlMThybUk1dDZyMlBmXzdWTEJkdWhfcmw2UVpDTzNqSDRXTGhuaFNHTmYzNHVjb1dNOEhNY3dWRUx4UVpfWmlzVkMxaUlYVU1CT0lGWERhanJwSTI5QmdBNGg3LXNvZ21XVGVVOG9WS2tPN3JNeDRrdWtueFJSMUxjVnA3ek1pemV5TE54eklTWEYtSTNWRkcw?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "",
+      "published": "2026-09-17T03:37:18+00:00"
     }
   ]
 }

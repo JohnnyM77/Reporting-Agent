@@ -1,99 +1,77 @@
 {
   "agent": "Ned",
-  "last_run": "2026-09-18T01:21:54.498468Z",
-  "youtube_hits": 0,
-  "news_hits": 60,
-  "total_hits": 60,
-  "critical_high_count": 11,
+  "last_run": "2026-09-19T01:21:08.703146Z",
+  "youtube_hits": 1,
+  "news_hits": 52,
+  "total_hits": 53,
+  "critical_high_count": 7,
   "status": "ok",
   "items": [
     {
       "tickers": [
-        "AHC"
+        "WDS"
       ],
-      "title": "Austco Healthcare Achieves Record FY26 Revenue of $94.2 Million and Net Profit Surges 52% to $9.0 Million - kalkinemedia.com",
-      "url": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxPcXdlbTVkbzhWSlFtSkZrRUNoQjgybGU5TThyeHdCaWcza3ctZ3R3WUQ1VFpkdkFFbEo3c3h4U2dCOTVPUjhVQ2t6UzdpdXhOaWd3WGV2aGExNGpHNnBpdnpGQlRfdHhLbURQSkxKbzQwY1JYM2ZMVWJ4Q0FzUTE1WS1CanR1WHVONzFGOEdhY2ZwajZaQk9ocW1MU2t2VnQzU0ZzaWRadXJCcEJKdG41Y2dGZGJpaFA5dWstZHE1WUtONkNLd2VnT3h5eU9FQzRPd0s5VDFObXE2QnVkaDNTUg?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "Austco Healthcare (AHC) delivered strong FY26 results with record revenue of $94.2M and a 52% surge in net profit to $9.0M, demonstrating robust operational performance and improved profitability that should drive shareholder value.",
-      "published": "2026-09-17T06:20:37+00:00"
-    },
-    {
-      "tickers": [
-        "AHC"
-      ],
-      "title": "Austco Healthcare Reports Record FY26 Revenue of $94.2 Million and Net Profit of $9.0 Million - Kalkine",
-      "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxOeXM2T01LN3JEbXQ2d0hzSm90YUV2Z084TV9ucWFyN0lXdF9NSExBQWI4WWlxWFNfM1c2MlRac3psQURaX1pLUDFwUHF1RGV6cm1GNUM4NlpvRlZ2OTRtYnMyU2ZFcWhnWjFGMTY0aUZ1UkswMy1TdFhzb1RvU1BydkZQckp3SFFSdVdYU0xHRVRYX1pVd19hMDltSG9PQ0d2Q3UxSS1PUkN2SjBqSU44bTh3TWMteEpVbS1QRzRvcWU1Z3N6YXEtdEYtMA?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "Austco Healthcare (AHC) posted record FY26 revenue of $94.2M and net profit of $9.0M, demonstrating strong operational performance and bottom-line profitability that should drive shareholder value.",
-      "published": "2026-09-17T06:20:37+00:00"
-    },
-    {
-      "tickers": [
-        "CSL"
-      ],
-      "title": "CSL Limited (ASX:CSL) FY26 Results: Revenue Steady at $15.8 Billion Amid Transformation Program - Kalkine",
-      "url": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQRnlKWXFrNU1kRnFZaVhTWl9SS0lCTUNSN09Xc1NsVHdQa01nMHNPY19YRW1rRU5GZHVrbHpZOGYwVWlibFgwX0cxcEtIc1VkZGg4WXFEazlVdmU3Qk9XX3RrMnBNX2VTUEswWGhQc085bjlVdHQ0S0lQMFFHNno2aE1nelRDRndYMWJBNy1FNV9BMjkxbmQ5T2o0YUtCOGxkYWhoUWVDLXN6R2w1LXNrX0RBc0ptcm5DbDVHTWV0LU5JN3pvQjNJ?oc=5",
+      "title": "Here's the earnings forecast out to 2028 for Woodside shares - The Motley Fool Australia",
+      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxQTXpKMlJhbnpUVTI5Y2hjVEhxX25rUTFfQlUwWWVva1p6Z2NNeEdLdlBzaTdzcVVuM2xQTjdJZFU5QlpKU0xyekVGT0tqUllRaDJKZldVbTVHUWpoS1dQRVh5X19POXJVRTVYd1B1Z2RlVENidFhEcmJCdDBCQVZBbUQ3bUxKYmh6MW1UU2xHTjhhenZIZEY0aGhkVHZldw?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
       "summary": "",
-      "published": "2026-09-16T17:39:00+00:00"
+      "published": "2026-09-18T04:22:31+00:00"
     },
     {
       "tickers": [
-        "CSL"
+        "AHC"
       ],
-      "title": "CSL chair acknowledges \u2018disappointing\u2019 full-year performance - Capital Brief",
-      "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxNTjBxUE5tdXRVX2Rqc2J6bzVvZGhYN0JMT19YNnpsbkRwamNiVUgtWmFRaTVNQzZYUnBuSTRtNVRzZE1PTkhrS0FleHU1UlBJb01fUnRJeDhsVEFINUx5NzlBQ2h6bjlDYnZoQmJRMGNTd1VKcnJSOGZ6NEU5bFJWYUQzSGxnT3hHc245c1FqbW92ZlZIajNXNU5DZUZwXzFtOFVLM2lEc1RuVkYwd2NraVBOLVJVdWdHTHVQZnYxa2pkQTBQQmNqcGpBcldrRGc?oc=5",
+      "title": "Austco Healthcare Amends Employee Share Incentive Plan to Allow On-Market Share Acquisition - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMizgFBVV95cUxON2V1VHBHTDFyb1pWcnlnSjZiV3RjM2FQUVJXNElyWlM4UjQtcnU1UzRaRWIxVWdEazAxVHRsYjhUMVJEek8wcFJfYnZfd09KaGdOZWhjYkhzMkxoZ0ZwdXYxU3BEaHc1TDdXT05saVdKVnJPR3EwNXJqOWpCSl9takJsSjJHUUtYUHBNbG11RDB4anBxVUZNeVFmV2FyU0pnenl0Y1N1NjlwV2NYWThJeUxUdldLei0yYkN4aWl2cjUtT2N2OEhaMmF5RlhsQQ?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
-      "summary": "",
-      "published": "2026-09-17T00:39:00+00:00"
+      "summary": "Austco Healthcare (AHC) amended its employee share plan to allow on-market share purchases, which could increase share demand and potentially support the stock price while aligning employee incentives with shareholder interests.",
+      "published": "2026-09-18T03:58:08+00:00"
     },
     {
       "tickers": [
         "NHC"
       ],
-      "title": "New Hope beats production guidance as coal prices tick up - miningmonthly.com",
-      "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxPMnJvRGVKVDVvUGFScUtVYWVGc0dQcWlqYmdWWTNkRXoyQ05TRnlybU5UbWNQNmNTQk84bzlxLWtjV2cxRWtjMWtrZS0taWkwcHVjaWtWQUVsVEZUX0h0UkJaR3BpMEFzQmRueWkxZEFHdkVDOUJyc29nZEM0Qk15S3ptaVptUGtKMW9UeXVTd2EybS1BVDcxV18tZmhlWVgxODVvZTVvQ1FyLXBTN3FF?oc=5",
+      "title": "New Hope Corporation Limited (ASX:NHC) Reports Higher Coal Output but Lower FY26 Profit - Kalkine",
+      "url": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxNVV9RbmtCcnh2T1lZdVE3c2kwUjVlUWZ0R2pDNHZvRzhzbnZKS05FdUJyYXlCWHlXbDBnaU5WYzY5LUNrZC1nWGdJR1hkQ2RPVk53NFk3QkRjeTR1bERfM05jRVVQMUdhMFhCcWVjTDhrMXNhMjRoVWw2YTVHODVHQ3NsYWFYWFJFMUwwLWRpTkZETEhuS1JTU05XSENxNWI5dnNoUmMtMnl2a0pmNFdic3kzM3VVS1JrMm5V?oc=5",
       "source": "Google News",
       "level": "CRITICAL",
       "summary": "",
-      "published": "2026-09-17T05:51:06+00:00"
+      "published": "2026-09-18T03:08:00+00:00"
     },
     {
       "tickers": [
-        "BHP"
+        "CSL"
       ],
-      "title": "What Could BHP (ASX:BHP) Mean for Dividend Stocks Now? - kalkinemedia.com",
-      "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxQMVd3elRzaXRzTVp6aE9wSGdpek5RVlVFYXZCb1FybjlYR0RRYWlKWXcxWVE2R09SRW5CRGp6SVRMRFVUZWpMWHZCLUotaFRIekZLX0k2cnFSZHh1VUpDYmNiRm1wRGduanMxdEgyNGQySk10RFBMTGVQdnhNd2NrUFFCWHY0SWVubUpic29CN2JKcWdTd0lmbER3?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "[not material]\n\nThe headline poses a speculative question about dividend implications but the snippet provides no concrete news, developments, or material information about BHP's actual business or dividend policy.",
-      "published": "2026-09-17T11:08:00+00:00"
-    },
-    {
-      "tickers": [
-        "AR9"
-      ],
-      "title": "AR9:ASX Announcement - archTIS Wins U.S. Regional Bank Contract - 17 Sep 2026 - Market Index",
-      "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQUzB6MTZ0dHpWYUJkVmFUTVRTTkdNZlVSd09ZMm9TT1J2NnlxVHRReG5VVzlLd0tKRXB3VEJuLWcxdkxaejRNSE5BZFc2UWhyUzQ4UTZvMU9XTTI3TjJyRkpsY2NoaEF0U0piV0hKRE4wTHZHVUlWb2lnaUpGMFl1dU1HX0RHejd6UnZ4WmJNT29QSVVhOEQ2Rkw3RF9mZjR6Q2pXaWhR?oc=5",
+      "title": "CSL Continues Active On-Market Share Buy-Back Program - The Globe and Mail",
+      "url": "https://news.google.com/rss/articles/CBMizwFBVV95cUxPSkJhbXRzSWJkVjFvS0xWUTNCV00yNUhCYmVPTzEwRHBwWVBhYVVnemJTQ1dpdDBfMmM3aWFleWUtQ2FtcW9UckU5UFdnbkNZYVZzeUF1SVFnTWo4OFR1LW00VnJabVE2eWxNaHpZOWxHeXpxNU1oNlVmbk5xUHdZTVNZeWRONDhHTElMcndNX19tS21FajZNRDUxMWwwRXZNdmtkd2JibFZPOHV4bVBMUFRMbDQ2bXpqNFFCRFRsRy1oUXhCQkl2SmxQZUZWOXc?oc=5",
       "source": "Google News",
       "level": "HIGH",
-      "summary": "# AR9 - archTIS Wins U.S. Regional Bank Contract\n\n**archTIS secured a new U.S. regional bank contract, expanding its revenue streams and demonstrating growing traction in the critical U.S. financial services market.**",
-      "published": "2026-09-17T17:13:46+00:00"
+      "summary": "CSL is continuing its share buyback program, which reduces share count and can increase earnings per share for remaining shareholders.",
+      "published": "2026-09-18T23:03:50+00:00"
     },
     {
       "tickers": [
-        "ABB"
+        "CSL"
       ],
-      "title": "Aussie Broadband Cancels 3.05 Million Shares Under On-Market Buy-Back - Kalkine",
-      "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNMFcwcjhJc1dTdzN0U1cyTGhrbVVTbldlMThybUk1dDZyMlBmXzdWTEJkdWhfcmw2UVpDTzNqSDRXTGhuaFNHTmYzNHVjb1dNOEhNY3dWRUx4UVpfWmlzVkMxaUlYVU1CT0lGWERhanJwSTI5QmdBNGg3LXNvZ21XVGVVOG9WS2tPN3JNeDRrdWtueFJSMUxjVnA3ek1pemV5TE54eklTWEYtSTNWRkcw?oc=5",
+      "title": "CSL Limited Repurchases 91,514 Shares on September 17 as Part of AUD$1.15 Billion On-Market Buy-Back - Kalkine Media",
+      "url": "https://news.google.com/rss/articles/CBMi3AFBVV95cUxPQ29CR2Nrb0dXLWZwWGx5ZXYzZXlJdmRyRjlyMWthYTVnajZkTlpnNzIzZ2h4QjNFM3d5ZDhZU0FONk1DUjZYTlhzVzhNUXhmSFhPX3pkSWZacjhLSTdWTFdVWXdvVExCbEJtWHU5dWNxdFhZREFhZkM2alMtY1JURElfekdpUzlOdlk1ZEJKclJRdEdmS2dEYWxTcldwOXpILThFZFNMUWlCT0JuMHJfXzQ0NVZMV05lZWJoRkl5MFpyWXk4X1BxSXVFOFlEcVhPbmNmdDd5Y1NDSlVx?oc=5",
       "source": "Google News",
       "level": "HIGH",
-      "summary": "",
-      "published": "2026-09-17T03:37:18+00:00"
+      "summary": "CSL executed another tranche of its AUD$1.15 billion share buyback program, which reduces share count and can boost earnings per share for remaining shareholders.",
+      "published": "2026-09-18T10:22:03+00:00"
+    },
+    {
+      "tickers": [
+        "IAG"
+      ],
+      "title": "Huge $3b Greensill lawsuit averted as IAG and Credit Suisse agree to settle - AFR",
+      "url": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxPQ2V4a3p0anVuYUZ2Z3RUSlVSQmtBdEh3cFk4UXJXVlE1R3BETlZrZUVlWERGcUwwMHo4ZWlJT2tZLWN4MXhQOVoyRm9HMDVPNXBteXo5ZVJ1WjFCTlphb0c3VjQwRkhEVFNTOEU2cmRTVU5lQ3JBa01mNE16OVZsaXVNSmFIZzRneHltdHB1S1BubEhhbGxGOWhUeVlhUkdGSnJ5dU5jUnFmVWRfR2dXbFlJNkkyVlRjMElDdXVNQ1pNUFpVV3MzWlZPNEp6djh4VDRaeld3?oc=5",
+      "source": "Google News",
+      "level": "HIGH",
+      "summary": "IAG and Credit Suisse have settled a $3 billion Greensill-related lawsuit, reducing financial risk and potential liability exposure for IAG shareholders.",
+      "published": "2026-09-18T09:19:00+00:00"
     }
   ]
 }

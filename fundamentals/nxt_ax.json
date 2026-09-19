@@ -1,0 +1,18 @@
+{
+  "annual_div_cents": {},
+  "annual_eps_cents": {
+    "2023": -5.4,
+    "2024": -8.2,
+    "2025": -9.44,
+    "2026": 12.2
+  },
+  "last_updated": "2026-09-19",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2023": "yfinance",
+    "2024": "yfinance",
+    "2025": "yfinance",
+    "2026": "yfinance"
+  },
+  "ticker": "NXT.AX"
+}

@@ -1,7 +1,53 @@
 {
-  "last_run": "2026-09-19",
+  "last_run": "2026-09-20",
   "silence": false,
-  "high_impact": [],
+  "high_impact": [
+    {
+      "ticker": "AHC",
+      "title": "Annual Report to shareholders 74\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.9MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140693",
+      "type": "results",
+      "analysis": {
+        "ticker": "AHC",
+        "period": "FY26",
+        "period_type": "full_year",
+        "currency": "AUD",
+        "metrics": {
+          "revenue": {
+            "value": "$94.2m",
+            "change_pct": "+16%",
+            "basis": "reported"
+          },
+          "underlying_npat": {
+            "value": "$8.1m",
+            "change_pct": "n/m",
+            "basis": "underlying"
+          },
+          "underlying_eps": {
+            "value": "n/a",
+            "change_pct": "n/a",
+            "basis": "underlying"
+          },
+          "dividend_ordinary": {
+            "value": "nil",
+            "change_pct": "n/a",
+            "note": "no dividend declared; franking account balance $2.0m"
+          },
+          "operating_cash_flow": {
+            "value": "$12.5m",
+            "change_pct": "-7%",
+            "basis": "reported"
+          }
+        },
+        "summary": "A solid volume result but the headline 52% NPAT growth is almost entirely a tax-rate and contingent-consideration accounting artefact: underlying NPAT (stripping the $0.9m CC gain in FY26 and the $2.2m CC loss in FY25) was $8.1m, flat on $8.1m in FY25, against revenue that grew 16%. Operating cash flow fell 7% to $12.5m despite higher profits, held back by inventory build and working-capital drag from the acquired businesses. No dividend was declared for the second consecutive year, signalling management prioritises M&A and balance-sheet optionality over shareholder returns. The single biggest forward risk is revenue lumpiness: the second half grew only 3% on pcp, unfilled contracted revenue at year-end was 5% below the prior year on an as-reported basis, and the Group has no formal FY27 earnings guidance.",
+        "full_analysis": "## Executive summary\n- Statutory NPAT of $9.0m (+52%) is misleading: the swing from a $2.2m contingent consideration expense in FY25 to a $0.9m gain in FY26 accounts for ~$3.1m of pre-tax improvement and also compressed the effective tax rate from 26% to 22%, amplifying the NPAT impact. On an underlying basis (ex-CC remeasurement), NPAT was $8.1m in both years.\n- Revenue grew 16% to $94.2m but growth was heavily skewed to the first half (+31% on pcp); 2H revenue rose only 3% on pcp, reflecting project timing delays and slower Asian/European delivery.\n- Gross margin improved 140bp to 53.4% on lower input costs and supply-chain integration savings — a genuine positive — but EBITDA margin slipped 20bp to 15.8% as the acquired overhead base ran ahead of softer 2H revenue.\n- Unfilled Contracted Revenue fell 5% as-reported over twelve months (from $53.8m to $45.2m at June 2026 before recovering to $51.2m by 17 August 2026 post-year-end); management attributes the year-end decline to FX, claiming flat UCR on a constant-currency basis.\n- Operating cash conversion weakened: $12.5m operating cash flow vs $9.0m NPAT (139% conversion) looks fine, but operating cash fell $0.9m vs pcp while NPAT rose $3.1m, and capex + development spend absorbed $2.8m, leaving free cash flow of approximately $9.7m.\n\n## Key numbers\n\n| Metric | FY26 | FY25 | Change |\n|---|---|---|---|\n| Revenue | $94.2m | $81.4m | +16% |\n| Gross profit | $50.3m | $42.4m | +19% |\n| Gross margin | 53.4% | 52.0% | +140bp |\n| EBITDA | $14.9m | $13.0m | +14% |\n| EBITDA margin | 15.8% | 16.0% | -20bp |\n| Statutory NPBT | $11.6m | $8.1m | +44% |\n| Contingent consideration (gain)/loss | ($0.9m) | $2.2m | n/m |\n| Underlying NPBT (ex-CC) | $10.7m | $10.3m | +4% |\n| Statutory NPAT | $9.0m | $5.9m | +52% |\n| Underlying NPAT (ex-CC, tax-normalised) | $8.1m | $8.1m | flat |\n| Basic EPS (statutory) | 2.42c | 1.63c | +48% |\n| Operating cash flow | $12.5m | $13.4m | -7% |\n| Capex + development spend | ($2.8m) | ($4.7m) | -40% |\n| Free cash flow (approx.) | $9.7m | $8.7m | +11% |\n| Net cash (cash less borrowings) | $16.1m | $14.3m | +13% |\n| Goodwill | $21.4m | $21.4m | flat |\n| Intangibles (capitalised dev.) | $6.8m | $6.8m | flat |\n\nNote: No underlying EPS is disclosed by the company. Statutory basic EPS is 2.42c vs 1.63c. Underlying EPS cannot be precisely calculated without a share-count adjustment and is therefore left as n/a in the metrics field.\n\n## Quality of earnings\n- **Cash conversion**: Operating cash flow of $12.5m on statutory NPAT of $9.0m implies 139% cash conversion at face value, but this is inflated by non-cash D&A of $4.0m and a $0.9m non-cash CC gain reversal. Underlying cash conversion relative to underlying NPAT ($8.1m) is approximately 154%, which is adequate.\n- **Operating cash declined year-on-year** (-$0.9m) despite profit growth; the culprit is a $2.0m inventory build (finished goods up from $7.6m to $9.7m) consistent with tariff-related pre-buying and integration of G&S's stock.\n- **Receivables**: Trade receivables fell from $21.8m to $18.4m gross — a genuine positive, likely reflecting strong Q4 collections. DSO improved materially. No obvious overstatement risk.\n- **Capitalised R&D**: $2.0m capitalised vs $2.8m expensed net — consistent with FY25 ($2.0m/$2.8m). The ratio is stable and the policy appears unchanged. Carrying value of $6.8m is flat year-on-year after amortisation of $1.6m, meaning new capitalisation exactly replaces amortised amounts.\n- **Contingent consideration**: The $0.9m P&L gain arises from a favourable revision to the G&S earn-out estimate; this is non-cash and non-recurring. Management correctly excludes it from EBITDA but the statutory NPAT headline includes it — the presentation of the statutory result as a \"record\" without prominent disclosure of this distortion is promotional.\n- **Goodwill**: $21.4m unchanged, tested at a 14.83% pre-tax discount rate with 8% revenue growth assumptions. These assumptions are aggressive relative to the 16% reported group revenue growth (which includes M&A contribution) and the 3% organic 2H result. Impairment sensitivity passes all stress tests disclosed but the headroom is not quantified.\n- **Contract liabilities** fell $2.6m to $3.8m — a tailwind to working capital and revenue recognition, but also signals a thinner deferred revenue cushion entering FY27.\n\n## Management framing\n**Rating: Mixed / Promotional**\n- The headline \"record NPAT\" framing is technically accurate but substantively misleading. The investor deck (slide 3) explicitly states underlying NPAT was $8.1m in FY26 \"in line with FY25,\" but this disclosure appears only in a sub-bullet and the cover slide trumpets \"+51.8%\" without qualification.\n- Revenue of 16% growth is presented as organic and acquisition-driven, but management acknowledges $3m of previously reported organic revenue is now eliminated under consolidation accounting — the deck notes this in passing without quantifying the impact on organic growth rates.\n- UCR at year-end ($45.2m) was 5% below pcp ($53.8m); management leads with the August 17 post-period figure ($51.2m, +13% from June) rather than the year-end figure, obscuring the full-year order book deterioration.\n- The \"softer second half\" is framed as project timing rather than demand weakness. This is plausible but unverifiable without more granular pipeline data.\n- No quantitative FY27 guidance was provided — management describes a \"healthy pipeline\" and lists priorities without revenue or profit targets.\n- Director Brett Burns's law firm (CBW Partners, $67k) and investor relations firm (Pont Equity, $60k) are related-party transactions. The amounts are immaterial but the dual commercial relationships with the same director warrant monitoring.\n\n## Segments\n\n| Segment | FY26 Revenue | FY25 Revenue | Change | FY26 EBITDA | FY25 EBITDA |\n|---|---|---|---|---|---|\n| Australia/NZ | $52.8m | $38.2m | +38% | $11.6m | $7.9m |\n| North America | $30.4m | $27.4m | +11% | $5.2m | $3.8m |\n| Asia | $6.7m | $10.8m | -38% | $1.6m | $2.9m |\n| Europe | $4.4m | $5.0m | -12% | $0.7m | $1.3m |\n\n- ANZ growth (+38%) was driven by G&S Technologies (full year) and public hospital/aged care programmes; this masks organic ANZ which grew at a materially lower rate.\n- North America grew 11% but segment EBITDA recovered strongly (+37%), suggesting margin leverage from scale. Tariff uncertainty cited as a headwind to decision timing.\n- Asia fell 38% on revenue and 45% on EBITDA — management attributes this to installation timing against a strong FY25 comparator. The 10-year Jurong SMA ($4.2m, ~$420k/year) commences October 2026 and will support Asia's FY27 SMA line.\n- Europe declined 12% — small segment but concerning alongside the UCR data; FX was cited as a contributing factor.\n\n## Balance sheet\n- Net cash of $16.1m ($16.3m cash, $0.1m borrowings) — strong for a company of this size.\n- The Group settled the Amentco earn-out ($8.4m in cash and shares) and paid the G&S upfront consideration during FY26, absorbing $6.0m in contingent consideration cash payments. Despite this, cash grew $1.8m, demonstrating genuine cash generation.\n- Remaining contingent consideration liability: $2.5m (G&S earn-out, due March 2027) — fully manageable from operating cash flow.\n- MCS acquisition post-period: $2.24m upfront cash plus ~$0.64m earn-out — small and self-funded.\n- No bank debt facilities disclosed at year-end — the Group operates with no committed credit lines, which is a liquidity risk if a large acquisition opportunity arises or cash flow deteriorates.\n- Deferred tax asset of $3.1m includes $1.2m of US R&D tax offsets and $1.0m of US carried-forward losses — the US R&D legislation change accelerated previously deferred deductions, crystallising a temporary timing benefit to the effective tax rate in FY26.\n- Total liabilities fell from $39.3m to $26.4m as the Amentco contingent liability ($8.4m) and G&S deferred liability were settled.\n\n## Dividend and capital allocation\n- No dividend declared for FY26 or FY25 (a dividend of 0.475c was last paid in FY23).\n- Franking account balance of $2.0m is available but management has clearly signalled M&A is the priority use of capital.\n- Share issuances in FY26 included 9.18m shares at $0.365 as part of the Amentco earn-out settlement ($3.4m) and 1.51m on option exercises ($0.3m) — modest dilution.\n- Performance rights pool of 8.2m (2.2% of shares on issue) is not excessive; vesting is tied to EPS CAGR (5-12% over 3 years) and indexed TSR — sensible alignment.\n- Share-based compensation expense: $0.4m in FY26 vs $0.3m in FY25.\n\n## Guidance and outlook\n- No quantitative FY27 guidance provided. Management states Austco enters FY27 with \"$51.2m of unfilled contracted revenue\" and \"a healthy sales pipeline\" — qualitative only.\n- Priorities articulated: complete integration, pursue further M&A, improve operating leverage, sustain Tacera investment.\n- The Jurong 10-year SMA ($420k/year) commencing October 2026 adds a known, recurring revenue increment to FY27.\n- Hospital Israelita Albert Einstein (Brazil, $1.85m phase-one purchase orders) will deliver through to ~March 2027, adding to FY27 revenue.\n\n## Positives\n- Gross margin improvement of 140bp to 53.4% is genuine and driven by input cost reductions and supply-chain integration — sustainable if tariff environment stabilises.\n- Software and SMA revenue +19% to $11.4m, accelerating to +28% in 2H vs 1H; the annuity layer is compounding independently of project timing.\n- Balance sheet is clean: $16.1m net cash, no revolving credit facility debt, remaining earn-out obligations manageable at $3.1m combined.\n- North America EBITDA margin recovered strongly despite tariff headwinds — suggests pricing power and/or cost discipline in the largest margin-contributing region.\n- Four reseller acquisitions at 3.5x normalised EBITDA with performance-linked earn-outs is a disciplined formula with no overpayment evident.\n- UCR recovery from $45.2m at June 2026 to $51.2m by 17 August 2026 (+13%) is genuine new order intake per management disclosure.\n\n## Negatives / red flags\n- Underlying NPAT was flat year-on-year at $8.1m despite 16% revenue growth — operating leverage is not materialising at the net profit level.\n- 2H revenue grew only 3% on pcp; if this rate persists into FY27, the growth story relies entirely on project timing recovering and UCR converting.\n- As-reported UCR at June 30 ($45.2m) was 16% below the July/August 2025 peak ($55.8m) and 5% below June 2025 ($47.2m) — the post-period recovery is encouraging but the trend during FY26 was negative.\n- Overhead costs grew 24% while revenue grew 16% — acquired cost bases are not yet delivering synergies sufficient to offset the integration overhead drag; EBITDA margin compression is a risk if revenue growth moderates.\n- No committed credit facility — in a capital-light business with $16m cash this is manageable, but it limits the ability to move quickly on a larger acquisition.\n- Asia segment revenue fell 38% — the Jurong SMA partially offsets this in FY27 but the segment needs new project wins to sustain earnings.\n- Related-party transactions with director Brett Burns (law firm + IR firm, combined $127k) are immaterial in dollar terms but represent a governance overlap that should be disclosed more prominently than a footnote.\n- No FY27 guidance provided, making valuation anchoring difficult for investors.\n\n## Bottom line\n**Bull case**: Gross margin improvement compounds as acquired cost bases are fully integrated; software/SMA revenue accelerates toward 15%+ of group revenue; North America order intake recovers as tariff uncertainty resolves; UCR converts into a strong FY27 first half; the Jurong 10-year SMA and Brazil Einstein project add visible high-quality revenue. At current run-rate EBITDA of ~$15m and a net-cash balance sheet, the stock trades on a reasonable multiple for a niche healthcare technology operator with genuine structural tailwinds.\n**Bear case**: Second-half revenue slowdown is not a timing issue but an early sign of demand softness in hospital capital programmes globally; UCR continues to drift as FX headwinds persist and tariff uncertainty delays North American decisions; overhead costs remain elevated as integration synergies disappoint; underlying NPAT stays flat or declines; the absence of a dividend and no guidance makes the stock a show-me story.\n**What would change the view**: A strong 1H FY27 revenue result (greater than $50m) confirming UCR conversion; evidence that EBITDA margin is expanding toward 17%+ as the G&S cost base is absorbed; or initiation of a dividend signalling confidence in recurring free cash flow.",
+        "_status": "ok"
+      },
+      "doc_link": "",
+      "doc_error": "",
+      "pdf_path": "/tmp/AHC_FY26_2026-09-20.pdf"
+    }
+  ],
   "material": [],
   "fyi": [
     {
@@ -10,29 +56,54 @@
       "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141041"
     },
     {
-      "ticker": "IAG",
-      "title": "IAG announces external audit tender process 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page ",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141078"
+      "ticker": "AHC",
+      "title": "Annual Report to shareholders 74\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.9MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140693"
     },
     {
-      "ticker": "IAG",
-      "title": "2026 Notice of Annual General Meeting 23\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.7MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141077"
+      "ticker": "AHC",
+      "title": "Notice of Annual General Meeting/Proxy Form 28\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 673.4KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03140692"
     },
     {
-      "ticker": "NHC",
-      "title": "Amended Announcement Coal Resources and Reserves 2026 77\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 7.4MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141180"
+      "ticker": "AHC",
+      "title": "Appendix 4G and Corporate Governance Statement 23\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 779.7KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131701"
     },
     {
-      "ticker": "PWH",
-      "title": "Ceasing to be a substantial holder 7\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 923.1KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141315"
+      "ticker": "AHC",
+      "title": "Austco FY26 Results Investor Presentation 24\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.4MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131700"
     },
     {
-      "ticker": "PWH",
-      "title": "Notice of Annual General Meeting/Proxy Form 24\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.4MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141125"
+      "ticker": "AHC",
+      "title": "Austco FY26 Results Media Release 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 459.2KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131699"
+    },
+    {
+      "ticker": "AHC",
+      "title": "Appendix 4E & FY26 Financial Statements 72\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.6MB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03131698"
+    },
+    {
+      "ticker": "AHC",
+      "title": "Austco Healthcare completes acquisition of MCS 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 283.3KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03124996"
+    },
+    {
+      "ticker": "AHC",
+      "title": "Austco Healthcare to acquire Medical Communications Systems 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 310.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03123394"
+    },
+    {
+      "ticker": "AHC",
+      "title": "Austco Healthcare Secures A$4.2m Maintenance Contract 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 187.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03117789"
+    },
+    {
+      "ticker": "AHC",
+      "title": "FY26 Trading Update 2\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 142.8KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03099546"
     }
   ]
 }

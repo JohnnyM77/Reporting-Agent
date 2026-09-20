@@ -51,7 +51,19 @@ SEC_USER_AGENT = "Bob the Bot johnmyerscough13@gmail.com"
 
 # Endpoints. `www.sec.gov` hosts the docs; `data.sec.gov` hosts the
 # submissions JSON. Both apply the same UA + rate-limit rules.
+#
+# We use company_tickers_exchange.json (not the more common
+# company_tickers.json) because it is materially more accurate for
+# currently-listed tickers: it carries the exchange (Nasdaq/NYSE) AND
+# it drops delisted duplicates that would otherwise clobber a real
+# filer in the ticker->CIK map. company_tickers.json for example has
+# SE mapped to CIK 1703399 (a defunct filer) which then 404s on
+# submissions, instead of Sea Limited's 1737443 -- that is what took
+# down Bob USA run #1. The exchange file has SE mapped to the right
+# CIK. `_fetch_all_ticker_maps` keeps the older file as a fallback
+# for anything the exchange file misses.
 SEC_TICKERS_URL = "https://www.sec.gov/files/company_tickers.json"
+SEC_TICKERS_EXCHANGE_URL = "https://www.sec.gov/files/company_tickers_exchange.json"
 SEC_SUBMISSIONS_URL_TEMPLATE = "https://data.sec.gov/submissions/CIK{cik10}.json"
 
 # EDGAR asks for ~10 req/sec max; 0.15s = ~6.6 req/sec, comfortably inside.
@@ -73,13 +85,15 @@ def _sec_ua() -> str:
 
 def _session() -> requests.Session:
     """SEC-friendly requests session. UA is set once here so we don't
-    forget it on any individual call."""
+    forget it on any individual call. Do NOT set `Host` here -- requests
+    picks it per URL from the actual host, and forcing it to www.sec.gov
+    on session defaults would break every data.sec.gov call
+    (submissions.json 404s the moment its host header is wrong)."""
     s = requests.Session()
     s.headers.update({
         "User-Agent": _sec_ua(),
         "Accept": "application/json, text/html;q=0.9, */*;q=0.8",
         "Accept-Encoding": "gzip, deflate",
-        "Host": "www.sec.gov",   # will be overwritten per-request; here as a hint
     })
     return s
 
@@ -97,42 +111,108 @@ def _company_tickers_cache_path() -> Path:
     return Path("outputs/us/company_tickers.json")
 
 
-def _fetch_company_tickers(
+def _fetch_ticker_candidates(
     session: requests.Session,
     log: Callable[[str], None],
-) -> Dict[str, str]:
-    """Return an uppercase-ticker -> zero-padded-10-digit-CIK map.
+) -> Dict[str, List[str]]:
+    """Return an uppercase-ticker -> list of zero-padded 10-digit CIKs.
 
-    EDGAR ships company_tickers.json as a dict of numbered rows, each with
-    "cik_str", "ticker", "title". We rebuild the flat map ourselves and
-    cache it so a multi-ticker run only fetches once."""
+    A list, not a single value, because SEC's ticker files reuse
+    symbols across defunct + current filers (e.g. `SE` maps to two
+    CIKs in company_tickers.json; only one is Sea Limited). The
+    caller tries each candidate until submissions.json responds so
+    a stale duplicate can no longer knock us out.
+
+    Priority: company_tickers_exchange.json entries first (higher
+    quality -- exchange-aware, drops most defunct filers), then any
+    company_tickers.json entries the exchange file didn't cover.
+    Within a source, higher CIKs come first (newer filer wins on
+    ties, since SEC assigns CIKs monotonically)."""
     cache = _company_tickers_cache_path()
     if cache.exists():
         try:
             raw = json.loads(cache.read_text(encoding="utf-8"))
-            log(f"[us-fetch] loaded {len(raw)} ticker->CIK entries from cache")
-            return raw
+            # Old cache shape was ticker -> single CIK string; the new
+            # shape is ticker -> list. Migrate on the fly rather than
+            # break a cached run.
+            if raw and isinstance(next(iter(raw.values()), None), list):
+                log(f"[us-fetch] loaded {len(raw)} ticker candidates from cache")
+                return raw
         except Exception as exc:
             log(f"[us-fetch] cache read failed ({exc}); refetching")
 
-    log(f"[us-fetch] downloading company_tickers.json from SEC")
+    # Ordered dict of ticker -> list of CIKs, preserving insertion order
+    # so exchange-file candidates come first.
+    out: Dict[str, List[str]] = {}
+
+    def _add(ticker: str, cik_int: int) -> None:
+        cik10 = f"{cik_int:010d}"
+        lst = out.setdefault(ticker, [])
+        if cik10 not in lst:
+            lst.append(cik10)
+
+    # 1. company_tickers_exchange.json -- structured as
+    # {"fields": ["cik", "name", "ticker", "exchange"], "data": [[...], ...]}.
+    log("[us-fetch] downloading company_tickers_exchange.json from SEC")
+    try:
+        r = session.get(SEC_TICKERS_EXCHANGE_URL, timeout=HTTP_TIMEOUT_SECS)
+        _throttle()
+        if r.status_code == 200:
+            payload = r.json()
+            fields = [str(f) for f in (payload.get("fields") or [])]
+            data = payload.get("data") or []
+            try:
+                cik_i = fields.index("cik")
+                tic_i = fields.index("ticker")
+            except ValueError:
+                cik_i = tic_i = -1
+            if cik_i >= 0 and tic_i >= 0:
+                for row in data:
+                    if not isinstance(row, list) or len(row) <= max(cik_i, tic_i):
+                        continue
+                    ticker = str(row[tic_i] or "").strip().upper()
+                    cik = row[cik_i]
+                    if ticker and cik is not None:
+                        try:
+                            _add(ticker, int(cik))
+                        except (TypeError, ValueError):
+                            pass
+                log(f"[us-fetch] exchange file contributed {len(out)} tickers")
+        else:
+            log(f"[us-fetch] exchange file HTTP {r.status_code} -- "
+                f"falling back to company_tickers.json only")
+    except Exception as exc:
+        log(f"[us-fetch] exchange file fetch failed ({exc}) -- "
+            f"falling back to company_tickers.json only")
+
+    # 2. company_tickers.json -- older/simpler map, less accurate but a
+    # superset of the exchange file for some obscure filers. We append
+    # rather than overwrite so exchange candidates stay first.
+    log("[us-fetch] downloading company_tickers.json from SEC")
     r = session.get(SEC_TICKERS_URL, timeout=HTTP_TIMEOUT_SECS)
     _throttle()
     if r.status_code != 200:
-        raise RuntimeError(
-            f"SEC company_tickers.json returned HTTP {r.status_code}: "
-            f"{r.text[:200]!r}"
-        )
-    rows = r.json()
-    out: Dict[str, str] = {}
-    # company_tickers.json shape: {"0": {"cik_str": 789019, "ticker": "MSFT", "title": "..."}, ...}
-    for row in rows.values():
-        ticker = str(row.get("ticker", "")).strip().upper()
-        cik = row.get("cik_str")
-        if not ticker or cik is None:
-            continue
-        out[ticker] = f"{int(cik):010d}"
-    log(f"[us-fetch] resolved {len(out)} tickers")
+        # If BOTH files failed and we have nothing, error out. If we
+        # got the exchange file only, that's already a solid map.
+        if not out:
+            raise RuntimeError(
+                f"SEC company_tickers.json returned HTTP {r.status_code}: "
+                f"{r.text[:200]!r}"
+            )
+    else:
+        rows = r.json()
+        # {"0": {"cik_str": 789019, "ticker": "MSFT", "title": "..."}, ...}
+        for row in rows.values():
+            ticker = str(row.get("ticker", "")).strip().upper()
+            cik = row.get("cik_str")
+            if not ticker or cik is None:
+                continue
+            try:
+                _add(ticker, int(cik))
+            except (TypeError, ValueError):
+                pass
+    log(f"[us-fetch] resolved {len(out)} tickers "
+        f"(candidates per ticker: {sum(len(v) for v in out.values()) / max(len(out), 1):.2f})")
 
     cache.parent.mkdir(parents=True, exist_ok=True)
     cache.write_text(json.dumps(out, indent=2), encoding="utf-8")
@@ -145,10 +225,14 @@ def resolve_ticker_to_cik(
     log: Callable[[str], None] = print,
 ) -> Optional[str]:
     """Public helper -- return zero-padded 10-digit CIK for `ticker`, or
-    None if the SEC has no ticker of that name. Case-insensitive."""
+    None if the SEC has no ticker of that name. Case-insensitive.
+
+    Only returns the FIRST candidate; use `_fetch_ticker_candidates`
+    directly if you need to try alternates on 404."""
     session = session or _session()
-    table = _fetch_company_tickers(session, log)
-    return table.get(ticker.strip().upper())
+    table = _fetch_ticker_candidates(session, log)
+    candidates = table.get(ticker.strip().upper()) or []
+    return candidates[0] if candidates else None
 
 
 # --- submissions -----------------------------------------------------------
@@ -302,17 +386,30 @@ def fetch_us_filings(
     session = _session()
 
     # Resolve every ticker in one go, then fetch submissions per CIK.
-    table = _fetch_company_tickers(session, log)
+    table = _fetch_ticker_candidates(session, log)
     results: Dict[str, List[Dict]] = {}
 
     for ticker in tickers:
-        cik10 = table.get(ticker)
-        if not cik10:
-            log(f"[us-fetch] {ticker}: not found in company_tickers.json")
+        candidates = table.get(ticker) or []
+        if not candidates:
+            log(f"[us-fetch] {ticker}: not found in SEC ticker files")
             continue
 
-        subs = _fetch_submissions(cik10, session, log)
-        if not subs:
+        # Try each candidate CIK in priority order until submissions.json
+        # returns 200. Stale duplicates (e.g. an old `SE` filer whose CIK
+        # 1703399 shadowed Sea Ltd's 1737443) 404 here, so we walk on.
+        subs = None
+        cik10 = None
+        for candidate in candidates:
+            log(f"[us-fetch] {ticker}: trying CIK {candidate}")
+            got = _fetch_submissions(candidate, session, log)
+            if got:
+                subs = got
+                cik10 = candidate
+                break
+        if not subs or not cik10:
+            log(f"[us-fetch] {ticker}: none of {len(candidates)} candidate "
+                f"CIK(s) returned submissions -- giving up on this ticker")
             continue
 
         issuer_name = str(subs.get("name") or "").strip()

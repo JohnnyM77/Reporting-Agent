@@ -54,6 +54,7 @@ from prompts import (
     ACQUISITION_PROMPT,
     CAPITAL_OR_DEBT_RAISE_PROMPT,
     RESULTS_HYFY_PROMPT,
+    REMUNERATION_PROMPT,
     TRADING_UPDATE_PROMPT,
     PRICE_SENSITIVE_PROMPT,
 )
@@ -115,6 +116,11 @@ RESULTS_LOOKBACK_DAYS = _int_env("RESULTS_LOOKBACK_DAYS", 180)
 # CLAUDE_RESULTS_MAX_TOKENS.
 DEFAULT_MAX_TOKENS = _int_env("CLAUDE_MAX_TOKENS", 4096)
 RESULTS_MAX_TOKENS = _int_env("CLAUDE_RESULTS_MAX_TOKENS", 50000)
+# Remuneration deep-dives return a structured header plus a ~10-section
+# markdown analysis (same shape as results). Sized so a rules document with
+# a full delta-vs-previous-plan table can't be truncated. Override with
+# CLAUDE_REMUNERATION_MAX_TOKENS.
+REMUNERATION_MAX_TOKENS = _int_env("CLAUDE_REMUNERATION_MAX_TOKENS", 50000)
 
 MIN_RESULTS_TEXT_CHARS = 2500
 MODEL_DEFAULT = "claude-sonnet-4-6"
@@ -173,6 +179,26 @@ RESULTS_STATUS_SKIPPED = "skipped"
 RESULTS_STATUS_FAILED = "failed"
 RESULTS_STATUS_PARSE_ERROR = "parse_error"
 RESULTS_STATUS_NO_CONTENT = "no_content"
+
+# Remuneration card — quick-take rows rendered in the email above the
+# summary. Same "locked shape" idea as RESULTS_METRIC_ROWS: the LLM emits
+# these keys and only these keys under "quick_take" so the card is
+# comparable across companies. "shareholder_dilution" reads "n/a" for
+# on-market and cash-settled plans by design.
+REMUNERATION_QUICK_TAKE_ROWS: List[Tuple[str, str]] = [
+    ("funding",              "Funding"),
+    ("quantum",              "Quantum"),
+    ("hurdles",              "Hurdles"),
+    ("vesting_period",       "Vesting"),
+    ("shareholder_dilution", "Dilution"),
+]
+
+# Card colour for a strongly-aligned plan (green), a mixed plan (amber) and
+# a misaligned one (red). Matches the change-colour ladder above but is
+# indexed off the LLM's "verdict" / "alignment_score" instead of a sign.
+COLOR_ALIGN_GOOD = "#15803D"
+COLOR_ALIGN_MIXED = "#B45309"
+COLOR_ALIGN_BAD = "#B91C1C"
 
 _JOKES_FILE = Path(__file__).resolve().parent / "config" / "daily_jokes.txt"
 
@@ -378,10 +404,107 @@ def looks_like_results_title(title: str) -> bool:
     return any(p.search(t) for p in _RESULTS_TITLE_PATTERNS)
 
 
+# Remuneration / employee-share-plan classifier. Fires when a title clearly
+# names a new or amended plan document, or an incentive plan whose rules the
+# investor should read side-by-side with the previous version — the exact
+# case where reading the whole plan by hand is what takes time.
+#
+# HARD NOs: things that mention "share plan" or "remuneration" but are NOT a
+# plan-change document — a Change of Director's Interest Notice reports one
+# grant under an existing plan, a Notice of Meeting is a wrapper (the
+# remuneration report inside the AR is picked up under RESULTS_HY_FY),
+# a Chairman's/CEO address quoting FY remuneration is commentary, and the
+# response-to-price-query template mentions "employee share scheme" as an
+# example of things the company hasn't done.
+_REMUNERATION_TITLE_HARD_NO = (
+    "change of director",             # Appendix 3Y grant notice
+    "change in director",
+    "final director",                 # Appendix 3Z
+    "director's interest",
+    "directors interest",
+    "initial director's interest",    # Appendix 3X
+    "appendix 3x", "appendix 3y", "appendix 3z",
+    "response to asx",                # price/aware-query response templates
+    "response to price query",
+    "response to aware query",
+    "chairman's address", "chairmans address", "ceo address",
+    "annual general meeting presentation",
+    "notice of annual general meeting",
+    "notice of general meeting",
+    "notice of meeting",
+    "results of meeting",
+    "results of annual general meeting",
+    "voting results", "proxy",
+    "trading window",
+    "cleansing notice",
+    "annual report",                  # remuneration report lives inside — captured by RESULTS_HY_FY
+    "webcast", "transcript", "conference call",
+)
+
+# A separator that tolerates the punctuation ASX headlines actually contain
+# between the trigger word and the plan noun — em dash (U+2014), en dash
+# (U+2013), colons, brackets, ampersands, digits, whitespace. Bounded to 60
+# characters so it can never span across two unrelated ideas in a long title.
+_REM_SEP = r"[\s\-–—:()&\w]{0,60}"
+
+_REMUNERATION_TITLE_PATTERNS = tuple(re.compile(p) for p in (
+    # Amended / new / updated / revised / adopted + a plan noun.
+    r"\b(?:amend(?:ed|ment)|new|revised|updated|adoption|adopts|adopting|"
+    r"replacement|refresh(?:ed)?)\b" + _REM_SEP +
+    r"\b(?:employee\s+share\s+(?:plan|scheme)|esp|espp|"
+    r"(?:long[\s\-]?term|short[\s\-]?term)\s+incentive(?:\s+plan)?|ltip?|stip?|"
+    r"performance\s+rights?(?:\s+plan)?|prp|"
+    r"executive\s+(?:incentive|equity)\s+plan|eip|"
+    r"share\s+option\s+plan|option\s+plan|"
+    r"employee\s+equity\s+plan|matching\s+plan|deferred\s+share\s+plan|"
+    r"restricted\s+share\s+plan|equity\s+incentive\s+plan|"
+    r"remuneration\s+(?:framework|policy|structure))\b",
+    # Same list, plan-noun-first ("Employee Share Plan — Amendment").
+    r"\b(?:employee\s+share\s+(?:plan|scheme)|"
+    r"(?:long[\s\-]?term|short[\s\-]?term)\s+incentive(?:\s+plan)?|ltip?|stip?|"
+    r"performance\s+rights?(?:\s+plan)?|"
+    r"executive\s+(?:incentive|equity)\s+plan|"
+    r"share\s+option\s+plan|option\s+plan|"
+    r"employee\s+equity\s+plan|matching\s+plan|deferred\s+share\s+plan|"
+    r"restricted\s+share\s+plan|equity\s+incentive\s+plan|"
+    r"remuneration\s+(?:framework|policy|structure))\b" + _REM_SEP +
+    r"\b(?:amend(?:ed|ment|ments)|new\s+rules|updated|revised|adoption|adopted|"
+    r"refresh(?:ed)?|change|changes|replace(?:d|ment)?|rules)\b",
+    # Explicit "Rules of" a plan (companies file the rulebook itself).
+    r"\brules\s+of\s+the\b" + _REM_SEP +
+    r"\b(?:employee\s+share\s+(?:plan|scheme)|incentive\s+plan|option\s+plan|"
+    r"performance\s+rights?(?:\s+plan)?|equity\s+plan|ltip?|stip?)\b",
+    # Explanatory memorandum for a plan being put to shareholders.
+    r"\bexplanatory\s+(?:memorandum|statement)\b" + _REM_SEP +
+    r"\b(?:share\s+plan|incentive\s+plan|performance\s+rights?|"
+    r"option\s+plan|equity\s+plan|remuneration)\b",
+    # Approvals sought at meeting — narrower than "Notice of Meeting" itself.
+    r"\bapproval\s+of\b" + _REM_SEP +
+    r"\b(?:employee\s+share\s+(?:plan|scheme)|incentive\s+plan|"
+    r"performance\s+rights?|option\s+plan|equity\s+plan|"
+    r"remuneration\s+(?:framework|policy|report))\b",
+    # Standalone "Remuneration Framework/Policy" documents — the whole thing
+    # is a new/updated framework, no verb needed. The annual report's own
+    # remuneration report is caught (and excluded) by the HARD NO list, so
+    # this isn't at risk of double-catching an AR.
+    r"\b(?:executive\s+|new\s+|revised\s+|updated\s+|fy\s?\d{2,4}\s+)?"
+    r"remuneration\s+(?:framework|policy|structure)\b",
+))
+
+
+def looks_like_remuneration_title(title: str) -> bool:
+    t = title.lower()
+    if any(x in t for x in _REMUNERATION_TITLE_HARD_NO):
+        return False
+    return any(p.search(t) for p in _REMUNERATION_TITLE_PATTERNS)
+
+
 def classify_from_title_only(title: str) -> str:
     t = title.lower()
     if looks_like_results_title(title):
         return "RESULTS_HY_FY"
+    if looks_like_remuneration_title(title):
+        return "REMUNERATION"
     if any(k in t for k in ["acquisition", "acquire", "merger", "scheme", "takeover", "transaction"]):
         return "ACQUISITION"
     if any(k in t for k in [
@@ -1720,6 +1843,282 @@ def build_analysis_doc_html(
     )
 
 
+# ---------------------------------------------------------------------------
+# Remuneration output: verdict badge + five quick-take rows + short summary +
+# PDF-attached long-form analysis. Same table-based / inline-styles / 360px
+# card shape as the results card so it renders identically on a phone.
+# ---------------------------------------------------------------------------
+
+REMUNERATION_HEADER_LABEL = "Remuneration change"
+
+
+def _remuneration_verdict(analysis: dict) -> Tuple[str, str]:
+    """Return (verdict_label, colour) for the header pill.
+
+    "verdict" is the primary signal ("aligned"/"mixed"/"misaligned") and the
+    only field explicitly enumerated in the prompt schema. Score is a
+    secondary tell that lets the colour tighten when the model returns a 4
+    or 5 alongside "mixed", but a missing score never downgrades the colour.
+    """
+    verdict = str(analysis.get("verdict") or "").strip().lower()
+    if verdict in ("aligned", "well aligned", "strongly aligned"):
+        return "ALIGNED", COLOR_ALIGN_GOOD
+    if verdict in ("misaligned", "poorly aligned", "not aligned", "unaligned"):
+        return "MISALIGNED", COLOR_ALIGN_BAD
+    if verdict:
+        # "mixed", or any wording the model chose short of a clean thumbs
+        # up/down — surface it as MIXED so the reader knows to read.
+        return "MIXED", COLOR_ALIGN_MIXED
+    # Fall back on the numeric score when verdict was missing.
+    try:
+        score = int(str(analysis.get("alignment_score") or "").strip()[:1])
+    except (ValueError, TypeError):
+        return "REVIEW", COLOR_ALIGN_MIXED
+    if score >= 4:
+        return "ALIGNED", COLOR_ALIGN_GOOD
+    if score <= 2:
+        return "MISALIGNED", COLOR_ALIGN_BAD
+    return "MIXED", COLOR_ALIGN_MIXED
+
+
+def _remuneration_quick_take_row(analysis: dict, key: str) -> Dict[str, str]:
+    """Normalise one quick_take entry into {value, sub}.
+
+    Returns "not disclosed" (never n/a — n/a is a valid answer for a
+    dilution row when the plan is on-market or cash-settled, and using
+    the same token would blur the two).
+    """
+    qt = analysis.get("quick_take")
+    raw = qt.get(key) if isinstance(qt, dict) else None
+    value = sub = ""
+    if isinstance(raw, dict):
+        value = str(raw.get("value", "") or "").strip()
+        sub = str(raw.get("note", "") or "").strip()
+    elif raw not in (None, ""):
+        value = str(raw).strip()
+    if not value or value.lower() in _NA_TOKENS - {"n/a", "-", "--", "—"}:
+        value = "not disclosed"
+    return {"value": value, "sub": sub}
+
+
+def _remuneration_title(ticker: str, analysis: dict) -> str:
+    plan_name = str(analysis.get("plan_name") or "").strip()
+    if plan_name:
+        return f"{ticker} — {plan_name}"
+    return f"{ticker} — {REMUNERATION_HEADER_LABEL}"
+
+
+def _remuneration_context_line(analysis: dict) -> str:
+    plan_type = str(analysis.get("plan_type") or "").strip().replace("_", " ")
+    participants = str(analysis.get("participants") or "").strip()
+    if plan_type and participants:
+        return f"{plan_type.upper()} · {participants}"
+    return plan_type.upper() or participants or "Remuneration change"
+
+
+def build_remuneration_block(
+    ticker: str,
+    analysis: dict,
+    asx_url: str,
+) -> Dict[str, str]:
+    """Render the REMUNERATION digest block as {"text": ..., "html": ...}.
+
+    Same phone-first table shape as build_results_block. The long-form
+    analysis is not in the email — it goes to the attached PDF.
+    """
+    analysis = analysis or {}
+    status = str(analysis.get("_status") or "").strip() or (
+        RESULTS_STATUS_FAILED if _is_llm_failure(analysis) else RESULTS_STATUS_OK
+    )
+    failed = status in (RESULTS_STATUS_FAILED, RESULTS_STATUS_PARSE_ERROR)
+    esc = htmlmod.escape
+
+    title = _remuneration_title(ticker, analysis)
+    context = _remuneration_context_line(analysis)
+    summary = str(analysis.get("summary") or "").strip() or "No summary returned."
+    verdict_label, verdict_colour = _remuneration_verdict(analysis)
+    rows = [(label, _remuneration_quick_take_row(analysis, key))
+            for key, label in REMUNERATION_QUICK_TAKE_ROWS]
+
+    # ---- plain text ----------------------------------------------------
+    text_lines: List[str] = []
+    if failed:
+        text_lines.append(f"{RESULTS_FAILURE_BADGE} — {title}")
+    else:
+        text_lines.append(title)
+    text_lines.append(f"{context}  [{verdict_label}]")
+    text_lines.append("")
+    for label, row in rows:
+        text_lines.append(f"  {label:<10} {row['value']}")
+        if row["sub"]:
+            text_lines.append(f"             ({row['sub']})")
+    text_lines.append("")
+    text_lines.append(summary)
+    text_lines.append("")
+    if asx_url:
+        text_lines.append(f"Source announcement (ASX): {asx_url}")
+    text_lines.append("")
+
+    # ---- html ----------------------------------------------------------
+    badge = RESULTS_FAILURE_BADGE if failed else "HIGH IMPACT"
+    badge_bg = COLOR_FAILURE if failed else COLOR_HIGH_IMPACT
+    badge_fg = "#FFFFFF" if failed else "#0B1220"
+
+    verdict_pill = (
+        f'<span style="display:inline-block; background:{verdict_colour}; color:#FFFFFF;'
+        f' font-size:10px; font-weight:800; letter-spacing:0.8px; padding:3px 7px;'
+        f' border-radius:4px; margin-left:6px;">{esc(verdict_label)}</span>'
+    )
+
+    metric_rows_html = ""
+    for i, (label, row) in enumerate(rows):
+        bg = COLOR_RESULTS_ROW_SHADE if i % 2 == 0 else COLOR_RESULTS_CARD
+        sub_html = (
+            f'<div style="font-size:11px; color:{COLOR_RESULTS_MUTED}; margin-top:2px;">'
+            f'{esc(row["sub"])}</div>' if row["sub"] else ""
+        )
+        metric_rows_html += (
+            f'<tr>'
+            f'<td valign="top" style="background:{bg}; padding:11px 14px; font-size:13px;'
+            f' line-height:1.3; color:{COLOR_RESULTS_LABEL}; font-family:{EMAIL_FONT};'
+            f' white-space:nowrap; width:90px;">{esc(label)}</td>'
+            f'<td style="background:{bg}; padding:11px 14px; font-size:14px; line-height:1.35;'
+            f' color:{COLOR_RESULTS_VALUE}; font-weight:700; font-family:{EMAIL_FONT};">'
+            f'{esc(row["value"])}{sub_html}</td>'
+            f'</tr>'
+        )
+
+    def _link_row(label: str, href: str) -> str:
+        return (
+            f'<tr><td colspan="2" style="padding:0 14px 10px 14px; font-family:{EMAIL_FONT};">'
+            f'<a href="{esc(href)}" style="display:block; padding:11px 12px; background:{COLOR_RESULTS_ROW_SHADE};'
+            f' border:1px solid #D5E0D8; border-radius:8px; color:{COLOR_RESULTS_HEADER};'
+            f' font-size:14px; font-weight:700; text-decoration:none;">{esc(label)} &rsaquo;</a>'
+            f'</td></tr>'
+        )
+
+    pdf_note_row = (
+        f'<tr><td colspan="2" style="padding:10px 14px; background:{COLOR_RESULTS_ROW_SHADE};'
+        f' color:{COLOR_RESULTS_MUTED}; font-family:{EMAIL_FONT};'
+        f' font-size:13px;">📎 Full remuneration analysis PDF attached to this email</td></tr>'
+    )
+    links_html = pdf_note_row
+    if asx_url:
+        links_html += _link_row("Source announcement (ASX)", asx_url)
+
+    html = (
+        f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"'
+        f' style="border-collapse:collapse; margin:14px 0;"><tr><td align="center">'
+        f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="360"'
+        f' style="width:100%; max-width:360px; border-collapse:collapse;'
+        f' background:{COLOR_RESULTS_CARD}; border-radius:10px; overflow:hidden;">'
+        f'<tr><td colspan="2" style="background:{COLOR_RESULTS_HEADER}; padding:13px 14px;'
+        f' font-family:{EMAIL_FONT};">'
+        f'<span style="display:inline-block; background:{badge_bg}; color:{badge_fg};'
+        f' font-size:10px; font-weight:800; letter-spacing:0.8px; padding:3px 7px;'
+        f' border-radius:4px;">{esc(badge)}</span>'
+        f'{verdict_pill}'
+        f'<div style="color:#FFFFFF; font-size:17px; font-weight:800; margin-top:7px;">{esc(title)}</div>'
+        f'<div style="color:{COLOR_RESULTS_HEADER_SUB}; font-size:12px; margin-top:3px;">{esc(context)}</div>'
+        f'</td></tr>'
+        f'{metric_rows_html}'
+        f'<tr><td colspan="2" style="padding:13px 14px; font-family:{EMAIL_FONT}; font-size:15px;'
+        f' line-height:1.5; color:{COLOR_RESULTS_VALUE}; border-top:2px solid {COLOR_RESULTS_HEADER};">'
+        f'{esc(summary)}</td></tr>'
+        f'{links_html}'
+        f'</table></td></tr></table>'
+    )
+    return {"text": "\n".join(text_lines), "html": html}
+
+
+def build_remuneration_doc_html(
+    ticker: str,
+    analysis: dict,
+    asx_url: str = "",
+) -> str:
+    """Build the HTML the PDF is rendered from. Preserves the raw model text
+    verbatim on a parse failure, same rule as the results Doc."""
+    analysis = analysis or {}
+    status = str(analysis.get("_status") or "").strip() or RESULTS_STATUS_OK
+    esc = htmlmod.escape
+    title = _remuneration_title(ticker, analysis)
+    context = _remuneration_context_line(analysis)
+    verdict_label, verdict_colour = _remuneration_verdict(analysis)
+
+    parts: List[str] = [
+        f'<h1 style="color:{COLOR_RESULTS_HEADER}; font-size:19pt; margin:0 0 2px 0;">{esc(title)}</h1>',
+        f'<p style="color:{COLOR_RESULTS_MUTED}; font-size:10pt; margin:0 0 14px 0;">'
+        f'{esc(context)} &nbsp;|&nbsp; Verdict: '
+        f'<span style="color:{verdict_colour}; font-weight:700;">{esc(verdict_label)}</span>'
+        f' &nbsp;|&nbsp; Generated by {esc(BOB_NAME)} {esc(VERSION_LABEL)} '
+        f'on {today_sgt_date().isoformat()} (SGT)</p>',
+    ]
+
+    if status in (RESULTS_STATUS_FAILED, RESULTS_STATUS_PARSE_ERROR):
+        parts.append(
+            f'<p style="background:#FEE2E2; border:1px solid {COLOR_FAILURE}; color:{COLOR_FAILURE};'
+            f' padding:10px 12px; font-weight:700;">{esc(RESULTS_FAILURE_BADGE)}: '
+            f'{esc(str(analysis.get("summary", "")))}</p>'
+        )
+
+    if isinstance(analysis.get("quick_take"), dict):
+        rows_html = ""
+        for i, (key, label) in enumerate(REMUNERATION_QUICK_TAKE_ROWS):
+            row = _remuneration_quick_take_row(analysis, key)
+            bg = COLOR_RESULTS_ROW_SHADE if i % 2 == 0 else "#FFFFFF"
+            sub = (f' <span style="color:{COLOR_RESULTS_MUTED}; font-size:9pt;">'
+                   f'({esc(row["sub"])})</span>') if row["sub"] else ""
+            rows_html += (
+                f'<tr>'
+                f'<td style="background:{bg}; padding:7px 10px; border:1px solid #D5E0D8;">{esc(label)}</td>'
+                f'<td style="background:{bg}; padding:7px 10px; border:1px solid #D5E0D8;">'
+                f'{esc(row["value"])}{sub}</td>'
+                f'</tr>'
+            )
+        parts.append(
+            '<table cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:100%;'
+            ' margin:10px 0 16px 0; font-size:11pt;">'
+            f'<tr>'
+            f'<td style="background:{COLOR_RESULTS_HEADER}; color:#FFFFFF; font-weight:700; padding:7px 10px; border:1px solid #D5E0D8;">Parameter</td>'
+            f'<td style="background:{COLOR_RESULTS_HEADER}; color:#FFFFFF; font-weight:700; padding:7px 10px; border:1px solid #D5E0D8;">Value</td>'
+            f'</tr>{rows_html}</table>'
+        )
+
+    summary = str(analysis.get("summary") or "").strip()
+    if summary:
+        parts.append(f'<h2 style="color:{COLOR_RESULTS_HEADER}; font-size:15pt; margin:16px 0 6px 0;">Summary</h2>')
+        parts.append(f'<p style="margin:8px 0; line-height:1.5;">{esc(summary)}</p>')
+
+    full_analysis = str(analysis.get("full_analysis") or "").strip()
+    if full_analysis:
+        parts.append(_markdown_to_html(full_analysis))
+
+    raw_text = str(analysis.get("_raw_text") or "").strip()
+    if raw_text:
+        parts.append(
+            f'<h2 style="color:{COLOR_FAILURE}; font-size:15pt; margin:16px 0 6px 0;">'
+            'Raw model output (unparseable)</h2>'
+            f'<p style="color:{COLOR_RESULTS_MUTED}; font-size:10pt;">The model did not return valid JSON. '
+            'Its full response is preserved verbatim below.</p>'
+            f'<pre style="white-space:pre-wrap; font-size:10pt; background:{COLOR_RESULTS_ROW_SHADE};'
+            f' padding:10px; border:1px solid #D5E0D8;">{esc(raw_text)}</pre>'
+        )
+
+    if asx_url:
+        parts.append(
+            f'<p style="margin:16px 0 0 0; font-size:10pt;">Source announcement (ASX): '
+            f'<a href="{esc(asx_url)}">{esc(asx_url)}</a></p>'
+        )
+
+    return (
+        '<html><head><meta charset="utf-8">'
+        f'<title>{esc(title)}</title></head>'
+        '<body style="font-family:Arial, sans-serif; font-size:11pt; color:#111827;">'
+        + "".join(parts) +
+        "</body></html>"
+    )
+
+
 def generate_analysis_pdf(
     ticker: str,
     period: str,
@@ -2070,6 +2469,85 @@ def deep_results_analysis(
         return {
             "executive_summary": [f"{LLM_FAILURE_FLAG} ({detail})."],
             "summary": f"{LLM_FAILURE_FLAG} ({detail}). Raw model output saved to the analysis Doc.",
+            "_status": RESULTS_STATUS_PARSE_ERROR,
+            "_raw_text": out,
+        }
+
+    parsed["_status"] = RESULTS_STATUS_OK
+    return parsed
+
+
+def deep_remuneration_memo(
+    ticker: str,
+    title: str,
+    text: str,
+    counters: Dict,
+    pdf_path: Optional[Path] = None,
+) -> dict:
+    """One structured LLM call for an amended share plan / exec remuneration
+    document. Same shape as deep_results_analysis: streaming (the analysis is
+    large enough to trip the SDK's non-streaming ceiling), _status-tagged
+    return dict, raw text preserved on a parse failure.
+
+    Native PDF in when available so the rules table can be read; extracted
+    text as the fallback with the model told to be conservative about
+    numbers it can't cleanly read.
+    """
+    if pdf_path and pdf_path.exists():
+        user = (
+            f"Ticker: {ticker}\nTitle: {title}\n\n"
+            "Please analyse the attached amended share plan / remuneration document "
+            "as the primary source. Compare against the previous plan where the "
+            "document itself references it; where it does not, note the market-"
+            "practice benchmark and mark parameters that were not disclosed."
+        )
+        out = llm_chat(
+            REMUNERATION_PROMPT, user, counters,
+            pdf_path=pdf_path, fallback_text=text,
+            max_tokens=REMUNERATION_MAX_TOKENS,
+        )
+    elif is_meaningful_text(text, min_chars=900):
+        user = (
+            f"Ticker: {ticker}\nTitle: {title}\n\n"
+            "NOTE: no PDF could be attached — the text below was extracted with pypdf, "
+            "so table layout may be mangled. Prefer 'not disclosed' over any figure you "
+            "cannot read with confidence.\n\n"
+            f"Announcement text:\n{text}"
+        )
+        out = llm_chat(REMUNERATION_PROMPT, user, counters, max_tokens=REMUNERATION_MAX_TOKENS)
+    else:
+        return {
+            "summary": "No meaningful plan text or PDF available for analysis. Open the announcement manually.",
+            "_status": RESULTS_STATUS_NO_CONTENT,
+        }
+
+    if out == LLM_SKIPPED:
+        marker = _skip_marker("summary")
+        marker["_status"] = RESULTS_STATUS_SKIPPED
+        return marker
+
+    if out == LLM_FAILED:
+        marker = _failed_marker("summary", counters)
+        marker["_status"] = RESULTS_STATUS_FAILED
+        return marker
+
+    truncated = (counters.get("last_stop_reason") or "").lower() == "max_tokens"
+    parsed = _parse_analysis_json(out, allow_repair=not truncated)
+    if not parsed:
+        stop_reason = (counters.get("last_stop_reason") or "").lower()
+        if stop_reason == "max_tokens":
+            detail = (
+                f"model output was truncated at max_tokens="
+                f"{REMUNERATION_MAX_TOKENS} — raise CLAUDE_REMUNERATION_MAX_TOKENS"
+            )
+        else:
+            detail = "model returned unparseable output (not valid JSON)"
+        log(
+            f"ERROR: remuneration JSON parse failed for {ticker} — "
+            f"{len(out)} chars, stop_reason={stop_reason or 'unknown'}"
+        )
+        return {
+            "summary": f"{LLM_FAILURE_FLAG} ({detail}). Raw model output attached to this email as a PDF.",
             "_status": RESULTS_STATUS_PARSE_ERROR,
             "_raw_text": out,
         }
@@ -2512,6 +2990,62 @@ def main():
                 asx_flagged = it.get("price_sensitive", False)
                 is_price = is_price_sensitive_title(title) or asx_flagged
                 cls_title = classify_from_title_only(title)
+
+                # Remuneration / share plan amendments are analysed whether or
+                # not ASX flags them price-sensitive — the whole point of this
+                # branch is that a quietly filed plan-rules change never shows
+                # up flagged, and reading it by hand is exactly the job Bob
+                # is meant to do here.
+                if cls_title == "REMUNERATION":
+                    pdf_url = asx_pdf_url_from_item_url(url)
+                    safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
+                    pdf_path = tmpdir / f"{safe_name}.pdf"
+                    text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
+
+                    if looks_like_asx_access_gate(text) and not got_pdf:
+                        block = f"{ticker}: {title[:160]}\nSo what: could not fetch remuneration PDF automatically. Open: {url}\n"
+                        material_blocks.append(block)
+                        material_items.append({"ticker": ticker, "title": title[:200], "url": url})
+                        if ticker == "AR9":
+                            brother_blocks.append(block)
+                        if pdf_path.exists():
+                            try:
+                                pdf_path.unlink()
+                            except Exception:
+                                pass
+                        continue
+
+                    current_pdf = pdf_path if got_pdf else None
+                    analysis = deep_remuneration_memo(
+                        ticker, title, text, counters, pdf_path=current_pdf,
+                    )
+
+                    analysis_pdf_path = None
+                    try:
+                        analysis_pdf_path = generate_analysis_pdf(
+                            ticker,
+                            "remuneration",
+                            build_remuneration_doc_html(ticker, analysis, url),
+                        )
+                    except Exception as e:
+                        log(f"ERROR: remuneration PDF generation failed for {ticker}: {type(e).__name__}: {e}")
+
+                    if pdf_path.exists():
+                        try:
+                            pdf_path.unlink()
+                        except Exception:
+                            pass
+
+                    block = build_remuneration_block(ticker, analysis, url)
+                    high_impact_blocks.append(block)
+                    high_impact_items.append({
+                        "ticker": ticker, "title": title[:200], "url": url,
+                        "type": "remuneration", "analysis": analysis,
+                        "pdf_path": str(analysis_pdf_path) if analysis_pdf_path else None,
+                    })
+                    if ticker == "AR9":
+                        brother_blocks.append(block)
+                    continue
 
                 if not is_price:
                     continue

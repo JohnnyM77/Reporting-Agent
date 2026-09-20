@@ -126,6 +126,7 @@ _BADGE_COLOURS = {
     "capital":        "#3b82f6",
     "trading_update": "#06b6d4",
     "price_sensitive":"#ef4444",
+    "remuneration":   "#ec4899",
 }
 
 def _esc(s: str) -> str:
@@ -239,6 +240,17 @@ _PRICE_SENSITIVE_FIELDS = [
     ("risks_questions",     "Risks / Questions"),
     ("bottom_line",         "Bottom Line"),
 ]
+# Remuneration card. "quick_take" is the structured 5-row summary (funding,
+# quantum, hurdles, vesting, dilution) — flattened separately below so it
+# renders as one panel rather than five nested key/value blocks.
+_REMUNERATION_FIELDS = [
+    ("verdict",          "Verdict"),
+    ("alignment_score",  "Alignment (1-5)"),
+    ("plan_type",        "Plan Type"),
+    ("participants",     "Participants"),
+    ("quick_take",       "Quick Take"),
+    ("summary",          "Summary"),
+]
 _DEFAULT_FIELDS = [
     ("what_happened", "What Happened"),
     ("so_what",       "So What"),
@@ -250,7 +262,32 @@ _FIELD_MAP = {
     "capital":        _CAPITAL_FIELDS,
     "trading_update": _TRADING_FIELDS,
     "price_sensitive":_PRICE_SENSITIVE_FIELDS,
+    "remuneration":   _REMUNERATION_FIELDS,
 }
+
+
+_QUICK_TAKE_LABELS = [
+    ("funding",              "Funding"),
+    ("quantum",              "Quantum"),
+    ("hurdles",              "Hurdles"),
+    ("vesting_period",       "Vesting"),
+    ("shareholder_dilution", "Dilution"),
+]
+
+
+def _flatten_quick_take(quick_take: dict) -> dict:
+    """Collapse {"funding": {"value": .., "note": ..}} into a flat
+    label -> "value (note)" map that _section_cell can render as one panel."""
+    flat = {}
+    for key, label in _QUICK_TAKE_LABELS:
+        entry = quick_take.get(key)
+        if isinstance(entry, dict):
+            value = str(entry.get("value", "") or "not disclosed")
+            note = str(entry.get("note", "") or "")
+            flat[label] = f"{value} — {note}" if note else value
+        elif entry:
+            flat[label] = str(entry)
+    return flat
 
 
 def _render_analysis_sections(analysis: dict, kind: str) -> str:
@@ -260,6 +297,8 @@ def _render_analysis_sections(analysis: dict, kind: str) -> str:
         raw = analysis.get(key)
         if key == "metrics" and isinstance(raw, dict):
             return _flatten_metrics(raw)
+        if key == "quick_take" and isinstance(raw, dict):
+            return _flatten_quick_take(raw)
         return raw
 
     cells = "".join(_section_cell(label, _value(key)) for key, label in fields)

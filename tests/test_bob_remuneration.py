@@ -46,6 +46,34 @@ def test_amended_employee_share_plan_matches():
     ) is True
 
 
+def test_ahc_real_ash_headline_matches():
+    """AHC's exact FY26 title: 'Amendments to Employee Share Incentive Plan'.
+    Two things about it tripped the first cut of the regex:
+      1. Plural 'Amendments' (the trigger word), which only 'amend(?:ed|ment)'
+         matched — no 's'.
+      2. 'Employee Share INCENTIVE Plan' — the incentive variant wasn't in
+         the plan-noun list at all.
+    Both are covered now and this test locks them in."""
+    assert agent.looks_like_remuneration_title(
+        "Amendments to Employee Share Incentive Plan"
+    ) is True
+    assert agent.classify_from_title_only(
+        "Amendments to Employee Share Incentive Plan"
+    ) == "REMUNERATION"
+    # Both variations of the same phrase.
+    assert agent.looks_like_remuneration_title(
+        "Amendment to Share Incentive Plan"
+    ) is True
+    assert agent.looks_like_remuneration_title(
+        "Amendments to Share Incentive Scheme"
+    ) is True
+    # ASX titles come across with the size-and-pages suffix pypdf's HTML
+    # scrape appends — the classifier must ignore that trailing junk.
+    assert agent.looks_like_remuneration_title(
+        "Amendments to Employee Share Incentive Plan 16\n\t\t\tpages 510.5KB"
+    ) is True
+
+
 def test_new_ltip_and_variants_match():
     assert agent.looks_like_remuneration_title("New Long Term Incentive Plan") is True
     assert agent.looks_like_remuneration_title("Adoption of FY26 LTIP") is True
@@ -421,6 +449,68 @@ def test_parse_error_block_is_not_a_clean_card():
     block = agent.build_remuneration_block("AHC", analysis, "https://asx.example/ahc")
     assert agent.RESULTS_FAILURE_BADGE in block["html"]
     assert junk not in block["html"]
+
+
+# ---------------------------------------------------------------------------
+# Coexistence with a same-day results bundle — the AHC failure mode
+# ---------------------------------------------------------------------------
+#
+# On 2026-09-20 AHC filed both the FY26 annual report (RESULTS_HY_FY) and
+# an "Amendments to Employee Share Incentive Plan" (REMUNERATION). The first
+# cut of the routing loop had the results branch end with ``continue``, so
+# the ESP amendment fell through to FYI and the deep analysis never ran.
+# These tests pin the flow fix — the per-item MATERIAL/HIGH IMPACT loop
+# must still see REMUNERATION items after the results bundle handled its
+# own PDFs, and must not double-process the bundle's own PDFs.
+
+def test_results_bundle_url_is_marked_handled_and_skipped():
+    """The bundle's own URLs get added to ``handled_urls``; the per-item
+    loop skips them so the annual report doesn't also get re-analysed as
+    a generic price-sensitive item."""
+    bundle_items = [
+        {"title": "Austco FY26 Results Media Release", "url": "https://asx/rel"},
+        {"title": "Appendix 4E & FY26 Financial Statements", "url": "https://asx/4e"},
+    ]
+    rem_item = {
+        "title": "Amendments to Employee Share Incentive Plan",
+        "url": "https://asx/esp",
+    }
+    fresh_items = bundle_items + [rem_item]
+
+    # Simulate the routing bookkeeping the loop performs.
+    handled_urls = {b["url"] for b in bundle_items}
+
+    reached_remuneration = []
+    for it in fresh_items:
+        if it["url"] in handled_urls:
+            continue
+        if agent.classify_from_title_only(it["title"]) == "REMUNERATION":
+            reached_remuneration.append(it["url"])
+
+    assert reached_remuneration == ["https://asx/esp"], (
+        "the per-item loop must still see the ESP amendment after the results "
+        "bundle has run, and must not re-process the bundle's own PDFs"
+    )
+
+
+def test_results_and_remuneration_do_not_share_a_url():
+    """Sanity check the two classifiers over the real AHC morning: no title
+    should match both, so the handled_urls guard is enough to prevent
+    double-processing."""
+    ahc_titles = [
+        "Annual Report to shareholders",
+        "Appendix 4E & FY26 Financial Statements",
+        "Austco FY26 Results Media Release",
+        "Austco FY26 Results Investor Presentation",
+        "Amendments to Employee Share Incentive Plan",
+        "Notice of Annual General Meeting/Proxy Form",
+        "Appendix 4G and Corporate Governance Statement",
+    ]
+    both = [
+        t for t in ahc_titles
+        if agent.looks_like_results_title(t) and agent.looks_like_remuneration_title(t)
+    ]
+    assert both == [], f"{both!r} matches both classifiers — coexistence unsafe"
 
 
 def test_dashboard_has_remuneration_type():

@@ -35,6 +35,13 @@ sgx:
   Z74: Singapore Telecommunications Ltd
   C6L: Singapore Airlines Ltd
 
+# US (NYSE + NASDAQ) tickers. Fetched via us_fetch.py (SEC EDGAR).
+# The dispatch `ticker` input on us_daily.yml is the primary entry
+# point; this list is here as a seed and for any future scheduled runs.
+us:
+  MSFT: Microsoft Corporation
+  NVDA: NVIDIA Corporation
+
 # ETFs (VAS, VEU, VHY) are included for ASX announcements but skipped for news scanning
 etf_tickers:
   - VAS

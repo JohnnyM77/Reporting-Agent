@@ -1,0 +1,111 @@
+name: Bob USA Daily
+
+# Bob USA V1 -- on-demand SEC EDGAR results agent.
+#
+# Dispatch-driven only (no cron): "call any ticker any time" from the
+# Actions tab. The default runner is GitHub-hosted ubuntu-latest --
+# unlike Slinger, EDGAR has no TLS-fingerprint filter and needs no
+# residential IP, so bundled Playwright Chromium is enough.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: "US symbol to analyse (e.g. MSFT, NVDA, SE)"
+        required: true
+        default: ""
+      dry_run:
+        description: "true = build digest + preview but don't send email"
+        required: false
+        default: "false"
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    # `contents: write` lets the "Commit dashboard update" step push
+    # us.json + rebuilt index.html back to main -- same pattern the
+    # SGX workflow uses on Windows.
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          # Same superset the SGX path uses, plus explicit anthropic/pyyaml
+          # (already there transitively but pinned here so a fresh cache
+          # never has to rediscover them).
+          python -m pip install playwright pyyaml requests beautifulsoup4 pypdf anthropic
+
+      - name: Install Chromium for Playwright
+        # Bundled Chromium is fine for SEC (no fingerprint gating). --with-deps
+        # pulls the ubuntu libs Chromium needs; runs quickly on the cached image.
+        run: |
+          python -m playwright install --with-deps chromium
+
+      - name: Run Bob USA
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_MODEL: ${{ secrets.CLAUDE_MODEL }}
+          # EDGAR requires a non-empty, identifying User-Agent. Default is
+          # baked into us_fetch.py; override here if needed.
+          # SEC_USER_AGENT: "Bob the Bot johnmyerscough13@gmail.com"
+        run: |
+          set -euo pipefail
+          args=("--ticker" "${{ inputs.ticker }}")
+          if [[ "${{ inputs.dry_run }}" == "true" ]]; then
+            args+=("--dry-run")
+          fi
+          python us_agent.py "${args[@]}"
+
+      # Publish to the shared dashboard. Bob USA wrote docs/data/us.json;
+      # rebuild docs/index.html and commit with [skip ci] so this push
+      # does not re-trigger. The Publish site workflow picks up the
+      # workflow_run completion event and deploys. Same pattern the
+      # Slinger step uses, translated from PowerShell to bash.
+      - name: Commit dashboard update
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ ! -f docs/data/us.json ]]; then
+            echo "[dashboard] us.json not written this run -- skipping commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data/us.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Bob USA data [skip ci]"
+          fi
+          # Rebase against remote before rebuilding + pushing, in case
+          # another agent's commit landed between our fetch and now.
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          python scripts/build_dashboard.py
+          # us_history.json is Bob USA's rolling last-two-runs record --
+          # add it to the commit alongside index.html so a Publish site
+          # rebuild on ubuntu never trips over unstaged diffs (same
+          # gotcha slinger_history.json hit; see CLAUDE.md).
+          git add docs/index.html docs/data/us_history.json 2>/dev/null || true
+          git add docs/index.html
+          if ! git diff --staged --quiet; then
+            git commit -m "Dashboard update -- Bob USA [skip ci]"
+          fi
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: us-daily
+          path: outputs/us/
+          if-no-files-found: warn

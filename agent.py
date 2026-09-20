@@ -447,42 +447,46 @@ _REMUNERATION_TITLE_HARD_NO = (
 # characters so it can never span across two unrelated ideas in a long title.
 _REM_SEP = r"[\s\-–—:()&\w]{0,60}"
 
-_REMUNERATION_TITLE_PATTERNS = tuple(re.compile(p) for p in (
-    # Amended / new / updated / revised / adopted + a plan noun.
-    r"\b(?:amend(?:ed|ment)|new|revised|updated|adoption|adopts|adopting|"
-    r"replacement|refresh(?:ed)?)\b" + _REM_SEP +
-    r"\b(?:employee\s+share\s+(?:plan|scheme)|esp|espp|"
+# The plan-noun alternatives — long enough to want naming, and used in
+# both the trigger-first and plan-noun-first patterns below. Every
+# variant that appears on the ASX in practice belongs here: the missing
+# "Employee Share INCENTIVE Plan" pattern is what let AHC's real title
+# ("Amendments to Employee Share Incentive Plan") fall through to FYI on
+# the first run.
+_REM_PLAN_NOUNS = (
+    r"employee\s+share\s+(?:incentive\s+)?(?:plan|scheme)|"
+    r"share\s+incentive\s+(?:plan|scheme)|"
+    r"esp|espp|"
     r"(?:long[\s\-]?term|short[\s\-]?term)\s+incentive(?:\s+plan)?|ltip?|stip?|"
     r"performance\s+rights?(?:\s+plan)?|prp|"
     r"executive\s+(?:incentive|equity)\s+plan|eip|"
     r"share\s+option\s+plan|option\s+plan|"
     r"employee\s+equity\s+plan|matching\s+plan|deferred\s+share\s+plan|"
     r"restricted\s+share\s+plan|equity\s+incentive\s+plan|"
-    r"remuneration\s+(?:framework|policy|structure))\b",
+    r"remuneration\s+(?:framework|policy|structure)"
+)
+
+_REMUNERATION_TITLE_PATTERNS = tuple(re.compile(p) for p in (
+    # Amended / amendment(s) / new / updated / revised / adopted + plan noun.
+    # "amend(?:ed|ment)s?" catches "amend", "amended", "amendment",
+    # "amendments" — the last was the exact word AHC used and my first
+    # pattern missed it, so the plural is now explicit here.
+    r"\b(?:amend(?:ed|ment)s?|new|revised|updated|adoption|adopts|adopting|"
+    r"replacement|refresh(?:ed)?)\b" + _REM_SEP +
+    r"\b(?:" + _REM_PLAN_NOUNS + r")\b",
     # Same list, plan-noun-first ("Employee Share Plan — Amendment").
-    r"\b(?:employee\s+share\s+(?:plan|scheme)|"
-    r"(?:long[\s\-]?term|short[\s\-]?term)\s+incentive(?:\s+plan)?|ltip?|stip?|"
-    r"performance\s+rights?(?:\s+plan)?|"
-    r"executive\s+(?:incentive|equity)\s+plan|"
-    r"share\s+option\s+plan|option\s+plan|"
-    r"employee\s+equity\s+plan|matching\s+plan|deferred\s+share\s+plan|"
-    r"restricted\s+share\s+plan|equity\s+incentive\s+plan|"
-    r"remuneration\s+(?:framework|policy|structure))\b" + _REM_SEP +
-    r"\b(?:amend(?:ed|ment|ments)|new\s+rules|updated|revised|adoption|adopted|"
+    r"\b(?:" + _REM_PLAN_NOUNS + r")\b" + _REM_SEP +
+    r"\b(?:amend(?:ed|ment)s?|new\s+rules|updated|revised|adoption|adopted|"
     r"refresh(?:ed)?|change|changes|replace(?:d|ment)?|rules)\b",
     # Explicit "Rules of" a plan (companies file the rulebook itself).
     r"\brules\s+of\s+the\b" + _REM_SEP +
-    r"\b(?:employee\s+share\s+(?:plan|scheme)|incentive\s+plan|option\s+plan|"
-    r"performance\s+rights?(?:\s+plan)?|equity\s+plan|ltip?|stip?)\b",
+    r"\b(?:" + _REM_PLAN_NOUNS + r")\b",
     # Explanatory memorandum for a plan being put to shareholders.
     r"\bexplanatory\s+(?:memorandum|statement)\b" + _REM_SEP +
-    r"\b(?:share\s+plan|incentive\s+plan|performance\s+rights?|"
-    r"option\s+plan|equity\s+plan|remuneration)\b",
+    r"\b(?:" + _REM_PLAN_NOUNS + r"|share\s+plan|incentive\s+plan|remuneration)\b",
     # Approvals sought at meeting — narrower than "Notice of Meeting" itself.
     r"\bapproval\s+of\b" + _REM_SEP +
-    r"\b(?:employee\s+share\s+(?:plan|scheme)|incentive\s+plan|"
-    r"performance\s+rights?|option\s+plan|equity\s+plan|"
-    r"remuneration\s+(?:framework|policy|report))\b",
+    r"\b(?:" + _REM_PLAN_NOUNS + r"|remuneration\s+report)\b",
     # Standalone "Remuneration Framework/Policy" documents — the whole thing
     # is a new/updated framework, no verb needed. The annual report's own
     # remuneration report is caught (and excluded) by the HARD NO list, so
@@ -2900,6 +2904,15 @@ def main():
                     seen_state_updated[key] = now_sgt().isoformat(timespec="seconds")
                     run_seen_count += 1
 
+            # Track URLs whose deep analysis is already handled this loop so
+            # the per-item MATERIAL/HIGH IMPACT pass below doesn't re-process
+            # them. Previously the RESULTS bundle branch ended with
+            # ``continue`` — which meant a REMUNERATION (e.g. an amended
+            # employee share plan filed the same morning as the annual
+            # report) was never reached and quietly fell into FYI. That is
+            # exactly the AHC failure mode.
+            handled_urls: set = set()
+
             # RESULTS bundle
             if any(looks_like_results_title(i["title"]) for i in fresh_items) and ticker not in processed_results:
                 processed_results.add(ticker)
@@ -2914,6 +2927,7 @@ def main():
                 for b in bundle:
                     title = b["title"]
                     url = b["url"]
+                    handled_urls.add(url)
                     pdf_url = asx_pdf_url_from_item_url(url)
                     safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
                     pdf_path = tmpdir / f"{safe_name}.pdf"
@@ -2944,49 +2958,52 @@ def main():
                     })
                     if ticker == "AR9":
                         brother_blocks.append(block)
-                    continue
-
-                analysis = deep_results_analysis(
-                    ticker, report_text, deck_text, counters,
-                    report_pdf=report_pdf, deck_pdf=deck_pdf,
-                )
-
-                # The long-form analysis leaves the email and goes to a native
-                # Generate a professional PDF of the full analysis and attach it to
-                # the email. This avoids Google Drive auth issues and gives the user
-                # a clean, downloadable file. PDF generation is non-fatal — if
-                # weasyprint isn't available, the email still ships without it.
-                analysis_pdf_path = None
-                try:
-                    analysis_pdf_path = generate_analysis_pdf(
-                        ticker,
-                        _results_period_label(analysis),
-                        build_analysis_doc_html(ticker, analysis, any_results_link),
+                    # Fall through to the per-item loop so a REMUNERATION
+                    # or other item filed the same day still gets analysed.
+                else:
+                    analysis = deep_results_analysis(
+                        ticker, report_text, deck_text, counters,
+                        report_pdf=report_pdf, deck_pdf=deck_pdf,
                     )
-                except Exception as e:
-                    log(f"ERROR: analysis PDF generation failed for {ticker}: {type(e).__name__}: {e}")
 
-                block = build_results_block(
-                    ticker=ticker,
-                    analysis=analysis,
-                    asx_url=any_results_link,
-                    doc_link="",
-                    doc_error="",
-                )
-                high_impact_blocks.append(block)
-                high_impact_items.append({
-                    "ticker": ticker, "title": bundle[0]["title"] if bundle else "Results (HY/FY)",
-                    "url": any_results_link, "type": "results", "analysis": analysis,
-                    "doc_link": "", "doc_error": "", "pdf_path": str(analysis_pdf_path) if analysis_pdf_path else None,
-                })
-                if ticker == "AR9":
-                    brother_blocks.append(block)
-                continue
+                    # The long-form analysis leaves the email and goes to a
+                    # standalone PDF attached to the email. PDF generation is
+                    # non-fatal — if weasyprint isn't available, the email
+                    # still ships without it.
+                    analysis_pdf_path = None
+                    try:
+                        analysis_pdf_path = generate_analysis_pdf(
+                            ticker,
+                            _results_period_label(analysis),
+                            build_analysis_doc_html(ticker, analysis, any_results_link),
+                        )
+                    except Exception as e:
+                        log(f"ERROR: analysis PDF generation failed for {ticker}: {type(e).__name__}: {e}")
+
+                    block = build_results_block(
+                        ticker=ticker,
+                        analysis=analysis,
+                        asx_url=any_results_link,
+                        doc_link="",
+                        doc_error="",
+                    )
+                    high_impact_blocks.append(block)
+                    high_impact_items.append({
+                        "ticker": ticker, "title": bundle[0]["title"] if bundle else "Results (HY/FY)",
+                        "url": any_results_link, "type": "results", "analysis": analysis,
+                        "doc_link": "", "doc_error": "", "pdf_path": str(analysis_pdf_path) if analysis_pdf_path else None,
+                    })
+                    if ticker == "AR9":
+                        brother_blocks.append(block)
 
             # Per-item MATERIAL / HIGH IMPACT
             for it in fresh_items:
                 title = it["title"]
                 url = it["url"]
+                if url in handled_urls:
+                    # Already processed as part of the results bundle above;
+                    # don't double-analyse the same PDF.
+                    continue
                 asx_flagged = it.get("price_sensitive", False)
                 is_price = is_price_sensitive_title(title) or asx_flagged
                 cls_title = classify_from_title_only(title)

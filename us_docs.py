@@ -34,7 +34,7 @@ from __future__ import annotations
 import re
 import time
 from pathlib import Path
-from typing import Callable, List, NamedTuple, Optional
+from typing import Callable, List, NamedTuple, Optional, Tuple
 from urllib.parse import urlparse
 
 import requests
@@ -219,6 +219,16 @@ _CERT_EXHIBIT_PATTERNS = (
     "certificationq",
 )
 
+# Governance/administrative exhibits: subsidiary listing (ex-21),
+# auditor consent (ex-23). No financial content. Also filter their
+# non-hyphen variants and the RMD-style long names.
+_ADMIN_EXHIBIT_PATTERNS = (
+    "ex-21.", "ex-23.", "ex21", "ex23",
+    "ex-21_", "ex-23_",
+    "subsidiaries",       # RMD: exhibit211-subsidiariesq4f
+    "auditorconsent",     # RMD: exhibit231-auditorconsentq
+)
+
 # EDGAR-generated wrapper pages: filing header + directory listing.
 # The primary_document already gives us the substantive filing; these
 # are metadata about the submission itself.
@@ -231,11 +241,14 @@ _INDEX_WRAPPER_PATTERNS = (
 
 def _is_low_value_doc(name: str) -> bool:
     """True when `name` is a doc EDGAR ships but the LLM should not spend
-    a slot on (SOX certifications, EDGAR wrapper index files). The tests
-    for RMD's 10-K show these can outnumber real content in a filing --
-    on that release, primary + 5 of these = the whole 6-slot budget."""
+    a slot on (SOX certifications, subsidiary/consent exhibits, EDGAR
+    wrapper index files). The RMD FY26 tests show these can outnumber
+    real content in a filing -- on that release, primary + 5 of these =
+    the whole 6-slot budget, and the paired 8-K got starved out."""
     low = (name or "").lower()
     if any(p in low for p in _CERT_EXHIBIT_PATTERNS):
+        return True
+    if any(p in low for p in _ADMIN_EXHIBIT_PATTERNS):
         return True
     if any(p in low for p in _INDEX_WRAPPER_PATTERNS):
         return True
@@ -247,7 +260,7 @@ def _is_low_value_doc(name: str) -> bool:
 def fetch_filing_documents(
     selected: List[dict],
     out_dir: Path,
-    max_pdfs: int = 6,
+    max_pdfs: int = 8,
     log: Callable[[str], None] = print,
 ) -> List[FetchedPdf]:
     """Download and (when needed) render every relevant document from
@@ -261,6 +274,13 @@ def fetch_filing_documents(
       2. Exhibit 99.x on 8-K filings (the press release, non-GAAP tables,
          supplemental slides) -- crucial for reading management framing.
       3. Any other .htm exhibit up to the cap.
+
+    Fetch order is ROUND-ROBIN across filings, not linear. So the paired
+    8-K's ex-99.1 earnings release is never starved out by the 10-K's
+    tail of exhibits -- the RMD FY26 run showed the 10-K queue eating
+    all 6 slots (body + 5 misc exhibits) and the 8-K never got a look-
+    in. Round-robin guarantees each filing sees its primary + ex-99
+    exhibits before the first filing's non-critical exhibits pile up.
     """
     if not selected:
         return []
@@ -268,12 +288,14 @@ def fetch_filing_documents(
     session = _sec_session()
     saved: List[FetchedPdf] = []
 
+    # Build a per-filing download queue up front so we can round-robin
+    # them below. Skip rows without accession metadata (defensive).
+    per_filing: List[Tuple[int, dict, List[str]]] = []
     for f_idx, row in enumerate(selected):
         cik_int = row.get("cik_int") or 0
         acc_nd = row.get("accession_nodash") or ""
         dir_url = row.get("filing_dir_url") or ""
         primary_document = row.get("primary_document") or ""
-        form = row.get("form") or ""
         if not (cik_int and acc_nd and dir_url):
             log(f"[us-docs] skipping row without accession/dir: {row}")
             continue
@@ -283,13 +305,10 @@ def fetch_filing_documents(
         # the index isn't reachable -- we still have primary_document.
         exhibit_names = _fetch_filing_index_docs(session, dir_url, log)
 
-        # Build an ordered download queue: primary first, then Ex-99
-        # exhibits (press release + supplemental tables usually), then
-        # anything else. Dedupe against primary_document.
-        # SOX cert exhibits + EDGAR wrapper index files are filtered
-        # out via _is_low_value_doc -- they carry no analysis content
-        # and would otherwise eat native-PDF slots earmarked for real
-        # exhibits (see RMD FY26 run for the failure mode this fixes).
+        # Build the queue: primary first, then Ex-99 exhibits (press
+        # release + supplemental tables usually), then everything else.
+        # SOX certs, subsidiary/consent exhibits, and EDGAR wrapper
+        # index files are filtered via _is_low_value_doc.
         queue: List[str] = []
         if primary_document:
             queue.append(primary_document)
@@ -297,47 +316,59 @@ def fetch_filing_documents(
             if name == primary_document or _is_low_value_doc(name):
                 continue
             low = name.lower()
-            # SEC exhibit naming: ex-99*, ex99* -- both variants exist.
             if "ex-99" in low or "ex99" in low or low.startswith("ex99"):
                 queue.append(name)
         for name in exhibit_names:
             if name in queue or _is_low_value_doc(name):
                 continue
             queue.append(name)
+        per_filing.append((f_idx, row, queue))
 
-        # Actually download + render each, honouring the global cap.
-        for doc_name in queue:
-            if len(saved) >= max_pdfs:
-                break
-            source_url = dir_url + doc_name
-            data = _download_bytes(session, source_url, log)
-            if not data:
+    def _consume(f_idx: int, row: dict, doc_name: str) -> bool:
+        """Download `doc_name`, save, and append to `saved`. Returns
+        True on success (a slot was used), False on any failure."""
+        dir_url = row.get("filing_dir_url") or ""
+        form = row.get("form") or ""
+        source_url = dir_url + doc_name
+        data = _download_bytes(session, source_url, log)
+        if not data:
+            return False
+
+        display = _document_display_name(row, source_url)
+        file_stem = f"{f_idx:02d}_{form.replace('/', '_')}_{doc_name}".replace("/", "_")
+        file_stem = re.sub(r"[^A-Za-z0-9._-]+", "_", file_stem).strip("_")
+
+        if data[:4] == PDF_MAGIC:
+            out_path = out_dir / (file_stem if file_stem.lower().endswith(".pdf")
+                                   else file_stem + ".pdf")
+            out_path.write_bytes(data)
+            log(f"[us-docs] pass-through PDF {out_path.name} ({len(data)}B)")
+            saved.append(FetchedPdf(
+                path=out_path, source_url=source_url, name=display,
+            ))
+            return True
+
+        pdf_out = out_dir / (file_stem.rsplit(".", 1)[0] + ".pdf")
+        got = _render_html_bytes_to_pdf(data, source_url, pdf_out, log)
+        if got:
+            saved.append(FetchedPdf(
+                path=got, source_url=source_url, name=display,
+            ))
+            return True
+        return False
+
+    # Round-robin: each pass takes one doc from each filing's queue in
+    # order. So filing 0 gets its primary, then filing 1 gets its
+    # primary, then filing 0 gets its second-priority (ex-99), then
+    # filing 1 gets its second, ... until every queue empties or we hit
+    # max_pdfs. Guarantees the paired 8-K's ex-99.1 press release is
+    # fetched before the 10-K's fourteenth XBRL viewer page.
+    while any(q for _, _, q in per_filing) and len(saved) < max_pdfs:
+        for f_idx, row, queue in per_filing:
+            if not queue or len(saved) >= max_pdfs:
                 continue
-
-            display = _document_display_name(row, source_url)
-            file_stem = f"{f_idx:02d}_{form.replace('/', '_')}_{doc_name}".replace("/", "_")
-            file_stem = re.sub(r"[^A-Za-z0-9._-]+", "_", file_stem).strip("_")
-
-            if data[:4] == PDF_MAGIC:
-                # Already a PDF -- pass through.
-                out_path = out_dir / (file_stem if file_stem.lower().endswith(".pdf")
-                                       else file_stem + ".pdf")
-                out_path.write_bytes(data)
-                log(f"[us-docs] pass-through PDF {out_path.name} ({len(data)}B)")
-                saved.append(FetchedPdf(
-                    path=out_path, source_url=source_url, name=display,
-                ))
-                continue
-
-            # HTML (or plaintext-in-html) -- render to PDF.
-            pdf_out = out_dir / (file_stem.rsplit(".", 1)[0] + ".pdf")
-            got = _render_html_bytes_to_pdf(data, source_url, pdf_out, log)
-            if got:
-                saved.append(FetchedPdf(
-                    path=got, source_url=source_url, name=display,
-                ))
-        if len(saved) >= max_pdfs:
-            break
+            doc_name = queue.pop(0)
+            _consume(f_idx, row, doc_name)
 
     log(f"[us-docs] {len(saved)} PDF(s) ready for LLM")
     return saved

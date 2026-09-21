@@ -263,14 +263,39 @@ def _anthropic_call(
             _log(f"[llm] could not read {p.name}: {exc}")
             continue
         attachments.append(PdfAttachment(name=p.name, pdf_bytes=data))
-    batch = build_pdf_attachments(attachments, log=_log)
+    # A 10-K / 20-F body routinely blows past Claude's 100-page native
+    # limit and falls back to pypdf-extracted text. Bump the per-doc text
+    # cap way above the shared 60k default -- Claude Sonnet's 200k context
+    # window comfortably fits ~250k chars of extracted body alongside the
+    # smaller native exhibits, and it is the only way the model sees the
+    # income statement / balance sheet / MD&A on a long annual report.
+    batch = build_pdf_attachments(
+        attachments, log=_log, fallback_text_limit=250_000,
+    )
+    # Compose the user message. THIS BLOCK MUST ALWAYS INCLUDE THE
+    # FALLBACK TEXT WHEN IT EXISTS -- the previous version dropped
+    # `batch.fallback_sections` whenever any_native was True, which is
+    # exactly the RMD FY26 failure: the 215-page 10-K body fell back to
+    # text and then that text was silently discarded because the tiny
+    # cert exhibits attached natively. Only the certs reached the model,
+    # so the analysis had zero financial content to work with.
+    content_parts: List[object] = []
     if batch.any_native:
-        content: object = list(batch.document_blocks) + [
-            {"type": "text", "text": user_prompt[:50_000]}
-        ]
+        content_parts.extend(batch.document_blocks)
+    if batch.fallback_sections:
+        # Keep the extracted-text bodies together in one text block so
+        # the model sees them as a coherent source rather than
+        # interleaved with the schema instructions. 250k char ceiling
+        # matches the per-doc text cap above and stays well inside
+        # Sonnet's 200k-token window.
+        fallback_blob = "\n\n".join(batch.fallback_sections)
+        content_parts.append({"type": "text", "text": fallback_blob[:250_000]})
+    if content_parts:
+        content_parts.append({"type": "text", "text": user_prompt[:50_000]})
+        content: object = content_parts
     else:
-        prefix = "\n\n".join(batch.fallback_sections)
-        content = ((prefix + "\n\n" + user_prompt) if prefix else user_prompt)[:100_000]
+        # No usable attachments at all -- straight text prompt.
+        content = user_prompt[:100_000]
 
     model = os.environ.get("CLAUDE_MODEL") or CLAUDE_MODEL_DEFAULT
     max_tokens = CLAUDE_RESULTS_MAX_TOKENS

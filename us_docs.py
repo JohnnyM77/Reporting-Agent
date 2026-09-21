@@ -197,6 +197,51 @@ def _fetch_filing_index_docs(
     return names
 
 
+# --- doc-content filter ----------------------------------------------------
+# Files EDGAR ships that carry ~no financial analysis value and would
+# otherwise eat native-PDF slots. The RMD FY26 run hit this: the 10-K's
+# own primary body (215p, forced to text fallback) + index headers +
+# index + CEO cert + CFO cert + SOX cert filled all 6 slots, so the
+# paired 8-K's earnings press release (ex-99.1, where the non-GAAP
+# framing lives) never got fetched. Skipping the boilerplate here frees
+# those slots for real content on the paired 8-K and any substantive
+# exhibits.
+#
+# Patterns are lowercased-substring matches against the filename.
+
+# Sarbanes-Oxley cert exhibits: two-page boilerplate signed by CEO/CFO,
+# zero financial data. Names typically ex-31.1/ex-31.2 (302 certs) and
+# ex-32.1/ex-32.2 (906 certs); some filers prefix as ex31/ex32.
+_CERT_EXHIBIT_PATTERNS = (
+    "ex-31.", "ex-32.", "ex31", "ex32",
+    "ex-31_", "ex-32_",
+    "ceocertificat", "cfocertificat", "ceoandcfocertificat",
+    "certificationq",
+)
+
+# EDGAR-generated wrapper pages: filing header + directory listing.
+# The primary_document already gives us the substantive filing; these
+# are metadata about the submission itself.
+_INDEX_WRAPPER_PATTERNS = (
+    "-index.htm", "-index.html",
+    "-index-headers.htm", "-index-headers.html",
+    "financial_report.htm",   # inline XBRL viewer wrapper
+)
+
+
+def _is_low_value_doc(name: str) -> bool:
+    """True when `name` is a doc EDGAR ships but the LLM should not spend
+    a slot on (SOX certifications, EDGAR wrapper index files). The tests
+    for RMD's 10-K show these can outnumber real content in a filing --
+    on that release, primary + 5 of these = the whole 6-slot budget."""
+    low = (name or "").lower()
+    if any(p in low for p in _CERT_EXHIBIT_PATTERNS):
+        return True
+    if any(p in low for p in _INDEX_WRAPPER_PATTERNS):
+        return True
+    return False
+
+
 # --- public entry ----------------------------------------------------------
 
 def fetch_filing_documents(
@@ -241,19 +286,24 @@ def fetch_filing_documents(
         # Build an ordered download queue: primary first, then Ex-99
         # exhibits (press release + supplemental tables usually), then
         # anything else. Dedupe against primary_document.
+        # SOX cert exhibits + EDGAR wrapper index files are filtered
+        # out via _is_low_value_doc -- they carry no analysis content
+        # and would otherwise eat native-PDF slots earmarked for real
+        # exhibits (see RMD FY26 run for the failure mode this fixes).
         queue: List[str] = []
         if primary_document:
             queue.append(primary_document)
         for name in exhibit_names:
-            if name == primary_document:
+            if name == primary_document or _is_low_value_doc(name):
                 continue
             low = name.lower()
             # SEC exhibit naming: ex-99*, ex99* -- both variants exist.
             if "ex-99" in low or "ex99" in low or low.startswith("ex99"):
                 queue.append(name)
         for name in exhibit_names:
-            if name not in queue:
-                queue.append(name)
+            if name in queue or _is_low_value_doc(name):
+                continue
+            queue.append(name)
 
         # Actually download + render each, honouring the global cap.
         for doc_name in queue:

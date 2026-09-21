@@ -14,7 +14,6 @@ asx:
   MVP: Medical Developments International Limited
   NHC: New Hope Corporation Limited
   PWH: PWR Holdings Limited
-  RMD: ResMed Inc
   RTH: RAS Technology Holdings Limited
   TWE: Treasury Wine Estates Limited
   VAS: Vanguard Australian Shares Index ETF
@@ -36,11 +35,14 @@ sgx:
   C6L: Singapore Airlines Ltd
 
 # US (NYSE + NASDAQ) tickers. Fetched via us_fetch.py (SEC EDGAR).
-# The dispatch `ticker` input on us_daily.yml is the primary entry
-# point; this list is here as a seed and for any future scheduled runs.
+# The ASX morning run (daily.yml) iterates this list after ASX Bob has
+# finished, so every ticker here gets a SEC EDGAR quarterly-results
+# check as part of the same digest cycle. us_daily.yml is still there
+# for on-demand single-ticker dispatches.
 us:
   MSFT: Microsoft Corporation
   NVDA: NVIDIA Corporation
+  RMD: ResMed Inc
 
 # ETFs (VAS, VEU, VHY) are included for ASX announcements but skipped for news scanning
 etf_tickers:

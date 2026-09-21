@@ -87,6 +87,23 @@ MAX_ATTACHMENT_TOTAL_BYTES = 20 * 1024 * 1024
 # Where the dashboard reads Bob USA's data from.
 US_DASHBOARD_JSON = Path(__file__).resolve().parent / "docs" / "data" / "us.json"
 
+# Seen-state cache: accession -> ISO timestamp. Same pattern as Bob's
+# state_seen.json / Slinger's state_seen_sgx.json — dedups tickers whose
+# most-recent filing hasn't changed since the last run so the daily
+# morning schedule doesn't re-email the same 10-K each morning.
+US_SEEN_STATE_PATH = Path(
+    os.environ.get("US_SEEN_STATE_PATH", "state_seen_us.json")
+)
+# 400 days matches DEFAULT_LOOKBACK_DAYS below: a filing older than that
+# won't come back through fetch_us_filings anyway, so pruning at the
+# same horizon keeps the state file small without ever losing something
+# the fetch could rediscover.
+US_SEEN_STATE_RETENTION_DAYS = 400
+
+# tickers.yaml lives next to this file — same working-directory assumption
+# the rest of the repo makes.
+TICKERS_YAML_PATH = Path(__file__).resolve().parent / "tickers.yaml"
+
 
 # --- utils -----------------------------------------------------------------
 
@@ -636,15 +653,60 @@ def _write_dashboard_json(
     source_pdfs: List[FetchedPdf],
 ) -> None:
     """Write docs/data/us.json in the same shape as slinger.json/bob.json.
-    Silent no-op on error -- the email already went out; don't fail the
-    run over a dashboard write."""
+
+    In portfolio mode several tickers run back-to-back in the same
+    morning: if we blindly overwrote us.json for each, only the last
+    ticker would ever appear on the dashboard. So the write is now a
+    MERGE — if the file already exists AND its ``last_run`` matches
+    today (NY), we append this ticker's row to the same document
+    instead. A same-ticker re-run replaces the earlier entry rather
+    than duplicating it.
+
+    Silent no-op on error -- the email already went out; don't fail
+    the run over a dashboard write.
+    """
     row = _dashboard_item(item, analysis, source_pdfs)
+    today_iso = _ny_now().date().isoformat()
+    ticker = row.get("ticker") or ""
+
+    existing: Dict = {}
+    try:
+        raw = US_DASHBOARD_JSON.read_text(encoding="utf-8")
+        existing = json.loads(raw) if raw.strip() else {}
+    except FileNotFoundError:
+        existing = {}
+    except Exception as exc:
+        _log(f"[main] existing us.json unreadable "
+             f"({exc.__class__.__name__}: {exc}) -- starting fresh")
+        existing = {}
+
+    if not isinstance(existing, dict) or str(existing.get("last_run") or "") != today_iso:
+        # A stale (yesterday's) file, or an empty/corrupt one: reset.
+        high_impact: List[Dict] = []
+        fyi: List[Dict] = []
+        material: List[Dict] = []
+    else:
+        high_impact = [
+            x for x in (existing.get("high_impact") or [])
+            if isinstance(x, dict) and x.get("ticker") != ticker
+        ]
+        fyi = [
+            x for x in (existing.get("fyi") or [])
+            if isinstance(x, dict) and x.get("ticker") != ticker
+        ]
+        material = list(existing.get("material") or [])
+
+    if analysis:
+        high_impact.append(row)
+    else:
+        fyi.append(row)
+
     data = {
-        "last_run": _ny_now().date().isoformat(),
-        "silence": False,
-        "high_impact": [row] if analysis else [],
-        "material": [],
-        "fyi": [] if analysis else [row],
+        "last_run": today_iso,
+        "silence": not (high_impact or material or fyi),
+        "high_impact": high_impact,
+        "material": material,
+        "fyi": fyi,
     }
     try:
         US_DASHBOARD_JSON.parent.mkdir(parents=True, exist_ok=True)
@@ -658,11 +720,122 @@ def _write_dashboard_json(
              f"{exc.__class__.__name__}: {exc}")
 
 
+# --- seen-state ------------------------------------------------------------
+#
+# Portfolio mode runs every morning. Without dedup, MSFT (whose most
+# recent 10-K might be four months old) would be re-analysed and re-
+# emailed every day, sending the same PDF over and over. State is a
+# per-ticker accession set — an anchor filing whose accession we've
+# already handled gets skipped.
+
+def _load_us_seen_state(path: Path = US_SEEN_STATE_PATH) -> Dict[str, str]:
+    """Return {accession_key: seen_iso}. Robust to legacy shapes
+    (a plain list becomes {accession: today})."""
+    if not path.exists():
+        return {}
+    try:
+        raw = path.read_text(encoding="utf-8")
+    except Exception as exc:
+        _log(f"[state] could not read {path}: {exc}")
+        return {}
+    try:
+        data = json.loads(raw) if raw.strip() else {}
+    except Exception as exc:
+        _log(f"[state] could not parse {path}: {exc}")
+        return {}
+    now_iso = _ny_now().isoformat(timespec="seconds")
+    if isinstance(data, list):
+        return {k: now_iso for k in data if isinstance(k, str)}
+    if not isinstance(data, dict):
+        return {}
+    return {
+        k: v for k, v in data.items()
+        if isinstance(k, str) and isinstance(v, str)
+    }
+
+
+def _prune_us_seen_state(
+    state: Dict[str, str], retention_days: int = US_SEEN_STATE_RETENTION_DAYS,
+) -> Dict[str, str]:
+    cutoff = _ny_now() - dt.timedelta(days=retention_days)
+    out: Dict[str, str] = {}
+    for key, seen_iso in state.items():
+        try:
+            seen_dt = dt.datetime.fromisoformat(seen_iso)
+        except Exception:
+            continue
+        if seen_dt.tzinfo is None:
+            seen_dt = seen_dt.replace(tzinfo=NY)
+        if seen_dt >= cutoff:
+            out[key] = seen_iso
+    return out
+
+
+def _save_us_seen_state(
+    state: Dict[str, str], path: Path = US_SEEN_STATE_PATH,
+) -> None:
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(state, indent=2, sort_keys=True),
+            encoding="utf-8",
+        )
+    except Exception as exc:
+        _log(f"[state] could not write {path}: {exc}")
+
+
+def _seen_key(ticker: str, accession: str) -> str:
+    """Accession numbers can technically collide across issuers on
+    EDGAR (they don't in practice but the CIK is the real key), so
+    the seen key embeds the ticker too."""
+    return f"{ticker}|{accession}"
+
+
+# --- portfolio-mode helpers ------------------------------------------------
+
+def _load_us_portfolio(path: Path = TICKERS_YAML_PATH) -> List[str]:
+    """Return the sorted list of tickers under ``us:`` in tickers.yaml,
+    or [] if the file/section is missing. Same helper us_fetch.py has
+    inline; duplicated here so a portfolio run never has to import
+    from us_fetch (which pulls in Playwright)."""
+    try:
+        import yaml  # PyYAML is already a transitive dep
+    except Exception as exc:
+        _log(f"[portfolio] PyYAML unavailable: {exc}")
+        return []
+    if not path.exists():
+        _log(f"[portfolio] no tickers.yaml at {path}")
+        return []
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except Exception as exc:
+        _log(f"[portfolio] could not parse {path}: {exc}")
+        return []
+    us = data.get("us") or {}
+    if not isinstance(us, dict):
+        return []
+    return sorted(k for k in us.keys() if isinstance(k, str))
+
+
 # --- main pipeline ---------------------------------------------------------
 
-def run(ticker: str, dry_run: bool = False) -> int:
+def run(
+    ticker: str,
+    dry_run: bool = False,
+    seen_state: Optional[Dict[str, str]] = None,
+    respect_seen: bool = True,
+) -> int:
     """End-to-end pipeline for one US ticker. Returns 0 on success, non-
-    zero on any hard failure (unresolvable ticker, no filings, etc.)."""
+    zero on any hard failure (unresolvable ticker, no filings, etc.).
+
+    *seen_state* is a mutable ``{accession_key: iso_seen}`` dict. When
+    supplied, the anchor filing's accession is checked against it — an
+    already-seen filing is skipped and the state is left unchanged. On
+    a fresh anchor the ticker gets a full analysis + email + dashboard
+    write, and this accession is added to the state so the next
+    portfolio pass won't re-emit it. A single-ticker `--ticker` dispatch
+    passes ``respect_seen=False`` so a manual re-fire always runs.
+    """
     ticker = ticker.strip().upper()
     _log(f"{BOB_US_NAME} {BOB_US_VERSION} -- ticker={ticker} dry_run={dry_run}")
 
@@ -684,6 +857,19 @@ def run(ticker: str, dry_run: bool = False) -> int:
     anchor = selected[0]
     _log(f"[main] {ticker}: anchor {anchor.get('form')} "
          f"{anchor.get('accession')} filed {anchor.get('date')}")
+
+    # Same-morning dedup: the daily portfolio run picks up the LATEST
+    # filing per ticker; without this guard we'd re-analyse and re-email
+    # the same 10-K every morning until a new one landed. Manual
+    # single-ticker dispatches bypass this so a re-fire always works.
+    accession = str(anchor.get("accession") or "")
+    if respect_seen and seen_state is not None and accession:
+        key = _seen_key(ticker, accession)
+        if key in seen_state:
+            _log(f"[main] {ticker}: anchor {accession} already emitted "
+                 f"(seen {seen_state[key]}) -- skipping")
+            return 0
+
     # Sanity-check the anchor really classifies as results.
     bucket = classify_us_filing(anchor)
     if bucket != "RESULTS_HY_FY":
@@ -759,6 +945,54 @@ def run(ticker: str, dry_run: bool = False) -> int:
         # 9. Dashboard JSON.
         _write_dashboard_json(anchor, analysis, source_pdfs)
 
+    # Record the accession as seen so tomorrow's portfolio run doesn't
+    # re-emit the same filing. Only the caller of ``run_portfolio``
+    # persists the state; here we just mutate the in-memory dict.
+    if seen_state is not None and accession:
+        seen_state[_seen_key(ticker, accession)] = _ny_now().isoformat(timespec="seconds")
+
+    return 0
+
+
+def run_portfolio(dry_run: bool = False) -> int:
+    """Iterate every ticker under ``us:`` in tickers.yaml, dedup by
+    filing accession via ``state_seen_us.json``, and return the number
+    of tickers that produced a fresh analysis (0 on a quiet morning, or
+    N on the first run when every ticker's latest 10-K is new).
+
+    A per-ticker exception is logged and skipped rather than failing
+    the whole portfolio — a single company's SEC hiccup shouldn't stop
+    the rest of the morning.
+    """
+    tickers = _load_us_portfolio()
+    if not tickers:
+        _log("[portfolio] no tickers under us: in tickers.yaml -- nothing to do")
+        return 0
+
+    _log(f"[portfolio] iterating {len(tickers)} US ticker(s): {', '.join(tickers)}")
+    seen_state = _prune_us_seen_state(_load_us_seen_state())
+    fresh = 0
+    for t in tickers:
+        try:
+            before = dict(seen_state)
+            rc = run(ticker=t, dry_run=dry_run, seen_state=seen_state)
+            # A fresh analysis is the only thing that grows the state
+            # dict. rc == 0 and no growth means "already seen" (dedup)
+            # or "no filings" (empty portfolio for that ticker) — both
+            # of which are not-fresh outcomes.
+            if rc == 0 and len(seen_state) > len(before):
+                fresh += 1
+            elif rc != 0:
+                _log(f"[portfolio] {t}: run returned {rc}")
+        except Exception as exc:
+            _log(f"[portfolio] {t}: exception {exc.__class__.__name__}: {exc}")
+            _log(traceback.format_exc())
+
+    if not dry_run:
+        _save_us_seen_state(seen_state)
+        _log(f"[portfolio] state saved -> {US_SEEN_STATE_PATH} "
+             f"({len(seen_state)} entries)")
+    _log(f"[portfolio] {fresh} fresh analysis(es) this run")
     return 0
 
 
@@ -766,12 +1000,23 @@ def run(ticker: str, dry_run: bool = False) -> int:
 
 def _cli() -> int:
     parser = argparse.ArgumentParser(description="Bob USA -- SEC EDGAR results digest.")
-    parser.add_argument("--ticker", required=True, help="US symbol (e.g. MSFT).")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--ticker",
+                       help="US symbol (e.g. MSFT). Single-ticker dispatch.")
+    group.add_argument("--portfolio", action="store_true",
+                       help="Iterate every ticker under us: in tickers.yaml, "
+                            "with per-accession seen-state dedup. Used by "
+                            "the morning schedule.")
     parser.add_argument("--dry-run", action="store_true",
                         help="Build digest + preview but don't send email.")
     args = parser.parse_args()
     try:
-        return run(ticker=args.ticker, dry_run=args.dry_run)
+        if args.portfolio:
+            return run_portfolio(dry_run=args.dry_run)
+        # ``respect_seen=False`` on a single-ticker dispatch — a manual
+        # re-fire must always run, even when the same filing was
+        # already emitted earlier that day.
+        return run(ticker=args.ticker, dry_run=args.dry_run, respect_seen=False)
     except Exception as exc:
         _log(f"[main] FATAL {exc.__class__.__name__}: {exc}")
         _log(traceback.format_exc())

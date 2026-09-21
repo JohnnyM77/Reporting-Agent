@@ -1,23 +1,37 @@
 name: Bob USA Daily
 
-# Bob USA V1 -- on-demand SEC EDGAR results agent.
+# Bob USA V1 -- SEC EDGAR results agent, scheduled + on-demand.
 #
-# Dispatch-driven only (no cron): "call any ticker any time" from the
-# Actions tab. The default runner is GitHub-hosted ubuntu-latest --
-# unlike Slinger, EDGAR has no TLS-fingerprint filter and needs no
-# residential IP, so bundled Playwright Chromium is enough.
+# The daily cron mirrors ASX Bob's morning run (23:13 UTC) and runs
+# in --portfolio mode: iterate every ticker under `us:` in tickers.yaml,
+# skip anything whose latest 10-K/10-Q accession is already in
+# state_seen_us.json, and email + publish for anything new.
+# The dispatch inputs stay for on-demand single-ticker analysis.
+#
+# The default runner is GitHub-hosted ubuntu-latest -- unlike Slinger,
+# EDGAR has no TLS-fingerprint filter and needs no residential IP, so
+# bundled Playwright Chromium is enough.
 
 on:
   workflow_dispatch:
     inputs:
       ticker:
-        description: "US symbol to analyse (e.g. MSFT, NVDA, SE)"
-        required: true
+        description: "US symbol to analyse (e.g. MSFT, NVDA, SE). Leave blank + tick portfolio for the full us: list."
+        required: false
         default: ""
+      portfolio:
+        description: "true = iterate every ticker under us: (same behaviour as the daily cron); ignores ticker input."
+        required: false
+        default: "false"
       dry_run:
         description: "true = build digest + preview but don't send email"
         required: false
         default: "false"
+  schedule:
+    # 23:13 UTC matches daily.yml -- so Bob ASX and Bob USA both fire at
+    # the same wall-clock time each morning, and any dashboard rebuild
+    # a downstream Publish site workflow does sees both agents' data.
+    - cron: "13 23 * * *"
 
 jobs:
   digest:
@@ -35,6 +49,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Restore Bob USA seen-state cache
+        # Per-accession dedup: without this the portfolio cron would
+        # re-analyse and re-email the same 10-K for every ticker every
+        # morning until a fresh filing lands.
+        uses: actions/cache/restore@v4
+        with:
+          path: state_seen_us.json
+          key: seen-state-us-${{ github.ref_name }}
+          restore-keys: |
+            seen-state-us-${{ github.ref_name }}-
 
       - name: Install deps
         run: |
@@ -57,16 +82,36 @@ jobs:
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_MODEL: ${{ secrets.CLAUDE_MODEL }}
+          US_SEEN_STATE_PATH: state_seen_us.json
           # EDGAR requires a non-empty, identifying User-Agent. Default is
           # baked into us_fetch.py; override here if needed.
           # SEC_USER_AGENT: "Bob the Bot johnmyerscough13@gmail.com"
         run: |
           set -euo pipefail
-          args=("--ticker" "${{ inputs.ticker }}")
+          # Mode precedence: schedule -> portfolio; dispatch with the
+          # portfolio checkbox -> portfolio; dispatch with ticker -> single.
+          if [[ "${{ github.event_name }}" == "schedule" ]] \
+             || [[ "${{ inputs.portfolio }}" == "true" ]] \
+             || [[ -z "${{ inputs.ticker }}" ]]; then
+            args=("--portfolio")
+          else
+            args=("--ticker" "${{ inputs.ticker }}")
+          fi
           if [[ "${{ inputs.dry_run }}" == "true" ]]; then
             args+=("--dry-run")
           fi
           python us_agent.py "${args[@]}"
+
+      - name: Save Bob USA seen-state cache
+        # `if: always()` so a hung LLM call doesn't prevent tomorrow's
+        # dedup from working (any accession we managed to record still
+        # gets cached). Cache key includes run_id so successive runs on
+        # the same day each save without stepping on each other.
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state_seen_us.json
+          key: seen-state-us-${{ github.ref_name }}-${{ github.run_id }}
 
       # Publish to the shared dashboard. Bob USA wrote docs/data/us.json;
       # rebuild docs/index.html and commit with [skip ci] so this push

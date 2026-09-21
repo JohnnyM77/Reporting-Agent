@@ -1,48 +1,7 @@
 {
   "last_run": "2026-09-21",
-  "silence": false,
+  "silence": true,
   "high_impact": [],
   "material": [],
-  "fyi": [
-    {
-      "ticker": "ABB",
-      "title": "Notice of Annual General Meeting 19\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 909.1KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141640"
-    },
-    {
-      "ticker": "ABB",
-      "title": "Update - Notification of buy-back - ABB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141433"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Notice of Meeting 2026 AGM Correction 22\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 2.4MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141615"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 11.1KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141606"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141458"
-    },
-    {
-      "ticker": "CPU",
-      "title": "Computershare 2026 AGM Date 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 86.9KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141554"
-    },
-    {
-      "ticker": "IAG",
-      "title": "Greensill Trade Credit Insurance update 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 783.",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141447"
-    },
-    {
-      "ticker": "TWE",
-      "title": "Becoming a substantial holder 43\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 4.6MB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141371"
-    }
-  ]
+  "fyi": []
 }

@@ -22,7 +22,7 @@ FOUND." A sceptic, not a perma-bear.
 |---|---|---|
 | Sally | `Trim candidate` on a holding, or `Hold but stop adding` at ≥95th valuation percentile and ≤3% from the 52-week high | Sell alert |
 | Bob | HIGH IMPACT (CRITICAL on raise >10% dilution or >15% discount, guidance cut, CEO/CFO exit, halt, going concern, auditor issue, covenant stress, related party). MATERIAL only for CEO/CFO/Chair changes and board spills. FYI never. | Event review |
-| JM Watch List | ±7% day, ±15% since the last review, new Bob event, Wally target crossed, Theo pillar strained, new thesis version, valuation config changed | Triage line, maybe a full review |
+| JM Watch List | ±7% day, ±15% since the last review, new Bob event, Wally target crossed, a Theo pillar newly strained, new thesis version, valuation config changed | Triage line, maybe a full review |
 | Wally | top 3 by `opportunity_score` above 40 | Opportunity review |
 | Calendar | first run of each month, and late January / late July before reporting season | Portfolio review |
 | Its own warnings | check date passed, or next results arrived | Autopsy |

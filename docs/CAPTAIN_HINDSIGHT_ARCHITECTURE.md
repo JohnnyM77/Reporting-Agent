@@ -78,7 +78,7 @@ is the simplest thing that keeps records typed and queryable.
 ### 2.3 Gating (`hindsight/gating.py`, thresholds in `config/hindsight.yaml`)
 - Sally: `Trim candidate` → REDUCE. `Hold but stop adding` → REDUCE only when valuation percentile ≥ `sally.reduce_percentile` (0.95) **and** distance to the 52-week high ≤ `sally.reduce_max_distance_pct` (3%). Otherwise HOLD, and HOLD never triggers. Holdings only.
 - Bob: HIGH IMPACT → HIGH, upgraded to CRITICAL by the regex lists in config. MATERIAL → MEDIUM, upgraded to HIGH for CEO / CFO / Chair changes and board spills. FYI → LOW, never triggers.
-- JM triage gates: daily move, move since last review, new Bob event, Wally target crossing, Theo pillar strained/breached or new thesis version, valuation config hash change.
+- JM triage gates: daily move, move since last review, new Bob event, Wally target crossing, a Theo pillar newly strained/breached (a standing STRAINED status is not news) or a new thesis version, valuation config hash change.
 - Wally: `opportunity_score` from below-target discount, distance to 52-week low, and whether `valuations/<t>_ax.yaml` exists. Top N above a minimum.
 
 ### 2.4 Cost and failure handling

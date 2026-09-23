@@ -218,9 +218,12 @@ def triage_gates(
     new["below_target"] = below
 
     if thesis is not None:
-        strained = [p.id for p in thesis.pillars if p.status in ("STRAINED", "BREACHED")]
-        if strained:
-            reasons.append(f"Theo pillar(s) strained or breached: {', '.join(strained)}")
+        # A standing STRAINED status is not news; a pillar newly under pressure is.
+        strained = sorted(f"{p.id}:{p.status}" for p in thesis.pillars if p.status in ("STRAINED", "BREACHED"))
+        fresh = [s for s in strained if s not in (baseline.get("strained") or [])]
+        if fresh and not first_sight:
+            reasons.append(f"Theo pillar(s) newly strained or breached: {', '.join(fresh)}")
+        new["strained"] = strained
     if thesis_ref:
         if not first_sight and baseline.get("thesis_ref") and baseline["thesis_ref"] != thesis_ref:
             reasons.append("new thesis version")

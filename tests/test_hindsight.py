@@ -531,3 +531,62 @@ def test_frameworks_load_complete():
     assert len(tend) == 25 and [t["id"] for t in tend] == list(range(1, 26))
     assert {t["name"] for t in tend if t.get("default_state") == "NOT ASSESSABLE"} == {
         "Use-It-or-Lose-It", "Drug-Misinfluence", "Senescence-Misinfluence"}
+
+
+def test_triage_pillar_pressure_fires_only_when_new(cfg):
+    th = Thesis(ticker="ABC", pillars=[Pillar(id="P1", status="STRAINED"), Pillar(id="P2", status="INTACT")])
+    reasons, base = triage_gates("ABC", cfg=cfg, prices=None, baseline={}, bob_today=[], wally_row=None,
+                                 thesis=th, thesis_ref=None, valuation_hash=None)
+    assert reasons == []
+    reasons, base = triage_gates("ABC", cfg=cfg, prices=None, baseline=base, bob_today=[], wally_row=None,
+                                 thesis=th, thesis_ref=None, valuation_hash=None)
+    assert reasons == []  # still strained, nothing new, no call
+    th.pillars[1].status = "BREACHED"
+    reasons, _ = triage_gates("ABC", cfg=cfg, prices=None, baseline=base, bob_today=[], wally_row=None,
+                              thesis=th, thesis_ref=None, valuation_hash=None)
+    assert reasons == ["Theo pillar(s) newly strained or breached: P2:BREACHED"]
+
+
+def test_anthropic_transport_streams_large_budgets(monkeypatch):
+    import anthropic
+    from hindsight.llm import anthropic_transport
+
+    class Msg:
+        content = [type("B", (), {"type": "text", "text": '{"ok": 1}'})()]
+        usage = type("U", (), {"input_tokens": 10, "output_tokens": 5})()
+        stop_reason = "end_turn"
+
+    used = []
+
+    class Stream:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def get_final_message(self):
+            return Msg()
+
+    class Messages:
+        def create(self, **kw):
+            used.append(("create", kw["max_tokens"]))
+            return Msg()
+
+        def stream(self, **kw):
+            used.append(("stream", kw["max_tokens"]))
+            return Stream()
+
+    class Client:
+        def __init__(self, **kw):
+            self.messages = Messages()
+
+    monkeypatch.setattr(anthropic, "Anthropic", Client)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test")
+    call = anthropic_transport(8192)
+    assert call("m", "s", [{"role": "user", "content": "x"}], 16000) == ('{"ok": 1}', 10, 5, "end_turn")
+    call("m", "s", [{"role": "user", "content": "x"}], 600)
+    assert used == [("stream", 16000), ("create", 600)]
+    monkeypatch.delenv("ANTHROPIC_API_KEY")
+    with pytest.raises(RuntimeError, match="ANTHROPIC_API_KEY"):
+        call("m", "s", [], 10)

@@ -258,8 +258,8 @@ def analyse(run: Run, event: HindsightEvent, ctx: TickerContext | None = None,
     if res.status == "OK":
         out, notes, lolla = validate_analysis(res.data, set(refs), triggers, run.cfg)
         bundle.update(output=out, validation_notes=notes, lolla=lolla)
-        for n in notes:
-            print(f"[hindsight] validator: {n[:60]}...")
+        if notes:  # counts only: Actions logs on a public repo are public
+            print(f"[hindsight] validator adjusted {len(notes)} item(s) in {rt}")
     bundle["markdown"] = render_report(bundle)
     persist(run, bundle)
     return bundle

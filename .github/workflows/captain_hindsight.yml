@@ -31,6 +31,11 @@ on:
         description: "Re-run even if this event was already reviewed"
         type: boolean
         default: false
+      store:
+        description: "Where case files go. default = repo variable HINDSIGHT_STORE, else private_repo. local = throwaway store on the runner (emails, keeps nothing)."
+        type: choice
+        options: [default, private_repo, local]
+        default: default
   schedule:
     # 01:30 UTC, after Bob (23:13 + 00:43 catch-up) and Wally/Sally have written
     # their JSON. Master Engine has no scheduled runner yet.
@@ -46,7 +51,7 @@ jobs:
     permissions:
       contents: read
     env:
-      HINDSIGHT_STORE: ${{ vars.HINDSIGHT_STORE || 'private_repo' }}
+      HINDSIGHT_STORE: ${{ (inputs.store && inputs.store != 'default') && inputs.store || vars.HINDSIGHT_STORE || 'private_repo' }}
     steps:
       - name: Check out repo (full history, for thesis versions and Sally's flag streak)
         uses: actions/checkout@v4

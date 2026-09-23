@@ -146,7 +146,7 @@ positions:
 ## GitHub Actions
 
 `.github/workflows/captain_hindsight.yml` runs daily at 01:30 UTC and on
-manual dispatch (`mode`, `ticker`, `force`). Secrets: `ANTHROPIC_API_KEY`, the
+manual dispatch (`mode`, `ticker`, `force`, `store`). Secrets: `ANTHROPIC_API_KEY`, the
 email trio, and `HINDSIGHT_PRIVATE_REPO_TOKEN`. Repo variable
 `HINDSIGHT_STORE` picks the backend (default `private_repo`).
 
@@ -157,7 +157,7 @@ To set up the private store once:
    add it as the `HINDSIGHT_PRIVATE_REPO_TOKEN` secret here.
 3. Leave the `HINDSIGHT_STORE` variable unset (or `private_repo`).
 
-To try it before that exists, set the variable to `local`. Runs then email but
+To try it before that exists, set the variable to `local`, or pick `store: local` on a single manual run. Runs then email but
 keep nothing between runs, so dedup, queues, triage baselines and autopsies
 start from scratch each time.
 

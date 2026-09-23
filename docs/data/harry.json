@@ -1,0 +1,41 @@
+{
+  "last_run": "2026-09-23",
+  "reports": [
+    {
+      "date": "2026-09-23",
+      "ticker": "AR9",
+      "report_type": "SELL_ALERT",
+      "severity": "RED",
+      "verdict": "Harry Hindsight here. Let's have this conversation before it's hindsight. The thesis is BROKEN, Theo says so in writing, and the hold thesis explicitly states it is not one. The fresh capital and forced sale tests both say no. Three biases are doing the holding. The honest question is not 'should we sell?' but 'what are we actually waiting for?', and the answer is a government mandate, not evidence of a business that can sell.",
+      "severity_reason": "Thesis classified BROKEN (thesis_history:AR9). All four pillars strained or breached (behaviour:AR9). P4 kill condition met. No affirmative hold thesis on record (thesis:AR9). Fresh capital test: would not buy. Forced sale test: would not repurchase. Three concurrent Munger tendencies pushing toward HOLD against the evidence, Lollapalooza risk. The only remaining investment case is a single external catalyst 18 months away, in a company that has not demonstrated commercial capability in six years. That is not a hold thesis; it is a hope.",
+      "thesis": "BROKEN",
+      "would_buy_today": "NO",
+      "weight_if_new": "0%",
+      "would_rebuy": "NO",
+      "lollapalooza": false,
+      "what_would_change_my_mind": [
+        "Commercial (non-Defence) ARR becomes a material and growing share of total ARR within 24 months of the Spirion integration, specific number: more than 20% of ARR from non-Defence customers by the end of FY2027.",
+        "An existing US DoD relationship expands into a multi-department, multi-year contract with disclosed ARR above USD $5m, announced before end of 2026.",
+        "Cash runway confirmed sufficient to fund operations through 2027 without a further dilutive raise, disclosed in the next half-year report.",
+        "A named commercial customer of material size (outside Defence) publicly using the product, not a press release about a pilot."
+      ],
+      "unanswered_questions": [
+        "Did the September 2025 capital raise participation actually occur? The thesis notes no corresponding transaction in the ledger after December 2023.",
+        "What is current ARR, and how much of it is recurring software licence versus one-off services?",
+        "What is the current cash runway? Can AR9 reach the 2027 catalyst without another raise?",
+        "Has the Spirion asset-sale transfer of customers, suppliers, and staff completed cleanly, as required by P3's kill condition?",
+        "Who else is competing for the DoD zero-trust mandate in the ABAC category? What is AR9's realistic share?"
+      ],
+      "disagreements": [
+        {
+          "with": "JOHNNY",
+          "point": "The implicit decision to hold while acknowledging in writing that there is no hold thesis is inconsistent. The written thesis says 'Neither is a reason I would buy this today at this size, which is the only test of a hold that means anything.' Johnny wrote that. If he believes it, the decision it implies is not Hold."
+        },
+        {
+          "with": "THEO",
+          "point": "The P3 amendment (Spirion as the adoption-blocker fix) is classified NEUTRAL. Harry reads it as LOOSENED: adding a new pillar mid-thesis to explain why the original commercial thesis has not delivered is goalpost movement, not a genuinely new insight strengthening the case. The underlying commercial failure existed before Spirion; Spirion is the proposed fix, not new evidence that the commercial market is responding."
+        }
+      ]
+    }
+  ]
+}

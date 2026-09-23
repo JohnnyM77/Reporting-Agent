@@ -54,6 +54,21 @@ Rules enforced in code, whatever the model says:
 The Munger scan is a checklist for asking better questions, not a
 psychological diagnosis.
 
+## What the email looks like
+
+Same family as Bob's digest: a dark shell, then one 360px white card per
+report with a severity badge, the key tests as label/value rows (thesis,
+would you buy it today, would you want it back, Lollapalooza, biases with
+evidence, position), the verdict, and any disagreement with another agent.
+The JM Watch List follows as a compact table, with the "no change" names
+collapsed onto one line. Tables and inline styles only, like Bob.
+
+The full analysis is attached as a PDF, one per report
+(`Hindsight_NHC_Sell_alert_2026-09-23.pdf`), rendered by weasyprint the same
+way Bob renders his. It carries every section, claim-type tags, the 7 Powers
+and Munger tables, the predictions and the evidence refs, and is built to be
+forwarded. If a PDF fails to render, the card says so with the error.
+
 ## Failure is visible
 
 Each analysis ends in exactly one of:
@@ -145,7 +160,12 @@ positions:
 
 ## GitHub Actions
 
-`.github/workflows/captain_hindsight.yml` runs daily at 01:30 UTC and on
+`.github/workflows/captain_hindsight.yml` runs straight after the agents it
+reads: when "Daily Announcement Digest" (Bob, daily), "Wally Watchlist
+Screening" (Fridays) or "Selling Sally Weekly Review" (Sundays) completes.
+There is no separate cron. The JM Watch List triage runs at most once a day,
+so Bob's catch-up run or a Wally/Sally trigger on the same day only reviews
+new events, and already-reviewed events are skipped. It also runs on
 manual dispatch (`mode`, `ticker`, `force`, `store`). Secrets: `ANTHROPIC_API_KEY`, the
 email trio, and `HINDSIGHT_PRIVATE_REPO_TOKEN`. Repo variable
 `HINDSIGHT_STORE` picks the backend (default `private_repo`).

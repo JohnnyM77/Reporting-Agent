@@ -592,3 +592,83 @@ def test_anthropic_transport_streams_large_budgets(monkeypatch):
     monkeypatch.delenv("ANTHROPIC_API_KEY")
     with pytest.raises(RuntimeError, match="ANTHROPIC_API_KEY"):
         call("m", "s", [], 10)
+
+
+# ---------------------------------------------------------------------------
+# Output: Bob-style email card + forwardable PDF; triggers
+# ---------------------------------------------------------------------------
+
+
+def test_email_html_is_email_safe_and_pdf_is_attached(tmp_path, cfg, store, monkeypatch):
+    import hindsight.runner as runner
+
+    root = make_repo(tmp_path, sally={"last_run": "2026-09-20", "flagged": [sally_row()]})
+    sent = {}
+    monkeypatch.setattr(runner, "_send_email", lambda s, b, h=None, a=None: sent.update(html=h, att=a) or True)
+    monkeypatch.setattr(runner, "render_pdf", lambda html, path: (path.parent.mkdir(parents=True, exist_ok=True),
+                                                                  path.write_bytes(b"%PDF-fake"), path)[2])
+    reply = analysis(disagreements=[{"with": "SALLY", "point": "Sizing, not price."}], severity="AMBER")
+    summary = execute(run_for(root, cfg, store, FakeModel(fixed=reply)), mode="sell", ticker="NHC")
+    html = sent["html"]
+    for banned in ("display:flex", "display:grid", "<style", "class="):
+        assert banned not in html, banned
+    assert "NHC · Sell alert" in html and "AMBER" in html and "Would buy it today?" in html
+    assert "Full analysis PDF attached" in html and "Disagrees with Sally" in html
+    assert [p.name for p in sent["att"]] == ["Hindsight_NHC_Sell_alert_2026-09-23.pdf"]
+    assert summary["sent"]
+
+
+def test_pdf_html_carries_the_full_analysis(tmp_path, cfg, store):
+    from hindsight.email_html import build_pdf_html
+
+    root = make_repo(tmp_path, sally={"last_run": "2026-09-20", "flagged": [sally_row()]})
+    reply = analysis(munger_scan=[_tend("Deprival-Superreaction", ref="sally:2026-09-20:NHC")],
+                     warnings=[{"text": "Dividend cut", "severity": "AMBER", "predictions": [
+                         {"metric": "HY27 dividend", "direction": "below", "threshold": "15cps", "check_date": "next results"}]}],
+                     sections={"THE ISSUE": [{"text": "Two notices", "claim_type": "FACT",
+                                              "source_refs": ["https://www.asx.com.au/asx/v2/x?idsId=1"]}],
+                               "SALLY'S CASE": [], "THE COUNTERCASE": []})
+    run = run_for(root, cfg, store, FakeModel(fixed=reply))
+    run.sally._history = [{"last_run": "2026-09-20", "flagged": [sally_row()]}]
+    b = execute(run, mode="sell", ticker="NHC", send=False)["reports"][0]
+    html = build_pdf_html(b, "2026-09-23")
+    for heading in ("The issue", "Sally's case", "Fresh capital test", "Forced sale test", "Munger scan",
+                    "Lollapalooza check", "Predictions for the autopsy"):
+        assert f"<h2>{heading}</h2>" in html, heading
+    assert "ASX announcement" in html and "HY27 dividend" in html and "Deprival-Superreaction" in html
+
+
+def test_failed_analysis_card_says_so_and_gets_no_pdf(tmp_path, cfg, store, monkeypatch):
+    import hindsight.runner as runner
+
+    root = make_repo(tmp_path, sally={"last_run": "2026-09-20", "flagged": [sally_row()]})
+    sent = {}
+    monkeypatch.setattr(runner, "_send_email", lambda s, b, h=None, a=None: sent.update(html=h, att=a) or True)
+    execute(run_for(root, cfg, store, FakeModel(error=RuntimeError("overloaded 529"))), mode="sell", ticker="NHC")
+    assert "ANALYSIS FAILED" in sent["html"] and "overloaded 529" in sent["html"]
+    assert sent["att"] == []
+
+
+def test_triage_runs_once_a_day_across_triggers(tmp_path, cfg, store):
+    root = make_repo(tmp_path, jm=["XYZ"])
+    prices = StaticPrices({"XYZ": {"last": 11.0, "prev": 10.0}})
+    model = FakeModel(fixed={"status": "WATCH", "reason": "moved"})
+    triage_calls = lambda: sum("Gates that fired" in c["messages"][0]["content"] for c in model.calls)  # noqa: E731
+    execute(run_for(root, cfg, store, model, prices=prices), mode="daily", send=False)
+    assert triage_calls() == 1
+    second = run_for(root, cfg, store, model, prices=prices)
+    execute(second, mode="daily", send=False)
+    assert triage_calls() == 1 and second.triage == []
+    assert any("already triaged today" in n for n in second.notes)
+
+
+def test_workflow_runs_after_bob_wally_and_sally():
+    from hindsight.config import REPO_ROOT
+
+    wf = yaml.safe_load((REPO_ROOT / ".github/workflows/captain_hindsight.yml").read_text())
+    on = wf.get("on") or wf.get(True)
+    names = on["workflow_run"]["workflows"]
+    actual = {yaml.safe_load(p.read_text()).get("name") for p in (REPO_ROOT / ".github/workflows").glob("*.yml")}
+    for n in ("Daily Announcement Digest", "Wally Watchlist Screening", "Selling Sally Weekly Review"):
+        assert n in names and n in actual
+    assert "schedule" not in on

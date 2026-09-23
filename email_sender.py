@@ -8,7 +8,12 @@ from email.message import EmailMessage
 from pathlib import Path
 
 
-def send_summary_email(subject: str, body_text: str, attachments: list[Path] | None = None) -> bool:
+def send_summary_email(
+    subject: str,
+    body_text: str,
+    attachments: list[Path] | None = None,
+    body_html: str | None = None,
+) -> bool:
     email_from = os.environ.get("EMAIL_FROM") or os.environ.get("EMAIL_USER")
     email_to = os.environ.get("EMAIL_TO")
     smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
@@ -25,6 +30,8 @@ def send_summary_email(subject: str, body_text: str, attachments: list[Path] | N
     msg["To"] = email_to
     msg["Subject"] = subject
     msg.set_content(body_text)
+    if body_html:
+        msg.add_alternative(body_html, subtype="html")
 
     for p in attachments or []:
         mime, _ = mimetypes.guess_type(p.name)

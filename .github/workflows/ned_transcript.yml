@@ -19,7 +19,7 @@ on:
   workflow_dispatch:
     inputs:
       youtube_url:
-        description: "YouTube episode link (watch?v=…, youtu.be/…, or /shorts/…)"
+        description: "YouTube episode link (watch?v=..., youtu.be/..., or /shorts/...)"
         required: true
         type: string
 
@@ -100,7 +100,7 @@ jobs:
             git add docs/index.html
             git diff --staged --quiet
             if ($LASTEXITCODE -ne 0) {
-              git commit -m "Dashboard update — Ned transcripts [skip ci]"
+              git commit -m "Dashboard update -- Ned transcripts [skip ci]"
             }
             git push origin HEAD
           } else {

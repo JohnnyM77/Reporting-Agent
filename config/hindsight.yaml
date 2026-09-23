@@ -100,3 +100,11 @@ bias_profile:
   # is deprioritised in future prompts.
   deprioritise_min_flags: 5
   deprioritise_max_useful_rate: 0.2
+
+web:
+  # docs/data/harry.json feeds the public dashboard. Verdict-level only by
+  # default: the site and repo are public.
+  publish: true
+  include_bias: false       # Munger tendencies with evidence
+  include_position: false   # unrealised %, average cost, weight of book
+  max_entries: 20

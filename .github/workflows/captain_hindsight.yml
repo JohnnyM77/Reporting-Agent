@@ -57,7 +57,8 @@ jobs:
   hindsight:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      # write: the run commits docs/data/harry.json + the rebuilt dashboard
+      contents: write
     env:
       HINDSIGHT_STORE: ${{ (inputs.store && inputs.store != 'default') && inputs.store || vars.HINDSIGHT_STORE || 'private_repo' }}
     steps:
@@ -102,6 +103,22 @@ jobs:
           else
             python -m hindsight run --mode "$MODE" $FORCE
           fi
+
+      - name: Publish Harry to the dashboard
+        # Public-safe verdict summary only (see hindsight/web.py). ASCII-only
+        # commit messages, same rule as the other agents.
+        if: always()
+        run: |
+          if [ ! -f docs/data/harry.json ]; then echo "no harry.json this run"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data/harry.json
+          git diff --staged --quiet || git commit -m "Harry data [skip ci]"
+          git pull --rebase origin HEAD
+          python scripts/build_dashboard.py
+          git add docs/index.html docs/data/bob_history.json docs/data/slinger_history.json docs/data/us_history.json
+          git diff --staged --quiet || git commit -m "Dashboard update -- Harry [skip ci]"
+          git push origin HEAD
 
       - name: Commit private store
         if: always() && env.HINDSIGHT_STORE == 'private_repo'

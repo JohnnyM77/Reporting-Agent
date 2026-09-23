@@ -69,6 +69,13 @@ way Bob renders his. It carries every section, claim-type tags, the 7 Powers
 and Munger tables, the predictions and the evidence refs, and is built to be
 forwarded. If a PDF fails to render, the card says so with the error.
 
+## On the website
+
+Each run also writes `docs/data/harry.json`, which the dashboard renders as the
+Harry Hindsight card (newest report open, older ones collapsed). The site is
+public, so it carries the verdict-level summary only. Turn on `web.include_bias`
+or `web.include_position` in `config/hindsight.yaml` to publish more.
+
 ## Failure is visible
 
 Each analysis ends in exactly one of:

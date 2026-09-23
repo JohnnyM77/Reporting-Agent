@@ -672,3 +672,64 @@ def test_workflow_runs_after_bob_wally_and_sally():
     for n in ("Daily Announcement Digest", "Wally Watchlist Screening", "Selling Sally Weekly Review"):
         assert n in names and n in actual
     assert "schedule" not in on
+
+
+# ---------------------------------------------------------------------------
+# Website: public-safe harry.json + dashboard card; PowerShell ASCII guard
+# ---------------------------------------------------------------------------
+
+
+def test_harry_json_is_public_safe_by_default(tmp_path, cfg, store):
+    root = make_repo(tmp_path, sally={"last_run": "2026-09-20", "flagged": [sally_row()]})
+    reply = analysis(munger_scan=[_tend("Deprival-Superreaction", ref="sally:2026-09-20:NHC")],
+                     what_would_change_my_mind=["HY27 dividend of 19cps or more"], severity="AMBER")
+    run = run_for(root, cfg, store, FakeModel(fixed=reply))
+    run.sally._history = [{"last_run": "2026-09-20", "flagged": [sally_row()]}]
+    execute(run, mode="sell", ticker="NHC", send=False)
+    data = json.loads((root / "docs/data/harry.json").read_text())
+    e = data["reports"][0]
+    assert e["ticker"] == "NHC" and e["severity"] == "AMBER" and e["would_buy_today"] == "SMALLER"
+    assert e["what_would_change_my_mind"] == ["HY27 dividend of 19cps or more"]
+    text = json.dumps(data)
+    assert "Deprival" not in text and "biases" not in e and "position" not in e and "avg_cost" not in text
+
+    # Opt-in includes them; a second run keeps history newest-first without duplicates.
+    cfg2 = {**cfg, "web": {**cfg["web"], "include_bias": True, "include_position": True}}
+    run2 = run_for(root, cfg2, store, FakeModel(fixed=reply), force=True)
+    run2.sally._history = run.sally._history
+    execute(run2, mode="sell", ticker="NHC", send=False)
+    data = json.loads((root / "docs/data/harry.json").read_text())
+    assert len(data["reports"]) == 1 and data["reports"][0]["biases"] == ["Deprival-Superreaction"]
+
+
+def test_dashboard_renders_harry_card():
+    import importlib.util
+    from hindsight.config import REPO_ROOT
+
+    spec = importlib.util.spec_from_file_location("bd", REPO_ROOT / "scripts/build_dashboard.py")
+    bd = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(bd)
+    html = bd._harry_section({"last_run": "2026-09-23", "reports": [
+        {"date": "2026-09-23", "ticker": "AR9", "report_type": "SELL_ALERT", "severity": "RED",
+         "verdict": "Sell it.", "severity_reason": "Thesis broken.", "thesis": "BROKEN",
+         "would_buy_today": "NO", "would_rebuy": "NO", "lollapalooza": False,
+         "what_would_change_my_mind": ["A signed government contract"], "disagreements": []},
+        {"date": "2026-09-22", "ticker": "NHC", "report_type": "SELL_ALERT", "severity": "AMBER",
+         "verdict": "Trim.", "severity_reason": "Size.", "lollapalooza": False}]})
+    assert "Harry Hindsight" in html and "AR9" in html and "Sell it." in html and "RED" in html
+    assert "<details" in html  # older reports collapse
+    assert "A signed government contract" in html
+    assert bd._harry_section({}) and "No reports yet" in bd._harry_section({})
+
+
+def test_powershell_workflows_are_ascii_only():
+    """Windows PowerShell reads workflow scripts as cp1252: one em dash in a
+    commit message killed Ned's YouTube publish (and earlier Slinger's)."""
+    from hindsight.config import REPO_ROOT
+
+    for path in (REPO_ROOT / ".github/workflows").glob("*.yml"):
+        text = path.read_text(encoding="utf-8")
+        if "shell: powershell" not in text:
+            continue
+        bad = [i for i, line in enumerate(text.splitlines(), 1) if any(ord(c) > 127 for c in line)]
+        assert not bad, f"{path.name} has non-ASCII on lines {bad}"

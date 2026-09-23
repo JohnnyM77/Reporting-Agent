@@ -456,6 +456,12 @@ away when the runner cleans up). Keep the step's git commit messages
 ASCII-only — the fix that got LCC's second run to publish uses `--`,
 not em dash.
 
+The same em dash killed Ned's YouTube publish on 2026-09-23
+(`ned_transcript.yml`, "Dashboard update — Ned transcripts"): the transcript
+was fetched and emailed, then the commit step died and nothing reached the
+site. `tests/test_hindsight.py::test_powershell_workflows_are_ascii_only` now
+fails if any `shell: powershell` workflow contains a non-ASCII character.
+
 **Python stdout on Windows is cp1252 too.** Same shape, different
 place: a `print(f"... → ...")` in `scripts/build_dashboard.py` crashes
 with `UnicodeEncodeError: 'charmap' codec can't encode character
@@ -709,6 +715,14 @@ run cannot re-triage and re-email. Only fires from `main`.
 inline-styled card per report (a test bans flex, grid, `<style>` and
 `class=`), and a weasyprint PDF per OK report attached to the email. The PDF
 may use a stylesheet; the email may not.
+
+**On the public site, verdict-level only.** Each run writes
+`docs/data/harry.json` (`hindsight/web.py`): severity, verdict, thesis read,
+the would-buy / would-rebuy answers, what would change the call. The bias read
+and position details stay private unless `web.include_bias` /
+`web.include_position` are switched on in `config/hindsight.yaml`. The Harry
+workflow commits it and rebuilds `docs/index.html`; "Publish site" listens for
+"Harry Hindsight" completing.
 
 **Needs full git history.** Thesis versions and Sally's consecutive-flag streak
 come from `git log`; the workflow checks out with `fetch-depth: 0`.

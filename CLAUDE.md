@@ -654,3 +654,54 @@ name (`TARGET_BRANCH`) so the deploy always carries the newest data.
 The trigger is not gated on the agent run succeeding. A run that emailed its
 digest and then tripped over on a later step has still committed data worth
 publishing, and re-deploying unchanged content costs nothing.
+
+## Captain Hindsight — the Chief Sceptic (`hindsight/`)
+
+Sits above Bob, Sally, Wally and Theo. Reads their existing outputs
+(`docs/data/{sally,bob,wally}.json`, `theses/` + git history,
+`data/decisions.json`, `watchlists/jm_watchlist.yaml`) through adapters in
+`hindsight/adapters.py`. It never imports or modifies those agents, and every
+existing agent must run exactly as before if Hindsight is disabled or broken.
+Full design and assumptions: `docs/CAPTAIN_HINDSIGHT_ARCHITECTURE.md`.
+
+**Reads Theo, never writes it.** Thesis files are Theo's. Hindsight records
+its findings (and "Questions for Theo") in its own case files.
+
+**Personal data only in the private store.** The repo is public. Case files,
+`hindsight.db`, reports, the bias profile and responses go to
+`HINDSIGHT_STORE=private_repo` (a checkout of `JohnnyM77/Reporting-Agent-private`
+at `HINDSIGHT_PRIVATE_REPO_DIR`) or `local` (`hindsight_data/`, gitignored).
+`store.open_store` refuses any directory the public repo would track, and a
+misconfigured `private_repo` raises `StoreConfigError`; there is no fallback.
+Workflow logs print counts and statuses only, because Actions logs on a public
+repo are public. `config/hindsight.yaml` holds rules and thresholds, never
+positions.
+
+**No silent placeholders.** Every analysis ends `OK`, `SKIPPED_CAP`,
+`FAILED_API` or `FAILED_INVALID`, and the email renders the three non-OK
+states differently with the real error. Same lesson as Bob's canned-analysis
+incident: a half-broken digest must never look like a clean one.
+
+**Deterministic first, model second.** No gate, no call. JM Watch List names
+with nothing new show `NO CHANGE` at zero cost. `HINDSIGHT_MAX_LLM_CALLS`
+(default 10) caps a run; overflow is queued in the store and run first next
+time. One validation retry per analysis, with the error attached.
+
+**The model proposes, code decides.** `validators.py` downgrades FACT claims
+with no source ref, bias states without a ref to a real record (to UNKNOWN),
+PRESENT 7 Powers with only management evidence, and any LOLLAPALOOZA that fails
+the three-part gate. It never raises a severity. Warnings without a
+falsifiable prediction are dropped. Behavioural facts (average cost, tranches,
+averaging down, sell target, weights, unanswered Sally flags) are computed in
+`behaviour.py`, never by the model.
+
+**Sally never says SELL.** Her verdicts are `Trim candidate` / `Hold but stop
+adding` / `Watch only`. The adapter maps Trim to REDUCE, and Tier 2 to REDUCE
+only at the top of the valuation range near the 52-week high (thresholds in
+config). `python -m hindsight sell TICKER` forces a sell review regardless.
+
+**Needs full git history.** Thesis versions and Sally's consecutive-flag streak
+come from `git log`; the workflow checks out with `fetch-depth: 0`.
+
+**Running the existing test suite rewrites `docs/data/wally.json`.** Check
+`git status` before committing after a full `pytest` run.

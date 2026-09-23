@@ -1,0 +1,102 @@
+name: Captain Hindsight
+
+# The Chief Sceptic. Reads Bob / Sally / Wally / Theo outputs already in the
+# repo, gates deterministically, and only calls the model when a gate fires.
+#
+# Personal data (case files, SQLite, reports, bias profile) lives in a
+# PRIVATE repo, checked out next to this one and committed back after the
+# run. This repo is public: nothing personal is committed here, and the run
+# logs print counts and statuses only.
+#
+# Setup (see hindsight/README.md):
+#   - create JohnnyM77/Reporting-Agent-private (private)
+#   - secret HINDSIGHT_PRIVATE_REPO_TOKEN: fine-grained token, contents read/write on it
+#   - repo variable HINDSIGHT_STORE: private_repo (default) or local (no persistence)
+# With private_repo selected and no token, the checkout step fails loudly.
+# That is deliberate: there is no silent fallback to a tracked path.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "daily (triage + events), sell (one holding), portfolio, autopsy, scorecard"
+        type: choice
+        options: [daily, sell, portfolio, autopsy, scorecard]
+        default: daily
+      ticker:
+        description: "For mode=sell: the holding to review, e.g. NHC"
+        required: false
+        default: ""
+      force:
+        description: "Re-run even if this event was already reviewed"
+        type: boolean
+        default: false
+  schedule:
+    # 01:30 UTC, after Bob (23:13 + 00:43 catch-up) and Wally/Sally have written
+    # their JSON. Master Engine has no scheduled runner yet.
+    - cron: "30 1 * * *"
+
+concurrency:
+  group: captain-hindsight
+  cancel-in-progress: false
+
+jobs:
+  hindsight:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      HINDSIGHT_STORE: ${{ vars.HINDSIGHT_STORE || 'private_repo' }}
+    steps:
+      - name: Check out repo (full history, for thesis versions and Sally's flag streak)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pyyaml pydantic anthropic yfinance pandas openpyxl
+
+      - name: Check out private store
+        if: env.HINDSIGHT_STORE == 'private_repo'
+        uses: actions/checkout@v4
+        with:
+          repository: JohnnyM77/Reporting-Agent-private
+          token: ${{ secrets.HINDSIGHT_PRIVATE_REPO_TOKEN }}
+          path: hindsight_private
+
+      - name: Run Captain Hindsight
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_MODEL: claude-sonnet-4-6
+          HINDSIGHT_MAX_LLM_CALLS: "10"
+          HINDSIGHT_MAX_TOKENS_FULL: "16000"
+          HINDSIGHT_PRIVATE_REPO_DIR: ${{ github.workspace }}/hindsight_private
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          MODE: ${{ inputs.mode || 'daily' }}
+          TICKER: ${{ inputs.ticker }}
+          FORCE: ${{ inputs.force && '--force' || '' }}
+        run: |
+          if [ "$MODE" = "sell" ]; then
+            if [ -z "$TICKER" ]; then echo "mode=sell needs a ticker" >&2; exit 2; fi
+            python -m hindsight sell "$TICKER" $FORCE
+          else
+            python -m hindsight run --mode "$MODE" $FORCE
+          fi
+
+      - name: Commit private store
+        if: always() && env.HINDSIGHT_STORE == 'private_repo'
+        working-directory: hindsight_private
+        run: |
+          if [ ! -d .git ]; then echo "no private checkout, nothing to commit"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet || git commit -q -m "Captain Hindsight run ${{ github.run_id }}"
+          git push -q

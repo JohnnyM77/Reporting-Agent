@@ -108,7 +108,8 @@ three non-OK states differently. There are no placeholders.
 
 ## 4. What remains to connect
 
-- **The private repo.** Create `JohnnyM77/Reporting-Agent-private`, add a fine-grained token with contents read/write on it as the `HINDSIGHT_PRIVATE_REPO_TOKEN` secret, and set the repo variable `HINDSIGHT_STORE=private_repo`. Until then, scheduled runs use `local` on the runner: they still email, but nothing persists between runs, so dedup, queueing, triage baselines and autopsies do not carry over.
+- **The private repo.** Create `JohnnyM77/Reporting-Agent-private` and add a fine-grained token with contents read/write on it as the `HINDSIGHT_PRIVATE_REPO_TOKEN` secret. The workflow defaults to `private_repo`, so until the token exists the scheduled run fails at the checkout step. That is deliberate. To run without it, set the repo variable `HINDSIGHT_STORE=local`: runs still email, but nothing persists between runs, so dedup, queueing, triage baselines and autopsies start from scratch each time.
+- **Schedule.** `workflow_run` and schedules only fire from the default branch, so nothing runs until this is merged to `main`.
 - **Master Engine runner.** When one exists, pass `hindsight.emit.collect_events` into `aggregate()` (it needs a fourth collector argument).
 - **Private decision workbook.** Drop `JM_Decision_Level_IRR.xlsx` into `<store>/data/` or point `HINDSIGHT_DECISION_LOG` at it. Without it, the public money-free export is used, which is enough for everything except dollar tax figures.
 - **Tax.** The tax note is qualitative. There is no cost base in dollars in the public data, so CGT dollars are not computed.

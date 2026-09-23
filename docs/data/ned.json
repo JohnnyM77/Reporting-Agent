@@ -1,66 +1,10 @@
 {
   "agent": "Ned",
-  "last_run": "2026-09-22T01:41:39.983598Z",
-  "youtube_hits": 1,
-  "news_hits": 53,
-  "total_hits": 54,
-  "critical_high_count": 5,
-  "status": "ok",
-  "items": [
-    {
-      "tickers": [
-        "DRO"
-      ],
-      "title": "DroneShield stock gains guidance support as revenue surges but losses and ASIC probe linger - AD HOC NEWS",
-      "url": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxObVotR0tja0FCc0V5ZFZMcjlHSGpyNXdCbUQ0TEpvcTNrQmtBVjQ3MjVqZTdtSzBTRUVyLWxzYkt3NkxYdnBwZHRwNGt2MlJqWVVaemdURU9TQWgzTjdMNGJtYkNtRjlYTTE4c05lVmFvM1J4b2ZSY2xuVGluVm9OSHpXLXlXZHpFdm1Jb0NjajBsRXFpNi1sb0p0bnNYeF9udThpVWJIcm9rR2FDZ0NfbGVzNzVjblRUTW50cGZjZGs4SW9WbmdlbDYyMV83ek1zYnc?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "DroneShield's stock gained support from new guidance despite surging revenue, but ongoing losses and an ASIC regulatory probe create significant uncertainty for shareholders.",
-      "published": "2026-09-20T09:42:07+00:00"
-    },
-    {
-      "tickers": [
-        "NHC"
-      ],
-      "title": "New Hope\u2019s 30-Cent Dividend Explains Most of Monday\u2019s 6.1% Share Drop - TechStock\u00b2",
-      "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxQS0lyT2ZzQkk3UjlqVTc3QWFGbE5jZTVRajNUZE9ZSjc0V3JQOU5na3ppbndnclNYbWlzUXBDU3RvVEhSYVduMzFmMzBrV2VQTFhTQzJ2RUd6RVdrOU9FeDUwRnYzSmhvbE11SnZQU2tnMUxIWEhtcU0zMjVXUjdWd1VxOF9haFBWTDhvY2hGdjI?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "",
-      "published": "2026-09-21T05:39:39+00:00"
-    },
-    {
-      "tickers": [
-        "BHP"
-      ],
-      "title": "What Could BHP (ASX:BHP) Signal for Dividend Stocks Now? - Kalkine Media",
-      "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPTlJxXzZwMDJaR2s2bXpHLVd6TGxaMmk3dERGdUQ4MzZlb19XeDRYc0xXVEJ4RmctTW8tc2taTmRNdFJXdEhrNzU3WTRScTVHUUZXdWV3MHo3MG1TR0s5RmJhX0pyLWM1NUtTbDFpX3RCR3RDUnRzb053eW9ES21obExXNy0tcWhrNlZqVVlwQ3o5U3lDbDRFY2VxT1A?oc=5",
-      "source": "Google News",
-      "level": "CRITICAL",
-      "summary": "[not material]\n\nThe headline asks a speculative question about what BHP \"could signal\" for dividend stocks generally, but the content snippet provides no actual news, announcement, or concrete development from BHP itself.",
-      "published": "2026-09-21T04:42:00+00:00"
-    },
-    {
-      "tickers": [
-        "BHP"
-      ],
-      "title": "BHP CEO has a \u2018request\u2019 for China amid iron ore standoff - The West Australian",
-      "url": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxPUkw4b1FLenQ5NEFfY0VjaUdNb0NfR2tGWnZlU3IxY3REaVROa216SFpBY2c2UU93TjdVMHlONHJEMWV5QVg5WHhvRnVXbUQtZ0Qya01ZQnFaSXBuSzNDUWdweGhDbjNlLVVHc1p3ZVpBd2VtVkVIUGVOYmh5dzBMS0RfQnJYbTJtOHUwTHNPSzR4OXZYWXcyV2Y1YnkzRjJZSGdJOHF3ZXgtUDBPekpIMXdmLXZzaG5pN3dUaXlsTlQ1WmFvY2NoOXZLck1KUzhpWGtFYnk1aXZVZVFELXlvVUpCTQ?oc=5",
-      "source": "Google News",
-      "level": "HIGH",
-      "summary": "[not material]\n\nThe snippet is truncated and doesn't provide sufficient detail about the CEO's \"request\" or its implications for shareholders. The full content is needed to assess materiality.",
-      "published": "2026-09-21T01:42:00+00:00"
-    },
-    {
-      "tickers": [
-        "IAG"
-      ],
-      "title": "IAG, KPMG\u2019s $11.6m partnership ends after tenure consideration - Accounting Times",
-      "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOc2hNeExaaDIyNUhyUTJkLXoydWR3RDRfWk1jVTNWQTVxM3RUS2RsNHdOc1NJOVZfOTd3aTQtUEpLUGRJRnhUQ0E4X2JtZHV2T25COGY5dkhqYkxzWHJoa2JzTDctdjcxRFJxOXZYdFB3S0trdjExdHRLQWVsR2FOM2tfOC1ocFJvWlplYUZRb3dGUl9iVGM3QTl2WVdaaXFPeHVsZ0EtQkVaUQ?oc=5",
-      "source": "Google News",
-      "level": "HIGH",
-      "summary": "",
-      "published": "2026-09-21T21:03:49+00:00"
-    }
-  ]
+  "last_run": "2026-09-23T01:38:15.359324Z",
+  "youtube_hits": 0,
+  "news_hits": 0,
+  "total_hits": 0,
+  "critical_high_count": 0,
+  "status": "silence",
+  "items": []
 }

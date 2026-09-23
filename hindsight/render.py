@@ -131,7 +131,7 @@ def _bullets(items: list[str]) -> list[str]:
 def _verdict(out: AnalysisOutput) -> list[str]:
     lines = [f"**{out.severity}**: {clean(out.severity_reason)}", "", clean(out.verdict)]
     for d in out.disagreements:
-        lines.append(f"- Captain Hindsight disagrees with {d.with_agent.title()}: {clean(d.point)}")
+        lines.append(f"- Harry Hindsight disagrees with {d.with_agent.title()}: {clean(d.point)}")
     return lines
 
 
@@ -246,13 +246,14 @@ def render_email(summary: dict) -> tuple[str, str]:
     worst = max(oks, key=order.index) if oks else None
     failed = sum(1 for b in reports if b["status"].startswith("FAILED"))
     skipped = sum(1 for b in reports if b["status"] == "SKIPPED_CAP")
-    subject = f"Captain Hindsight | {summary['date']} | {len(reports)} report(s)"
+    subject = f"Harry Hindsight | {summary['date']} | {len(reports)} report(s)"
     if worst:
         subject += f", worst {worst}"
     if failed:
         subject += f" | {failed} FAILED"
 
-    lines = ["Captain Hindsight here. Let's have this conversation before it's hindsight.", ""]
+    lines = ["Harry Hindsight: looking through Harry's ass has 20:20 vision.",
+             "Let's have this conversation before it's hindsight.", ""]
     llm = summary.get("llm", {})
     lines.append(f"Run: {llm.get('calls', 0)}/{llm.get('cap', 0)} model calls, "
                  f"{llm.get('tokens_in', 0)} in / {llm.get('tokens_out', 0)} out tokens, "

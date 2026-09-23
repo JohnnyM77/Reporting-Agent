@@ -1,4 +1,4 @@
-"""Captain Hindsight tests. No test hits a real API: the model is a fake
+"""Harry Hindsight tests. No test hits a real API: the model is a fake
 transport that returns fixture JSON."""
 
 from __future__ import annotations
@@ -356,7 +356,7 @@ def test_14_hindsight_can_disagree_with_sally(tmp_path, cfg, store):
     root = make_repo(tmp_path, sally={"last_run": "2026-09-20", "flagged": [sally_row()]})
     reply = analysis(disagreements=[{"with": "SALLY", "point": "The PE is inflated by a one-off impairment; underlying PE is 9x."}])
     summary = execute(run_for(root, cfg, store, FakeModel(fixed=reply)), mode="sell", ticker="NHC", send=False)
-    assert "Captain Hindsight disagrees with Sally" in summary["reports"][0]["markdown"]
+    assert "Harry Hindsight disagrees with Sally" in summary["reports"][0]["markdown"]
     assert summary["reports"][0]["output"].severity == "GREEN"
 
 

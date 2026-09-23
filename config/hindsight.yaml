@@ -1,4 +1,4 @@
-# Captain Hindsight configuration. Code, thresholds and rules only.
+# Harry Hindsight configuration. Code, thresholds and rules only.
 # Nothing personal lives in this file: positions, responses, bias hit rates and
 # case files live in the private store (see docs/CAPTAIN_HINDSIGHT_ARCHITECTURE.md).
 

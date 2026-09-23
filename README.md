@@ -545,9 +545,9 @@ python -m wally.main --tii75 --force
 A new weekly agent is available under `sunday-sally/` to review names near 52-week highs and assess valuation stretch vs history.
 See `sunday-sally/README.md` and `.github/workflows/sunday_sally_weekly_review.yml`.
 
-## Captain Hindsight (Chief Sceptic)
+## Harry Hindsight (Chief Sceptic)
 
-Captain Hindsight sits above the other agents and asks whether we're wrong, while it's still foresight. It reads Bob, Sally, Wally and Theo's existing outputs, gates in code, and only calls the model when something could change the answer: a Sally sell signal on a holding, a Bob high-impact event, a JM Watch List name that moved, one of Wally's top ideas, a monthly portfolio review, or an autopsy of its own past warnings. Every report runs a thesis test, Helmer's 7 Powers, a Munger tendencies scan with a code-enforced Lollapalooza gate, and, for sells, the fresh capital and forced sale tests.
+Harry Hindsight sits above the other agents and asks whether we're wrong, while it's still foresight. It reads Bob, Sally, Wally and Theo's existing outputs, gates in code, and only calls the model when something could change the answer: a Sally sell signal on a holding, a Bob high-impact event, a JM Watch List name that moved, one of Wally's top ideas, a monthly portfolio review, or an autopsy of its own past warnings. Every report runs a thesis test, Helmer's 7 Powers, a Munger tendencies scan with a code-enforced Lollapalooza gate, and, for sells, the fresh capital and forced sale tests.
 
 Personal data (case files, SQLite, the bias profile) lives in a private repo, never here. Run `python -m hindsight sell NHC` for a one-off sell review. See `hindsight/README.md`, `docs/CAPTAIN_HINDSIGHT_ARCHITECTURE.md` and `.github/workflows/captain_hindsight.yml`.
 

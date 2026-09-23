@@ -1,6 +1,6 @@
-# Captain Hindsight: architecture (as built)
+# Harry Hindsight: architecture (as built)
 
-Captain Hindsight is the Chief Sceptic. It reads what the other agents have
+Harry Hindsight is the Chief Sceptic. It reads what the other agents have
 already produced, decides deterministically whether anything is worth a model
 call, and when it is, asks one question: are we wrong, and are we defending a
 decision instead of evaluating it? It never edits another agent's files.

@@ -655,7 +655,7 @@ The trigger is not gated on the agent run succeeding. A run that emailed its
 digest and then tripped over on a later step has still committed data worth
 publishing, and re-deploying unchanged content costs nothing.
 
-## Captain Hindsight — the Chief Sceptic (`hindsight/`)
+## Harry Hindsight — the Chief Sceptic (`hindsight/`)
 
 Sits above Bob, Sally, Wally and Theo. Reads their existing outputs
 (`docs/data/{sally,bob,wally}.json`, `theses/` + git history,

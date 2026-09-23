@@ -15,7 +15,7 @@ from .store import Store
 REL = "profile/jm_bias_profile.yaml"
 HEADER = (
     "# Places to look, not conclusions. A checklist for asking better questions,\n"
-    "# not a psychological diagnosis. Updated by Captain Hindsight's autopsy loop.\n"
+    "# not a psychological diagnosis. Updated by Harry Hindsight's autopsy loop.\n"
 )
 
 

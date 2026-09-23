@@ -179,12 +179,14 @@ class SallyAdapter:
         data = self.latest()
         run = str(data.get("last_run") or dt.date.today().isoformat())
         row = self.row(ticker) or {"ticker": bare(ticker)}
-        sig = self.signal(row) if row.get("sally_verdict") else "MANUAL"
-        return self._event(
-            row, run, sig, "MANUAL",
-            f"Manual sell review requested. Sally's latest: {row.get('sally_verdict', 'not flagged')}"
-            f" ({row.get('alert_tier', 'n/a')}), gate maps it to {sig}",
-        )
+        if row.get("sally_verdict"):
+            sig = self.signal(row)
+            reason = (f"Manual sell review requested. Sally's latest: {row.get('sally_verdict')}"
+                      f" ({row.get('alert_tier', 'n/a')}), gate maps it to {sig}")
+        else:
+            sig = "MANUAL"
+            reason = f"Manual review requested. Sally has not flagged {bare(ticker)} in her {run} run."
+        return self._event(row, run, sig, "MANUAL", reason)
 
 
 # ---------------------------------------------------------------------------

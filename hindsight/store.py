@@ -1,4 +1,4 @@
-"""Where Captain Hindsight keeps personal data, and the SQLite behind it.
+"""Where Harry Hindsight keeps personal data, and the SQLite behind it.
 
 The repo is public. Case files hold position details and notes about
 Johnny's tendencies, so they must never land in a tracked path. Two

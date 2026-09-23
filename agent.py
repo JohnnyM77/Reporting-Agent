@@ -29,7 +29,6 @@ import requests
 from bs4 import BeautifulSoup
 import yaml
 from pypdf import PdfReader
-import anthropic
 try:
     from weasyprint import HTML, CSS
 except ImportError:
@@ -39,6 +38,7 @@ import asyncio
 from playwright_fetch import fetch_pdf_with_playwright
 from asx_fetch import fetch_asx_announcements_html
 from shared.email_service import send_email as shared_send_email
+from shared.llm import STREAMING_MIN_TOKENS, call_with_retry, make_client, send as llm_send
 from shared.pdf_llm import (
     LLM_FAILED,
     LLM_SKIPPED,
@@ -634,8 +634,9 @@ def asx_pdf_url_from_item_url(url: str) -> Optional[str]:
     return None
 
 
-def _anthropic_client() -> anthropic.Anthropic:
-    return anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+def _anthropic_client():
+    """The Anthropic client for this run. Tests patch this to inject a fake."""
+    return make_client(os.environ["ANTHROPIC_API_KEY"])
 
 
 def _llm_cap_reached(counters: Dict) -> bool:
@@ -653,14 +654,11 @@ def _llm_cap_reached(counters: Dict) -> bool:
     return False
 
 
-# Anthropic's Python SDK refuses non-streaming create() calls whose expected
-# duration exceeds ~10 minutes (a hard client-side check to avoid the HTTP
-# read-timeout that kills long requests). At Sonnet's output rate a large
-# max_tokens hits that threshold quickly — the results path's 50k budget
-# came back as ``Streaming is required for operations that may take longer
-# than 10 minutes.`` So above this threshold ``_call_anthropic`` routes
-# through ``client.messages.stream`` instead of ``.create``.
-_STREAMING_MIN_TOKENS = 8192
+# Calls at or above this many output tokens stream rather than .create():
+# the SDK refuses non-streaming requests that may take >10 minutes, which the
+# results path's 50k budget hits. The threshold and the switch itself live in
+# shared/llm.py; the alias keeps the name existing callers and tests use.
+_STREAMING_MIN_TOKENS = STREAMING_MIN_TOKENS
 
 
 def _call_anthropic(
@@ -688,68 +686,33 @@ def _call_anthropic(
     model = os.environ.get("CLAUDE_MODEL", MODEL_DEFAULT)
     client = _anthropic_client()
 
-    last_err: Optional[Exception] = None
-    for attempt in range(max_retries + 1):
-        try:
-            if max_tokens >= _STREAMING_MIN_TOKENS:
-                text, stop_reason = _stream_message(
-                    client, model, max_tokens, system_prompt, content,
+    def _once() -> str:
+        resp = llm_send(
+            client,
+            model=model,
+            max_tokens=max_tokens,
+            system=system_prompt,
+            messages=[{"role": "user", "content": content}],
+            streaming_min_tokens=_STREAMING_MIN_TOKENS,
+        )
+        if resp.stop_reason:
+            counters["last_stop_reason"] = resp.stop_reason
+            if resp.truncated:
+                log(
+                    f"WARNING: Claude response was truncated at max_tokens={max_tokens} "
+                    f"(model={model}); downstream JSON parsing will likely fail"
                 )
-            else:
-                resp = client.messages.create(
-                    model=model,
-                    max_tokens=max_tokens,
-                    system=system_prompt,
-                    messages=[{"role": "user", "content": content}],
-                )
-                text = (resp.content[0].text or "")
-                stop_reason = getattr(resp, "stop_reason", None)
-            if stop_reason:
-                counters["last_stop_reason"] = str(stop_reason)
-                if stop_reason == "max_tokens":
-                    log(
-                        f"WARNING: Claude response was truncated at max_tokens={max_tokens} "
-                        f"(model={model}); downstream JSON parsing will likely fail"
-                    )
-            return text.strip()
-        except Exception as e:
-            last_err = e
-            if attempt < max_retries:
-                log(f"WARNING: Claude API call failed (attempt {attempt + 1}/{max_retries + 1}, model={model}): {e} — retrying once")
-                time.sleep(2)
-                continue
-            log(f"ERROR: Claude API call failed after {attempt + 1} attempt(s) (model={model}): {e}")
+        return resp.text.strip()
 
-    counters["last_llm_error"] = str(last_err) if last_err else "unknown error"
-    return LLM_FAILED
+    def _on_retry(attempt: int, e: BaseException) -> None:
+        log(f"WARNING: Claude API call failed (attempt {attempt}/{max_retries + 1}, model={model}): {e} — retrying once")
 
-
-def _stream_message(
-    client: "anthropic.Anthropic",
-    model: str,
-    max_tokens: int,
-    system_prompt: str,
-    content: object,
-) -> Tuple[str, Optional[str]]:
-    """Drive the Anthropic streaming API and return (text, stop_reason).
-
-    Streaming keeps the HTTP connection alive with periodic events instead
-    of forcing one long read, so the SDK's 10-minute non-streaming ceiling
-    doesn't apply. The generated text is identical to what .create() would
-    have returned — we just accumulate it as it comes in.
-    """
-    parts: List[str] = []
-    with client.messages.stream(
-        model=model,
-        max_tokens=max_tokens,
-        system=system_prompt,
-        messages=[{"role": "user", "content": content}],
-    ) as stream:
-        for chunk in stream.text_stream:
-            parts.append(chunk)
-        final = stream.get_final_message()
-    stop_reason = getattr(final, "stop_reason", None)
-    return "".join(parts), stop_reason
+    try:
+        return call_with_retry(_once, max_retries=max_retries, on_retry=_on_retry)
+    except Exception as e:
+        log(f"ERROR: Claude API call failed after {max_retries + 1} attempt(s) (model={model}): {e}")
+        counters["last_llm_error"] = str(e)
+        return LLM_FAILED
 
 
 def llm_chat(

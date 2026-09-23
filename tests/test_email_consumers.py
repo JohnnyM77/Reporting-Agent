@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import email
 import sys
+import types
 from pathlib import Path
 from unittest import mock
 
@@ -15,6 +16,14 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 from shared import email_service as es  # noqa: E402
+
+# Same guard the other Bob tests use: other test files stub `playwright` into
+# sys.modules, which breaks agent.py's real playwright_fetch import.
+_pw_stub = types.ModuleType("playwright_fetch")
+_pw_stub.fetch_pdf_with_playwright = None  # type: ignore[attr-defined]
+sys.modules.setdefault("playwright_fetch", _pw_stub)
+
+import agent  # noqa: E402
 
 ENV = {"EMAIL_FROM": "bot@example.com", "EMAIL_TO": "me@example.com", "EMAIL_APP_PASSWORD": "pw"}
 
@@ -48,8 +57,6 @@ def pdf(tmp_path):
 
 
 def test_bob_sends_html_with_pdf_and_brother_address(smtp, pdf, tmp_path):
-    import agent
-
     agent.send_email("Bob digest", "text", "<p>html</p>", attachments=[pdf, tmp_path / "missing.pdf"])
     parsed = _sent(smtp)
     assert parsed["Subject"] == "Bob digest" and parsed["To"] == "me@example.com"
@@ -61,8 +68,6 @@ def test_bob_sends_html_with_pdf_and_brother_address(smtp, pdf, tmp_path):
 
 
 def test_bob_raises_when_email_env_missing(monkeypatch, smtp):
-    import agent
-
     monkeypatch.delenv("EMAIL_APP_PASSWORD")
     with pytest.raises(es.EmailConfigError):
         agent.send_email("s", "b")
@@ -70,8 +75,6 @@ def test_bob_raises_when_email_env_missing(monkeypatch, smtp):
 
 
 def test_bob_raises_on_smtp_failure(smtp):
-    import agent
-
     smtp.side_effect = OSError("smtp down")
     with pytest.raises(OSError):
         agent.send_email("s", "b")

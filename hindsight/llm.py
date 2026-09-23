@@ -1,7 +1,8 @@
 """One LLM client per run: call cap, two model tiers, strict JSON, one retry.
 
-Mirrors ``agent.py::_call_anthropic`` (streaming above a token threshold)
-without importing ``agent.py``, which drags in weasyprint and Playwright.
+The Anthropic transport comes from ``shared/llm.py`` (streaming above a
+token threshold). Never imports ``agent.py``, which drags in weasyprint and
+Playwright.
 
 Every call ends in exactly one status, and none of them is a placeholder:
 
@@ -48,20 +49,24 @@ def extract_json(text: str) -> Any:
 
 
 def anthropic_transport(streaming_min: int = 8192) -> Transport:
+    """The real transport: shared/llm.py builds the client, streams above
+    *streaming_min* tokens and pulls text, usage and stop_reason out of the
+    response. Everything that makes Harry Harry -- the cap, the validation
+    retry, the four statuses -- stays in ``LLMClient`` below."""
     def _call(model: str, system: str, messages: list, max_tokens: int):
-        import anthropic
+        from shared.llm import make_client, send
 
         if not os.environ.get("ANTHROPIC_API_KEY"):
             raise RuntimeError("ANTHROPIC_API_KEY is not set")
-        client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-        kwargs = dict(model=model, max_tokens=max_tokens, system=system, messages=messages)
-        if max_tokens >= streaming_min:
-            with client.messages.stream(**kwargs) as stream:
-                resp = stream.get_final_message()
-        else:
-            resp = client.messages.create(**kwargs)
-        text = "".join(b.text for b in resp.content if getattr(b, "type", "") == "text")
-        return text, resp.usage.input_tokens, resp.usage.output_tokens, resp.stop_reason
+        resp = send(
+            make_client(os.environ["ANTHROPIC_API_KEY"]),
+            model=model,
+            max_tokens=max_tokens,
+            system=system,
+            messages=messages,
+            streaming_min_tokens=streaming_min,
+        )
+        return resp.text, resp.input_tokens, resp.output_tokens, resp.stop_reason
 
     return _call
 

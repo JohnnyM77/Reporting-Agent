@@ -25,6 +25,8 @@ import re
 from dataclasses import dataclass, asdict
 from typing import Optional
 
+from shared.securities import asx_code_or_none
+
 from .config import NEWS_LOOKBACK_DAYS, NEWS_MAX_ITEMS
 
 
@@ -105,12 +107,9 @@ def asx_code(ticker: str) -> Optional[str]:
 
     Wally's watchlist loader normalises ASX listings to Yahoo-style
     "CODE.AX"; anything without that suffix (US, LSE, TSX, …) has no ASX
-    announcements to look up.
+    announcements to look up. The rule lives in shared/securities.py.
     """
-    t = (ticker or "").strip().upper()
-    if t.endswith(".AX") and len(t) > 3:
-        return t[:-3]
-    return None
+    return asx_code_or_none(ticker)
 
 
 # ---------------------------------------------------------------------------

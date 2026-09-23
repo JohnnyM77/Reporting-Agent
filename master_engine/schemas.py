@@ -9,6 +9,8 @@ import datetime as dt
 from dataclasses import dataclass, field, asdict
 from typing import Optional
 
+from shared.securities import with_default_suffix
+
 
 # ---------------------------------------------------------------------------
 # Priority levels (ordered highest to lowest)
@@ -161,6 +163,4 @@ def normalise_ticker(ticker: str, exchange: str = "AX") -> str:
     exchange : str
         Suffix to append when no suffix is present.  Defaults to ``"AX"``.
     """
-    if "." in ticker:
-        return ticker
-    return f"{ticker}.{exchange}"
+    return with_default_suffix(ticker, exchange)

@@ -16,13 +16,15 @@ from typing import Any
 
 import yaml
 
+from shared.securities import strip_asx_suffix
+
 from .config import REPO_ROOT
 from .schemas import HindsightEvent
 
 
 def bare(ticker: str) -> str:
-    t = str(ticker or "").strip().upper()
-    return t[:-3] if t.endswith(".AX") else t
+    """NHC.AX -> NHC, upper-cased. The rule itself is shared/securities.py's."""
+    return strip_asx_suffix(ticker)
 
 
 def _load_json(path: Path) -> dict:

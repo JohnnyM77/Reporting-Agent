@@ -548,7 +548,6 @@ def test_triage_pillar_pressure_fires_only_when_new(cfg):
 
 
 def test_anthropic_transport_streams_large_budgets(monkeypatch):
-    import anthropic
     from hindsight.llm import anthropic_transport
 
     class Msg:
@@ -581,7 +580,10 @@ def test_anthropic_transport_streams_large_budgets(monkeypatch):
         def __init__(self, **kw):
             self.messages = Messages()
 
-    monkeypatch.setattr(anthropic, "Anthropic", Client)
+    import sys
+    import types
+
+    monkeypatch.setitem(sys.modules, "anthropic", types.SimpleNamespace(Anthropic=Client))
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test")
     call = anthropic_transport(8192)
     assert call("m", "s", [{"role": "user", "content": "x"}], 16000) == ('{"ok": 1}', 10, 5, "end_turn")

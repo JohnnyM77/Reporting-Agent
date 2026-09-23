@@ -47,6 +47,7 @@ on:
       # Pages deploy has to follow their completion too.
       - "Ned Transcript Fetcher"           # YouTube — self-hosted, on demand
       - "Ned Podcast Transcript Fetcher"   # Podcast — ubuntu-latest, on demand
+      - "Harry Hindsight"                  # Harry   - after Bob/Wally/Sally, or on demand
     types: [completed]
     branches: [main]
 

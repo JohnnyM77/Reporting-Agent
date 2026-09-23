@@ -657,8 +657,10 @@ def execute(run: Run, mode: str = "daily", ticker: str | None = None, send: bool
 
     if not run.dry_run:
         from .emit import write_events
+        from .web import write as write_web
 
         write_events(run.store, run.today, run.reports)
+        write_web(run.repo_root, run.reports, run.today.isoformat(), run.cfg)
     pdfs, pdf_errors = build_pdfs(run)
     summary["pdfs"] = pdfs
     summary["html"] = build_email_html(summary, pdfs, pdf_errors)

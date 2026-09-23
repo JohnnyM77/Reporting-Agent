@@ -1,0 +1,164 @@
+# Charlie Munger's 25 tendencies from "The Psychology of Human Misjudgment".
+# Definitions are written here in plain words, not quoted. This is a checklist
+# for asking better questions, not a psychological diagnosis.
+#
+# default_state: NOT ASSESSABLE marks tendencies that portfolio data almost
+# never speaks to. The model may only move them off that with a real evidence
+# ref, and the validator enforces it.
+
+states: [KNOWN VULNERABILITY, OBSERVED EVIDENCE, CURRENTLY TRIGGERED, NOT EVIDENT, UNKNOWN, NOT ASSESSABLE]
+directions: [HOLD, ADD, BUY, SELL, IGNORE_EVIDENCE, NONE]
+
+tendencies:
+  - id: 1
+    name: Reward and Punishment Superresponse
+    definition: People do what they are paid or rewarded to do, and underrate how strongly incentives bend judgement, including their own.
+    shows_up: A position that has paid well gets the benefit of the doubt; management incentives explain behaviour better than strategy decks.
+    antidote: Who gets paid if this goes the way I want, and have I checked what management is actually rewarded for?
+
+  - id: 2
+    name: Liking/Loving
+    definition: We ignore faults in, and favour, the people and things we like.
+    shows_up: Admiring a CEO or a product so much that the numbers stop mattering.
+    antidote: If I disliked this management team, how would I read the same result?
+
+  - id: 3
+    name: Disliking/Hating
+    definition: We distort facts about the people and things we dislike.
+    shows_up: Refusing to own a good business because of an old grievance or a disliked sector.
+    antidote: Am I rejecting the evidence or the messenger?
+
+  - id: 4
+    name: Doubt-Avoidance
+    definition: The mind hurries to a decision to end the discomfort of uncertainty.
+    shows_up: Deciding to hold or sell quickly just to stop thinking about it.
+    antidote: What would I lose by waiting for one more piece of evidence?
+
+  - id: 5
+    name: Inconsistency-Avoidance
+    definition: Once a view is formed or stated, we resist changing it, even when the facts change.
+    shows_up: A thesis defended long after its pillars moved; public statements about a stock that make selling feel like a loss of face.
+    antidote: If I were writing this thesis fresh today, what would I write?
+
+  - id: 6
+    name: Curiosity
+    definition: Curiosity pushes us to learn and to test ideas; its absence leaves conclusions untested.
+    shows_up: Not reading the cash flow statement or the notes because the story already feels complete.
+    antidote: What is the one number I have not looked at yet?
+
+  - id: 7
+    name: Kantian Fairness
+    definition: We expect fair dealing and react badly when we feel treated unfairly.
+    shows_up: Holding a loser out of a sense that the market owes you a fair price.
+    antidote: Does the market know or care what I paid?
+
+  - id: 8
+    name: Envy/Jealousy
+    definition: Other people's gains distort our own choices.
+    shows_up: Chasing a stock because friends or commentators made money on it.
+    antidote: Would I want this if nobody I know owned it?
+
+  - id: 9
+    name: Reciprocation
+    definition: We feel obliged to return favours and concessions, even small or manufactured ones.
+    shows_up: Going easy on a company whose management gave you access or a friendly meeting.
+    antidote: Has anyone done me a favour that is shaping this view?
+
+  - id: 10
+    name: Influence-from-Mere-Association
+    definition: We judge things by what they are associated with rather than what they are.
+    shows_up: Treating a stock as good because a respected analyst owns it, or bad because of a past loss in the sector.
+    antidote: "Strip away who else likes it: what do the numbers say on their own?"
+
+  - id: 11
+    name: Simple, Pain-Avoiding Psychological Denial
+    definition: When reality is too painful, the mind bends it until it is bearable.
+    shows_up: Not opening the result of a stock that has fallen; explaining away every miss.
+    antidote: What fact about this position am I avoiding looking at?
+
+  - id: 12
+    name: Excessive Self-Regard
+    definition: We overrate our own abilities, possessions and decisions.
+    shows_up: Valuing a stock more because I own it or because I found it; treating my own thesis as the base case.
+    antidote: Would I rate this idea as highly if someone else had brought it to me?
+
+  - id: 13
+    name: Overoptimism
+    definition: We expect better outcomes than the evidence supports.
+    shows_up: Assuming expansions land on time and on budget, and margins expand as guided.
+    antidote: What does the base rate say, not the plan?
+
+  - id: 14
+    name: Deprival-Superreaction
+    definition: We react far more strongly to losing something we have, or nearly had, than to gaining the same amount.
+    shows_up: Refusing to sell a loser to avoid locking in the loss; refusing to trim a winner because of what it might still do.
+    antidote: Would this be a position today if it were not already owned?
+
+  - id: 15
+    name: Social-Proof
+    definition: We copy what others around us are doing, especially under uncertainty.
+    shows_up: Comfort because a newsletter, fund or forum holds the same stock.
+    antidote: If the crowd reversed tomorrow, would my reasons still stand?
+
+  - id: 16
+    name: Contrast-Misreaction
+    definition: We judge by comparison with what came just before, not by absolute value.
+    shows_up: A stock looks cheap because it is down from its high, not because it is cheap.
+    antidote: Ignore the prior price. Is this cheap against the cash it will produce?
+
+  - id: 17
+    name: Stress-Influence
+    definition: Stress, especially sudden stress, degrades judgement.
+    shows_up: Selling in a panic on a bad day or buying in a rush on a halt.
+    antidote: Would I make the same call on a calm Sunday?
+
+  - id: 18
+    name: Availability-Misweighing
+    definition: We overweight whatever is vivid, recent or easy to recall.
+    shows_up: One recent headline dominating the view of a multi-year business.
+    antidote: What does the full record say, not the latest news?
+
+  - id: 19
+    name: Use-It-or-Lose-It
+    definition: Skills decay without practice.
+    shows_up: Rusty valuation or accounting skills applied to a new sector.
+    antidote: When did I last do this analysis properly myself?
+    default_state: NOT ASSESSABLE
+
+  - id: 20
+    name: Drug-Misinfluence
+    definition: Substances impair judgement and encourage denial of the impairment.
+    shows_up: Not assessable from portfolio records.
+    antidote: Not applicable to portfolio data.
+    default_state: NOT ASSESSABLE
+
+  - id: 21
+    name: Senescence-Misinfluence
+    definition: Ageing erodes the ability to learn new, complex skills unless practised.
+    shows_up: Not assessable from portfolio records.
+    antidote: Not applicable to portfolio data.
+    default_state: NOT ASSESSABLE
+
+  - id: 22
+    name: Authority-Misinfluence
+    definition: We defer to authority figures even when they are wrong.
+    shows_up: Deferring to an analyst's buy/hold/sell bands or to management guidance without checking.
+    antidote: If the authority is wrong here, how would I know?
+
+  - id: 23
+    name: Twaddle
+    definition: People fill time with unimportant chatter that crowds out what matters.
+    shows_up: Reading every news item and missing the one line in the cash flow statement.
+    antidote: Which three facts actually decide this?
+
+  - id: 24
+    name: Reason-Respecting
+    definition: We comply more readily when given a reason, even a weak one.
+    shows_up: Accepting management's explanation for a miss because it came with a reason.
+    antidote: Is the reason true and sufficient, or just a reason?
+
+  - id: 25
+    name: Lollapalooza
+    definition: Several tendencies acting together in the same direction produce extreme, often bad, outcomes.
+    shows_up: Holding a loser, averaging down and revising the thesis all at once.
+    antidote: How many of these tendencies are pushing the same way right now?

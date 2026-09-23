@@ -66,3 +66,8 @@ site/
 data/portfolio.xlsx
 data/*IRR*.xlsx
 data/Jzx_Portfolio*.xlsx
+
+# Captain Hindsight — private store (case files, SQLite, reports, bias profile).
+# Never commit: see docs/CAPTAIN_HINDSIGHT_ARCHITECTURE.md
+hindsight_data/
+hindsight_private/

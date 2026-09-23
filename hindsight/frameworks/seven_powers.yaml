@@ -1,0 +1,60 @@
+# Hamilton Helmer's 7 Powers, as Captain Hindsight applies them.
+# A Power needs BOTH halves: a benefit that shows up in cash flow, and a
+# barrier that stops competitors arbitraging it away. Management language is
+# never evidence of either.
+
+test:
+  benefit: Does it materially improve cash flow, through higher prices, lower costs, or lower investment needs?
+  barrier: Why can't a well-funded competitor copy it and compete the benefit away?
+  statuses: [PRESENT, EMERGING, ABSENT, UNCLEAR]
+  rule: >-
+    A management claim is a hypothesis, not a Power. "We have a strong brand"
+    is a claim; Branding is shown by pricing or willingness to pay that a rival
+    with the same product cannot match. "We are gaining scale" is not Scale
+    Economies unless unit costs fall faster than rivals' in the reported
+    numbers.
+
+powers:
+  - name: Scale Economies
+    benefit: Unit costs fall as volume rises.
+    barrier: A challenger must accept years of losses at sub-scale to catch up.
+    evidence_looks_like: Unit cost or margin advantage over smaller peers in reported numbers, persisting through the cycle.
+    not_evidence: Revenue growth, market share claims, "operating leverage" in the deck.
+
+  - name: Network Economies
+    benefit: Each new user makes the product more valuable to existing users.
+    barrier: A rival cannot offer the same value without the same user base.
+    evidence_looks_like: Rising take rates or engagement with user count, winner-take-most share.
+    not_evidence: User numbers alone.
+
+  - name: Counter-Positioning
+    benefit: A newcomer adopts a superior model the incumbent won't copy.
+    barrier: Copying would damage the incumbent's existing business.
+    evidence_looks_like: Incumbents visibly declining to respond despite share loss.
+    not_evidence: '"Disruptive" in the investor presentation.'
+
+  - name: Switching Costs
+    benefit: Customers pay more or churn less because leaving is costly.
+    barrier: A rival must compensate the customer for the cost of switching.
+    evidence_looks_like: Low churn through price rises, high retention with no discounting.
+    not_evidence: Long contracts that are about to be retendered.
+
+  - name: Branding
+    benefit: Customers pay more for an objectively identical product.
+    barrier: Brand is built over a long time and cannot be bought quickly.
+    evidence_looks_like: Sustained price premium over a like-for-like product.
+    not_evidence: Awareness surveys, marketing spend, management calling it a brand.
+
+  - name: Cornered Resource
+    benefit: Preferential access to a coveted asset on attractive terms.
+    barrier: The asset is owned, licensed, or otherwise unavailable to rivals.
+    evidence_looks_like: A specific asset (mine, licence, patent, person) with a cost or quality edge that rivals cannot obtain.
+    not_evidence: '"Unique team" or "strategic assets" without the terms being shown.'
+
+  - name: Process Power
+    benefit: Embedded organisation and activity sets lower costs or improve product.
+    barrier: It is hard to copy because it is tacit and slow to learn.
+    evidence_looks_like: Persistent cost or quality lead with no single identifiable asset behind it.
+    not_evidence: '"Culture" or "operational excellence" as adjectives.'
+
+assessment_fields: [status, benefit_evidence, barrier_evidence, evidence_against, durability, confidence, source_refs]

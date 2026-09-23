@@ -16,16 +16,13 @@ from __future__ import annotations
 import os
 import re
 import json
-import ssl
 import hashlib
-import smtplib
 import tempfile
 import time
 import datetime as dt
 import textwrap
 import html as htmlmod
 from pathlib import Path
-from email.message import EmailMessage
 from typing import Dict, List, Tuple, Optional
 
 import requests
@@ -41,6 +38,7 @@ except ImportError:
 import asyncio
 from playwright_fetch import fetch_pdf_with_playwright
 from asx_fetch import fetch_asx_announcements_html
+from shared.email_service import send_email as shared_send_email
 from shared.pdf_llm import (
     LLM_FAILED,
     LLM_SKIPPED,
@@ -287,37 +285,19 @@ def send_email(
     to_addr: Optional[str] = None,
     attachments: Optional[List[Path]] = None,
 ):
-    email_from = os.environ["EMAIL_FROM"]
-    email_to = to_addr or os.environ["EMAIL_TO"]
-    app_password = os.environ["EMAIL_APP_PASSWORD"]
-    msg = EmailMessage()
-    msg["From"] = email_from
-    msg["To"] = email_to
-    msg["Subject"] = subject
-    msg.set_content(body_text)
-    if body_html:
-        msg.add_alternative(body_html, subtype="html")
-
-    # Attach any PDF files
-    if attachments:
-        for pdf_path in attachments:
-            if pdf_path and pdf_path.exists():
-                try:
-                    with open(pdf_path, "rb") as f:
-                        msg.add_attachment(
-                            f.read(),
-                            maintype="application",
-                            subtype="pdf",
-                            filename=pdf_path.name,
-                        )
-                    log(f"[Email] Attached {pdf_path.name}")
-                except Exception as e:
-                    log(f"[Email] Failed to attach {pdf_path}: {e}")
-
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-        server.login(email_from, app_password)
-        server.send_message(msg)
+    """Send the digest. Raises if email env is missing or SMTP fails, so
+    ``bob.json`` is never written for a digest nobody received."""
+    shared_send_email(
+        subject,
+        body_text,
+        body_html,
+        attachments=[p for p in attachments or [] if p and p.exists()],
+        force_type=("application", "pdf"),
+        to_addr=to_addr,
+        raise_on_error=True,
+        log=log,
+        log_prefix="[Email]",
+    )
 
 
 def read_tickers() -> Tuple[List[str], List[str]]:

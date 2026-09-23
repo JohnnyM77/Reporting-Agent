@@ -53,12 +53,9 @@ import datetime as dt
 import json
 import os
 import re
-import smtplib
-import ssl
 import sys
 import tempfile
 import traceback
-from email.message import EmailMessage
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -68,6 +65,7 @@ from sgx_fetch import fetch_sgx_announcements
 from sgx_classify import classify_sgx_announcement
 from sgx_pdf import fetch_announcement_pdfs, FetchedPdf
 from sgx_email import build_email, build_analysis_pdf_html, BOB_SG_NAME, BOB_SG_VERSION
+from shared.email_service import send_email as shared_send_email
 from shared.pdf_llm import (
     LLM_FAILED,
     LLM_SKIPPED,
@@ -584,50 +582,19 @@ def _send_email(
     body_html: str,
     attachments: Optional[List[Path]] = None,
 ) -> bool:
-    email_from = os.environ.get("EMAIL_FROM", "").strip()
-    email_to = os.environ.get("EMAIL_TO", "").strip()
-    app_pw = os.environ.get("EMAIL_APP_PASSWORD", "").strip()
-    if not (email_from and email_to and app_pw):
-        _log("[email] EMAIL_* env not set -- skipping send")
-        return False
-    msg = EmailMessage()
-    msg["From"] = email_from
-    msg["To"] = email_to
-    msg["Subject"] = subject
-    msg.set_content(body_text)
-    msg.add_alternative(body_html, subtype="html")
-
-    total = 0
-    for pdf in attachments or []:
-        try:
-            data = pdf.read_bytes()
-        except Exception as exc:
-            _log(f"[email] could not read attachment {pdf.name}: {exc}")
-            continue
-        if total + len(data) > MAX_ATTACHMENT_TOTAL_BYTES:
-            _log(f"[email] attachment cap reached ({MAX_ATTACHMENT_TOTAL_BYTES}B) "
-                 f"-- skipping {pdf.name} ({len(data)}B)")
-            continue
-        msg.add_attachment(
-            data,
-            maintype="application",
-            subtype="pdf",
-            filename=pdf.name,
-        )
-        total += len(data)
-        _log(f"[email] attached {pdf.name} ({len(data)}B)")
-
-    ctx = ssl.create_default_context()
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
-            server.login(email_from, app_pw)
-            server.send_message(msg)
-        _log(f"[email] sent -> {email_to}")
-        return True
-    except Exception as exc:
-        _log(f"[email] send failed: {exc}")
-        return False
-
+    """Send the digest with PDFs attached (capped at MAX_ATTACHMENT_TOTAL_BYTES).
+    Never raises: a missing EMAIL_* env var or SMTP failure logs and returns False."""
+    return shared_send_email(
+        subject,
+        body_text,
+        body_html,
+        attachments=attachments,
+        force_type=("application", "pdf"),
+        raise_on_error=False,
+        max_total_bytes=MAX_ATTACHMENT_TOTAL_BYTES,
+        log=_log,
+        log_prefix="[email]",
+    )
 
 def _select_items_default_mode(
     fetched: Dict[str, List[Dict]],

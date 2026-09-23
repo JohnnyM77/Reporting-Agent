@@ -81,21 +81,18 @@ def build_run_context() -> RunContext:
 
 
 def load_email_settings() -> EmailSettings:
-    # Reuse Bob's names where possible, with fallbacks.
-    email_from = os.environ.get("EMAIL_FROM") or os.environ.get("EMAIL_USER")
-    email_to = os.environ.get("EMAIL_TO")
-    smtp_user = os.environ.get("SMTP_USER") or email_from or ""
-    smtp_password = os.environ.get("SMTP_PASS") or os.environ.get("EMAIL_APP_PASSWORD") or ""
-    smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("SMTP_PORT", "465"))
+    # Reuse Bob's names where possible, with fallbacks. The env lookup itself
+    # lives in shared/email_service.py so every agent reads it the same way.
+    from shared.email_service import SmtpSettings
 
+    s = SmtpSettings.from_env()
     missing = [
         name
         for name, value in {
-            "EMAIL_FROM or EMAIL_USER": email_from,
-            "EMAIL_TO": email_to,
-            "SMTP_USER or EMAIL_FROM": smtp_user,
-            "SMTP_PASS or EMAIL_APP_PASSWORD": smtp_password,
+            "EMAIL_FROM or EMAIL_USER": s.email_from,
+            "EMAIL_TO": s.email_to,
+            "SMTP_USER or EMAIL_FROM": s.smtp_user,
+            "SMTP_PASS or EMAIL_APP_PASSWORD": s.smtp_password,
         }.items()
         if not value
     ]
@@ -103,12 +100,12 @@ def load_email_settings() -> EmailSettings:
         raise RuntimeError(f"Missing email settings: {', '.join(missing)}")
 
     return EmailSettings(
-        email_from=email_from or "",
-        email_to=email_to or "",
-        smtp_host=smtp_host,
-        smtp_port=smtp_port,
-        smtp_user=smtp_user,
-        smtp_password=smtp_password,
+        email_from=s.email_from,
+        email_to=s.email_to,
+        smtp_host=s.smtp_host,
+        smtp_port=s.smtp_port,
+        smtp_user=s.smtp_user,
+        smtp_password=s.smtp_password,
     )
 
 

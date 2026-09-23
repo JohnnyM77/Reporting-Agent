@@ -23,11 +23,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import smtplib
-import ssl
 import sys
 import datetime as dt
-from email.message import EmailMessage
 from pathlib import Path
 
 import yaml
@@ -47,6 +44,7 @@ from ned.youtube_transcript_fetcher import (
     fetch_transcript,
 )
 from ned.podcast_transcript_fetcher import fetch_podcast_transcript
+from shared.email_service import send_email as shared_send_email
 
 # ----------------------------
 # Config / paths
@@ -508,16 +506,8 @@ def _maybe_email(subject: str, plain: str, html: str) -> None:
 # Email
 # ----------------------------
 def send_email(subject: str, plain: str, html: str) -> None:
-    msg = EmailMessage()
-    msg["Subject"] = subject
-    msg["From"] = os.environ["EMAIL_FROM"]
-    msg["To"] = os.environ["EMAIL_TO"]
-    msg.set_content(plain)
-    msg.add_alternative(html, subtype="html")
-    ctx = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as s:
-        s.login(os.environ["EMAIL_FROM"], os.environ["EMAIL_APP_PASSWORD"])
-        s.send_message(msg)
+    """Send Ned's digest. Raises if the email env is missing or SMTP fails."""
+    shared_send_email(subject, plain, html, raise_on_error=True, log_prefix="[ned/email]")
 
 
 def today_sgt() -> str:

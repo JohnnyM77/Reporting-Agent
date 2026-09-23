@@ -1,13 +1,5 @@
 from __future__ import annotations
 
-import mimetypes
-import smtplib
-import ssl
-from email import encoders
-from email.mime.base import MIMEBase
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from pathlib import Path
 from typing import TypedDict
 
@@ -271,48 +263,32 @@ def send_email(
         print(f"[email_report] Cannot send — missing env vars: {', '.join(missing)}")
         return False
 
-    # Root: multipart/mixed → holds everything
-    root = MIMEMultipart("mixed")
-    root["From"] = settings.email_from
-    root["To"] = settings.email_to
-    root["Subject"] = subject
-
+    # Skip PNG files that are already embedded inline
     if inline_images:
-        # multipart/related wraps html + inline images
-        related = MIMEMultipart("related")
-        alt = MIMEMultipart("alternative")
-        alt.attach(MIMEText(body_text, "plain"))
-        alt.attach(MIMEText(body_html, "html"))
-        related.attach(alt)
-        for cid, png_path in inline_images:
-            with open(png_path, "rb") as f:
-                img = MIMEImage(f.read(), _subtype="png")
-            img.add_header("Content-ID", f"<{cid}>")
-            img.add_header("Content-Disposition", "inline", filename=png_path.name)
-            related.attach(img)
-        root.attach(related)
-    else:
-        alt = MIMEMultipart("alternative")
-        alt.attach(MIMEText(body_text, "plain"))
-        alt.attach(MIMEText(body_html, "html"))
-        root.attach(alt)
+        inline_paths = {str(p) for _, p in inline_images}
+        attachments = [
+            p for p in attachments
+            if not (p.suffix.lower() == ".png" and str(p) in inline_paths)
+        ]
 
-    for path in attachments:
-        # Skip PNG files that are already embedded inline
-        if inline_images and path.suffix.lower() == ".png":
-            if any(str(path) == str(p) for _, p in inline_images):
-                continue
-        mime, _ = mimetypes.guess_type(path.name)
-        maintype, subtype = (mime.split("/", 1) if mime else ("application", "octet-stream"))
-        part = MIMEBase(maintype, subtype)
-        part.set_payload(path.read_bytes())
-        encoders.encode_base64(part)
-        part.add_header("Content-Disposition", "attachment", filename=path.name)
-        root.attach(part)
+    from shared.email_service import SmtpSettings, send_email as _send
 
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, context=context) as server:
-        server.login(settings.smtp_user, settings.smtp_password)
-        server.sendmail(settings.email_from, settings.email_to, root.as_string())
-
-    return True
+    # SMTP errors still raise, as they always have; only missing settings
+    # (handled above) return False.
+    return _send(
+        subject,
+        body_text,
+        body_html,
+        attachments=attachments,
+        inline_images=inline_images,
+        settings=SmtpSettings(
+            email_from=settings.email_from,
+            email_to=settings.email_to,
+            smtp_user=settings.smtp_user,
+            smtp_password=settings.smtp_password,
+            smtp_host=settings.smtp_host,
+            smtp_port=settings.smtp_port,
+        ),
+        raise_on_error=True,
+        log_prefix="[email_report]",
+    )

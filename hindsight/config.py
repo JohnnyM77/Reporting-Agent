@@ -1,4 +1,4 @@
-"""Config loading for Captain Hindsight.
+"""Config loading for Harry Hindsight.
 
 Thresholds and rules come from ``config/hindsight.yaml``; a handful of env
 vars override the bits that change per run (store, models, caps). Nothing

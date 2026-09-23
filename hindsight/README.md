@@ -1,6 +1,6 @@
-# Captain Hindsight
+# Harry Hindsight
 
-Everything is 20:20 in hindsight. Captain Hindsight's job is to give Johnny
+Everything is 20:20 in hindsight. Harry Hindsight's job is to give Johnny
 that clarity before the loss, not after it.
 
 It is the Chief Sceptic that sits above the other agents. It does not fetch

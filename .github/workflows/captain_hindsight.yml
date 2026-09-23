@@ -1,4 +1,4 @@
-name: Captain Hindsight
+name: Harry Hindsight
 
 # The Chief Sceptic. Reads Bob / Sally / Wally / Theo outputs already in the
 # repo, gates deterministically, and only calls the model when a gate fires.
@@ -82,7 +82,7 @@ jobs:
           token: ${{ secrets.HINDSIGHT_PRIVATE_REPO_TOKEN }}
           path: hindsight_private
 
-      - name: Run Captain Hindsight
+      - name: Run Harry Hindsight
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_MODEL: claude-sonnet-4-6
@@ -111,5 +111,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --staged --quiet || git commit -q -m "Captain Hindsight run ${{ github.run_id }}"
+          git diff --staged --quiet || git commit -q -m "Harry Hindsight run ${{ github.run_id }}"
           git push -q

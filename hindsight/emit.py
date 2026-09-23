@@ -30,10 +30,10 @@ def to_investor_events(reports: list[dict], today: dt.date) -> list[dict]:
             company_name=t,
             agent="hindsight",
             event_type="hindsight_" + b["report_type"].lower(),
-            headline=f"Captain Hindsight {sev}: {t} {b['report_type'].replace('_', ' ').lower()}",
+            headline=f"Harry Hindsight {sev}: {t} {b['report_type'].replace('_', ' ').lower()}",
             timestamp=f"{today.isoformat()}T00:00:00Z",
             priority=_PRIORITY.get(sev, "HIGH" if str(sev).startswith("FAILED") else "LOW"),
-            action="Read the Captain Hindsight email",
+            action="Read the Harry Hindsight email",
         )
         out.append(ev.to_dict())
     return out

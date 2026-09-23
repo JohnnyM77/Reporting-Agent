@@ -1,4 +1,4 @@
-"""Bob-style HTML email and a forwardable PDF for Captain Hindsight.
+"""Bob-style HTML email and a forwardable PDF for Harry Hindsight.
 
 The email is a glance: one 360px card per report (severity badge, the key
 tests as label/value rows, the verdict) plus the JM Watch List triage. The
@@ -50,6 +50,8 @@ STATUS_BADGE = {
     "FAILED_INVALID": ("ANALYSIS FAILED", "#B91C1C", "#FFFFFF"),
     "DRY_RUN": ("DRY RUN", "#6B7280", "#FFFFFF"),
 }
+TAGLINE = "Looking through Harry's ass has 20:20 vision."
+
 TRIAGE_COLOURS = {
     "WATCH": "#64748B", "PROVOCATE": "#D97706", "ESCALATE": "#B91C1C",
     "FAILED": "#B91C1C", "SKIPPED": "#6B7280", "GATE": "#64748B",
@@ -268,7 +270,8 @@ def build_email_html(summary: dict, pdfs: dict[str, Path], pdf_errors: dict[str,
     reports = summary["reports"]
     head = (
         f'<div style="padding:18px; background:{COLOR_BG}; color:{COLOR_TEXT}; font-family:{EMAIL_FONT};">'
-        f'<div style="font-size:22px; font-weight:900; margin-bottom:6px;">Captain Hindsight</div>'
+        f'<div style="font-size:22px; font-weight:900; margin-bottom:6px;">Harry Hindsight</div>'
+        f'<div style="opacity:0.9; font-size:14px; font-style:italic; margin-bottom:6px;">{esc(TAGLINE)}</div>'
         f'<div style="opacity:0.9; font-size:14px; margin-bottom:10px;">Chief Sceptic · {esc(summary["date"])}'
         f' · {len(reports)} report(s)</div>'
         f'<div style="opacity:0.75; font-size:12px; margin-bottom:14px;">Model calls {llm.get("calls", 0)}/{llm.get("cap", 0)}'
@@ -310,7 +313,7 @@ def build_email_html(summary: dict, pdfs: dict[str, Path], pdf_errors: dict[str,
 PDF_CSS = """
 @page { size: A4; margin: 16mm 15mm 18mm 15mm;
   @bottom-right { content: "Page " counter(page) " of " counter(pages); font-family: 'Segoe UI', Roboto, Arial, sans-serif; font-size: 8pt; color: #6B7280; }
-  @bottom-left { content: "Captain Hindsight"; font-family: 'Segoe UI', Roboto, Arial, sans-serif; font-size: 8pt; color: #6B7280; } }
+  @bottom-left { content: "Harry Hindsight"; font-family: 'Segoe UI', Roboto, Arial, sans-serif; font-size: 8pt; color: #6B7280; } }
 body { font-family: 'Segoe UI', Roboto, Arial, sans-serif; font-size: 10pt; line-height: 1.5; color: #1F2937; }
 .cover { background: #1E1B4B; color: #fff; padding: 14pt 16pt; border-radius: 6pt; }
 .cover .kicker { font-size: 8pt; letter-spacing: 2pt; color: #C7D2FE; font-weight: 700; }
@@ -449,9 +452,10 @@ def build_pdf_html(b: dict, date: str) -> str:
     parts = [
         f"<!doctype html><html><head><meta charset='utf-8'><title>{esc(ticker)} {esc(kind)}</title>"
         f"<style>{PDF_CSS}</style></head><body>",
-        f"<div class='cover'><div class='kicker'>CAPTAIN HINDSIGHT · {esc(date)}</div>"
+        f"<div class='cover'><div class='kicker'>HARRY HINDSIGHT · {esc(date)}</div>"
         f"<h1>{esc(ticker)} · {esc(kind)}</h1>{_pill(out.severity, bg, fg)}"
-        f"<div class='trigger' style='margin-top:6pt;'>{_t(b.get('reason', ''))}</div></div>",
+        f"<div class='trigger' style='margin-top:6pt;'>{_t(b.get('reason', ''))}</div>"
+        f"<div class='trigger' style='margin-top:4pt; font-style:italic;'>{esc(TAGLINE)}</div></div>",
         f"<table class='keys'>{keys}</table>",
         f"<div class='verdict'><div class='big'>{_t(out.verdict)}</div><div>{_t(out.severity_reason)}</div>",
     ]
@@ -521,7 +525,7 @@ def build_pdf_html(b: dict, date: str) -> str:
             f"<li><strong>{esc(ref_label(k))}</strong>" + (f" <a href='{esc(k)}'>link</a>" if k.startswith("http") else "")
             + f": {_t(v)}</li>" for k, v in refs.items())
         parts.append(f"<h2>Evidence refs</h2><ul class='small'>{items}</ul>")
-    parts.append("<div class='disclaimer'>Captain Hindsight reads Bob, Sally, Wally and Theo, and asks whether we are wrong while "
+    parts.append(f"<div class='disclaimer'>{esc(TAGLINE)} Harry Hindsight reads Bob, Sally, Wally and Theo, and asks whether we are wrong while "
                  "it is still foresight. Claim tags: Fact (cited), Interp (inference), Mgmt (what management says), Agent "
                  "(another agent's conclusion), Hindsight (own synthesis). The Munger scan is a checklist for asking better "
                  "questions, not a diagnosis. Not financial advice.</div></body></html>")

@@ -332,7 +332,7 @@ def _case_file(run: Run, b: dict) -> None:
     t = b.get("ticker") or "PORTFOLIO"
     path = run.store.root / "case_files" / f"{t}.md"
     header = "" if path.exists() else (
-        f"# {t}: Captain Hindsight case file\n\n"
+        f"# {t}: Harry Hindsight case file\n\n"
         "Every entry is dated and traces back to its evidence refs. Newest at the bottom.\n\n")
     out: AnalysisOutput | None = b.get("output")
     entry = [f"## {run.today} | {b['report_type']} | {out.severity if out else b['status']}",

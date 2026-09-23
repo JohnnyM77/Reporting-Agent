@@ -16,7 +16,7 @@ from .store import StoreConfigError, open_store
 
 
 def _parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="python -m hindsight", description="Captain Hindsight")
+    p = argparse.ArgumentParser(prog="python -m hindsight", description="Harry Hindsight")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     r = sub.add_parser("run", help="scheduled run (daily triage + event reviews)")

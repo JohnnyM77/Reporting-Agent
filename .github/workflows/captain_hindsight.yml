@@ -2,6 +2,7 @@ name: Captain Hindsight
 
 # The Chief Sceptic. Reads Bob / Sally / Wally / Theo outputs already in the
 # repo, gates deterministically, and only calls the model when a gate fires.
+# Emails a Bob-style card per report with the full analysis as a PDF attachment.
 #
 # Personal data (case files, SQLite, reports, bias profile) lives in a
 # PRIVATE repo, checked out next to this one and committed back after the
@@ -36,10 +37,17 @@ on:
         type: choice
         options: [default, private_repo, local]
         default: default
-  schedule:
-    # 01:30 UTC, after Bob (23:13 + 00:43 catch-up) and Wally/Sally have written
-    # their JSON. Master Engine has no scheduled runner yet.
-    - cron: "30 1 * * *"
+  # Runs after the agents it reads, not on its own clock. Bob runs daily
+  # (plus a catch-up cron), Wally on Fridays, Sally on Sundays. Hindsight's
+  # JM triage runs at most once a day; later runs only review new events, and
+  # already-reviewed events are skipped, so a second trigger costs nothing.
+  # workflow_run only fires for workflows on the default branch.
+  workflow_run:
+    workflows:
+      - Daily Announcement Digest
+      - Wally Watchlist Screening
+      - Selling Sally Weekly Review
+    types: [completed]
 
 concurrency:
   group: captain-hindsight
@@ -64,7 +72,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install pyyaml pydantic anthropic yfinance pandas openpyxl
+        run: pip install pyyaml pydantic anthropic yfinance pandas openpyxl weasyprint
 
       - name: Check out private store
         if: env.HINDSIGHT_STORE == 'private_repo'

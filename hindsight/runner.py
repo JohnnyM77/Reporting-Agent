@@ -28,6 +28,7 @@ from .prices import PriceProvider, YFinancePrices
 from .prompts import (
     AUTOPSY_SYSTEM, SYSTEM_PROMPT, TRIAGE_SYSTEM, build_autopsy_prompt, build_triage_prompt, build_user_prompt, data_block,
 )
+from .email_html import build_email_html, build_pdf_html, pdf_filename, render_pdf
 from .render import clean, render_email, render_report
 from .schemas import (
     EVIDENCED_BIAS_STATES, AnalysisOutput, Autopsy, AutopsyOutput, BiasRecord, HindsightEvent, HindsightOutcome,
@@ -246,7 +247,7 @@ def analyse(run: Run, event: HindsightEvent, ctx: TickerContext | None = None,
     user = build_user_prompt(rt, ticker, refs, blocks, focus)
 
     bundle = {"report_type": rt, "ticker": ticker, "reason": event.reason, "event": event, "refs": refs,
-              "tc": ctx.tc if ctx else None, "fact_lines": ctx.facts.lines() if ctx else [],
+              "tc": ctx.tc if ctx else None, "facts": ctx.facts if ctx else None, "fact_lines": ctx.facts.lines() if ctx else [],
               "hard_triggers": triggers, "prompt": user, "status": "DRY_RUN", "error": "", "raw": ""}
     if run.dry_run:
         bundle["markdown"] = render_report(bundle)
@@ -613,7 +614,15 @@ def execute(run: Run, mode: str = "daily", ticker: str | None = None, send: bool
 
     _do(urgent)
     if mode == "daily":
-        rest = sort_events(rest + run_triage(run, bob_today))
+        # Bob, Wally and Sally each trigger a run (and Bob has a catch-up cron),
+        # so the JM triage runs at most once a day; later runs only pick up
+        # new events.
+        if run.store.kv_get("triage_done") == run.today.isoformat() and not run.force:
+            run.notes.append("JM Watch List already triaged today; this run only reviews new events.")
+        else:
+            rest = sort_events(rest + run_triage(run, bob_today))
+            if not run.dry_run:
+                run.store.kv_set("triage_done", run.today.isoformat())
     _do(rest)
     if autopsy_lines:
         run.triage += ["", "Autopsies:"] + autopsy_lines
@@ -650,9 +659,12 @@ def execute(run: Run, mode: str = "daily", ticker: str | None = None, send: bool
         from .emit import write_events
 
         write_events(run.store, run.today, run.reports)
+    pdfs, pdf_errors = build_pdfs(run)
+    summary["pdfs"] = pdfs
+    summary["html"] = build_email_html(summary, pdfs, pdf_errors)
     sent = False
     if send and not run.dry_run and (run.reports or any("NO CHANGE" not in line for line in run.triage if line)):
-        sent = _send_email(subject, body)
+        sent = _send_email(subject, body, summary["html"], list(pdfs.values()))
     summary["sent"] = sent
     # Logs are public on a public repo: counts and statuses only, never content.
     statuses: dict[str, int] = {}
@@ -664,10 +676,36 @@ def execute(run: Run, mode: str = "daily", ticker: str | None = None, send: bool
     return summary
 
 
-def _send_email(subject: str, body: str) -> bool:
+def build_pdfs(run: Run) -> tuple[dict[str, Path], dict[str, str]]:
+    """One forwardable PDF per OK report, saved in the private store.
+
+    A PDF that fails to render is reported on its card, never silently dropped.
+    """
+    pdfs: dict[str, Path] = {}
+    errors: dict[str, str] = {}
+    if run.dry_run:
+        return pdfs, errors
+    date = run.today.isoformat()
+    for b in run.reports:
+        if b["status"] != "OK":
+            continue
+        key = b.get("report_id", "")
+        html = build_pdf_html(b, date)
+        path = run.store.root / "reports" / date / pdf_filename(b, date)
+        try:
+            pdfs[key] = render_pdf(html, path)
+        except ImportError:
+            errors[key] = "weasyprint is not installed on this runner, so the PDF could not be rendered."
+        except Exception as exc:  # the real error, on the card
+            errors[key] = f"PDF render failed: {type(exc).__name__}: {exc}"
+        run.store.write_text(f"reports/{date}/{pdf_filename(b, date)[:-4]}.html", html)
+    return pdfs, errors
+
+
+def _send_email(subject: str, body: str, html: str | None = None, attachments: list[Path] | None = None) -> bool:
     import sys
 
     sys.path.insert(0, str(REPO_ROOT))
     from email_sender import send_summary_email
 
-    return send_summary_email(subject, body)
+    return send_summary_email(subject, body, attachments=attachments, body_html=html)

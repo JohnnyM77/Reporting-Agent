@@ -700,6 +700,16 @@ adding` / `Watch only`. The adapter maps Trim to REDUCE, and Tier 2 to REDUCE
 only at the top of the valuation range near the 52-week high (thresholds in
 config). `python -m hindsight sell TICKER` forces a sell review regardless.
 
+**Triggered by the agents it reads, not a clock.** `captain_hindsight.yml`
+listens for `workflow_run` completion of Bob, Wally and Sally (no cron). The JM
+triage is guarded to once a day (`triage_done` in the store) so Bob's catch-up
+run cannot re-triage and re-email. Only fires from `main`.
+
+**Output mirrors Bob.** `hindsight/email_html.py` builds a table-only,
+inline-styled card per report (a test bans flex, grid, `<style>` and
+`class=`), and a weasyprint PDF per OK report attached to the email. The PDF
+may use a stylesheet; the email may not.
+
 **Needs full git history.** Thesis versions and Sally's consecutive-flag streak
 come from `git log`; the workflow checks out with `fetch-depth: 0`.
 

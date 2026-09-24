@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
-# Sally runs from sunday-sally/ (``python -m src.main``), so the repo root,
-# where the shared SMTP transport lives, has to be put on the path.
-_REPO_ROOT = str(Path(__file__).resolve().parents[2])
-if _REPO_ROOT not in sys.path:
-    sys.path.insert(0, _REPO_ROOT)
+from .pathing import ensure_repo_root_on_path
+
+ensure_repo_root_on_path()
 
 from shared.email_service import send_email  # noqa: E402
 

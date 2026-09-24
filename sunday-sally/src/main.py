@@ -16,7 +16,7 @@ from .email_sender import send_summary_email
 from .historical_multiple_analyzer import percentile_bucket, summarize_history, valuation_ratio
 from .memo_generator import build_memo_text, save_memo
 from .news_context_fetcher import fetch_news_context
-from .pathing import repo_root, resolve_output_root
+from .pathing import ensure_repo_root_on_path, repo_root, resolve_output_root
 from .portfolio_loader import load_portfolio
 from .price_monitor import fetch_price_data
 from .run_logger import write_run_log
@@ -24,8 +24,7 @@ from .valuation_engine import fetch_valuation_snapshot
 from .weekly_scheduler import run_window_info
 
 # Value chart builder lives in the wally package at repo root
-import sys as _sys
-_sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+ensure_repo_root_on_path()
 _build_value_chart = None
 _drive_upload = None
 _VALUE_CHART_AVAILABLE = False

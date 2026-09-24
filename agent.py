@@ -38,6 +38,7 @@ import asyncio
 from playwright_fetch import fetch_pdf_with_playwright
 from asx_fetch import fetch_asx_announcements_html
 from shared.asx import absolute_url, browser_session, extract_ids_id, pdf_url_for_ids_id
+from shared import gdrive
 from shared.email_service import send_email as shared_send_email
 from shared.llm import STREAMING_MIN_TOKENS, call_with_retry, make_client, send as llm_send
 from shared.pdf_llm import (
@@ -2509,25 +2510,12 @@ def drive_service():
     Falls back to the service account only if OAuth secrets aren't set,
     with a loud warning so nobody mistakes it for a working configuration.
     """
-    from googleapiclient.discovery import build
+    creds = gdrive.oauth_credentials()
+    if creds is not None:
+        return gdrive.build_service(creds, cache_discovery=False)
 
-    client_id = os.environ.get("GDRIVE_CLIENT_ID", "").strip()
-    client_secret = os.environ.get("GDRIVE_CLIENT_SECRET", "").strip()
-    refresh_token = os.environ.get("GDRIVE_REFRESH_TOKEN", "").strip()
-    if client_id and client_secret and refresh_token:
-        from google.oauth2.credentials import Credentials as UserCredentials
-        creds = UserCredentials(
-            token=None,
-            refresh_token=refresh_token,
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id=client_id,
-            client_secret=client_secret,
-            scopes=["https://www.googleapis.com/auth/drive"],
-        )
-        return build("drive", "v3", credentials=creds, cache_discovery=False)
-
-    sa_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
-    if not sa_json:
+    info = gdrive.service_account_info()
+    if info is None:
         raise RuntimeError(
             "No Drive credentials set: need either OAuth2 "
             "(GDRIVE_CLIENT_ID/SECRET/REFRESH_TOKEN) or a service account "
@@ -2539,12 +2527,7 @@ def drive_service():
         "storage quota'. Set GDRIVE_CLIENT_ID/SECRET/REFRESH_TOKEN to use "
         "OAuth against the folder's owner instead."
     )
-    from google.oauth2.service_account import Credentials as SACredentials
-    info = json.loads(sa_json)
-    creds = SACredentials.from_service_account_info(
-        info, scopes=["https://www.googleapis.com/auth/drive"],
-    )
-    return build("drive", "v3", credentials=creds, cache_discovery=False)
+    return gdrive.build_service(gdrive.service_account_credentials(info), cache_discovery=False)
 
 
 def likely_results_bundle_items(items_for_ticker: List[Dict]) -> List[Dict]:

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-import os
 from pathlib import Path
 from typing import Optional
 
@@ -21,27 +19,15 @@ def _drive_service():
        — files are owned by the service account which has ZERO storage quota on personal
        Gmail drives. Only works with Google Workspace Shared Drives.
     """
-    from googleapiclient.discovery import build
+    from shared import gdrive
 
-    client_id     = os.environ.get("GDRIVE_CLIENT_ID", "").strip()
-    client_secret = os.environ.get("GDRIVE_CLIENT_SECRET", "").strip()
-    refresh_token = os.environ.get("GDRIVE_REFRESH_TOKEN", "").strip()
-
-    if client_id and client_secret and refresh_token:
-        from google.oauth2.credentials import Credentials
+    creds = gdrive.oauth_credentials()
+    if creds is not None:
         from google.auth.transport.requests import Request
 
         try:
-            creds = Credentials(
-                token=None,
-                refresh_token=refresh_token,
-                token_uri="https://oauth2.googleapis.com/token",
-                client_id=client_id,
-                client_secret=client_secret,
-                scopes=["https://www.googleapis.com/auth/drive"],
-            )
             creds.refresh(Request())
-            return build("drive", "v3", credentials=creds)
+            return gdrive.build_service(creds)
         except Exception as e:
             raise RuntimeError(
                 f"OAuth refresh token failed: {e}. "
@@ -65,10 +51,9 @@ def upload_to_drive(local_path: Path, ticker: str, folder_id: str) -> dict:
       {"ok": True,  "url": "...", "file_id": "...", "filename": "..."}
       {"ok": False, "error": "...", "filename": "..."}
     """
-    from googleapiclient.http import MediaFileUpload
+    from shared import gdrive
 
     drive_filename = ticker.replace(".AX", "").replace(".ax", "").upper()
-    safe_name = drive_filename.replace("'", "\\'")
 
     print(f"[drive] upload_to_drive: {local_path.name} → '{drive_filename}' in folder {folder_id}", flush=True)
 
@@ -77,41 +62,11 @@ def upload_to_drive(local_path: Path, ticker: str, folder_id: str) -> dict:
         service = _drive_service()
         print("[drive] service client ready", flush=True)
 
-        query = f"name = '{safe_name}' and '{folder_id}' in parents and trashed = false"
-        print(f"[drive] searching: {query}", flush=True)
-        found = (
-            service.files()
-            .list(q=query, spaces="drive", fields="files(id,name)", pageSize=10)
-            .execute()
-            .get("files", [])
+        file_id = gdrive.upload_or_replace(
+            service, local_path, drive_filename, folder_id, _XLSX_MIME,
+            log=lambda m: print(m, flush=True),
         )
-        print(f"[drive] found {len(found)} existing file(s)", flush=True)
-
-        media = MediaFileUpload(str(local_path), mimetype=_XLSX_MIME, resumable=False)
-
-        if found:
-            file_id = found[0]["id"]
-            print(f"[drive] updating existing file id={file_id}", flush=True)
-            updated = (
-                service.files()
-                .update(fileId=file_id, media_body=media, fields="id")
-                .execute()
-            )
-            file_id = updated.get("id", file_id)
-        else:
-            metadata: dict = {"name": drive_filename, "parents": [folder_id]}
-            print(f"[drive] creating new file '{drive_filename}'", flush=True)
-            created = (
-                service.files()
-                .create(body=metadata, media_body=media, fields="id")
-                .execute()
-            )
-            file_id = created.get("id", "")
-
-        if not file_id:
-            raise RuntimeError("Google Drive returned no file id")
-
-        url = f"https://drive.google.com/file/d/{file_id}/view"
+        url = gdrive.file_view_url(file_id)
         print(f"[drive] upload complete: {url}", flush=True)
         return {"ok": True, "url": url, "file_id": file_id, "filename": drive_filename}
 
@@ -121,41 +76,16 @@ def upload_to_drive(local_path: Path, ticker: str, folder_id: str) -> dict:
 
 
 def upload_or_replace_xlsx(local_path: Path, drive_name: str, folder_id: Optional[str] = None) -> str:
-    """Compatibility shim — prefer upload_to_drive for new callers."""
+    """Upload or replace *local_path* as *drive_name*; returns the view URL.
+
+    Used by wally/spreadsheet.py and by Sally's value-chart upload
+    (sunday-sally/src/main.py). Raises on failure."""
     import mimetypes
-    from googleapiclient.http import MediaFileUpload
 
-    safe_name = drive_name.replace("'", "\\'")
-    service = _drive_service()
-    q_parts = [f"name = '{safe_name}'", "trashed = false"]
-    if folder_id:
-        q_parts.append(f"'{folder_id}' in parents")
-    query = " and ".join(q_parts)
-
-    found = (
-        service.files()
-        .list(q=query, spaces="drive", fields="files(id,name)", pageSize=10)
-        .execute()
-        .get("files", [])
-    )
+    from shared import gdrive
 
     mime, _ = mimetypes.guess_type(str(local_path))
-    if not mime:
-        mime = _XLSX_MIME
-
-    media = MediaFileUpload(str(local_path), mimetype=mime, resumable=False)
-
-    if found:
-        file_id = found[0]["id"]
-        updated = service.files().update(fileId=file_id, media_body=media, fields="id").execute()
-        file_id = updated.get("id", file_id)
-    else:
-        metadata: dict = {"name": drive_name}
-        if folder_id:
-            metadata["parents"] = [folder_id]
-        created = service.files().create(body=metadata, media_body=media, fields="id").execute()
-        file_id = created.get("id", "")
-
-    if not file_id:
-        raise RuntimeError("Google Drive upload returned no file id")
-    return f"https://drive.google.com/file/d/{file_id}/view"
+    file_id = gdrive.upload_or_replace(
+        _drive_service(), local_path, drive_name, folder_id, mime or _XLSX_MIME,
+    )
+    return gdrive.file_view_url(file_id)

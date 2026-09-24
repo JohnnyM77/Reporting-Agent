@@ -20,13 +20,13 @@ from unittest import mock
 # Stub out heavy optional dependencies so agent.py can be imported in a
 # test environment that doesn't have playwright / anthropic installed.
 # ---------------------------------------------------------------------------
-for _stub in ("anthropic", "playwright", "playwright.async_api", "googleapiclient",
+from _stubs import stub_missing  # noqa: E402
+
+_STUBBED = stub_missing("anthropic", "playwright", "playwright.async_api", "googleapiclient",
               "googleapiclient.discovery", "googleapiclient.http",
               "google", "google.oauth2", "google.oauth2.credentials",
               "google.oauth2.service_account", "google.auth",
-              "google.auth.transport", "google.auth.transport.requests"):
-    if _stub not in sys.modules:
-        sys.modules[_stub] = types.ModuleType(_stub)
+              "google.auth.transport", "google.auth.transport.requests")
 
 # playwright_fetch is imported by agent.py; provide a minimal stub
 _pw_stub = types.ModuleType("playwright_fetch")
@@ -272,3 +272,11 @@ def test_results_title_mvp_headlines_unchanged():
         "FY26 Full year Results Investor Presentation"
     ) is True
 
+
+
+def test_gate_phrase_deep_in_a_real_report_is_not_a_gate():
+    """Only a heading at the top counts on its own; a mention deep inside a
+    long report (e.g. a website-terms footnote) must not discard the report."""
+    body = "Revenue $182m EBITDA $45m NPAT $22m. " * 40 + "Shareholders' access to this site is governed by..."
+    assert looks_like_asx_access_gate(body) is False
+    assert is_meaningful_text(body, min_chars=1000) is True

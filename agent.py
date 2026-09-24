@@ -784,7 +784,17 @@ def fetch_html_text(session: requests.Session, url: str) -> str:
 
 
 def looks_like_asx_access_gate(text: str) -> bool:
+    """ASX's terms-of-use interstitial instead of the announcement.
+
+    The "Agree and proceed" button is often stripped when the page is
+    reduced to text (it sits in a <header>/<form>), so an "Access to this
+    site" heading at the top of the text is enough on its own. Only the top
+    of the text is checked for that, so a long report that mentions the
+    phrase somewhere in its body is not mistaken for the gate.
+    """
     t = (text or "").lower()
+    if "access to this site" in t[:500]:
+        return True
     return ("access to this site" in t and "agree and proceed" in t) or (
         "general conditions" in t and "agree and proceed" in t
     )

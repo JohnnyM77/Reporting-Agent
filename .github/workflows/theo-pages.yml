@@ -46,8 +46,8 @@ on:
       # Manual on-demand single-episode digests. They commit a new entry
       # to docs/data/transcripts.json which the dashboard renders, so a
       # Pages deploy has to follow their completion too.
-      - "Ned Transcript Fetcher"           # YouTube — self-hosted, on demand
-      - "Ned Podcast Transcript Fetcher"   # Podcast — ubuntu-latest, on demand
+      - "YouTube — Ned Transcript Fetcher"   # YouTube — self-hosted, on demand
+      - "Podcast — Ned Transcript Fetcher"   # Podcast — ubuntu-latest, on demand
       - "Harry Hindsight"                  # Harry   - after Bob/Wally/Sally, or on demand
     types: [completed]
     branches: [main]

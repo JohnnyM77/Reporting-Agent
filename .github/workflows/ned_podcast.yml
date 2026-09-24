@@ -62,6 +62,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-ned.txt
+          # weasyprint powers the PDF attached to the digest email + linked
+          # from the dashboard's Transcripts card. Same pattern Harry uses
+          # on ubuntu — the pip install pulls in cairo/pango bindings that
+          # need libraries preinstalled on ubuntu-latest images.
+          sudo apt-get install -y -qq libpango-1.0-0 libpangoft2-1.0-0
+          pip install weasyprint
 
       - name: Fetch podcast + transcribe + digest
         env:
@@ -101,11 +107,19 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if [ -f docs/data/transcripts.json ]; then
             git add docs/data/transcripts.json
+            # `git add -A` on docs/transcripts/ picks up both the new PDF and
+            # the deletions from _prune_old_transcript_pdfs() (Path.unlink
+            # writes to the working tree, not git; -A stages the removals).
+            # `docs/transcripts/` may not exist on a fresh install — the
+            # first run creates it — so guard the add.
+            if [ -d docs/transcripts ]; then
+              git add -A docs/transcripts
+            fi
             git diff --staged --quiet || git commit -m "Ned transcripts data [skip ci]"
             git pull --rebase origin HEAD
             python scripts/build_dashboard.py
             git add docs/index.html
-            git diff --staged --quiet || git commit -m "Dashboard update — Ned transcripts [skip ci]"
+            git diff --staged --quiet || git commit -m "Dashboard update -- Ned transcripts [skip ci]"
             git push origin HEAD
           else
             echo "No transcripts.json produced this run; nothing to commit."

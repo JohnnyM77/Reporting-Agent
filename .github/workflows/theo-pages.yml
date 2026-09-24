@@ -46,8 +46,12 @@ on:
       # Manual on-demand single-episode digests. They commit a new entry
       # to docs/data/transcripts.json which the dashboard renders, so a
       # Pages deploy has to follow their completion too.
-      - "YouTube — Ned Transcript Fetcher"   # YouTube — self-hosted, on demand
-      - "Podcast — Ned Transcript Fetcher"   # Podcast — ubuntu-latest, on demand
+      # The YouTube workflow runs on the self-hosted Windows runner where
+      # PowerShell reads workflow files as cp1252; per CLAUDE.md the whole
+      # file must stay ASCII-only there, so its display name uses `--` not
+      # an em dash. The trigger match is a plain string compare.
+      - "YouTube -- Ned Transcript Fetcher"   # YouTube -- self-hosted, on demand
+      - "Podcast — Ned Transcript Fetcher"    # Podcast -- ubuntu-latest, on demand
       - "Harry Hindsight"                  # Harry   - after Bob/Wally/Sally, or on demand
     types: [completed]
     branches: [main]

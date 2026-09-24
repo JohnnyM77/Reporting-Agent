@@ -143,19 +143,9 @@ class NewsItem:
 
 def _http_session():
     """Browser-like requests session for the ASX v2 endpoint."""
-    import requests
+    from shared.asx import CHROME_124_USER_AGENT, browser_session
 
-    s = requests.Session()
-    s.headers.update({
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/124.0.0.0 Safari/537.36"
-        ),
-        "Accept": "*/*",
-        "Referer": "https://www.asx.com.au/",
-    })
-    return s
+    return browser_session(accept="*/*", user_agent=CHROME_124_USER_AGENT)
 
 
 def fetch_significant_news(

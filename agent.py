@@ -37,6 +37,7 @@ except ImportError:
 import asyncio
 from playwright_fetch import fetch_pdf_with_playwright
 from asx_fetch import fetch_asx_announcements_html
+from shared.asx import absolute_url, browser_session, extract_ids_id, pdf_url_for_ids_id
 from shared.email_service import send_email as shared_send_email
 from shared.llm import STREAMING_MIN_TOKENS, call_with_retry, make_client, send as llm_send
 from shared.pdf_llm import (
@@ -307,17 +308,7 @@ def read_tickers() -> Tuple[List[str], List[str]]:
 
 
 def http_session() -> requests.Session:
-    s = requests.Session()
-    s.headers.update({
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/122.0.0.0 Safari/537.36"
-        ),
-        "Accept": "application/json, text/html, */*",
-        "Referer": "https://www.asx.com.au/",
-    })
-    return s
+    return browser_session(accept="application/json, text/html, */*")
 
 
 def is_price_sensitive_title(title: str) -> bool:
@@ -580,12 +571,10 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, hours_back: 
         if not doc_url:
             doc_key = (row.get("documentKey") or "").strip()
             if doc_key:
-                doc_key = doc_key.lstrip("/")
-                doc_url = f"https://www.asx.com.au/{doc_key}"
+                doc_url = absolute_url("/" + doc_key.lstrip("/"))
         if not doc_url:
             continue
-        if doc_url.startswith("/"):
-            doc_url = "https://www.asx.com.au" + doc_url
+        doc_url = absolute_url(doc_url)
         if doc_url in seen_urls:
             continue
         seen_urls.add(doc_url)
@@ -617,12 +606,9 @@ def asx_pdf_url_from_item_url(url: str) -> Optional[str]:
     if not url:
         return None
     low = url.lower()
-    m = re.search(r"[?&]idsid=([^&]+)", url, re.IGNORECASE)
-    if m:
-        return (
-            "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do"
-            f"?display=pdf&idsId={m.group(1)}"
-        )
+    ids_id = extract_ids_id(url)
+    if ids_id:
+        return pdf_url_for_ids_id(ids_id)
     if "displayannouncement.do" in low:
         return url
     if low.endswith(".pdf"):

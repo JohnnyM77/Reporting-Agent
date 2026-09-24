@@ -22,24 +22,15 @@ from typing import Dict, List, Optional
 import requests
 from bs4 import BeautifulSoup
 
-ASX_V2_URL = (
-    "https://www.asx.com.au/asx/v2/statistics/announcements.do"
-    "?asxCode={ticker}&by=asxCode&period=M6&timeframe=D"
-)
+from shared.asx import ANNOUNCEMENTS_URL, CHROME_124_USER_AGENT, absolute_url
+
+ASX_V2_URL = ANNOUNCEMENTS_URL
 
 HTTP_TIMEOUT_SECS = 30
 PLAYWRIGHT_TIMEOUT_MS = 45_000
-PLAYWRIGHT_USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/124.0.0.0 Safari/537.36"
-)
+PLAYWRIGHT_USER_AGENT = CHROME_124_USER_AGENT
 
-
-def _normalise_href(href: str) -> str:
-    if href.startswith("/"):
-        return "https://www.asx.com.au" + href
-    return href
+_normalise_href = absolute_url
 
 
 def _parse_json_rows(
@@ -64,12 +55,11 @@ def _parse_json_rows(
         if not doc_url:
             doc_key = (row.get("documentKey") or "").strip()
             if doc_key:
-                doc_url = "https://www.asx.com.au/" + doc_key.lstrip("/")
+                doc_url = absolute_url("/" + doc_key.lstrip("/"))
         if not doc_url or doc_url in seen:
             continue
         seen.add(doc_url)
-        if doc_url.startswith("/"):
-            doc_url = "https://www.asx.com.au" + doc_url
+        doc_url = absolute_url(doc_url)
 
         released = row.get("releasedDate") or row.get("issueDate") or row.get("date")
         item_date = None

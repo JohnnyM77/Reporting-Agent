@@ -9,6 +9,7 @@
 # - Hard timeouts so Bob doesn't hang forever.
 
 import asyncio
+import re
 from pathlib import Path
 
 from playwright.async_api import async_playwright
@@ -25,9 +26,9 @@ def _looks_like_gate_html(html: str) -> bool:
     if not html:
         return False
     h = html.lower()
-    return ("access to this site" in h and "agree and proceed" in h) or (
-        "general conditions" in h and "agree and proceed" in h
-    )
+    # The button is what has to be clicked, so its presence alone is enough;
+    # an "Access to this site" heading at the top counts too.
+    return "agree and proceed" in h or "access to this site" in h[:5000]
 
 
 def _is_pdf_response(response) -> bool:
@@ -79,7 +80,8 @@ async def fetch_pdf_with_playwright(
                     # Locate the agree button before setting up listeners.
                     agree_loc = None
                     for _attempt in (
-                        lambda: page.get_by_role("button", name="Agree and proceed"),
+                        lambda: page.get_by_role("button", name=re.compile(r"agree and proceed", re.I)),
+                        lambda: page.get_by_role("link", name=re.compile(r"agree and proceed", re.I)),
                         lambda: page.get_by_role("button", name="Agree"),
                         lambda: page.locator("text=Agree and proceed"),
                         lambda: page.locator("input[value='Agree and proceed']"),

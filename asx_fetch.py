@@ -207,6 +207,30 @@ def _parse_response_body(
     return parse_asx_html_announcements(body, ticker, from_date=from_date, to_date=to_date)
 
 
+def _looks_like_gate(body: str) -> bool:
+    """ASX's terms-of-use interstitial rather than the announcements list."""
+    b = (body or "").lower()
+    return "agree and proceed" in b or "access to this site" in b[:5000]
+
+
+async def _click_agree(page) -> bool:
+    """Click the "Agree and proceed" control, whichever markup ASX uses."""
+    for make in (
+        lambda: page.get_by_role("button", name=re.compile(r"agree and proceed", re.I)),
+        lambda: page.get_by_role("link", name=re.compile(r"agree and proceed", re.I)),
+        lambda: page.locator("input[type=submit][value*='gree' i]"),
+        lambda: page.get_by_text(re.compile(r"agree and proceed", re.I)),
+    ):
+        try:
+            loc = make()
+            if await loc.count() > 0:
+                await loc.first.click(timeout=5_000)
+                return True
+        except Exception:
+            continue
+    return False
+
+
 def _playwright_fetch_v2(
     ticker: str,
     from_date: Optional[dt.date] = None,
@@ -232,34 +256,41 @@ def _playwright_fetch_v2(
 
             try:
                 resp = await page.goto(url, wait_until="domcontentloaded", timeout=PLAYWRIGHT_TIMEOUT_MS)
-
-                # Handle ASX consent gate if present
-                try:
-                    content = await page.content()
-                    if "agree and proceed" in content.lower():
-                        try:
-                            await page.get_by_role("button", name="Agree and proceed").click(timeout=5_000)
-                        except Exception:
-                            try:
-                                await page.locator("text=Agree and proceed").first.click(timeout=5_000)
-                            except Exception:
-                                pass
-                        await page.wait_for_load_state("domcontentloaded", timeout=10_000)
-                except Exception:
-                    pass
-
-                # Try to get the raw response body (JSON or HTML)
                 body = None
                 if resp is not None:
                     try:
-                        body_bytes = await resp.body()
-                        body = body_bytes.decode("utf-8", errors="replace")
+                        body = (await resp.body()).decode("utf-8", errors="replace")
                     except Exception:
-                        pass
-
-                # Fall back to page content if body not available
+                        body = None
                 if not body:
                     body = await page.content()
+
+                # ASX consent gate ("Access to this site" / "Agree and
+                # proceed"). Click through, then read the page the click
+                # leads to. The first response is the gate itself; the old
+                # code only reached the list because reading that response's
+                # body happens to fail once the click has navigated away.
+                if _looks_like_gate(body):
+                    print(f"[asx_fetch] consent gate for {ticker} -- clicking Agree and proceed")
+                    if await _click_agree(page):
+                        try:
+                            await page.wait_for_load_state("domcontentloaded", timeout=10_000)
+                        except Exception:
+                            pass
+                        body = await page.content()
+                        if _looks_like_gate(body):
+                            # Consent is now stored in a cookie; ask again.
+                            resp = await page.goto(url, wait_until="domcontentloaded", timeout=PLAYWRIGHT_TIMEOUT_MS)
+                            body = await page.content()
+                            if resp is not None:
+                                try:
+                                    raw = (await resp.body()).decode("utf-8", errors="replace")
+                                    if raw and not _looks_like_gate(raw):
+                                        body = raw
+                                except Exception:
+                                    pass
+                    if _looks_like_gate(body):
+                        print(f"[asx_fetch] still on the consent gate for {ticker} after clicking")
 
                 return _parse_response_body(body, ticker, from_date, to_date)
 
@@ -304,8 +335,13 @@ def fetch_asx_announcements_html(
         if items:
             print(f"[asx_fetch] direct HTTP returned {len(items)} items for {ticker}")
             return items
-        print(f"[asx_fetch] Unexpected response for {ticker} — first 200 chars: {r.text[:200]!r}")
-        print(f"[asx_fetch] direct HTTP returned zero for {ticker} — trying Playwright")
+        if _looks_like_gate(r.text):
+            print(f"[asx_fetch] ASX consent gate on direct HTTP for {ticker} — trying Playwright")
+        elif parse_asx_html_announcements(r.text, ticker):
+            print(f"[asx_fetch] no announcements in the window for {ticker} (list page OK) — checking with Playwright")
+        else:
+            print(f"[asx_fetch] Unexpected response for {ticker} — first 200 chars: {r.text[:200]!r}")
+            print(f"[asx_fetch] direct HTTP returned zero for {ticker} — trying Playwright")
     except Exception as exc:
         print(f"[asx_fetch] direct HTTP failed for {ticker}: {exc} — trying Playwright")
 

@@ -16,23 +16,19 @@ from __future__ import annotations
 import os
 import re
 import json
-import ssl
 import hashlib
-import smtplib
 import tempfile
 import time
 import datetime as dt
 import textwrap
 import html as htmlmod
 from pathlib import Path
-from email.message import EmailMessage
 from typing import Dict, List, Tuple, Optional
 
 import requests
 from bs4 import BeautifulSoup
 import yaml
 from pypdf import PdfReader
-import anthropic
 try:
     from weasyprint import HTML, CSS
 except ImportError:
@@ -41,6 +37,10 @@ except ImportError:
 import asyncio
 from playwright_fetch import fetch_pdf_with_playwright
 from asx_fetch import fetch_asx_announcements_html
+from shared.asx import absolute_url, browser_session, extract_ids_id, pdf_url_for_ids_id
+from shared import gdrive
+from shared.email_service import send_email as shared_send_email
+from shared.llm import STREAMING_MIN_TOKENS, call_with_retry, make_client, send as llm_send
 from shared.pdf_llm import (
     LLM_FAILED,
     LLM_SKIPPED,
@@ -287,37 +287,20 @@ def send_email(
     to_addr: Optional[str] = None,
     attachments: Optional[List[Path]] = None,
 ):
-    email_from = os.environ["EMAIL_FROM"]
-    email_to = to_addr or os.environ["EMAIL_TO"]
-    app_password = os.environ["EMAIL_APP_PASSWORD"]
-    msg = EmailMessage()
-    msg["From"] = email_from
-    msg["To"] = email_to
-    msg["Subject"] = subject
-    msg.set_content(body_text)
-    if body_html:
-        msg.add_alternative(body_html, subtype="html")
-
-    # Attach any PDF files
-    if attachments:
-        for pdf_path in attachments:
-            if pdf_path and pdf_path.exists():
-                try:
-                    with open(pdf_path, "rb") as f:
-                        msg.add_attachment(
-                            f.read(),
-                            maintype="application",
-                            subtype="pdf",
-                            filename=pdf_path.name,
-                        )
-                    log(f"[Email] Attached {pdf_path.name}")
-                except Exception as e:
-                    log(f"[Email] Failed to attach {pdf_path}: {e}")
-
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-        server.login(email_from, app_password)
-        server.send_message(msg)
+    """Send the digest. Raises if email env is missing or SMTP fails, so
+    ``bob.json`` is never written for a digest nobody received."""
+    shared_send_email(
+        subject,
+        body_text,
+        body_html,
+        attachments=[p for p in attachments or [] if p and p.exists()],
+        force_type=("application", "pdf"),
+        log_details=True,
+        to_addr=to_addr,
+        raise_on_error=True,
+        log=log,
+        log_prefix="[Email]",
+    )
 
 
 def read_tickers() -> Tuple[List[str], List[str]]:
@@ -327,17 +310,7 @@ def read_tickers() -> Tuple[List[str], List[str]]:
 
 
 def http_session() -> requests.Session:
-    s = requests.Session()
-    s.headers.update({
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/122.0.0.0 Safari/537.36"
-        ),
-        "Accept": "application/json, text/html, */*",
-        "Referer": "https://www.asx.com.au/",
-    })
-    return s
+    return browser_session(accept="application/json, text/html, */*")
 
 
 def is_price_sensitive_title(title: str) -> bool:
@@ -600,12 +573,10 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, hours_back: 
         if not doc_url:
             doc_key = (row.get("documentKey") or "").strip()
             if doc_key:
-                doc_key = doc_key.lstrip("/")
-                doc_url = f"https://www.asx.com.au/{doc_key}"
+                doc_url = absolute_url("/" + doc_key.lstrip("/"))
         if not doc_url:
             continue
-        if doc_url.startswith("/"):
-            doc_url = "https://www.asx.com.au" + doc_url
+        doc_url = absolute_url(doc_url)
         if doc_url in seen_urls:
             continue
         seen_urls.add(doc_url)
@@ -637,12 +608,9 @@ def asx_pdf_url_from_item_url(url: str) -> Optional[str]:
     if not url:
         return None
     low = url.lower()
-    m = re.search(r"[?&]idsid=([^&]+)", url, re.IGNORECASE)
-    if m:
-        return (
-            "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do"
-            f"?display=pdf&idsId={m.group(1)}"
-        )
+    ids_id = extract_ids_id(url)
+    if ids_id:
+        return pdf_url_for_ids_id(ids_id)
     if "displayannouncement.do" in low:
         return url
     if low.endswith(".pdf"):
@@ -654,8 +622,9 @@ def asx_pdf_url_from_item_url(url: str) -> Optional[str]:
     return None
 
 
-def _anthropic_client() -> anthropic.Anthropic:
-    return anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+def _anthropic_client():
+    """The Anthropic client for this run. Tests patch this to inject a fake."""
+    return make_client(os.environ["ANTHROPIC_API_KEY"])
 
 
 def _llm_cap_reached(counters: Dict) -> bool:
@@ -673,14 +642,11 @@ def _llm_cap_reached(counters: Dict) -> bool:
     return False
 
 
-# Anthropic's Python SDK refuses non-streaming create() calls whose expected
-# duration exceeds ~10 minutes (a hard client-side check to avoid the HTTP
-# read-timeout that kills long requests). At Sonnet's output rate a large
-# max_tokens hits that threshold quickly — the results path's 50k budget
-# came back as ``Streaming is required for operations that may take longer
-# than 10 minutes.`` So above this threshold ``_call_anthropic`` routes
-# through ``client.messages.stream`` instead of ``.create``.
-_STREAMING_MIN_TOKENS = 8192
+# Calls at or above this many output tokens stream rather than .create():
+# the SDK refuses non-streaming requests that may take >10 minutes, which the
+# results path's 50k budget hits. The threshold and the switch itself live in
+# shared/llm.py; the alias keeps the name existing callers and tests use.
+_STREAMING_MIN_TOKENS = STREAMING_MIN_TOKENS
 
 
 def _call_anthropic(
@@ -708,68 +674,33 @@ def _call_anthropic(
     model = os.environ.get("CLAUDE_MODEL", MODEL_DEFAULT)
     client = _anthropic_client()
 
-    last_err: Optional[Exception] = None
-    for attempt in range(max_retries + 1):
-        try:
-            if max_tokens >= _STREAMING_MIN_TOKENS:
-                text, stop_reason = _stream_message(
-                    client, model, max_tokens, system_prompt, content,
+    def _once() -> str:
+        resp = llm_send(
+            client,
+            model=model,
+            max_tokens=max_tokens,
+            system=system_prompt,
+            messages=[{"role": "user", "content": content}],
+            streaming_min_tokens=_STREAMING_MIN_TOKENS,
+        )
+        if resp.stop_reason:
+            counters["last_stop_reason"] = resp.stop_reason
+            if resp.truncated:
+                log(
+                    f"WARNING: Claude response was truncated at max_tokens={max_tokens} "
+                    f"(model={model}); downstream JSON parsing will likely fail"
                 )
-            else:
-                resp = client.messages.create(
-                    model=model,
-                    max_tokens=max_tokens,
-                    system=system_prompt,
-                    messages=[{"role": "user", "content": content}],
-                )
-                text = (resp.content[0].text or "")
-                stop_reason = getattr(resp, "stop_reason", None)
-            if stop_reason:
-                counters["last_stop_reason"] = str(stop_reason)
-                if stop_reason == "max_tokens":
-                    log(
-                        f"WARNING: Claude response was truncated at max_tokens={max_tokens} "
-                        f"(model={model}); downstream JSON parsing will likely fail"
-                    )
-            return text.strip()
-        except Exception as e:
-            last_err = e
-            if attempt < max_retries:
-                log(f"WARNING: Claude API call failed (attempt {attempt + 1}/{max_retries + 1}, model={model}): {e} — retrying once")
-                time.sleep(2)
-                continue
-            log(f"ERROR: Claude API call failed after {attempt + 1} attempt(s) (model={model}): {e}")
+        return resp.text.strip()
 
-    counters["last_llm_error"] = str(last_err) if last_err else "unknown error"
-    return LLM_FAILED
+    def _on_retry(attempt: int, e: BaseException) -> None:
+        log(f"WARNING: Claude API call failed (attempt {attempt}/{max_retries + 1}, model={model}): {e} — retrying once")
 
-
-def _stream_message(
-    client: "anthropic.Anthropic",
-    model: str,
-    max_tokens: int,
-    system_prompt: str,
-    content: object,
-) -> Tuple[str, Optional[str]]:
-    """Drive the Anthropic streaming API and return (text, stop_reason).
-
-    Streaming keeps the HTTP connection alive with periodic events instead
-    of forcing one long read, so the SDK's 10-minute non-streaming ceiling
-    doesn't apply. The generated text is identical to what .create() would
-    have returned — we just accumulate it as it comes in.
-    """
-    parts: List[str] = []
-    with client.messages.stream(
-        model=model,
-        max_tokens=max_tokens,
-        system=system_prompt,
-        messages=[{"role": "user", "content": content}],
-    ) as stream:
-        for chunk in stream.text_stream:
-            parts.append(chunk)
-        final = stream.get_final_message()
-    stop_reason = getattr(final, "stop_reason", None)
-    return "".join(parts), stop_reason
+    try:
+        return call_with_retry(_once, max_retries=max_retries, on_retry=_on_retry)
+    except Exception as e:
+        log(f"ERROR: Claude API call failed after {max_retries + 1} attempt(s) (model={model}): {e}")
+        counters["last_llm_error"] = str(e)
+        return LLM_FAILED
 
 
 def llm_chat(
@@ -853,7 +784,17 @@ def fetch_html_text(session: requests.Session, url: str) -> str:
 
 
 def looks_like_asx_access_gate(text: str) -> bool:
+    """ASX's terms-of-use interstitial instead of the announcement.
+
+    The "Agree and proceed" button is often stripped when the page is
+    reduced to text (it sits in a <header>/<form>), so an "Access to this
+    site" heading at the top of the text is enough on its own. Only the top
+    of the text is checked for that, so a long report that mentions the
+    phrase somewhere in its body is not mistaken for the gate.
+    """
     t = (text or "").lower()
+    if "access to this site" in t[:500]:
+        return True
     return ("access to this site" in t and "agree and proceed" in t) or (
         "general conditions" in t and "agree and proceed" in t
     )
@@ -2580,25 +2521,12 @@ def drive_service():
     Falls back to the service account only if OAuth secrets aren't set,
     with a loud warning so nobody mistakes it for a working configuration.
     """
-    from googleapiclient.discovery import build
+    creds = gdrive.oauth_credentials()
+    if creds is not None:
+        return gdrive.build_service(creds, cache_discovery=False)
 
-    client_id = os.environ.get("GDRIVE_CLIENT_ID", "").strip()
-    client_secret = os.environ.get("GDRIVE_CLIENT_SECRET", "").strip()
-    refresh_token = os.environ.get("GDRIVE_REFRESH_TOKEN", "").strip()
-    if client_id and client_secret and refresh_token:
-        from google.oauth2.credentials import Credentials as UserCredentials
-        creds = UserCredentials(
-            token=None,
-            refresh_token=refresh_token,
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id=client_id,
-            client_secret=client_secret,
-            scopes=["https://www.googleapis.com/auth/drive"],
-        )
-        return build("drive", "v3", credentials=creds, cache_discovery=False)
-
-    sa_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
-    if not sa_json:
+    info = gdrive.service_account_info()
+    if info is None:
         raise RuntimeError(
             "No Drive credentials set: need either OAuth2 "
             "(GDRIVE_CLIENT_ID/SECRET/REFRESH_TOKEN) or a service account "
@@ -2610,12 +2538,7 @@ def drive_service():
         "storage quota'. Set GDRIVE_CLIENT_ID/SECRET/REFRESH_TOKEN to use "
         "OAuth against the folder's owner instead."
     )
-    from google.oauth2.service_account import Credentials as SACredentials
-    info = json.loads(sa_json)
-    creds = SACredentials.from_service_account_info(
-        info, scopes=["https://www.googleapis.com/auth/drive"],
-    )
-    return build("drive", "v3", credentials=creds, cache_discovery=False)
+    return gdrive.build_service(gdrive.service_account_credentials(info), cache_discovery=False)
 
 
 def likely_results_bundle_items(items_for_ticker: List[Dict]) -> List[Dict]:

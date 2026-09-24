@@ -7,7 +7,7 @@ from __future__ import annotations
 import datetime as dt
 
 from master_engine.linker import build_links, attach_links, _is_asx, _asx_code, _yahoo_ticker
-from master_engine.schemas import InvestorEvent, AGENT_BOB, EVENT_TYPE_EARNINGS_RELEASE
+from shared.events import InvestorEvent, AGENT_BOB, EVENT_TYPE_EARNINGS_RELEASE
 
 
 def _event(ticker, asx_url=None, drive_link=None, source_links=None):

@@ -19,6 +19,7 @@ on:
       - "data/**"
       - "docs/**"
       - "scripts/build_dashboard.py"
+      - "dashboard/**"
       - ".github/workflows/theo-pages.yml"
 
   # An agent finished its run. Each of them writes its own docs/data/*.json,

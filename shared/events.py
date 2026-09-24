@@ -1,13 +1,23 @@
-# master_engine/schemas.py
+# shared/events.py
 #
-# Common event schema used by Ned, Wally, and Bob to emit normalized
-# investor events into the Master Engine.
+# InvestorEvent: the canonical internal event shape. An ASX announcement
+# (Bob), a news item (Ned), a screen hit (Wally) or a Harry report becomes an
+# InvestorEvent via that agent's own emitter (bob_emit.py, ned/emit.py,
+# wally/emit.py, hindsight/emit.py); the classification that picks the
+# event_type and priority stays in the agent.
+#
+# Moved here from master_engine/schemas.py: Harry writes these events on
+# every production run, while Master Engine itself (aggregate -> prioritise
+# -> render -> notify) is scaffolding no workflow runs yet. See
+# master_engine/README.md.
 
 from __future__ import annotations
 
 import datetime as dt
 from dataclasses import dataclass, field, asdict
 from typing import Optional
+
+from shared.securities import with_default_suffix
 
 
 # ---------------------------------------------------------------------------
@@ -161,6 +171,4 @@ def normalise_ticker(ticker: str, exchange: str = "AX") -> str:
     exchange : str
         Suffix to append when no suffix is present.  Defaults to ``"AX"``.
     """
-    if "." in ticker:
-        return ticker
-    return f"{ticker}.{exchange}"
+    return with_default_suffix(ticker, exchange)

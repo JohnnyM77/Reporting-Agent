@@ -10,7 +10,7 @@ import tempfile
 from pathlib import Path
 
 from master_engine.renderer import build_html, build_markdown, build_json_archive, write_digest
-from master_engine.schemas import InvestorEvent, AGENT_BOB, EVENT_TYPE_EARNINGS_RELEASE, UNIVERSE_PORTFOLIO
+from shared.events import InvestorEvent, AGENT_BOB, EVENT_TYPE_EARNINGS_RELEASE, UNIVERSE_PORTFOLIO
 
 
 def _event(ticker="NHC.AX", priority="CRITICAL", score=90):

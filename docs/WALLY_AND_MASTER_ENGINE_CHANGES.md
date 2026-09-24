@@ -54,6 +54,10 @@ The combined email includes:
 
 ### 3. Master Engine Alert Workflow
 
+> **Historical.** `master_engine_alert.yml` and `run_master_investor.py` are
+> no longer in the repo and nothing runs Master Engine. See
+> `master_engine/README.md` for what is still live.
+
 **Problem:** The Master Engine Alert and Super Investor Agent were not visible in the GitHub Actions list and couldn't be run.
 
 **Solution:** Created `.github/workflows/master_engine_alert.yml`:

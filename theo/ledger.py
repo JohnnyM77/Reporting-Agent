@@ -39,6 +39,8 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 
+from shared.securities import ticker_from_symbol
+
 DEFAULT_LEDGER_PATH = Path("data/portfolio.xlsx")
 
 # Two shapes of workbook are understood, and both live in the repo rather than
@@ -630,10 +632,7 @@ def _build_decisions(
 
 def _ticker_from_symbol(symbol: Any) -> str:
     """ASX:ABB -> ABB, LSE:RR. -> RR. Exchange prefixes are not part of the name."""
-    text = str(symbol or "").strip().upper()
-    if ":" in text:
-        text = text.split(":", 1)[1]
-    return text.rstrip(".").strip()
+    return ticker_from_symbol(symbol)
 
 
 def _decision_flows(workbook: Any) -> tuple[dict[str, list[tuple[dt.date, float]]], dt.date | None]:

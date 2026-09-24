@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 
-from master_engine.schemas import (
+from shared.events import (
     InvestorEvent,
     AGENT_WALLY,
     EVENT_TYPE_NEAR_52W_LOW,

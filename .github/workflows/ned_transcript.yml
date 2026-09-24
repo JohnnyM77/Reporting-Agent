@@ -1,4 +1,4 @@
-name: Ned Transcript Fetcher
+name: YouTube — Ned Transcript Fetcher
 
 # Manual, on-demand single-episode YouTube transcript fetcher.
 # Paste a YouTube link into the "Run workflow" box and Ned will fetch the

@@ -1,4 +1,4 @@
-name: Ned Podcast Transcript Fetcher
+name: Podcast — Ned Transcript Fetcher
 
 # Manual, on-demand single-episode podcast transcript fetcher.
 # Paste a podcast URL into the "Run workflow" box and Ned will:

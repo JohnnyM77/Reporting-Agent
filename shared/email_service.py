@@ -269,6 +269,7 @@ def send_email(
     raise_on_error: bool = False,
     max_total_bytes: Optional[int] = None,
     force_type: Optional[Tuple[str, str]] = None,
+    log_details: bool = False,
     log: Log = _print,
     log_prefix: str = "[email]",
 ) -> bool:
@@ -277,6 +278,10 @@ def send_email(
     Returns True when sent. With ``raise_on_error=False`` a missing setting
     or an SMTP failure is logged and returns False; with ``True`` it raises
     (``EmailConfigError`` for missing settings, the SMTP error otherwise).
+
+    Attachment names and the recipient are logged only with
+    ``log_details=True``. Actions logs on this public repo are public, and
+    Harry's filenames name tickers.
     """
     settings = settings or SmtpSettings.from_env(to_addr=to_addr)
     missing = settings.missing()
@@ -289,8 +294,9 @@ def send_email(
 
     atts = load_attachments(attachments, max_total_bytes=max_total_bytes, force_type=force_type,
                             log=log, log_prefix=log_prefix)
-    for att in atts:
-        log(f"{log_prefix} attached {att.filename} ({len(att.data)}B)")
+    if log_details:
+        for att in atts:
+            log(f"{log_prefix} attached {att.filename} ({len(att.data)}B)")
     message = build_message(
         email_from=settings.email_from,
         email_to=settings.email_to,
@@ -309,5 +315,6 @@ def send_email(
             raise
         log(f"{log_prefix} send failed: {type(exc).__name__}: {exc}")
         return False
-    log(f"{log_prefix} sent -> {settings.email_to}")
+    log(f"{log_prefix} sent -> {settings.email_to}" if log_details
+        else f"{log_prefix} sent ({len(atts)} attachment(s))")
     return True

@@ -295,6 +295,7 @@ def send_email(
         body_html,
         attachments=[p for p in attachments or [] if p and p.exists()],
         force_type=("application", "pdf"),
+        log_details=True,
         to_addr=to_addr,
         raise_on_error=True,
         log=log,

@@ -575,6 +575,7 @@ def _send_email(
         body_html,
         attachments=attachments,
         force_type=("application", "pdf"),
+        log_details=True,
         raise_on_error=False,
         max_total_bytes=MAX_ATTACHMENT_TOTAL_BYTES,
         log=_log,

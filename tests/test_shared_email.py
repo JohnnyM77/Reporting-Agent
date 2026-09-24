@@ -131,3 +131,17 @@ def test_smtp_failure_returns_false_or_raises():
         assert es.send_email("s", "b", settings=_settings(), log=lambda m: None) is False
         with pytest.raises(OSError):
             es.send_email("s", "b", settings=_settings(), raise_on_error=True, log=lambda m: None)
+
+
+def test_attachment_names_and_recipient_stay_out_of_logs_by_default(tmp_path):
+    """Actions logs are public; Harry's PDF filenames name tickers."""
+    pdf = tmp_path / "NHC_sell_review.pdf"
+    pdf.write_bytes(b"%PDF")
+    logs: list[str] = []
+    with mock.patch.object(es.smtplib, "SMTP_SSL"):
+        es.send_email("s", "b", attachments=[pdf], settings=_settings(), log=logs.append)
+    assert not any("NHC" in l or "me@example.com" in l for l in logs), logs
+    logs.clear()
+    with mock.patch.object(es.smtplib, "SMTP_SSL"):
+        es.send_email("s", "b", attachments=[pdf], settings=_settings(), log=logs.append, log_details=True)
+    assert any("NHC_sell_review.pdf" in l for l in logs)

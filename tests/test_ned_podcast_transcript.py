@@ -815,3 +815,54 @@ def test_podcast_run_appends_transcripts_history(monkeypatch, tmp_path):
     assert e["source_url"] == "https://podcasts.apple.com/x/id1?i=42"
     assert e["video_id"] == "motley-fool-money-mailbag"
     assert e["used_whisper"] is True
+
+
+# ---------------------------------------------------------------------------
+# PDF attachment for the podcast path
+# ---------------------------------------------------------------------------
+def test_podcast_run_saves_pdf_and_sets_pdf_path(monkeypatch, tmp_path):
+    """Same expectations as the YouTube version — a podcast run must
+    generate a PDF, land it under docs/transcripts/, and record the path
+    on the dashboard entry."""
+    import json as _json
+    import ned.main as ned_main
+
+    hist_path = tmp_path / "docs" / "data" / "transcripts.json"
+    pdf_dir = tmp_path / "docs" / "transcripts"
+    monkeypatch.setattr(ned_main, "_TRANSCRIPTS_HISTORY_PATH", hist_path)
+    monkeypatch.setattr(ned_main, "_TRANSCRIPT_PDFS_DIR", pdf_dir)
+    monkeypatch.setattr(ned_main, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(ned_main, "TRANSCRIPTS_DIR", tmp_path / "transcripts")
+    for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD", "ANTHROPIC_API_KEY"):
+        monkeypatch.delenv(k, raising=False)
+
+    fake = TranscriptResult(
+        video_id="motley-fool-money-mailbag",
+        language="English", language_code="en",
+        is_generated=True,
+        plain_text="podcast body body body",
+        timestamped_text="[00:00] podcast body body body",
+        segments=[{"text": "podcast body body body", "start": 0.0}],
+    )
+    monkeypatch.setattr(ned_main, "fetch_podcast_transcript", lambda url: fake)
+
+    def fake_build(**kw):
+        out = kw["output_path"]
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(b"%PDF-1.4\n" + b"." * 4096)
+        return out
+
+    monkeypatch.setattr("ned.transcript_pdf.build_transcript_pdf", fake_build)
+
+    rc = ned_main.run_podcast_digest("https://podcasts.apple.com/x/id1?i=42")
+    assert rc == 0
+
+    pdfs = list(pdf_dir.glob("*.pdf"))
+    assert len(pdfs) == 1
+    assert pdfs[0].name.startswith("motley-fool-money-mailbag_")
+
+    entry = _json.loads(hist_path.read_text())[0]
+    assert entry["kind"] == "podcast"
+    assert entry["pdf_path"].startswith("transcripts/motley-fool-money-mailbag_")
+    assert entry["pdf_path"].endswith(".pdf")
+    assert entry["used_whisper"] is True

@@ -83,6 +83,22 @@ def _transcript_card(item: dict) -> str:
     )
     stats_html = f"{chars:,} chars &middot; {source_note}" if chars else source_note
 
+    # PDF link when we generated one. The path is stored relative to docs/
+    # so a static site at /Reporting-Agent/ resolves it via a plain relative
+    # href — the card sits inside index.html at the site root. Prune
+    # retention means the link 404s after ~30 days, which is the deliberate
+    # "for a short time" behaviour.
+    pdf_path = str(item.get("pdf_path") or "").strip()
+    pdf_link_html = ""
+    if pdf_path:
+        pdf_href = _esc(pdf_path)
+        pdf_link_html = (
+            "<a href='" + pdf_href + "' target='_blank' rel='noopener' "
+            "style='display:inline-block;margin-top:8px;font-size:11px;font-weight:600;"
+            "color:#0f172a;background:#10b981;padding:3px 9px;border-radius:5px;"
+            "text-decoration:none;letter-spacing:0.3px;'>📄 Download PDF</a>"
+        )
+
     return (
         "<div style='background:#0f172a;border:1px solid #334155;border-left:3px solid "
         f"{kind_colour};border-radius:8px;padding:12px 14px;display:flex;flex-direction:column'>"
@@ -94,6 +110,7 @@ def _transcript_card(item: dict) -> str:
         f"<div style='font-size:13px;font-weight:600;line-height:1.4'>{title_html}</div>"
         f"{summary_html}"
         f"<div style='color:#64748b;font-size:11px;margin-top:8px'>{stats_html}</div>"
+        f"{pdf_link_html}"
         "</div>"
     )
 

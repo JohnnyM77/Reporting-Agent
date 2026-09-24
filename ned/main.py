@@ -275,6 +275,80 @@ _TRANSCRIPTS_HISTORY_PATH = REPO_ROOT / "docs" / "data" / "transcripts.json"
 # enough that the JSON stays under 200 KB even with 5-sentence digests.
 _TRANSCRIPTS_HISTORY_MAX = 40
 
+# Rendered PDFs for each transcript run land here and get committed to the
+# public site. Anyone with the link can download them, so we prune anything
+# older than the retention window on each run — "for a short time" per the
+# original ask. The file gone from HEAD stops working from Pages; git
+# history is unavoidable, but the source podcast/YouTube is public anyway.
+_TRANSCRIPT_PDFS_DIR = REPO_ROOT / "docs" / "transcripts"
+_TRANSCRIPT_PDFS_RETENTION_DAYS = int(os.environ.get("NED_TRANSCRIPT_PDF_RETENTION_DAYS", "30"))
+
+
+def _save_transcript_pdf(
+    *,
+    kind: str,
+    result: TranscriptResult,
+    source_url: str,
+    title: str,
+    digest_markdown: str,
+) -> Path | None:
+    """Render a PDF of {digest + full transcript}, save to docs/transcripts/,
+    prune older ones, and return the path — or None on any failure.
+
+    Failures are printed and swallowed: the email + dashboard row must still
+    land even if PDF generation goes sideways. The dashboard card falls back
+    to "no PDF available" when the field is missing.
+    """
+    from ned.transcript_pdf import build_transcript_pdf, TranscriptPdfError
+
+    try:
+        _TRANSCRIPT_PDFS_DIR.mkdir(parents=True, exist_ok=True)
+        stamp = dt.datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+        pdf_path = _TRANSCRIPT_PDFS_DIR / f"{result.video_id}_{stamp}.pdf"
+        build_transcript_pdf(
+            kind=kind,
+            title=title,
+            source_url=source_url,
+            digest_markdown=digest_markdown or "",
+            transcript_text=result.plain_text,
+            output_path=pdf_path,
+        )
+        size_kb = pdf_path.stat().st_size / 1024
+        print(f"[ned/transcript] Wrote PDF -> {pdf_path.relative_to(REPO_ROOT)} ({size_kb:.0f} KB)")
+        _prune_old_transcript_pdfs()
+        return pdf_path
+    except TranscriptPdfError as exc:
+        print(f"[ned/transcript] PDF generation failed (no backend usable): {exc}")
+    except Exception as exc:
+        print(f"[ned/transcript] PDF generation failed: {exc}")
+    return None
+
+
+def _prune_old_transcript_pdfs() -> int:
+    """Delete PDFs older than the retention window. Returns count removed.
+
+    Uses mtime so it doesn't depend on the filename format holding the
+    stamp — a filename convention we might change later shouldn't leave
+    old files pinned. Never raises; a broken prune must not fail the run.
+    """
+    if not _TRANSCRIPT_PDFS_DIR.exists():
+        return 0
+    cutoff = dt.datetime.utcnow().timestamp() - _TRANSCRIPT_PDFS_RETENTION_DAYS * 86400
+    removed = 0
+    for p in _TRANSCRIPT_PDFS_DIR.glob("*.pdf"):
+        try:
+            if p.stat().st_mtime < cutoff:
+                p.unlink()
+                removed += 1
+        except Exception as exc:
+            print(f"[ned/transcript] Could not prune {p.name}: {exc}")
+    if removed:
+        print(
+            f"[ned/transcript] Pruned {removed} PDF(s) older than "
+            f"{_TRANSCRIPT_PDFS_RETENTION_DAYS}d from {_TRANSCRIPT_PDFS_DIR.relative_to(REPO_ROOT)}"
+        )
+    return removed
+
 
 def _append_transcript_history(entry: dict) -> None:
     """Append one transcript entry to docs/data/transcripts.json.
@@ -362,11 +436,20 @@ def run_transcript_digest(url: str) -> int:
     else:
         print("[ned/transcript] LLM digest unavailable (no key / cap / error).")
 
+    pdf_path = _save_transcript_pdf(
+        kind="youtube",
+        result=result,
+        source_url=url,
+        title=video_id,
+        digest_markdown=digest or "",
+    )
+
     plain, html = _transcript_email(url, result, digest)
     _maybe_email(
         subject=f"Ned — Transcript digest — {video_id}",
         plain=plain,
         html=html,
+        attachments=[pdf_path] if pdf_path else None,
     )
     _append_transcript_history({
         "timestamp": dt.datetime.utcnow().isoformat() + "Z",
@@ -377,6 +460,10 @@ def run_transcript_digest(url: str) -> int:
         "caption_kind": result.caption_kind,
         "digest_markdown": digest or "",
         "chars": len(result.plain_text),
+        # Path relative to docs/ so the dashboard can build the Pages URL as
+        # <site>/<pdf_path>. Absent when PDF generation failed — the card
+        # then omits the download link and the row still renders.
+        "pdf_path": (str(pdf_path.relative_to(REPO_ROOT / "docs")) if pdf_path else ""),
     })
     return 0
 
@@ -419,11 +506,20 @@ def run_podcast_digest(url: str) -> int:
     else:
         print("[ned/podcast] LLM digest unavailable (no key / cap / error).")
 
+    pdf_path = _save_transcript_pdf(
+        kind="podcast",
+        result=result,
+        source_url=url,
+        title=result.video_id,
+        digest_markdown=digest or "",
+    )
+
     plain, html = _podcast_email(url, result, digest)
     _maybe_email(
         subject=f"Ned — Podcast digest — {result.video_id}",
         plain=plain,
         html=html,
+        attachments=[pdf_path] if pdf_path else None,
     )
     _append_transcript_history({
         "timestamp": dt.datetime.utcnow().isoformat() + "Z",
@@ -439,6 +535,9 @@ def run_podcast_digest(url: str) -> int:
         "used_whisper": bool(result.is_generated),
         "digest_markdown": digest or "",
         "chars": len(result.plain_text),
+        # Path relative to docs/ so the dashboard can link straight to the
+        # published Pages URL. Empty when PDF generation failed.
+        "pdf_path": (str(pdf_path.relative_to(REPO_ROOT / "docs")) if pdf_path else ""),
     })
     return 0
 
@@ -489,12 +588,33 @@ def _podcast_email(source_url: str, result: TranscriptResult, digest: str | None
     return plain, body_html
 
 
-def _maybe_email(subject: str, plain: str, html: str) -> None:
-    """Send via Ned's SMTP path when email env is configured; else print."""
+def _maybe_email(
+    subject: str,
+    plain: str,
+    html: str,
+    attachments: list[Path] | None = None,
+) -> None:
+    """Send via Ned's SMTP path when email env is configured; else print.
+
+    `attachments` is a list of file paths (usually one PDF). A path that
+    doesn't exist is skipped with a log line rather than raising, so a
+    failed PDF render never blocks the email.
+    """
+    valid_attachments: list[Path] = []
+    for p in (attachments or []):
+        if p and p.exists():
+            valid_attachments.append(p)
+        elif p:
+            print(f"[ned/transcript] Attachment missing, skipping: {p}")
+
     if all(os.environ.get(k) for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD")):
         try:
-            send_email(subject, plain, html)
-            print("[ned/transcript] Email sent.")
+            send_email(subject, plain, html, attachments=valid_attachments)
+            print(
+                f"[ned/transcript] Email sent"
+                + (f" with {len(valid_attachments)} attachment(s)" if valid_attachments else "")
+                + "."
+            )
             return
         except Exception as exc:
             print(f"[ned/transcript] Email send failed: {exc}")
@@ -505,9 +625,19 @@ def _maybe_email(subject: str, plain: str, html: str) -> None:
 # ----------------------------
 # Email
 # ----------------------------
-def send_email(subject: str, plain: str, html: str) -> None:
+def send_email(
+    subject: str,
+    plain: str,
+    html: str,
+    attachments: list[Path] | None = None,
+) -> None:
     """Send Ned's digest. Raises if the email env is missing or SMTP fails."""
-    shared_send_email(subject, plain, html, raise_on_error=True, log_prefix="[ned/email]")
+    shared_send_email(
+        subject, plain, html,
+        attachments=attachments or None,
+        raise_on_error=True,
+        log_prefix="[ned/email]",
+    )
 
 
 def today_sgt() -> str:

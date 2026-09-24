@@ -146,8 +146,16 @@ Both workflows follow the same path:
    track directly).
 2. Summarise the transcript with the same Anthropic prompt Ned uses
    for the daily digest.
-3. Email you the digest.
-4. Append the entry to `docs/data/transcripts.json` and rebuild
-   `docs/index.html`, then push. That triggers the Pages workflow,
+3. Render a self-contained PDF (cover + digest + full transcript),
+   attach it to the email, and drop a copy under `docs/transcripts/`
+   so the dashboard can link to it.
+4. Email you the digest, with the PDF attached.
+5. Append the entry to `docs/data/transcripts.json`, prune any
+   transcript PDF older than the retention window (default 30 days;
+   override with `NED_TRANSCRIPT_PDF_RETENTION_DAYS`), rebuild
+   `docs/index.html`, and push. That triggers the Pages workflow,
    which redeploys the site with the new item in the **Transcripts**
-   section.
+   section — including a green **"📄 Download PDF"** button linking
+   to the file. The button 404s once the retention window has passed
+   and the file's been pruned, which is the deliberate
+   "for a short time" behaviour.

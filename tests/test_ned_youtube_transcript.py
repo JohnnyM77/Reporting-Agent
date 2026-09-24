@@ -357,3 +357,119 @@ def test_transcripts_history_survives_a_corrupt_file(monkeypatch, tmp_path):
     ned_main._append_transcript_history({"kind": "youtube", "source_url": "https://x/1"})
     data = _json.loads(hist_path.read_text())
     assert isinstance(data, list) and len(data) == 1
+
+
+# ---------------------------------------------------------------------------
+# PDF attachment + docs/transcripts persistence + pruning
+# ---------------------------------------------------------------------------
+def test_youtube_run_saves_pdf_and_sets_pdf_path(monkeypatch, tmp_path):
+    """The runner must generate a PDF, land it under docs/transcripts/ with
+    the {video_id}_{stamp}.pdf naming, and store the docs-relative path on
+    the transcripts.json entry so the dashboard can link to it."""
+    import json as _json
+    import ned.main as ned_main
+
+    hist_path = tmp_path / "docs" / "data" / "transcripts.json"
+    pdf_dir = tmp_path / "docs" / "transcripts"
+    monkeypatch.setattr(ned_main, "_TRANSCRIPTS_HISTORY_PATH", hist_path)
+    monkeypatch.setattr(ned_main, "_TRANSCRIPT_PDFS_DIR", pdf_dir)
+    monkeypatch.setattr(ned_main, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(ned_main, "TRANSCRIPTS_DIR", tmp_path / "transcripts")
+    for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD", "ANTHROPIC_API_KEY"):
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setattr(ned_main, "fetch_transcript", lambda vid, **kw: _yt_run_result())
+
+    # Stub the PDF backend so the test doesn't need weasyprint / chrome.
+    captured: dict = {}
+
+    def fake_build(**kw):
+        out = kw["output_path"]
+        captured.update(kw)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(b"%PDF-1.4\n" + b"." * 4096)
+        return out
+
+    monkeypatch.setattr(
+        "ned.transcript_pdf.build_transcript_pdf", fake_build,
+    )
+
+    rc = ned_main.run_transcript_digest("https://www.youtube.com/watch?v=oay6t8vh7b4")
+    assert rc == 0
+
+    # Exactly one PDF landed under docs/transcripts/, named for the video id.
+    pdfs = list(pdf_dir.glob("*.pdf"))
+    assert len(pdfs) == 1
+    assert pdfs[0].name.startswith("oay6t8vh7b4_") and pdfs[0].name.endswith(".pdf")
+
+    # And the transcripts.json entry carries the docs-relative pdf_path.
+    entry = _json.loads(hist_path.read_text())[0]
+    assert entry["kind"] == "youtube"
+    assert entry["pdf_path"].startswith("transcripts/oay6t8vh7b4_")
+    assert entry["pdf_path"].endswith(".pdf")
+
+    # The renderer got what it needs: kind, source URL, and the transcript.
+    assert captured["kind"] == "youtube"
+    assert captured["source_url"] == "https://www.youtube.com/watch?v=oay6t8vh7b4"
+    assert "clean transcript body" in captured["transcript_text"]
+
+
+def test_youtube_run_survives_pdf_failure_and_leaves_pdf_path_empty(monkeypatch, tmp_path):
+    """PDF generation is best-effort. A failed render must not fail the
+    run — the email + dashboard row still land, with an empty pdf_path so
+    the dashboard omits the download button."""
+    import json as _json
+    import ned.main as ned_main
+
+    hist_path = tmp_path / "docs" / "data" / "transcripts.json"
+    monkeypatch.setattr(ned_main, "_TRANSCRIPTS_HISTORY_PATH", hist_path)
+    monkeypatch.setattr(ned_main, "_TRANSCRIPT_PDFS_DIR", tmp_path / "docs" / "transcripts")
+    monkeypatch.setattr(ned_main, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(ned_main, "TRANSCRIPTS_DIR", tmp_path / "transcripts")
+    for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD", "ANTHROPIC_API_KEY"):
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setattr(ned_main, "fetch_transcript", lambda vid, **kw: _yt_run_result())
+
+    def blow_up(**kw):
+        from ned.transcript_pdf import TranscriptPdfError
+        raise TranscriptPdfError("no backend available in this environment")
+
+    monkeypatch.setattr("ned.transcript_pdf.build_transcript_pdf", blow_up)
+
+    rc = ned_main.run_transcript_digest("https://www.youtube.com/watch?v=oay6t8vh7b4")
+    assert rc == 0
+
+    entry = _json.loads(hist_path.read_text())[0]
+    assert entry["kind"] == "youtube"
+    assert entry.get("pdf_path", "") == ""
+
+
+def test_prune_old_transcript_pdfs_removes_stale_files(monkeypatch, tmp_path):
+    """Files older than the retention window must be deleted; younger ones
+    stay put. Tested by tweaking mtime rather than sleeping."""
+    import os
+    import ned.main as ned_main
+
+    pdf_dir = tmp_path / "docs" / "transcripts"
+    pdf_dir.mkdir(parents=True)
+    fresh = pdf_dir / "fresh.pdf"
+    stale = pdf_dir / "stale.pdf"
+    fresh.write_bytes(b"x")
+    stale.write_bytes(b"y")
+    # Backdate stale by (retention_days + 1) days.
+    stale_mtime = fresh.stat().st_mtime - (ned_main._TRANSCRIPT_PDFS_RETENTION_DAYS + 1) * 86400
+    os.utime(stale, (stale_mtime, stale_mtime))
+
+    monkeypatch.setattr(ned_main, "_TRANSCRIPT_PDFS_DIR", pdf_dir)
+    monkeypatch.setattr(ned_main, "REPO_ROOT", tmp_path)
+
+    n = ned_main._prune_old_transcript_pdfs()
+    assert n == 1
+    assert fresh.exists() and not stale.exists()
+
+
+def test_prune_returns_zero_when_dir_missing(monkeypatch, tmp_path):
+    """A brand-new install won't have docs/transcripts/ yet; prune must
+    no-op rather than raise."""
+    import ned.main as ned_main
+    monkeypatch.setattr(ned_main, "_TRANSCRIPT_PDFS_DIR", tmp_path / "not-there")
+    assert ned_main._prune_old_transcript_pdfs() == 0

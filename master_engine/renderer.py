@@ -12,7 +12,7 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-from .schemas import InvestorEvent, PRIORITY_ORDER
+from shared.events import InvestorEvent, PRIORITY_ORDER
 
 logger = logging.getLogger(__name__)
 

@@ -551,37 +551,11 @@ Harry Hindsight sits above the other agents and asks whether we're wrong, while 
 
 Personal data (case files, SQLite, the bias profile) lives in a private repo, never here. Run `python -m hindsight sell NHC` for a one-off sell review. See `hindsight/README.md`, `docs/CAPTAIN_HINDSIGHT_ARCHITECTURE.md` and `.github/workflows/captain_hindsight.yml`.
 
-## Master Engine Alert (Super Investor)
+## Master Engine (not currently run)
 
-The Master Engine Alert aggregates events from all agents (Bob, Wally, Ned) into a unified investor briefing with prioritized alerts.
-
-### How to run
-
-**Via GitHub Actions:**
-1. Go to the Actions tab in GitHub
-2. Select "Master Engine Alert (Super Investor)" workflow
-3. Click "Run workflow"
-4. Configure options (include TII75, skip agents, etc.)
-5. Click "Run workflow" button
-
-**Locally:**
-```bash
-python run_master_investor.py
-python run_master_investor.py --wally-tii75  # Include TII75 watchlist
-python run_master_investor.py --no-ned --no-bob  # Skip specific agents
-python run_master_investor.py --no-email  # Generate digest without sending email
-```
-
-### Output locations
-
-- **Email:** Sent to `EMAIL_TO` with subject "Johnny Master Investor Alert — {date} ({N} alert(s))"
-- **Files:** Saved in `outputs/YYYY-MM-DD/`:
-  - `master_investor_digest.html` - Full HTML digest
-  - `master_investor_digest.md` - Markdown summary
-  - `master_investor_events.json` - JSON archive
-
-### Scheduled runs
-
-The workflow runs automatically daily at 00:00 UTC, after all individual agent workflows have completed.
-
-See `docs/WALLY_AND_MASTER_ENGINE_CHANGES.md` for detailed documentation.
+`master_engine/` can aggregate events from Bob, Wally, Ned and Harry into
+one prioritised briefing, but no workflow runs it. The
+`master_engine_alert.yml` workflow and `run_master_investor.py` it used to
+describe are no longer in the repo. The event model it defines,
+`InvestorEvent`, now lives in `shared/events.py` and is written by Harry on
+every run. See `master_engine/README.md`.

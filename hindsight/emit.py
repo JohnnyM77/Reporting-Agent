@@ -19,7 +19,7 @@ _PRIORITY = {"LOLLAPALOOZA": "CRITICAL", "RED": "HIGH", "AMBER": "MEDIUM", "GREE
 
 def to_investor_events(reports: list[dict], today: dt.date) -> list[dict]:
     sys.path.insert(0, str(REPO_ROOT))
-    from master_engine.schemas import InvestorEvent, normalise_ticker
+    from shared.events import InvestorEvent, normalise_ticker
 
     out = []
     for b in reports:
@@ -48,7 +48,7 @@ def write_events(store, today: dt.date, reports: list[dict]) -> Path | None:
 
 def collect_events(store_root: Path | None = None):
     """Zero-arg-friendly collector returning the latest run's InvestorEvents."""
-    from master_engine.schemas import InvestorEvent
+    from shared.events import InvestorEvent
 
     root = Path(store_root) if store_root else REPO_ROOT / "hindsight_data"
     files = sorted((root / "emit").glob("*/hindsight_events.json"))

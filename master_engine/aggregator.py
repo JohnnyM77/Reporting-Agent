@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from typing import Callable
 
-from .schemas import InvestorEvent
+from shared.events import InvestorEvent
 
 logger = logging.getLogger(__name__)
 

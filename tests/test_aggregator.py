@@ -7,7 +7,7 @@ from __future__ import annotations
 import datetime as dt
 
 from master_engine.aggregator import aggregate, deduplicate
-from master_engine.schemas import (
+from shared.events import (
     InvestorEvent,
     AGENT_BOB, AGENT_NED, AGENT_WALLY,
     EVENT_TYPE_EARNINGS_RELEASE,

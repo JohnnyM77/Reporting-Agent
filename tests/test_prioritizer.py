@@ -7,7 +7,7 @@ from __future__ import annotations
 import datetime as dt
 
 from master_engine.prioritizer import prioritize, score_to_priority
-from master_engine.schemas import (
+from shared.events import (
     InvestorEvent,
     AGENT_BOB, AGENT_WALLY, AGENT_NED,
     EVENT_TYPE_EARNINGS_RELEASE,

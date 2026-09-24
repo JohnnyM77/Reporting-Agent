@@ -18,7 +18,7 @@ sys.path.insert(0, str(_REPO_ROOT))
 @pytest.fixture
 def sample_event():
     """A minimal valid InvestorEvent for testing."""
-    from master_engine.schemas import InvestorEvent, AGENT_BOB, EVENT_TYPE_EARNINGS_RELEASE
+    from shared.events import InvestorEvent, AGENT_BOB, EVENT_TYPE_EARNINGS_RELEASE
     return InvestorEvent(
         ticker="NHC.AX",
         company_name="New Hope Corporation Limited",
@@ -34,7 +34,7 @@ def sample_event():
 @pytest.fixture
 def sample_events():
     """A list of InvestorEvents with mixed types and priorities."""
-    from master_engine.schemas import (
+    from shared.events import (
         InvestorEvent, AGENT_BOB, AGENT_NED, AGENT_WALLY,
         EVENT_TYPE_EARNINGS_RELEASE, EVENT_TYPE_NEAR_52W_LOW,
         EVENT_TYPE_GENERIC_NEWS, UNIVERSE_PORTFOLIO,

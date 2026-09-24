@@ -8,19 +8,21 @@ import types
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 import tempfile
+
+import pytest
 import yaml
 
 # ---------------------------------------------------------------------------
 # Stub heavy optional dependencies so wally modules can be imported in CI
 # ---------------------------------------------------------------------------
-for _stub in (
+from _stubs import stub_missing  # noqa: E402
+
+_STUBBED = stub_missing(
     "anthropic", "openpyxl", "openpyxl.styles", "openpyxl.utils",
     "matplotlib", "matplotlib.pyplot", "matplotlib.figure",
     "matplotlib.axes", "matplotlib.patches", "matplotlib.lines",
     "matplotlib.ticker", "yfinance", "requests", "pandas",
-):
-    if _stub not in sys.modules:
-        sys.modules[_stub] = types.ModuleType(_stub)
+)
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -86,6 +88,13 @@ class TestWatchlistLoaderExclusion:
 # ---------------------------------------------------------------------------
 
 class TestProcessWatchlistExclusion:
+    @pytest.fixture(autouse=True)
+    def _run_in_tmp(self, tmp_path, monkeypatch):
+        """_process_watchlist merges into docs/data/wally.json relative to the
+        working directory; run it in tmp so the suite never rewrites the live
+        dashboard data."""
+        monkeypatch.chdir(tmp_path)
+
     def test_etfs_skipped_in_process_watchlist(self, tmp_path, capsys):
         """_process_watchlist must skip VAS.AX, VHY.AX, VEU.AX."""
         import datetime as dt

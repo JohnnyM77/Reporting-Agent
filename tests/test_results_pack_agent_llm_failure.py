@@ -11,22 +11,34 @@
 
 import io
 import sys
+
+import pytest
 import types
 from pathlib import Path
 from unittest import mock
 
-for _stub in (
+from _stubs import stub_missing  # noqa: E402
+
+stub_missing(
     "anthropic", "playwright", "playwright.async_api", "googleapiclient",
     "googleapiclient.discovery", "googleapiclient.http",
     "google", "google.oauth2", "google.oauth2.credentials",
     "google.oauth2.service_account", "google.auth",
     "google.auth.transport", "google.auth.transport.requests",
     "openpyxl",
-):
-    if _stub not in sys.modules:
-        sys.modules[_stub] = types.ModuleType(_stub)
+)
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+
+@pytest.fixture(autouse=True)
+def _no_live_value_chart(monkeypatch):
+    """run() calls Wally's value-chart builder, which fetches prices over the
+    network and writes valuations/<ticker>.yaml and fundamentals/<ticker>.json
+    into the repo. None of these tests are about the valuation; stub it."""
+    import results_pack_agent.main as rpa_main
+
+    monkeypatch.setattr(rpa_main, "build_valuation", lambda *a, **k: None)
 
 from results_pack_agent import claude_runner  # noqa: E402
 from results_pack_agent.models import Announcement, ResultPack  # noqa: E402

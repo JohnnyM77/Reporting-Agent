@@ -728,8 +728,10 @@ workflow commits it and rebuilds `docs/index.html`; "Publish site" listens for
 **Needs full git history.** Thesis versions and Sally's consecutive-flag streak
 come from `git log`; the workflow checks out with `fetch-depth: 0`.
 
-**Running the existing test suite rewrites `docs/data/wally.json`.** Check
-`git status` before committing after a full `pytest` run.
+**The test suite leaves the working tree alone.** It used to rewrite
+`docs/data/wally.json`, `fundamentals/` and `valuations/`; those tests now run
+in tmp dirs. `git status` after `pytest` should be clean, and if it isn't,
+that's a test bug.
 
 ## Shared infrastructure (2026-09 cleanup)
 
@@ -753,4 +755,15 @@ Harry's workflows don't install `requests` or the Google libraries.
 
 **Master Engine is scaffolding**; no workflow runs it. See
 `master_engine/README.md`.
+
+## Tests: stub a dependency only if it's missing
+
+Test files that import agent code stub optional third-party modules through
+`tests/_stubs.py::stub_missing(...)`, which installs an empty module only when
+the real one isn't installed. Never write `sys.modules[name] =
+types.ModuleType(name)` at import time: that stub lives for the whole session
+and silently breaks every later test that needs the real library. It hid 40
+Wally failures (depending on collection order) and let Results Pack tests skip
+code they were supposed to exercise. `pytest tests` passes in any order and
+file by file; keep it that way.
 

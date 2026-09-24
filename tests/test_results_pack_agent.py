@@ -15,6 +15,8 @@
 
 import json
 import sys
+
+import pytest
 import types
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -22,7 +24,9 @@ from unittest.mock import MagicMock, patch
 # ---------------------------------------------------------------------------
 # Stub heavy optional dependencies so the agent can be imported in CI
 # ---------------------------------------------------------------------------
-for _stub in (
+from _stubs import stub_missing  # noqa: E402
+
+_STUBBED = stub_missing(
     "anthropic",
     "playwright",
     "playwright.async_api",
@@ -37,11 +41,19 @@ for _stub in (
     "google.auth.transport",
     "google.auth.transport.requests",
     "openpyxl",
-):
-    if _stub not in sys.modules:
-        sys.modules[_stub] = types.ModuleType(_stub)
+)
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+
+@pytest.fixture(autouse=True)
+def _no_live_value_chart(monkeypatch):
+    """run() calls Wally's value-chart builder, which fetches prices over the
+    network and writes valuations/<ticker>.yaml and fundamentals/<ticker>.json
+    into the repo. None of these tests are about the valuation; stub it."""
+    import results_pack_agent.main as rpa_main
+
+    monkeypatch.setattr(rpa_main, "build_valuation", lambda *a, **k: None)
 
 from results_pack_agent.models import Announcement, ResultPack, RunSummary  # noqa: E402
 from results_pack_agent.pack_detector import (  # noqa: E402

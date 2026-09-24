@@ -795,6 +795,17 @@ class TestMainLogsErrorBeforeFallback:
 class TestLiveFundamentalsFetch:
     """Tests confirming live fundamentals are wired into workbook generation."""
 
+    @pytest.fixture(autouse=True)
+    def _isolated_fundamentals_cache(self, tmp_path, monkeypatch):
+        """The store caches under fundamentals/ relative to cwd, and the Wally
+        workflow commits real entries there (fundamentals/pool.json). Without
+        this, a cached POOL short-circuits the fetch these tests mock, and the
+        tests would overwrite the committed cache."""
+        from wally import fundamentals_store
+
+        cache = tmp_path / "fundamentals_cache"
+        monkeypatch.setattr(fundamentals_store, "_store_path", lambda t: cache / f"{fundamentals_store._slug(t)}.json")
+
     def _make_av_earnings_data(self, n_quarters: int = 8):
         """Return a fake EarningsData with *n_quarters* quarters of data."""
         from wally.alphavantage import AnnualEarning, EarningsData, QuarterlyEarning
@@ -821,6 +832,17 @@ class TestLiveFundamentalsFetch:
             )
         annual = [AnnualEarning(fiscal_date="2024-12-31", reported_eps=14.0)]
         return EarningsData(ticker="POOL", annual=annual, quarterly=quarters)
+
+    def _fundamentals(self, dividends: bool = True) -> dict:
+        """What fundamentals_store.get_fundamentals returns for POOL: annual
+        EPS and dividends in cents, keyed by year. build_value_chart calls it
+        for any ticker whose config has no earnings history."""
+        years = [str(y) for y in range(2018, 2025)]
+        return {
+            "annual_eps_cents": {y: 1100.0 + 50 * i for i, y in enumerate(years)},
+            "annual_div_cents": {y: 440.0 for y in years} if dividends else {},
+            "quarterly_eps_cents": {},
+        }
 
     def _make_div_series(self):
         """Return a fake yfinance dividends Series (4 × $1.10 = $4.40 TTM)."""
@@ -1026,7 +1048,7 @@ class TestLiveFundamentalsFetch:
         }
 
     def test_build_value_chart_calls_fetch_when_earnings_empty(self, tmp_path):
-        """build_value_chart calls _fetch_live_fundamentals when config has empty earnings."""
+        """build_value_chart fetches fundamentals (fundamentals_store) when config has empty earnings."""
         from unittest.mock import patch
 
         import numpy as np
@@ -1044,7 +1066,7 @@ class TestLiveFundamentalsFetch:
 
         with (
             patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
-            patch("wally.alphavantage.fetch_earnings", return_value=av_data) as mock_av,
+            patch("wally.fundamentals_store.get_fundamentals", return_value=self._fundamentals()) as mock_fs,
             patch("yfinance.Ticker") as mock_yf,
             patch("wally.value_chart_builder.load_config", return_value=self._base_cfg("POOL")),
         ):
@@ -1060,7 +1082,7 @@ class TestLiveFundamentalsFetch:
                 out_path = str(tmp_path / "pool_test.xlsx")
                 build_value_chart("POOL", output_path=out_path)
 
-        mock_av.assert_called_once_with("POOL", "test-key")
+        mock_fs.assert_called_once_with("POOL")
 
     def test_pool_ttm_eps_populated_in_workbook(self, tmp_path):
         """POOL workbook has TTM EPS values in PriceData when AV fetch succeeds."""
@@ -1082,7 +1104,7 @@ class TestLiveFundamentalsFetch:
 
         with (
             patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
-            patch("wally.alphavantage.fetch_earnings", return_value=av_data),
+            patch("wally.fundamentals_store.get_fundamentals", return_value=self._fundamentals()),
             patch("yfinance.Ticker") as mock_yf,
             patch("wally.value_chart_builder.load_config", return_value=self._base_cfg("POOL")),
             patch(
@@ -1134,7 +1156,7 @@ class TestLiveFundamentalsFetch:
 
         with (
             patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
-            patch("wally.alphavantage.fetch_earnings", return_value=av_data),
+            patch("wally.fundamentals_store.get_fundamentals", return_value=self._fundamentals()),
             patch("yfinance.Ticker") as mock_yf,
             patch("wally.value_chart_builder.load_config", return_value=self._base_cfg("POOL")),
             patch(
@@ -1183,7 +1205,7 @@ class TestLiveFundamentalsFetch:
 
         with (
             patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
-            patch("wally.alphavantage.fetch_earnings", return_value=av_data),
+            patch("wally.fundamentals_store.get_fundamentals", return_value=self._fundamentals(dividends=False)),
             patch("yfinance.Ticker") as mock_yf,
             patch("wally.value_chart_builder.load_config", return_value=self._base_cfg("FICO")),
             patch(
@@ -1226,7 +1248,7 @@ class TestLiveFundamentalsFetch:
         with (
             patch.dict("os.environ", {"ALPHAVANTAGE_API_KEY": "test-key"}),
             patch(
-                "wally.alphavantage.fetch_earnings",
+                "wally.fundamentals_store.get_fundamentals",
                 side_effect=RuntimeError("rate limited"),
             ),
             patch("yfinance.Ticker") as mock_yf,

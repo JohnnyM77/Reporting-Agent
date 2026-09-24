@@ -25,8 +25,9 @@ from unittest import mock
 # ---------------------------------------------------------------------------
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-for _stub in ("anthropic", "playwright", "playwright.sync_api"):
-    sys.modules.setdefault(_stub, types.ModuleType(_stub))
+from _stubs import stub_missing  # noqa: E402
+
+_STUBBED = stub_missing("anthropic", "playwright", "playwright.sync_api")
 
 # us_fetch, us_classify, us_docs, sgx_pdf, shared.pdf_llm all exist in
 # the repo. Import them for real — they don't drag in Playwright or

@@ -14,9 +14,9 @@ import yaml
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Stub heavy optional dependencies so portfolio_loader can be imported in CI
-for _stub in ("anthropic",):
-    if _stub not in sys.modules:
-        sys.modules[_stub] = types.ModuleType(_stub)
+from _stubs import stub_missing  # noqa: E402
+
+_STUBBED = stub_missing("anthropic",)
 
 _sally_src = str(Path(__file__).parent.parent / "sunday-sally" / "src")
 if _sally_src not in sys.path:

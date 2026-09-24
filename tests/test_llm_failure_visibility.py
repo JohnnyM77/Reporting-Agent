@@ -20,15 +20,15 @@ from unittest import mock
 # actually being installed (matches the pattern used by the other test_bob_*
 # modules in this directory).
 # ---------------------------------------------------------------------------
-for _stub in (
+from _stubs import stub_missing  # noqa: E402
+
+_STUBBED = stub_missing(
     "anthropic", "playwright", "playwright.async_api", "googleapiclient",
     "googleapiclient.discovery", "googleapiclient.http",
     "google", "google.oauth2", "google.oauth2.credentials",
     "google.oauth2.service_account", "google.auth",
     "google.auth.transport", "google.auth.transport.requests",
-):
-    if _stub not in sys.modules:
-        sys.modules[_stub] = types.ModuleType(_stub)
+)
 
 _pw_stub = types.ModuleType("playwright_fetch")
 _pw_stub.fetch_pdf_with_playwright = None  # type: ignore[attr-defined]

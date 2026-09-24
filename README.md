@@ -313,6 +313,12 @@ tickers.yaml
 
 Portfolio company list.
 
+shared/ and dashboard/
+
+Plumbing every agent uses (email, Claude transport, ticker identity, ASX
+HTTP, Drive) and the dashboard's per-agent cards. See
+docs/INFRASTRUCTURE.md.
+
 Workflow
 
 Bob runs automatically using GitHub Actions.

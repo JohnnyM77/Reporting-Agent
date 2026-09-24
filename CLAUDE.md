@@ -113,7 +113,8 @@ threshold, so the first attempt after raising `max_tokens` came back with
 "Streaming is required for operations that may take longer than 10 minutes".
 `_call_anthropic` now routes any call with `max_tokens >= _STREAMING_MIN_TOKENS`
 (8192) through `client.messages.stream`; below that threshold the short
-`.create` path stays. Streaming keeps the connection alive with periodic
+`.create` path stays. The switch itself now lives in `shared/llm.py::send`,
+which every agent's Claude calls go through. Streaming keeps the connection alive with periodic
 events, so the SDK-side ceiling doesn't apply.
 
 `strawman_post` was left as the existing no-op shim — folding a Strawman draft
@@ -256,12 +257,12 @@ horizontal split from `agent.py` (which stays ASX-only, untouched):
 | `sgx_email.py` | Digest HTML/text builder — same table-only inline-styles shape as `agent.py`, `S$` prefix, "SGX" badge in header, full markdown analysis rendered inline in the results card |
 | `sgx_agent.py` | Orchestrator: fetch → classify → PDF → LLM (for results) → email with PDFs attached → seen-state → dashboard JSON |
 
-**No coupling to `agent.py`.** The ~40 lines of Anthropic-streaming
-plumbing are duplicated in `sgx_agent.py` rather than imported. Reason:
-`import agent` drags in `weasyprint`, `pypdf`, `bs4`, and other deps the
-SGX box doesn't need for anything else, and any change to `agent.py`
-becomes an SGX regression risk. Round 3+ can promote the shared bits
-into `shared/` when a third caller appears.
+**No coupling to `agent.py`.** `import agent` drags in `weasyprint`,
+`pypdf`, `bs4`, and other deps the SGX box doesn't need for anything else,
+and any change to `agent.py` becomes an SGX regression risk. The Anthropic
+streaming plumbing and SMTP send that used to be duplicated here now come
+from `shared/llm.py` and `shared/email_service.py` (stdlib-only at import
+time), not from `agent.py`.
 
 **No Google Drive on the SGX path.** ASX Bob writes a native Google Doc
 per results item; SGX Bob deliberately doesn't.
@@ -427,8 +428,8 @@ from ASX Bob's "one-off never touches the dashboard" rule; Bob has a
 catch-up cron the dashboard write would trip (see the `_already_sent_today`
 guard in `agent.py`), Slinger doesn't.
 
-`scripts/build_dashboard.py` renders `_slinger_section` between Bob's
-card and Wally's. High-impact items reuse Bob's `_render_analysis_sections`
+`scripts/build_dashboard.py` renders `_slinger_section` (defined in
+`dashboard/sections/slinger.py`) between Bob's card and Wally's. High-impact items reuse Bob's `_render_analysis_sections`
 because the metrics JSON schema (`dividend_ordinary` + `change_pct`) is
 identical, and Slinger's card adds a **Source PDFs** link list (SGX
 hosts them, so the dashboard just links back). Material/FYI items only
@@ -729,3 +730,27 @@ come from `git log`; the workflow checks out with `fetch-depth: 0`.
 
 **Running the existing test suite rewrites `docs/data/wally.json`.** Check
 `git status` before committing after a full `pytest` run.
+
+## Shared infrastructure (2026-09 cleanup)
+
+Agents own intelligence (prompts, classification, scoring, templates,
+failure policy); `shared/` owns plumbing. Map, rules and "adding an agent":
+`docs/INFRASTRUCTURE.md`.
+
+| Module | Plumbing |
+|---|---|
+| `shared/email_service.py` | SMTP config, MIME (plain/HTML/attachments/inline CID images), send. `raise_on_error` keeps each agent's policy: Bob and Ned raise; Slinger/USA/Sally/Harry log and return False |
+| `shared/llm.py` | Anthropic client, streaming at >= 8192 tokens (`stream=` override: Results Pack pins `.create()`), text/stop_reason/usage, retry helper |
+| `shared/securities.py` | `NHC` == `NHC.AX` == `ASX:NHC`; `RR.` == `RR.L`; Yahoo symbols; GBX quote unit |
+| `shared/events.py` | `InvestorEvent`, moved from `master_engine/schemas.py`; Harry writes it every run |
+| `shared/asx.py` | ASX URLs, browser session headers (pinned per caller in `tests/test_shared_asx.py`), idsId -> PDF URL |
+| `shared/gdrive.py` | Drive credentials/service/find-or-create; each agent keeps its own auth policy |
+| `dashboard/` | one module per agent card; `scripts/build_dashboard.py` keeps all docs/data I/O |
+
+**Shared modules import heavy deps lazily** (`anthropic`, Google clients,
+`requests`) so each workflow's minimal `pip install` still works. Theo's and
+Harry's workflows don't install `requests` or the Google libraries.
+
+**Master Engine is scaffolding**; no workflow runs it. See
+`master_engine/README.md`.
+

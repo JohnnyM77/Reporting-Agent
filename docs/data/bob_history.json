@@ -1,5 +1,58 @@
 [
   {
+    "last_run": "2026-09-24",
+    "silence": false,
+    "high_impact": [],
+    "material": [],
+    "fyi": [
+      {
+        "ticker": "ABB",
+        "title": "Update - Notification of buy-back - ABB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.4KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143165"
+      },
+      {
+        "ticker": "BXB",
+        "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 11.1KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143251"
+      },
+      {
+        "ticker": "BXB",
+        "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143090"
+      },
+      {
+        "ticker": "CAT",
+        "title": "Becoming a substantial holder 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 412.6KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143079"
+      },
+      {
+        "ticker": "CSL",
+        "title": "Update - Notification of buy-back - CSL 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.3KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143088"
+      },
+      {
+        "ticker": "DRO",
+        "title": "Application for quotation of securities - DRO 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.7KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03142910"
+      },
+      {
+        "ticker": "TWE",
+        "title": "Change in substantial holding 52\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.2MB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03142987"
+      },
+      {
+        "ticker": "VAS",
+        "title": "Estimated Distribution Announcement 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 214.5KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143218"
+      },
+      {
+        "ticker": "VHY",
+        "title": "Estimated Distribution Announcement 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 214.5KB",
+        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143218"
+      }
+    ]
+  },
+  {
     "last_run": "2026-09-23",
     "silence": false,
     "high_impact": [
@@ -152,39 +205,6 @@
         "ticker": "NHC",
         "title": "Notice to Noteholders (Notes due 2029) 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 119.9",
         "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03142188"
-      }
-    ]
-  },
-  {
-    "last_run": "2026-09-22",
-    "silence": false,
-    "high_impact": [],
-    "material": [],
-    "fyi": [
-      {
-        "ticker": "ABB",
-        "title": "Update - Notification of buy-back - ABB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.4KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03142013"
-      },
-      {
-        "ticker": "BXB",
-        "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 11.1KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03142075"
-      },
-      {
-        "ticker": "BXB",
-        "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141965"
-      },
-      {
-        "ticker": "CSL",
-        "title": "Update - Notification of buy-back - CSL 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.3KB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141954"
-      },
-      {
-        "ticker": "TWE",
-        "title": "Ceasing to be a substantial holder 30\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 1.3MB",
-        "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03141926"
       }
     ]
   }

@@ -150,31 +150,19 @@ def _country_from_apple_url(path: str) -> str:
     return m.group(1).lower() if m else ""
 
 
-def _lookup_apple(
-    kind_id: str,
-    *,
-    country: str = "",
-    entity: str = "",
-) -> dict:
-    """iTunes lookup for one id. Returns the first result dict, or {}.
+def _lookup_apple_results(params: dict, *, country: str = "") -> list[dict]:
+    """Run one iTunes lookup and return ALL result rows.
 
-    Same endpoint whether the id is a podcast or an episode -- Apple keys
-    everything by numeric id. `country` scopes the lookup to a storefront
-    (mandatory for regionally-exclusive shows: a URL under
-    `podcasts.apple.com/au/...` needs `country=au` or the default US
-    storefront returns nothing). If the storefront-scoped call comes
-    back empty, we retry without `country` -- some content is only in
-    the global catalogue. `entity=podcastEpisode` forces the episode
-    row when we're looking up an episode id (without it Apple sometimes
-    returns the parent podcast row instead).
-
-    Never raises for the "no results" case so callers can decide policy.
+    Tries the storefront (`country`) first -- regional shows like "The
+    Story of Money" live in the AU storefront -- then the default
+    storefront if the scoped call comes back empty. Never raises on "no
+    results"; raises TranscriptError only on transport/HTTP failure.
     """
-    def _fetch(params: dict) -> list:
+    def _fetch(p: dict) -> list[dict]:
         try:
             resp = requests.get(
                 _ITUNES_LOOKUP,
-                params=params,
+                params=p,
                 timeout=_HTTP_TIMEOUT,
                 headers={"User-Agent": _USER_AGENT},
             )
@@ -182,26 +170,129 @@ def _lookup_apple(
             data = resp.json()
         except Exception as exc:
             raise TranscriptError(
-                f"iTunes lookup for id {kind_id} failed "
-                f"(params={params}): {type(exc).__name__}: {exc}"
+                f"iTunes lookup failed (params={p}): {type(exc).__name__}: {exc}"
             )
         return data.get("results") or []
 
-    base_params: dict = {"id": kind_id}
-    if entity:
-        base_params["entity"] = entity
-
-    # 1. Try storefront-scoped lookup first.
     if country:
-        results = _fetch({**base_params, "country": country})
-        if results:
-            return results[0]
+        rows = _fetch({**params, "country": country})
+        if rows:
+            return rows
+    return _fetch(params)
 
-    # 2. Fall back to the default (US / global) storefront. This covers
-    # both "no country was known" and "storefront-scoped call returned
-    # nothing but the episode exists in the global catalogue".
-    results = _fetch(base_params)
-    return results[0] if results else {}
+
+def _lookup_apple(kind_id: str, *, country: str = "") -> dict:
+    """First iTunes row for a podcast id, or {}. Used for show-level
+    lookups (feedUrl + show title)."""
+    rows = _lookup_apple_results({"id": kind_id}, country=country)
+    return rows[0] if rows else {}
+
+
+# How many recent episodes Apple will return in one podcast lookup. 200 is
+# the API maximum.
+_APPLE_EPISODE_LIMIT = 200
+
+_OG_TITLE_RE = re.compile(
+    r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)["\']',
+    re.IGNORECASE,
+)
+_HTML_TITLE_RE = re.compile(r"<title[^>]*>(.*?)</title>", re.IGNORECASE | re.DOTALL)
+
+
+def _normalise_title(text: str) -> str:
+    """Lower-case, strip punctuation and collapse spaces so an Apple page
+    title and an RSS <title> compare equal despite smart quotes etc."""
+    import html as _h
+    text = _h.unescape(text or "").lower()
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _episode_title_from_apple_page(url: str) -> str:
+    """Read the episode title off Apple's own episode web page.
+
+    Used only when the episode is older than the 200 most recent that the
+    iTunes API returns. Apple's page carries the episode name in
+    og:title; the <title> tag is the fallback ("<Episode> - <Show> -
+    Apple Podcasts").
+    """
+    try:
+        resp = requests.get(url, timeout=_HTTP_TIMEOUT, headers={"User-Agent": _USER_AGENT})
+        resp.raise_for_status()
+    except Exception as exc:
+        print(f"[ned/podcast] Could not fetch Apple episode page: {type(exc).__name__}: {exc}")
+        return ""
+    body = resp.text or ""
+    m = _OG_TITLE_RE.search(body)
+    if m:
+        return m.group(1).strip()
+    m = _HTML_TITLE_RE.search(body)
+    if m:
+        # "Episode Name - Show Name - Apple Podcasts" -> "Episode Name"
+        return m.group(1).split(" - ")[0].strip()
+    return ""
+
+
+def _find_apple_episode(
+    *,
+    podcast_id: str,
+    episode_id: str,
+    country: str,
+    page_url: str,
+) -> dict:
+    """Return an episode dict with keys episodeUrl / episodeGuid /
+    trackName / collectionName / feedUrl, or {} if the episode can't be
+    identified.
+
+    Apple's iTunes lookup does NOT resolve a podcast episode by its own
+    `?i=` id -- `lookup?id=<EPISODE_ID>` returns zero rows for podcast
+    episodes, with or without `country` or `entity`. That's why the last
+    two attempts at this failed live. What does work:
+
+      1. `lookup?id=<PODCAST_ID>&entity=podcastEpisode&limit=200` returns
+         the show row plus its 200 most recent episodes; pick the row
+         whose trackId equals the episode id.
+      2. For older episodes, read the episode title off Apple's episode
+         web page and match it against the show's RSS <item> titles.
+    """
+    rows = _lookup_apple_results(
+        {"id": podcast_id, "entity": "podcastEpisode", "limit": _APPLE_EPISODE_LIMIT},
+        country=country,
+    )
+    show_row = next((r for r in rows if r.get("wrapperType") != "podcastEpisode"), {})
+    feed_url = show_row.get("feedUrl") or ""
+    show_title = show_row.get("collectionName") or show_row.get("trackName") or ""
+
+    for r in rows:
+        if r.get("wrapperType") == "podcastEpisode" and str(r.get("trackId")) == str(episode_id):
+            return {
+                "episodeUrl": r.get("episodeUrl") or "",
+                "episodeGuid": r.get("episodeGuid") or "",
+                "trackName": r.get("trackName") or "",
+                "collectionName": r.get("collectionName") or show_title,
+                "feedUrl": r.get("feedUrl") or feed_url,
+            }
+
+    # Older than the 200-episode window: match by title in the RSS feed.
+    if not feed_url:
+        return {}
+    title = _episode_title_from_apple_page(page_url)
+    if not title:
+        return {}
+    wanted = _normalise_title(title)
+    print(f"[ned/podcast] Episode not in Apple's recent list; matching RSS by title {title!r}")
+    for it in _fetch_rss_items(feed_url):
+        if _normalise_title(_rss_item_title(it)) == wanted:
+            audio = _rss_item_enclosure(it)
+            if audio:
+                return {
+                    "episodeUrl": audio,
+                    "episodeGuid": _rss_item_guid(it),
+                    "trackName": _rss_item_title(it),
+                    "collectionName": show_title,
+                    "feedUrl": feed_url,
+                }
+    return {}
 
 
 def _resolve_apple(url: str) -> ResolvedPodcast:
@@ -273,8 +364,13 @@ def _resolve_apple(url: str) -> ResolvedPodcast:
     # the parent podcast; pass country=<cc> for regional shows that
     # aren't in the default US storefront.
     # -----------------------------------------------------------------
-    ep = _lookup_apple(episode_id, country=country, entity="podcastEpisode")
-    if not ep or ep.get("wrapperType") != "podcastEpisode":
+    ep = _find_apple_episode(
+        podcast_id=podcast_id,
+        episode_id=episode_id,
+        country=country,
+        page_url=url,
+    )
+    if not ep:
         raise TranscriptError(
             f"Apple's iTunes lookup returned nothing for episode id "
             f"{episode_id} (URL {url!r}). Check the link is still live -- "

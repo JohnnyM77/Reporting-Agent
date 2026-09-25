@@ -89,179 +89,157 @@ class _FakeResponse:
         return self._json
 
 
-def test_apple_episode_url_uses_itunes_episode_lookup(monkeypatch):
-    """A URL with `?i=<EPISODE_ID>` must resolve via Apple's episode-level
-    lookup: the returned audio_url + title come from Apple directly, not
-    from guessing an RSS match against Apple's internal id. A live run
-    against a Story of Money URL previously returned the show's newest
-    episode instead of the requested one; this test pins the fixed
-    contract."""
-    itunes_calls: list[str] = []
+def test_apple_episode_resolved_from_podcast_lookup_by_track_id(monkeypatch):
+    """Apple's lookup API does not resolve a podcast episode by its own
+    `?i=` id; the working call is the PODCAST id with entity=podcastEpisode,
+    and the requested episode is the row whose trackId matches. A live run
+    against The Story of Money failed twice because the code asked Apple
+    for the episode id directly and got zero rows back."""
+    calls: list[dict] = []
 
     def fake_get(url, params=None, timeout=None, headers=None, stream=False):
         if "itunes.apple.com" in url:
-            itunes_calls.append(str(params.get("id")))
+            calls.append(dict(params))
             if params.get("id") == "42":
-                return _FakeResponse(json_body={
-                    "results": [{
-                        "wrapperType": "podcastEpisode",
-                        "kind": "podcast-episode",
-                        "collectionId": 111,
-                        "collectionName": "Example Show",
-                        "trackId": 42,
-                        "trackName": "Railroads Episode",
-                        "episodeUrl": "https://cdn.example.com/eps/42.mp3",
-                        "episodeGuid": "tag:example.com,2024:42",
-                        "feedUrl": "https://example.com/feed.rss",
-                    }]
-                })
-            raise AssertionError(f"unexpected itunes id: {params}")
-        if url == "https://example.com/feed.rss":
-            return _FakeResponse(content=_RSS_XML)
-        raise AssertionError(f"unexpected GET {url}")
+                pytest.fail("must not look up the episode id directly -- Apple returns nothing")
+            return _FakeResponse(json_body=_apple_episode_result("tag:example.com,2024:42"))
+        return _FakeResponse(content=_RSS_XML)
 
     monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
-
     resolved = podcast_mod.resolve_podcast_url(
         "https://podcasts.apple.com/us/podcast/example-show/id111?i=42"
     )
-    # Apple episode data drives the resolution -- title from Apple, audio
-    # from Apple.
-    assert resolved.source_kind == "apple"
-    assert resolved.show_title == "Example Show"
+    # Episode 42 picked, NOT the other episode in the same lookup.
     assert resolved.audio_url == "https://cdn.example.com/eps/42.mp3"
-    assert resolved.episode_title == "Railroads Episode"
-    # Exactly the episode-id lookup; not the podcast-id lookup, since
-    # the episode response already carried feedUrl.
-    assert itunes_calls == ["42"]
-
-
-def test_apple_episode_lookup_no_result_raises(monkeypatch):
-    """Apple returning no results for the episode id means the episode is
-    gone or the URL is wrong. Never silently substitute a different
-    episode."""
-    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
-        if "itunes.apple.com" in url:
-            return _FakeResponse(json_body={"results": []})
-        raise AssertionError("must not touch RSS after empty episode lookup")
-
-    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
-
-    with pytest.raises(TranscriptError) as ei:
-        podcast_mod.resolve_podcast_url(
-            "https://podcasts.apple.com/us/podcast/example-show/id111?i=42"
-        )
-    assert "42" in str(ei.value)
+    assert resolved.episode_title == "Ep"
+    assert resolved.show_title == "Example Show"
+    assert calls[0]["id"] == "111"
+    assert calls[0]["entity"] == "podcastEpisode"
+    assert calls[0]["limit"] == 200
+    assert calls[0]["country"] == "us"
 
 
 @pytest.mark.parametrize("path,expected", [
     ("/au/podcast/x/id111", "au"),
     ("/us/podcast/x/id111", "us"),
     ("/gb/podcast/x/id111", "gb"),
-    ("/AU/podcast/x/id111", "au"),          # tolerant to case
-    ("/us/podcasts/x/id111", "us"),         # plural form (some Apple URLs)
-    ("/podcast/x/id111", ""),               # no country segment
-    ("/podcast/us/x/id111", ""),            # `us` not in the country slot
-    ("", ""),                               # defensive
+    ("/AU/podcast/x/id111", "au"),
+    ("/us/podcasts/x/id111", "us"),
+    ("/podcast/x/id111", ""),
+    ("/podcast/us/x/id111", ""),
+    ("", ""),
 ])
 def test_country_extraction_from_apple_url(path, expected):
     assert podcast_mod._country_from_apple_url(path) == expected
 
 
-def test_apple_lookup_passes_country_from_storefront_url(monkeypatch):
-    """A `podcasts.apple.com/au/...` URL must scope the iTunes lookup to
-    the AU storefront. Without this, the live Story of Money URL
-    returned zero results and the whole run failed at resolve time."""
+def test_apple_lookup_retries_without_country_when_storefront_empty(monkeypatch):
     calls: list[dict] = []
 
     def fake_get(url, params=None, timeout=None, headers=None, stream=False):
         if "itunes.apple.com" in url:
-            calls.append(dict(params or {}))
-            # Storefront-scoped call succeeds -- no retry needed.
-            if params.get("country") == "au":
-                return _FakeResponse(json_body={"results": [{
-                    "wrapperType": "podcastEpisode",
-                    "collectionName": "The Story of Money",
-                    "trackName": "Railroads",
-                    "episodeUrl": "https://cdn.example.com/eps/story.mp3",
-                    "episodeGuid": "guid-railroads",
-                    "feedUrl": "https://example.com/feed.rss",
-                }]})
-            # Anything else means we forgot to pass country.
-            return _FakeResponse(json_body={"results": []})
-        # RSS feed request -- return an item whose guid matches so the
-        # transcript-tag path doesn't complain in the log.
-        return _FakeResponse(content=(
-            b'<?xml version="1.0"?><rss version="2.0"><channel><item>'
-            b'<guid>guid-railroads</guid>'
-            b'<enclosure url="https://cdn.example.com/eps/story.mp3"/>'
-            b'</item></channel></rss>'
-        ))
-
-    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
-    resolved = podcast_mod.resolve_podcast_url(
-        "https://podcasts.apple.com/au/podcast/the-story-of-money/id1376303362?i=1000764231178"
-    )
-    assert resolved.audio_url == "https://cdn.example.com/eps/story.mp3"
-    # First iTunes call was storefront-scoped to au + entity-scoped to
-    # podcastEpisode -- both are load-bearing for regional episodes.
-    assert calls[0]["country"] == "au"
-    assert calls[0]["entity"] == "podcastEpisode"
-    assert calls[0]["id"] == "1000764231178"
-
-
-def test_apple_lookup_retries_without_country_when_storefront_returns_nothing(monkeypatch):
-    """Some content isn't in the local storefront but IS in the global
-    catalogue. When the country-scoped call returns nothing, retry once
-    without `country`. Guards against a whole class of "URL works in
-    Apple's app but iTunes returns 0 with the local storefront" failures."""
-    calls: list[dict] = []
-
-    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
-        if "itunes.apple.com" in url:
-            calls.append(dict(params or {}))
+            calls.append(dict(params))
             if "country" in params:
-                return _FakeResponse(json_body={"results": []})   # storefront empty
-            return _FakeResponse(json_body={"results": [{
-                "wrapperType": "podcastEpisode",
-                "collectionName": "Show",
-                "trackName": "Ep",
-                "episodeUrl": "https://cdn.example.com/eps/42.mp3",
-                "episodeGuid": "g42",
-                "feedUrl": "https://example.com/feed.rss",
-            }]})
-        return _FakeResponse(content=(
-            b'<?xml version="1.0"?><rss version="2.0"><channel><item>'
-            b'<guid>g42</guid>'
-            b'<enclosure url="https://cdn.example.com/eps/42.mp3"/>'
-            b'</item></channel></rss>'
-        ))
+                return _FakeResponse(json_body={"results": []})
+            return _FakeResponse(json_body=_apple_episode_result("g42"))
+        return _FakeResponse(content=_RSS_XML)
 
     monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
     resolved = podcast_mod.resolve_podcast_url(
         "https://podcasts.apple.com/au/podcast/x/id111?i=42"
     )
     assert resolved.audio_url == "https://cdn.example.com/eps/42.mp3"
-    # Two iTunes calls: first with country=au, then without.
-    assert len(calls) == 2
     assert calls[0].get("country") == "au"
     assert "country" not in calls[1]
 
 
-def test_apple_lookup_raises_only_when_both_country_and_no_country_return_nothing(monkeypatch):
-    """If BOTH storefront-scoped AND unscoped lookups return empty, the
-    episode really is gone -- raise clearly. Never silently substitute
-    another episode."""
+_OLD_EPISODE_RSS = b"""<?xml version="1.0"?>
+<rss version="2.0"><channel>
+  <item><title>Newest thing</title><guid>new</guid>
+    <enclosure url="https://cdn.example.com/eps/new.mp3"/></item>
+  <item><title>Railroads: the first bubble &#8212; part 1</title><guid>rail</guid>
+    <enclosure url="https://cdn.example.com/eps/rail.mp3"/></item>
+</channel></rss>"""
+
+
+def test_old_episode_outside_api_window_matched_by_page_title(monkeypatch):
+    """Apple's API returns only the 200 most recent episodes. An older
+    episode is found by reading its title off Apple's episode page and
+    matching it (punctuation-insensitively) against the RSS <title>s --
+    never by falling back to the newest item."""
+    page_url = "https://podcasts.apple.com/au/podcast/the-story-of-money/id111?i=999"
+
     def fake_get(url, params=None, timeout=None, headers=None, stream=False):
         if "itunes.apple.com" in url:
-            return _FakeResponse(json_body={"results": []})
-        raise AssertionError("must not touch RSS when episode lookup is empty")
+            # Show row only; episode 999 isn't in the recent window.
+            return _FakeResponse(json_body={"results": [
+                {"wrapperType": "track", "kind": "podcast",
+                 "collectionName": "The Story of Money",
+                 "feedUrl": "https://example.com/feed.rss"},
+            ]})
+        if url == page_url:
+            return _FakeResponse(content=(
+                b'<html><head><meta property="og:title" '
+                b'content="Railroads: the first bubble \xe2\x80\x94 part 1"></head></html>'
+            ))
+        if url == "https://example.com/feed.rss":
+            return _FakeResponse(content=_OLD_EPISODE_RSS)
+        raise AssertionError(f"unexpected GET {url}")
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    resolved = podcast_mod.resolve_podcast_url(page_url)
+    assert resolved.audio_url == "https://cdn.example.com/eps/rail.mp3"
+    assert "Railroads" in resolved.episode_title
+
+
+def test_unresolvable_episode_raises_instead_of_returning_newest(monkeypatch):
+    """Episode not in the API window AND its title doesn't match any RSS
+    item: raise. Returning the newest episode is exactly the bug that
+    started all this."""
+    page_url = "https://podcasts.apple.com/au/podcast/x/id111?i=999"
+
+    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
+        if "itunes.apple.com" in url:
+            return _FakeResponse(json_body={"results": [
+                {"wrapperType": "track", "feedUrl": "https://example.com/feed.rss"},
+            ]})
+        if url == page_url:
+            return _FakeResponse(content=b'<meta property="og:title" content="Nonexistent">')
+        return _FakeResponse(content=_OLD_EPISODE_RSS)
 
     monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
     with pytest.raises(TranscriptError):
-        podcast_mod.resolve_podcast_url(
-            "https://podcasts.apple.com/au/podcast/x/id111?i=42"
-        )
+        podcast_mod.resolve_podcast_url(page_url)
+
+
+def test_apple_rss_unavailable_still_returns_apple_audio_url(monkeypatch):
+    """RSS 500s but Apple already gave us the audio URL: keep it and let
+    Whisper take over -- a soft miss on the free transcript path only."""
+    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
+        if "itunes.apple.com" in url:
+            return _FakeResponse(json_body=_apple_episode_result("guid-42"))
+        return _FakeResponse(status=500, content=b"whoops")
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    resolved = podcast_mod.resolve_podcast_url(
+        "https://podcasts.apple.com/us/podcast/example-show/id111?i=42"
+    )
+    assert resolved.audio_url == "https://cdn.example.com/eps/42.mp3"
+    assert resolved.transcript_url == ""
+
+
+def test_apple_uses_guid_from_rss_for_transcript(monkeypatch):
+    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
+        if "itunes.apple.com" in url:
+            return _FakeResponse(json_body=_apple_episode_result("https://example.com/eps/42"))
+        return _FakeResponse(content=_RSS_WITH_TRANSCRIPT_XML)
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    resolved = podcast_mod.resolve_podcast_url(
+        "https://podcasts.apple.com/us/podcast/example-show/id111?i=42"
+    )
+    assert resolved.transcript_url == "https://cdn.example.com/eps/42.vtt"
+    assert resolved.transcript_type == "text/vtt"
 
 
 def test_apple_bare_show_url_takes_newest(monkeypatch):
@@ -286,63 +264,6 @@ def test_apple_bare_show_url_takes_newest(monkeypatch):
     )
     assert resolved.audio_url == "https://cdn.example.com/eps/999.mp3"
     assert resolved.episode_title == "Newest Episode"
-
-
-def test_apple_rss_unavailable_still_returns_apple_audio_url(monkeypatch):
-    """If the RSS feed 500s but Apple already gave us the direct audio
-    URL, we should keep the audio URL and just skip the free
-    <podcast:transcript> path -- Whisper takes over. This is a real
-    fallback (a soft miss on the free path), not the old silent
-    wrong-episode fallback."""
-    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
-        if "itunes.apple.com" in url:
-            return _FakeResponse(json_body={
-                "results": [{
-                    "wrapperType": "podcastEpisode",
-                    "collectionName": "Example Show",
-                    "trackName": "Ep",
-                    "episodeUrl": "https://cdn.example.com/eps/42.mp3",
-                    "episodeGuid": "guid-42",
-                    "feedUrl": "https://example.com/feed.rss",
-                }]
-            })
-        return _FakeResponse(status=500, content=b"whoops")
-
-    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
-
-    resolved = podcast_mod.resolve_podcast_url(
-        "https://podcasts.apple.com/us/podcast/example-show/id111?i=42"
-    )
-    assert resolved.audio_url == "https://cdn.example.com/eps/42.mp3"
-    assert resolved.transcript_url == ""  # RSS failed -> no free transcript
-
-
-def test_apple_uses_guid_from_rss_for_transcript(monkeypatch):
-    """When the RSS <item> whose <guid> matches Apple's episodeGuid
-    publishes a <podcast:transcript>, we surface that transcript."""
-    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
-        if "itunes.apple.com" in url:
-            return _FakeResponse(json_body={
-                "results": [{
-                    "wrapperType": "podcastEpisode",
-                    "collectionName": "Example Show",
-                    "trackName": "Ep",
-                    "episodeUrl": "https://cdn.example.com/eps/42.mp3",
-                    "episodeGuid": "https://example.com/eps/42",
-                    "feedUrl": "https://example.com/feed.rss",
-                }]
-            })
-        return _FakeResponse(content=_RSS_WITH_TRANSCRIPT_XML)
-
-    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
-    resolved = podcast_mod.resolve_podcast_url(
-        "https://podcasts.apple.com/us/podcast/example-show/id111?i=42"
-    )
-    # The RSS_WITH_TRANSCRIPT fixture pins guid https://example.com/eps/42
-    # to a <podcast:transcript> at 42.vtt. We should have picked it up
-    # via the guid match, not by taking the newest item.
-    assert resolved.transcript_url == "https://cdn.example.com/eps/42.vtt"
-    assert resolved.transcript_type == "text/vtt"
 
 
 def test_bad_rss_xml_raises(monkeypatch):
@@ -728,17 +649,20 @@ _RSS_WITH_TRANSCRIPT_XML = b"""<?xml version="1.0"?>
 
 
 def _apple_episode_result(episode_guid: str, feed_url: str = "https://example.com/feed.rss") -> dict:
-    """Standard iTunes response for a `?i=<episode>` lookup. Used across
-    the transcript-tag tests so a shape change lands in one place."""
-    return {"results": [{
-        "wrapperType": "podcastEpisode",
-        "kind": "podcast-episode",
-        "collectionName": "Example Show",
-        "trackName": "Ep",
-        "episodeUrl": "https://cdn.example.com/eps/42.mp3",
-        "episodeGuid": episode_guid,
-        "feedUrl": feed_url,
-    }]}
+    """What Apple really returns for `lookup?id=<PODCAST_ID>&entity=podcastEpisode`:
+    the show row first, then episode rows keyed by trackId. Episode 42 is the
+    one the tests request via `?i=42`."""
+    return {"results": [
+        {"wrapperType": "track", "kind": "podcast", "collectionName": "Example Show",
+         "feedUrl": feed_url},
+        {"wrapperType": "podcastEpisode", "kind": "podcast-episode", "trackId": 7,
+         "collectionName": "Example Show", "trackName": "Some Other Episode",
+         "episodeUrl": "https://cdn.example.com/eps/7.mp3", "episodeGuid": "other"},
+        {"wrapperType": "podcastEpisode", "kind": "podcast-episode", "trackId": 42,
+         "collectionName": "Example Show", "trackName": "Ep",
+         "episodeUrl": "https://cdn.example.com/eps/42.mp3", "episodeGuid": episode_guid,
+         "feedUrl": feed_url},
+    ]}
 
 
 def test_rss_extracts_podcast_transcript_tag(monkeypatch):

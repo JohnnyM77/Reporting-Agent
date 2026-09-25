@@ -134,27 +134,73 @@ def _looks_like_apple(url: str) -> bool:
 # ---------------------------------------------------------------------------
 # Apple Podcasts resolution
 # ---------------------------------------------------------------------------
-def _lookup_apple(kind_id: str) -> dict:
-    """Raw iTunes lookup for one id. Returns the first result dict, or {}.
+# Two-letter country codes Apple accepts in the storefront path
+# (`podcasts.apple.com/<cc>/...`). Extracted so a URL from the Australian
+# storefront (`/au/`) queries the AU storefront -- without this a regional
+# show like "The Story of Money" returns zero results from the default
+# storefront and the whole run fails at resolve time.
+_APPLE_COUNTRY_RE = re.compile(r"^/([a-z]{2})/podcast(?:s)?/", re.IGNORECASE)
+
+
+def _country_from_apple_url(path: str) -> str:
+    """Extract the storefront country code from an Apple Podcasts URL
+    path, e.g. `/au/podcast/...` -> `au`. Returns an empty string when the
+    URL has no country segment."""
+    m = _APPLE_COUNTRY_RE.match(path or "")
+    return m.group(1).lower() if m else ""
+
+
+def _lookup_apple(
+    kind_id: str,
+    *,
+    country: str = "",
+    entity: str = "",
+) -> dict:
+    """iTunes lookup for one id. Returns the first result dict, or {}.
 
     Same endpoint whether the id is a podcast or an episode -- Apple keys
-    everything by numeric id. Wrapped for retry/error uniformity; never
-    raises for the "no results" case so callers can decide policy.
+    everything by numeric id. `country` scopes the lookup to a storefront
+    (mandatory for regionally-exclusive shows: a URL under
+    `podcasts.apple.com/au/...` needs `country=au` or the default US
+    storefront returns nothing). If the storefront-scoped call comes
+    back empty, we retry without `country` -- some content is only in
+    the global catalogue. `entity=podcastEpisode` forces the episode
+    row when we're looking up an episode id (without it Apple sometimes
+    returns the parent podcast row instead).
+
+    Never raises for the "no results" case so callers can decide policy.
     """
-    try:
-        resp = requests.get(
-            _ITUNES_LOOKUP,
-            params={"id": kind_id},
-            timeout=_HTTP_TIMEOUT,
-            headers={"User-Agent": _USER_AGENT},
-        )
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as exc:
-        raise TranscriptError(
-            f"iTunes lookup for id {kind_id} failed: {type(exc).__name__}: {exc}"
-        )
-    results = data.get("results") or []
+    def _fetch(params: dict) -> list:
+        try:
+            resp = requests.get(
+                _ITUNES_LOOKUP,
+                params=params,
+                timeout=_HTTP_TIMEOUT,
+                headers={"User-Agent": _USER_AGENT},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as exc:
+            raise TranscriptError(
+                f"iTunes lookup for id {kind_id} failed "
+                f"(params={params}): {type(exc).__name__}: {exc}"
+            )
+        return data.get("results") or []
+
+    base_params: dict = {"id": kind_id}
+    if entity:
+        base_params["entity"] = entity
+
+    # 1. Try storefront-scoped lookup first.
+    if country:
+        results = _fetch({**base_params, "country": country})
+        if results:
+            return results[0]
+
+    # 2. Fall back to the default (US / global) storefront. This covers
+    # both "no country was known" and "storefront-scoped call returned
+    # nothing but the episode exists in the global catalogue".
+    results = _fetch(base_params)
     return results[0] if results else {}
 
 
@@ -197,13 +243,14 @@ def _resolve_apple(url: str) -> ResolvedPodcast:
         )
     podcast_id = m.group(1)
     episode_id = (parse_qs(parsed.query).get("i") or [""])[0]
+    country = _country_from_apple_url(parsed.path)
 
     # -----------------------------------------------------------------
     # No `?i=` -- user asked for the show, not a specific episode.
     # Look up the podcast (for its feedUrl), then take the newest item.
     # -----------------------------------------------------------------
     if not episode_id:
-        show = _lookup_apple(podcast_id)
+        show = _lookup_apple(podcast_id, country=country)
         if not show:
             raise TranscriptError(
                 f"Apple's iTunes lookup returned no podcast for id {podcast_id}."
@@ -222,8 +269,11 @@ def _resolve_apple(url: str) -> ResolvedPodcast:
 
     # -----------------------------------------------------------------
     # `?i=<EPISODE_ID>` -- ask Apple for that exact episode.
+    # Pass entity=podcastEpisode so Apple returns the episode row, not
+    # the parent podcast; pass country=<cc> for regional shows that
+    # aren't in the default US storefront.
     # -----------------------------------------------------------------
-    ep = _lookup_apple(episode_id)
+    ep = _lookup_apple(episode_id, country=country, entity="podcastEpisode")
     if not ep or ep.get("wrapperType") != "podcastEpisode":
         raise TranscriptError(
             f"Apple's iTunes lookup returned nothing for episode id "
@@ -249,7 +299,7 @@ def _resolve_apple(url: str) -> ResolvedPodcast:
     # silent-wrong-episode risk.
     transcript_url, transcript_type = "", ""
     if not feed_url:
-        show = _lookup_apple(podcast_id)
+        show = _lookup_apple(podcast_id, country=country)
         feed_url = (show or {}).get("feedUrl") or ""
         if not show_title:
             show_title = (show or {}).get("collectionName") or ""

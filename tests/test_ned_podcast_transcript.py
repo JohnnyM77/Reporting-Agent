@@ -154,6 +154,116 @@ def test_apple_episode_lookup_no_result_raises(monkeypatch):
     assert "42" in str(ei.value)
 
 
+@pytest.mark.parametrize("path,expected", [
+    ("/au/podcast/x/id111", "au"),
+    ("/us/podcast/x/id111", "us"),
+    ("/gb/podcast/x/id111", "gb"),
+    ("/AU/podcast/x/id111", "au"),          # tolerant to case
+    ("/us/podcasts/x/id111", "us"),         # plural form (some Apple URLs)
+    ("/podcast/x/id111", ""),               # no country segment
+    ("/podcast/us/x/id111", ""),            # `us` not in the country slot
+    ("", ""),                               # defensive
+])
+def test_country_extraction_from_apple_url(path, expected):
+    assert podcast_mod._country_from_apple_url(path) == expected
+
+
+def test_apple_lookup_passes_country_from_storefront_url(monkeypatch):
+    """A `podcasts.apple.com/au/...` URL must scope the iTunes lookup to
+    the AU storefront. Without this, the live Story of Money URL
+    returned zero results and the whole run failed at resolve time."""
+    calls: list[dict] = []
+
+    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
+        if "itunes.apple.com" in url:
+            calls.append(dict(params or {}))
+            # Storefront-scoped call succeeds -- no retry needed.
+            if params.get("country") == "au":
+                return _FakeResponse(json_body={"results": [{
+                    "wrapperType": "podcastEpisode",
+                    "collectionName": "The Story of Money",
+                    "trackName": "Railroads",
+                    "episodeUrl": "https://cdn.example.com/eps/story.mp3",
+                    "episodeGuid": "guid-railroads",
+                    "feedUrl": "https://example.com/feed.rss",
+                }]})
+            # Anything else means we forgot to pass country.
+            return _FakeResponse(json_body={"results": []})
+        # RSS feed request -- return an item whose guid matches so the
+        # transcript-tag path doesn't complain in the log.
+        return _FakeResponse(content=(
+            b'<?xml version="1.0"?><rss version="2.0"><channel><item>'
+            b'<guid>guid-railroads</guid>'
+            b'<enclosure url="https://cdn.example.com/eps/story.mp3"/>'
+            b'</item></channel></rss>'
+        ))
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    resolved = podcast_mod.resolve_podcast_url(
+        "https://podcasts.apple.com/au/podcast/the-story-of-money/id1376303362?i=1000764231178"
+    )
+    assert resolved.audio_url == "https://cdn.example.com/eps/story.mp3"
+    # First iTunes call was storefront-scoped to au + entity-scoped to
+    # podcastEpisode -- both are load-bearing for regional episodes.
+    assert calls[0]["country"] == "au"
+    assert calls[0]["entity"] == "podcastEpisode"
+    assert calls[0]["id"] == "1000764231178"
+
+
+def test_apple_lookup_retries_without_country_when_storefront_returns_nothing(monkeypatch):
+    """Some content isn't in the local storefront but IS in the global
+    catalogue. When the country-scoped call returns nothing, retry once
+    without `country`. Guards against a whole class of "URL works in
+    Apple's app but iTunes returns 0 with the local storefront" failures."""
+    calls: list[dict] = []
+
+    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
+        if "itunes.apple.com" in url:
+            calls.append(dict(params or {}))
+            if "country" in params:
+                return _FakeResponse(json_body={"results": []})   # storefront empty
+            return _FakeResponse(json_body={"results": [{
+                "wrapperType": "podcastEpisode",
+                "collectionName": "Show",
+                "trackName": "Ep",
+                "episodeUrl": "https://cdn.example.com/eps/42.mp3",
+                "episodeGuid": "g42",
+                "feedUrl": "https://example.com/feed.rss",
+            }]})
+        return _FakeResponse(content=(
+            b'<?xml version="1.0"?><rss version="2.0"><channel><item>'
+            b'<guid>g42</guid>'
+            b'<enclosure url="https://cdn.example.com/eps/42.mp3"/>'
+            b'</item></channel></rss>'
+        ))
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    resolved = podcast_mod.resolve_podcast_url(
+        "https://podcasts.apple.com/au/podcast/x/id111?i=42"
+    )
+    assert resolved.audio_url == "https://cdn.example.com/eps/42.mp3"
+    # Two iTunes calls: first with country=au, then without.
+    assert len(calls) == 2
+    assert calls[0].get("country") == "au"
+    assert "country" not in calls[1]
+
+
+def test_apple_lookup_raises_only_when_both_country_and_no_country_return_nothing(monkeypatch):
+    """If BOTH storefront-scoped AND unscoped lookups return empty, the
+    episode really is gone -- raise clearly. Never silently substitute
+    another episode."""
+    def fake_get(url, params=None, timeout=None, headers=None, stream=False):
+        if "itunes.apple.com" in url:
+            return _FakeResponse(json_body={"results": []})
+        raise AssertionError("must not touch RSS when episode lookup is empty")
+
+    monkeypatch.setattr(podcast_mod.requests, "get", fake_get)
+    with pytest.raises(TranscriptError):
+        podcast_mod.resolve_podcast_url(
+            "https://podcasts.apple.com/au/podcast/x/id111?i=42"
+        )
+
+
 def test_apple_bare_show_url_takes_newest(monkeypatch):
     """A URL with no `?i=` selector is an explicit request for whatever's
     newest -- that's a valid ask, not a fallback. Should NOT trigger the

@@ -233,6 +233,7 @@ def test_run_transcript_digest_saves_files_and_reports(monkeypatch, tmp_path, ca
         segments=[{"text": "clean transcript body", "start": 0.0}],
     )
     monkeypatch.setattr(ned_main, "fetch_transcript", lambda vid, **kw: fake_result)
+    monkeypatch.setattr(ned_main, "fetch_video_metadata", lambda vid: {"title": "", "channel": ""})
 
     rc = ned_main.run_transcript_digest("https://www.youtube.com/watch?v=oay6t8vh7b4")
     assert rc == 0
@@ -310,6 +311,7 @@ def test_youtube_run_appends_transcripts_history(monkeypatch, tmp_path):
     for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD", "ANTHROPIC_API_KEY"):
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setattr(ned_main, "fetch_transcript", lambda vid, **kw: _yt_run_result())
+    monkeypatch.setattr(ned_main, "fetch_video_metadata", lambda vid: {"title": "", "channel": ""})
 
     rc = ned_main.run_transcript_digest("https://www.youtube.com/watch?v=oay6t8vh7b4")
     assert rc == 0
@@ -390,6 +392,7 @@ def test_youtube_run_saves_pdf_and_sets_pdf_path(monkeypatch, tmp_path):
     for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD", "ANTHROPIC_API_KEY"):
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setattr(ned_main, "fetch_transcript", lambda vid, **kw: _yt_run_result())
+    monkeypatch.setattr(ned_main, "fetch_video_metadata", lambda vid: {"title": "", "channel": ""})
 
     # Stub the PDF backend so the test doesn't need weasyprint / chrome.
     captured: dict = {}
@@ -440,6 +443,7 @@ def test_youtube_run_survives_pdf_failure_and_leaves_pdf_path_empty(monkeypatch,
     for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD", "ANTHROPIC_API_KEY"):
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setattr(ned_main, "fetch_transcript", lambda vid, **kw: _yt_run_result())
+    monkeypatch.setattr(ned_main, "fetch_video_metadata", lambda vid: {"title": "", "channel": ""})
 
     def blow_up(**kw):
         from ned.transcript_pdf import TranscriptPdfError

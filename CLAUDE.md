@@ -756,6 +756,48 @@ Harry's workflows don't install `requests` or the Google libraries.
 **Master Engine is scaffolding**; no workflow runs it. See
 `master_engine/README.md`.
 
+## Ned transcript digests: portfolio-aware (YouTube + podcast)
+
+`run_transcript_digest` / `run_podcast_digest` (`ned/main.py`) share
+`_digest_and_deliver`: save transcript, load portfolio context, one
+analysis call, PDF, email, `docs/data/transcripts.json`. The daily news scan
+(`run_scan` / `llm_summarise`) is untouched and stays on Haiku.
+
+**Portfolio context** (`ned/portfolio_context.py::load_portfolio_context`)
+builds a plain-text block from `tickers.yaml` (VAS/VEU/VHY marked ETF),
+`theses/*.md` frontmatter only (skips `draft: true`; pillar claim, status and
+kill condition, never evidence) and `watchlists/*.yaml` (`.AX` stripped;
+`tii75_watchlist.yaml` only while under 40 names). Capped at ~25k chars by
+shortening each thesis's `the_bet`; tickers, claims and kill conditions are
+never trimmed. Fails soft on any missing or malformed file, reads UTF-8
+explicitly (Windows runner), and logs its final size.
+
+**The analysis** (`ned/transcript_digest.py`) asks for strict JSON; the
+parser strips fences, recovers an object wrapped in prose, and otherwise
+keeps the reply as markdown (`Unrated`). A reply cut off at max_tokens, an
+API error or a missing key is a failure: subject `Ned [Digest failed] ...`,
+the reason on the email and the PDF cover. Transcripts over
+`NED_TRANSCRIPT_LLM_MAX_CHARS` are never clipped: each ~150k-char part is
+reduced to extraction notes and the digest runs on the notes.
+
+| Env | Default |
+|---|---|
+| `NED_TRANSCRIPT_MODEL` | `claude-sonnet-4-6` |
+| `NED_TRANSCRIPT_MAX_TOKENS` | `6000` |
+| `NED_TRANSCRIPT_LLM_MAX_CHARS` | `400000` |
+
+All three are optional repo variables wired into both Ned transcript
+workflows. `transcripts.json` entries now carry `digest_json`,
+`portfolio_relevance`, `digest_error`, `channel` and the real title (YouTube
+via oEmbed, falling back to the video ID).
+
+**The PDF** (`ned/transcript_pdf.py`) must render the same on weasyprint
+(ubuntu) and Playwright + Chrome (Windows): tables and block layout only,
+system fonts, geometry in `@page` (`:first` zero margin for the full-bleed
+cover, `@bottom-center` running footer). Playwright passes
+`prefer_css_page_size=True` and no margins so the CSS wins. Preview with
+`python scripts/ned_sample_transcript_pdf.py`.
+
 ## Tests: stub a dependency only if it's missing
 
 Test files that import agent code stub optional third-party modules through

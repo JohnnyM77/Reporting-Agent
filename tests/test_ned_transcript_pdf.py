@@ -45,7 +45,7 @@ def test_md_to_html_renders_bold_bullets_headings():
     # Numbered TL;DR gets promoted to h3+p, not left as "1. **TL;DR**"
     assert "<h3>TL;DR</h3>" in html
     assert "<h2>Key numbers</h2>" in html
-    assert "<ul>" in html and "</ul>" in html
+    assert "<ul class='gold'>" in html and "</ul>" in html
     # Inline markdown transforms
     assert "<strong>Revenue</strong>" in html
     assert "<code>net_debt</code>" in html
@@ -100,8 +100,8 @@ def test_full_html_carries_expected_regions():
     assert "Podcast" in html and "podcast" in html   # badge class + label
     assert "https://podcasts.apple.com/x/id1?i=42" in html
     assert "24 Sep 2026" in html
-    # Provenance note reflects the kind.
-    assert "podcast:transcript" in html
+    # Provenance defaults by kind when the caller doesn't pass one.
+    assert "Podcast transcript" in html
 
 
 def test_full_html_youtube_variant_uses_youtube_note():

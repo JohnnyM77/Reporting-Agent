@@ -141,21 +141,51 @@ Windows, `brew install gh` on macOS. Then `gh auth login` once.
 
 Both workflows follow the same path:
 
-1. Fetch and transcribe the episode (podcast: try published RSS
+1. Fetch and transcribe the episode (podcast: try the published RSS
    transcript first, fall back to Whisper; YouTube: read the caption
-   track directly).
-2. Summarise the transcript with the same Anthropic prompt Ned uses
-   for the daily digest.
-3. Render a self-contained PDF (cover + digest + full transcript),
-   attach it to the email, and drop a copy under `docs/transcripts/`
-   so the dashboard can link to it.
-4. Email you the digest, with the PDF attached.
-5. Append the entry to `docs/data/transcripts.json`, prune any
-   transcript PDF older than the retention window (default 30 days;
-   override with `NED_TRANSCRIPT_PDF_RETENTION_DAYS`), rebuild
-   `docs/index.html`, and push. That triggers the Pages workflow,
-   which redeploys the site with the new item in the **Transcripts**
-   section — including a green **"📄 Download PDF"** button linking
-   to the file. The button 404s once the retention window has passed
-   and the file's been pruned, which is the deliberate
-   "for a short time" behaviour.
+   track directly). YouTube runs also look up the real video title and
+   channel (oEmbed, no key needed) so the email and PDF aren't named
+   after a video ID.
+2. Load your portfolio context: holdings from `tickers.yaml`, every
+   thesis's pillars and kill conditions from `theses/*.md`, and the
+   watchlists in `watchlists/`. About 25k characters; the log prints the
+   exact size.
+3. Analyse the episode against that context on Claude Sonnet
+   (`NED_TRANSCRIPT_MODEL`, default `claude-sonnet-4-6`): relevance to
+   your portfolio (High / Medium / Low / None), which holdings or
+   watchlist names it supports, challenges or puts a kill condition at
+   risk, the 3 to 5 year lens (themes, historical parallels and where they
+   break, second-order effects, winners and losers), a sceptic's corner,
+   new ideas, and what to watch next. A transcript longer than
+   `NED_TRANSCRIPT_LLM_MAX_CHARS` (default 400,000, roughly 7 hours) is
+   never clipped: it is read in parts first, and the PDF cover says so.
+4. Render the PDF: cover with the relevance call and TL;DR, portfolio
+   impact cards, the medium-term lens, the rest of the analysis, then the
+   full transcript with time markers. Saved under `docs/transcripts/`.
+5. Email you a short version (subject `Ned [Medium] Podcast: <title>`)
+   with the PDF attached. If the analysis fails, the subject says
+   `[Digest failed]` and the email and PDF give the reason.
+6. Append the entry (including the structured analysis) to
+   `docs/data/transcripts.json`, prune any transcript PDF older than the
+   retention window (default 30 days; override with
+   `NED_TRANSCRIPT_PDF_RETENTION_DAYS`), rebuild `docs/index.html`, and
+   push. That triggers the Pages workflow, which redeploys the site with
+   the new item in the **Transcripts** section, including a relevance
+   badge and a green **"📄 Download PDF"** button. The button 404s once
+   the retention window has passed and the file's been pruned, which is
+   the deliberate "for a short time" behaviour.
+
+### Tuning (optional repo variables)
+
+Set these under **Settings → Secrets and variables → Actions →
+Variables** to override the defaults without editing code:
+
+| Variable | Default | What it does |
+|---|---|---|
+| `NED_TRANSCRIPT_MODEL` | `claude-sonnet-4-6` | Model for the transcript analysis (the daily news scan keeps Haiku) |
+| `NED_TRANSCRIPT_MAX_TOKENS` | `6000` | Output budget for the analysis; raise it if a run fails with "cut off at max_tokens" |
+| `NED_TRANSCRIPT_LLM_MAX_CHARS` | `400000` | Transcripts longer than this are analysed in ~150k-character parts |
+
+To preview the PDF layout without a live run:
+`python scripts/ned_sample_transcript_pdf.py` writes
+`outputs/sample_transcript_digest.pdf` from a fixture.

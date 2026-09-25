@@ -25,6 +25,8 @@ import re
 from dataclasses import dataclass, asdict
 from typing import Optional
 
+from shared.securities import asx_code_or_none
+
 from .config import NEWS_LOOKBACK_DAYS, NEWS_MAX_ITEMS
 
 
@@ -105,12 +107,9 @@ def asx_code(ticker: str) -> Optional[str]:
 
     Wally's watchlist loader normalises ASX listings to Yahoo-style
     "CODE.AX"; anything without that suffix (US, LSE, TSX, …) has no ASX
-    announcements to look up.
+    announcements to look up. The rule lives in shared/securities.py.
     """
-    t = (ticker or "").strip().upper()
-    if t.endswith(".AX") and len(t) > 3:
-        return t[:-3]
-    return None
+    return asx_code_or_none(ticker)
 
 
 # ---------------------------------------------------------------------------
@@ -144,19 +143,9 @@ class NewsItem:
 
 def _http_session():
     """Browser-like requests session for the ASX v2 endpoint."""
-    import requests
+    from shared.asx import CHROME_124_USER_AGENT, browser_session
 
-    s = requests.Session()
-    s.headers.update({
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/124.0.0.0 Safari/537.36"
-        ),
-        "Accept": "*/*",
-        "Referer": "https://www.asx.com.au/",
-    })
-    return s
+    return browser_session(accept="*/*", user_agent=CHROME_124_USER_AGENT)
 
 
 def fetch_significant_news(

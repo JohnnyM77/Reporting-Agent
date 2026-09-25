@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-09-10",
+  "last_run": "2026-09-25",
   "thesis_count": 20,
   "drifting": 2,
   "watch": 13,
@@ -46,7 +46,7 @@
         {
           "code": "RESOLUTION_OVERDUE",
           "severity": "WARN",
-          "message": "resolution date passed 302 days ago and nothing was written down"
+          "message": "resolution date passed 317 days ago and nothing was written down"
         }
       ]
     },
@@ -270,7 +270,7 @@
         {
           "code": "RESOLUTION_OVERDUE",
           "severity": "WARN",
-          "message": "resolution date passed 2126 days ago and nothing was written down"
+          "message": "resolution date passed 2141 days ago and nothing was written down"
         },
         {
           "code": "DIVERGENCE_OPEN",
@@ -482,7 +482,7 @@
         {
           "code": "SIGNAL_UNANSWERED",
           "severity": "WARN",
-          "message": "Sally: sally trim on 2026-09-06 and nothing was written down either way"
+          "message": "Sally: sally review on 2026-09-20 and nothing was written down either way"
         }
       ]
     },
@@ -765,10 +765,10 @@
     {
       "ticker": "NHC",
       "source": "Sally",
-      "kind": "SALLY_TRIM",
-      "detail": "Trim candidate \u00b7 Tier 3: Deep Review \u00b7 PE 34x \u00b7 97th valuation percentile",
-      "question": "Sally says trim. You are not going to. What would have to be true about the price for you to change that answer \u2014 and is that written down as a kill condition anywhere?",
-      "date": "2026-09-06"
+      "kind": "SALLY_REVIEW",
+      "detail": "Hold but stop adding \u00b7 Tier 2: Review \u00b7 PE 34x \u00b7 100th valuation percentile",
+      "question": "Sally has flagged this for review. What does she see that your pillars do not cover?",
+      "date": "2026-09-20"
     }
   ],
   "no_thesis": []

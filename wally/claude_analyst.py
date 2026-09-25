@@ -32,8 +32,12 @@ def analyse_opportunity(
         _log("ANTHROPIC_API_KEY not set — skipping AI analysis.")
         return None
 
+    # Transport (client, response text) is shared/llm.py; the prompt and the
+    # section parsing below are this agent's own.
+    from shared.llm import make_client, send as llm_send
+
     try:
-        import anthropic
+        client = make_client(api_key)
     except ImportError:
         _log("anthropic package not installed — skipping AI analysis.")
         return None
@@ -76,20 +80,17 @@ WHAT MUST BE TRUE: [2-3 specific, falsifiable conditions that must hold for the 
 RECOMMENDATION: [one clear action recommendation: Monitor / Research further / Buy on conviction, with brief rationale]"""
 
     try:
-        client = anthropic.Anthropic(api_key=api_key)
         _log(f"Requesting Claude analysis for {ticker}…")
-        response = client.messages.create(
+        response = llm_send(
+            client,
             model="claude-opus-4-6",
             max_tokens=1024,
             thinking={"type": "adaptive"},
             messages=[{"role": "user", "content": prompt}],
         )
 
-        # Extract the text block (skip thinking blocks)
-        text = next(
-            (block.text for block in response.content if block.type == "text"),
-            "",
-        )
+        # Text blocks only (thinking blocks are skipped)
+        text = response.text
 
         if not text:
             _log(f"No text in response for {ticker}.")

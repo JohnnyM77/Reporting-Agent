@@ -1,4 +1,4 @@
-name: Ned Transcript Fetcher
+name: YouTube -- Ned Transcript Fetcher
 
 # Manual, on-demand single-episode YouTube transcript fetcher.
 # Paste a YouTube link into the "Run workflow" box and Ned will fetch the
@@ -19,13 +19,17 @@ on:
   workflow_dispatch:
     inputs:
       youtube_url:
-        description: "YouTube episode link (watch?v=…, youtu.be/…, or /shorts/…)"
+        description: "YouTube episode link (watch?v=..., youtu.be/..., or /shorts/...)"
         required: true
         type: string
 
 jobs:
   transcript:
     runs-on: [self-hosted, Windows]
+    # Needed so the commit step at the end can push docs/data/transcripts.json
+    # + the rebuilt docs/index.html back to the branch.
+    permissions:
+      contents: write
     defaults:
       run:
         # Windows PowerShell 5.1 (invoked as `powershell`) ships with every
@@ -51,6 +55,11 @@ jobs:
           & $py --version
           & $py -m pip install --upgrade pip
           & $py -m pip install -r requirements-ned.txt
+          # playwright powers the transcript PDF via installed Chrome, same
+          # pattern Slinger uses on this runner. `channel='chrome'` reuses
+          # the Chrome install SGX already relies on, so no browser download
+          # is needed here.
+          & $py -m pip install playwright
 
       - name: Fetch transcript + digest
         env:
@@ -72,3 +81,42 @@ jobs:
           name: ned-transcripts
           path: transcripts/
           if-no-files-found: ignore
+
+      - name: Commit dashboard update
+        # Same pattern the other agents use (Bob, Ned scan, Wally): commit
+        # the data JSON, pull --rebase to absorb anything that landed while
+        # we ran, rebuild the dashboard from the fresh data, and push. Runs
+        # even on a fetch failure so a "failed to fetch" partial can still
+        # be surfaced if that lands on the dashboard in future.
+        if: always()
+        run: |
+          $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
+          if (-not (Test-Path $py)) { $py = "python" }
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if (Test-Path "docs\data\transcripts.json") {
+            git add docs/data/transcripts.json
+            # `git add -A` on docs/transcripts/ picks up the new PDF plus
+            # any deletions from _prune_old_transcript_pdfs (Path.unlink
+            # writes to the working tree; -A stages the removals so the
+            # commit reflects the pruned state). Guarded because the
+            # folder may not exist on a fresh checkout -- the first run
+            # creates it.
+            if (Test-Path "docs\transcripts") {
+              git add -A docs/transcripts
+            }
+            git diff --staged --quiet
+            if ($LASTEXITCODE -ne 0) {
+              git commit -m "Ned transcripts data [skip ci]"
+            }
+            git pull --rebase origin HEAD
+            & $py scripts/build_dashboard.py
+            git add docs/index.html
+            git diff --staged --quiet
+            if ($LASTEXITCODE -ne 0) {
+              git commit -m "Dashboard update -- Ned transcripts [skip ci]"
+            }
+            git push origin HEAD
+          } else {
+            Write-Host "No transcripts.json produced this run; nothing to commit."
+          }

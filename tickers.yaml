@@ -10,12 +10,10 @@ asx:
   CSL: CSL Limited
   DRO: DroneShield Limited
   IAG: Insurance Australia Group Limited
-  LAU: Lindsay Australia Limited
   MSV: Mitchell Services Limited
   MVP: Medical Developments International Limited
   NHC: New Hope Corporation Limited
   PWH: PWR Holdings Limited
-  RMD: ResMed Inc
   RTH: RAS Technology Holdings Limited
   TWE: Treasury Wine Estates Limited
   VAS: Vanguard Australian Shares Index ETF
@@ -25,6 +23,26 @@ asx:
 
 lse:
   RR.: Rolls-Royce Holdings plc
+
+# SGX codes (3-4 char native SGX codes, not Bloomberg tickers).
+# Fetched via sgx_fetch.py; requires the self-hosted Windows runner
+# (see sgx_fetch.py docstring for the reason).
+sgx:
+  D05: DBS Group Holdings Ltd
+  U11: United Overseas Bank Ltd
+  O39: Oversea-Chinese Banking Corporation Ltd
+  Z74: Singapore Telecommunications Ltd
+  C6L: Singapore Airlines Ltd
+
+# US (NYSE + NASDAQ) tickers. Fetched via us_fetch.py (SEC EDGAR).
+# The ASX morning run (daily.yml) iterates this list after ASX Bob has
+# finished, so every ticker here gets a SEC EDGAR quarterly-results
+# check as part of the same digest cycle. us_daily.yml is still there
+# for on-demand single-ticker dispatches.
+us:
+  MSFT: Microsoft Corporation
+  NVDA: NVIDIA Corporation
+  RMD: ResMed Inc
 
 # ETFs (VAS, VEU, VHY) are included for ASX announcements but skipped for news scanning
 etf_tickers:

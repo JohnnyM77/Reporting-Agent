@@ -1,0 +1,156 @@
+name: Bob USA Daily
+
+# Bob USA V1 -- SEC EDGAR results agent, scheduled + on-demand.
+#
+# The daily cron mirrors ASX Bob's morning run (23:13 UTC) and runs
+# in --portfolio mode: iterate every ticker under `us:` in tickers.yaml,
+# skip anything whose latest 10-K/10-Q accession is already in
+# state_seen_us.json, and email + publish for anything new.
+# The dispatch inputs stay for on-demand single-ticker analysis.
+#
+# The default runner is GitHub-hosted ubuntu-latest -- unlike Slinger,
+# EDGAR has no TLS-fingerprint filter and needs no residential IP, so
+# bundled Playwright Chromium is enough.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: "US symbol to analyse (e.g. MSFT, NVDA, SE). Leave blank + tick portfolio for the full us: list."
+        required: false
+        default: ""
+      portfolio:
+        description: "true = iterate every ticker under us: (same behaviour as the daily cron); ignores ticker input."
+        required: false
+        default: "false"
+      dry_run:
+        description: "true = build digest + preview but don't send email"
+        required: false
+        default: "false"
+  schedule:
+    # 23:13 UTC matches daily.yml -- so Bob ASX and Bob USA both fire at
+    # the same wall-clock time each morning, and any dashboard rebuild
+    # a downstream Publish site workflow does sees both agents' data.
+    - cron: "13 23 * * *"
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    # `contents: write` lets the "Commit dashboard update" step push
+    # us.json + rebuilt index.html back to main -- same pattern the
+    # SGX workflow uses on Windows.
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore Bob USA seen-state cache
+        # Per-accession dedup: without this the portfolio cron would
+        # re-analyse and re-email the same 10-K for every ticker every
+        # morning until a fresh filing lands.
+        uses: actions/cache/restore@v4
+        with:
+          path: state_seen_us.json
+          key: seen-state-us-${{ github.ref_name }}
+          restore-keys: |
+            seen-state-us-${{ github.ref_name }}-
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          # Same superset the SGX path uses, plus explicit anthropic/pyyaml
+          # (already there transitively but pinned here so a fresh cache
+          # never has to rediscover them).
+          python -m pip install playwright pyyaml requests beautifulsoup4 pypdf anthropic
+
+      - name: Install Chromium for Playwright
+        # Bundled Chromium is fine for SEC (no fingerprint gating). --with-deps
+        # pulls the ubuntu libs Chromium needs; runs quickly on the cached image.
+        run: |
+          python -m playwright install --with-deps chromium
+
+      - name: Run Bob USA
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_MODEL: ${{ secrets.CLAUDE_MODEL }}
+          US_SEEN_STATE_PATH: state_seen_us.json
+          # EDGAR requires a non-empty, identifying User-Agent. Default is
+          # baked into us_fetch.py; override here if needed.
+          # SEC_USER_AGENT: "Bob the Bot johnmyerscough13@gmail.com"
+        run: |
+          set -euo pipefail
+          # Mode precedence: schedule -> portfolio; dispatch with the
+          # portfolio checkbox -> portfolio; dispatch with ticker -> single.
+          if [[ "${{ github.event_name }}" == "schedule" ]] \
+             || [[ "${{ inputs.portfolio }}" == "true" ]] \
+             || [[ -z "${{ inputs.ticker }}" ]]; then
+            args=("--portfolio")
+          else
+            args=("--ticker" "${{ inputs.ticker }}")
+          fi
+          if [[ "${{ inputs.dry_run }}" == "true" ]]; then
+            args+=("--dry-run")
+          fi
+          python us_agent.py "${args[@]}"
+
+      - name: Save Bob USA seen-state cache
+        # `if: always()` so a hung LLM call doesn't prevent tomorrow's
+        # dedup from working (any accession we managed to record still
+        # gets cached). Cache key includes run_id so successive runs on
+        # the same day each save without stepping on each other.
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state_seen_us.json
+          key: seen-state-us-${{ github.ref_name }}-${{ github.run_id }}
+
+      # Publish to the shared dashboard. Bob USA wrote docs/data/us.json;
+      # rebuild docs/index.html and commit with [skip ci] so this push
+      # does not re-trigger. The Publish site workflow picks up the
+      # workflow_run completion event and deploys. Same pattern the
+      # Slinger step uses, translated from PowerShell to bash.
+      - name: Commit dashboard update
+        if: always()
+        run: |
+          set -euo pipefail
+          if [[ ! -f docs/data/us.json ]]; then
+            echo "[dashboard] us.json not written this run -- skipping commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/data/us.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Bob USA data [skip ci]"
+          fi
+          # Rebase against remote before rebuilding + pushing, in case
+          # another agent's commit landed between our fetch and now.
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          python scripts/build_dashboard.py
+          # us_history.json is Bob USA's rolling last-two-runs record --
+          # add it to the commit alongside index.html so a Publish site
+          # rebuild on ubuntu never trips over unstaged diffs (same
+          # gotcha slinger_history.json hit; see CLAUDE.md).
+          git add docs/index.html docs/data/us_history.json 2>/dev/null || true
+          git add docs/index.html
+          if ! git diff --staged --quiet; then
+            git commit -m "Dashboard update -- Bob USA [skip ci]"
+          fi
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: us-daily
+          path: outputs/us/
+          if-no-files-found: warn

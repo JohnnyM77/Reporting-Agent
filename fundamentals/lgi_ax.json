@@ -1,0 +1,21 @@
+{
+  "annual_div_cents": {
+    "2023": 2.31,
+    "2024": 2.5,
+    "2025": 2.5,
+    "2026": 2.6
+  },
+  "annual_eps_cents": {
+    "2023": 7.3,
+    "2024": 7.5,
+    "2025": 7.3
+  },
+  "last_updated": "2026-09-11",
+  "quarterly_eps_cents": {},
+  "sources": {
+    "2023": "yfinance",
+    "2024": "yfinance",
+    "2025": "yfinance"
+  },
+  "ticker": "LGI.AX"
+}

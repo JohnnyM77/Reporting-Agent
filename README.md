@@ -313,6 +313,12 @@ tickers.yaml
 
 Portfolio company list.
 
+shared/ and dashboard/
+
+Plumbing every agent uses (email, Claude transport, ticker identity, ASX
+HTTP, Drive) and the dashboard's per-agent cards. See
+docs/INFRASTRUCTURE.md.
+
 Workflow
 
 Bob runs automatically using GitHub Actions.
@@ -545,37 +551,17 @@ python -m wally.main --tii75 --force
 A new weekly agent is available under `sunday-sally/` to review names near 52-week highs and assess valuation stretch vs history.
 See `sunday-sally/README.md` and `.github/workflows/sunday_sally_weekly_review.yml`.
 
-## Master Engine Alert (Super Investor)
+## Harry Hindsight (Chief Sceptic)
 
-The Master Engine Alert aggregates events from all agents (Bob, Wally, Ned) into a unified investor briefing with prioritized alerts.
+Harry Hindsight sits above the other agents and asks whether we're wrong, while it's still foresight. It reads Bob, Sally, Wally and Theo's existing outputs, gates in code, and only calls the model when something could change the answer: a Sally sell signal on a holding, a Bob high-impact event, a JM Watch List name that moved, one of Wally's top ideas, a monthly portfolio review, or an autopsy of its own past warnings. Every report runs a thesis test, Helmer's 7 Powers, a Munger tendencies scan with a code-enforced Lollapalooza gate, and, for sells, the fresh capital and forced sale tests.
 
-### How to run
+Personal data (case files, SQLite, the bias profile) lives in a private repo, never here. Run `python -m hindsight sell NHC` for a one-off sell review. See `hindsight/README.md`, `docs/CAPTAIN_HINDSIGHT_ARCHITECTURE.md` and `.github/workflows/captain_hindsight.yml`.
 
-**Via GitHub Actions:**
-1. Go to the Actions tab in GitHub
-2. Select "Master Engine Alert (Super Investor)" workflow
-3. Click "Run workflow"
-4. Configure options (include TII75, skip agents, etc.)
-5. Click "Run workflow" button
+## Master Engine (not currently run)
 
-**Locally:**
-```bash
-python run_master_investor.py
-python run_master_investor.py --wally-tii75  # Include TII75 watchlist
-python run_master_investor.py --no-ned --no-bob  # Skip specific agents
-python run_master_investor.py --no-email  # Generate digest without sending email
-```
-
-### Output locations
-
-- **Email:** Sent to `EMAIL_TO` with subject "Johnny Master Investor Alert — {date} ({N} alert(s))"
-- **Files:** Saved in `outputs/YYYY-MM-DD/`:
-  - `master_investor_digest.html` - Full HTML digest
-  - `master_investor_digest.md` - Markdown summary
-  - `master_investor_events.json` - JSON archive
-
-### Scheduled runs
-
-The workflow runs automatically daily at 00:00 UTC, after all individual agent workflows have completed.
-
-See `docs/WALLY_AND_MASTER_ENGINE_CHANGES.md` for detailed documentation.
+`master_engine/` can aggregate events from Bob, Wally, Ned and Harry into
+one prioritised briefing, but no workflow runs it. The
+`master_engine_alert.yml` workflow and `run_master_investor.py` it used to
+describe are no longer in the repo. The event model it defines,
+`InvestorEvent`, now lives in `shared/events.py` and is written by Harry on
+every run. See `master_engine/README.md`.

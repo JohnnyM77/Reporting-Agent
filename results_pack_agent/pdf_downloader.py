@@ -11,6 +11,8 @@ from typing import Optional
 
 import requests
 
+from shared.asx import absolute_url
+
 from .config import MAX_PDF_DOWNLOAD_BYTES, PDF_DOWNLOAD_TIMEOUT_SECS
 from .models import Announcement, ResultPack
 from .utils import log, safe_filename
@@ -49,9 +51,7 @@ def _resolve_pdf_url(ann: Announcement, session: requests.Session) -> Optional[s
         for a_tag in soup.find_all("a", href=True):
             href = str(a_tag["href"])
             if href.lower().endswith(".pdf"):
-                if href.startswith("/"):
-                    href = "https://www.asx.com.au" + href
-                return href
+                return absolute_url(href)
     except Exception:
         pass
 

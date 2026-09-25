@@ -32,25 +32,31 @@ def test_configured_watchlists_are_the_ones_under_watchlists_dir():
         )
 
 
-def test_tii_watchlist_actually_carries_buy_prices():
-    """The below-target trigger is only alive if targets reach the loader."""
-    tii = next(p for p in STANDARD_WATCHLISTS if "tii_watchlist" in p)
-    wl = load_watchlist(REPO_ROOT / tii)
-    assert len(wl.target_prices) > 50, (
-        f"TII watchlist loaded only {len(wl.target_prices)} target prices — "
+def test_standard_watchlists_carry_buy_prices():
+    """The below-target trigger is only alive if targets reach the loader.
+
+    Buy prices follow the ticker across lists, so the invariant is on the
+    aggregate, not any single file: names move between Income / JM / Cornerstone
+    / Nap Taker as they are re-prioritised, but the total number of live target
+    prices must stay healthy and every price must key onto a listed ticker.
+    """
+    total = 0
+    for rel in STANDARD_WATCHLISTS:
+        wl = load_watchlist(REPO_ROOT / rel)
+        orphans = sorted(set(wl.target_prices) - set(wl.tickers))
+        assert not orphans, f"{rel}: target prices for tickers not in the list: {orphans}"
+        total += len(wl.target_prices)
+    assert total > 100, (
+        f"standard watchlists carry only {total} target prices in total — "
         "the below-target screen is effectively off"
     )
-    # Prices must key onto tickers the screen will actually look up.
-    tickers = set(wl.tickers)
-    orphans = sorted(set(wl.target_prices) - tickers)
-    assert not orphans, f"target prices for tickers not in the list: {orphans}"
 
 
 def test_target_prices_are_positive_numbers():
-    tii = next(p for p in STANDARD_WATCHLISTS if "tii_watchlist" in p)
-    wl = load_watchlist(REPO_ROOT / tii)
-    for ticker, price in wl.target_prices.items():
-        assert isinstance(price, float) and price > 0, f"{ticker}: {price!r}"
+    for rel in STANDARD_WATCHLISTS:
+        wl = load_watchlist(REPO_ROOT / rel)
+        for ticker, price in wl.target_prices.items():
+            assert isinstance(price, float) and price > 0, f"{rel} {ticker}: {price!r}"
 
 
 def test_no_stale_duplicate_watchlist_directory():

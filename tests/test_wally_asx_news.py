@@ -11,20 +11,19 @@ from unittest.mock import MagicMock, patch
 # ---------------------------------------------------------------------------
 # Stub heavy optional dependencies so wally modules can be imported in CI
 # ---------------------------------------------------------------------------
-for _stub in (
+from _stubs import stub_missing  # noqa: E402
+
+_STUBBED = stub_missing(
     "anthropic", "openpyxl", "openpyxl.styles", "openpyxl.utils",
     "matplotlib", "matplotlib.pyplot", "matplotlib.figure",
     "matplotlib.axes", "matplotlib.patches", "matplotlib.lines",
     "matplotlib.ticker", "yfinance", "requests", "pandas",
-):
-    if _stub not in sys.modules:
-        sys.modules[_stub] = types.ModuleType(_stub)
+)
 
 # asx_fetch does `from bs4 import BeautifulSoup` at import time
-if "bs4" not in sys.modules:
-    _bs4 = types.ModuleType("bs4")
+if stub_missing("bs4"):
+    _bs4 = sys.modules["bs4"]
     _bs4.BeautifulSoup = MagicMock()
-    sys.modules["bs4"] = _bs4
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 

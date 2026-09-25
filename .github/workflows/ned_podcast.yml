@@ -1,0 +1,126 @@
+name: Podcast — Ned Transcript Fetcher
+
+# Manual, on-demand single-episode podcast transcript fetcher.
+# Paste a podcast URL into the "Run workflow" box and Ned will:
+#   1. Resolve it (direct .mp3, Apple Podcasts link, or RSS feed URL).
+#   2. Download the audio and compress it with ffmpeg to 16 kHz mono Opus.
+#   3. Transcribe with the OpenAI Whisper API.
+#   4. Summarise with Anthropic (same LLM step Ned already uses).
+#   5. Email the digest and upload the raw transcript as an artifact.
+#
+# Unlike ned_transcript.yml (YouTube), this workflow runs on ubuntu-latest:
+#   * YouTube blocks caption fetches from cloud IPs — hence the self-hosted
+#     runner there.
+#   * Podcast MP3 hosts (CDNs, Libsyn, Simplecast, etc.) do NOT block cloud
+#     IPs — normal HTTP downloads work fine, so no home PC is required.
+#   * ffmpeg is installed via apt-get in this workflow (not preinstalled on
+#     ubuntu-latest, contrary to earlier assumption — confirmed on a live run).
+#
+# Required secrets (all already exist from other workflows except OPENAI_API_KEY):
+#   OPENAI_API_KEY     — Whisper API (~$0.006/min ≈ 36c for a 60-min episode)
+#   ANTHROPIC_API_KEY  — Ned's existing LLM digest step
+#   EMAIL_FROM / EMAIL_TO / EMAIL_APP_PASSWORD — Gmail SMTP
+
+on:
+  workflow_dispatch:
+    inputs:
+      podcast_url:
+        description: >
+          Podcast episode link (direct .mp3/.m4a URL, Apple Podcasts episode
+          URL, or an RSS feed URL — newest episode is used if the RSS URL has
+          no episode selector)
+        required: true
+        type: string
+
+jobs:
+  transcript:
+    runs-on: ubuntu-latest
+    # Needed so the commit step at the end can push docs/data/transcripts.json
+    # + the rebuilt docs/index.html back to the branch.
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ffmpeg
+        run: |
+          # Not actually preinstalled on this runner image (confirmed via a
+          # live run — "ffmpeg: command not found"). Install it explicitly
+          # rather than assuming; `| head -1` on the verify line would also
+          # mask a missing binary since a pipe's exit status is the last
+          # command's (head), not ffmpeg's, so check the real exit code too.
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          ffmpeg -version | head -1
+          command -v ffmpeg
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ned.txt
+          # weasyprint powers the PDF attached to the digest email + linked
+          # from the dashboard's Transcripts card. Same pattern Harry uses
+          # on ubuntu — the pip install pulls in cairo/pango bindings that
+          # need libraries preinstalled on ubuntu-latest images.
+          sudo apt-get install -y -qq libpango-1.0-0 libpangoft2-1.0-0
+          pip install weasyprint
+
+      - name: Fetch podcast + transcribe + digest
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Passed via env (not the run: line) so an odd URL can't be shell-injected.
+          NED_PODCAST_URL: ${{ inputs.podcast_url }}
+          # This step can run several minutes (download + compress + one or
+          # more Whisper calls). Python fully buffers stdout when it isn't a
+          # TTY, so without this every log line lands at once when the
+          # process exits instead of as it happens — confirmed on a live run
+          # where nothing appeared in the log until the very end.
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python -m ned.main
+
+      - name: Upload transcripts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ned-podcast-transcripts
+          path: transcripts/
+          if-no-files-found: ignore
+
+      - name: Commit dashboard update
+        # Same pattern the other agents use (Bob, Ned, Wally): commit the
+        # data JSON, pull --rebase to absorb anything that landed while we
+        # ran, rebuild the dashboard from the fresh data, and push. Runs
+        # even on a fetch failure so any partial entry (e.g. a "failed to
+        # fetch" record) still lands on the dashboard.
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f docs/data/transcripts.json ]; then
+            git add docs/data/transcripts.json
+            # `git add -A` on docs/transcripts/ picks up both the new PDF and
+            # the deletions from _prune_old_transcript_pdfs() (Path.unlink
+            # writes to the working tree, not git; -A stages the removals).
+            # `docs/transcripts/` may not exist on a fresh install — the
+            # first run creates it — so guard the add.
+            if [ -d docs/transcripts ]; then
+              git add -A docs/transcripts
+            fi
+            git diff --staged --quiet || git commit -m "Ned transcripts data [skip ci]"
+            git pull --rebase origin HEAD
+            python scripts/build_dashboard.py
+            git add docs/index.html
+            git diff --staged --quiet || git commit -m "Dashboard update -- Ned transcripts [skip ci]"
+            git push origin HEAD
+          else
+            echo "No transcripts.json produced this run; nothing to commit."
+          fi

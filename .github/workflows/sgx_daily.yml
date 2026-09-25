@@ -1,0 +1,193 @@
+name: Singapore Slinger Daily
+
+# Singapore Slinger V4 R2 -- full daily orchestrator for SGX.
+# Fetches, classifies, analyses (results only), emails, publishes to
+# the shared dashboard.
+#
+# Runs on the self-hosted Windows runner (mr_co-runer) on purpose: SGX
+# blocks non-browser TLS fingerprints and its Flutter Web frontend
+# generates a signed authorizationtoken header client-side that only fires
+# from a real Chrome UA + real Chrome fingerprint. GH-hosted ubuntu can
+# reach investors.sgx.com but not the announcements list endpoint under
+# SGX's constraints -- see PR #164 for the diagnosis.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tickers:
+        description: "Optional comma-separated SGX codes (defaults to tickers.yaml sgx section)"
+        required: false
+        default: ""
+      hours_back:
+        description: "Window in hours (default 24)"
+        required: false
+        default: "24"
+      dry_run:
+        description: "true = build digest + preview but don't send email or update seen state"
+        required: false
+        default: "false"
+      fetch_only:
+        description: "true = just run sgx_fetch.py and upload JSON (Round 1 mode); no LLM/email"
+        required: false
+        default: "false"
+      results_ticker:
+        description: "Comma-separated SGX codes -- pulls their LAST HY/FY report (looks back ~365 days), runs deep analysis, emails. Overrides portfolio; skips seen_state. Example: 5DD"
+        required: false
+        default: ""
+      results_hint:
+        description: "Optional context for the LLM -- appended to the user prompt for every deep-analysis call in this run. Use it when the report itself doesn't make the shape of the business obvious. Example: 'Haw Par's main asset is its UOB stake, not Tiger Balm trading.'"
+        required: false
+        default: ""
+  schedule:
+    # 00:15 UTC = 08:15 SGT -- ~1h15m after SGX opens (9am SGT), long enough
+    # for the ~7am pre-open batch to have landed.
+    - cron: "15 0 * * *"
+
+jobs:
+  digest:
+    runs-on: [self-hosted, Windows]
+    # `contents: write` lets the "Commit dashboard update" step push
+    # slinger.json + rebuilt index.html back to main. Without it the
+    # push fails with HTTP 403 "Permission to ... denied to
+    # github-actions[bot]" -- what killed the first C07 run right at
+    # the end after the analysis had otherwise landed.
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: powershell
+
+    # Restore + save seen_state across runs so we don't re-analyse the same
+    # announcement two days in a row.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore seen state
+        uses: actions/cache/restore@v4
+        with:
+          path: state_seen_sgx.json
+          key: sgx-seen-state-${{ github.ref_name }}
+          restore-keys: |
+            sgx-seen-state-${{ github.ref_name }}-
+
+      - name: Install deps + ensure Chrome
+        run: |
+          $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
+          if (-not (Test-Path $py)) { $py = "python" }
+          & $py -m pip install --upgrade pip
+          # Full agent deps -- superset of Round 1's fetch-only deps.
+          # No google-api deps: the SGX path emails PDFs directly, no Drive.
+          & $py -m pip install playwright pyyaml requests beautifulsoup4 pypdf `
+                                anthropic
+          & $py -m playwright install chrome
+          # install chrome exits non-zero when already present system-wide
+          $LASTEXITCODE = 0
+
+      - name: Run Singapore Slinger
+        env:
+          # Fetch
+          SGX_TICKERS_INPUT: ${{ github.event.inputs.tickers }}
+          SGX_HOURS_BACK: ${{ github.event.inputs.hours_back }}
+          # Email (shared with ASX Bob's daily.yml)
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          # LLM
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_MODEL: ${{ secrets.CLAUDE_MODEL }}
+          # No Drive plumbing on the SGX path -- the full analysis
+          # renders inline in the email and the source PDFs are attached,
+          # so nothing needs to land in Google Drive.
+          # Dispatch inputs picked up in-Python
+          BOB_SG_DRY_RUN_INPUT: ${{ github.event.inputs.dry_run }}
+          BOB_SG_FETCH_ONLY_INPUT: ${{ github.event.inputs.fetch_only }}
+          BOB_SG_RESULTS_TICKER_INPUT: ${{ github.event.inputs.results_ticker }}
+          BOB_SG_RESULTS_HINT_INPUT: ${{ github.event.inputs.results_hint }}
+        run: |
+          $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
+          if (-not (Test-Path $py)) { $py = "python" }
+
+          $fetchOnly = $false
+          if ($env:BOB_SG_FETCH_ONLY_INPUT -eq "true") { $fetchOnly = $true }
+          $dryRun = $false
+          if ($env:BOB_SG_DRY_RUN_INPUT -eq "true") { $dryRun = $true }
+
+          if ($fetchOnly) {
+            $args = @("sgx_fetch.py", "--out", "outputs/sgx/announcements.json")
+            if ($env:SGX_TICKERS_INPUT) {
+              $args += @("--tickers", $env:SGX_TICKERS_INPUT)
+            }
+            if ($env:SGX_HOURS_BACK) {
+              $args += @("--hours-back", $env:SGX_HOURS_BACK)
+            }
+            & $py @args
+          } else {
+            $args = @("sgx_agent.py")
+            if ($env:SGX_HOURS_BACK) {
+              $args += @("--hours-back", $env:SGX_HOURS_BACK)
+            }
+            if ($env:BOB_SG_RESULTS_TICKER_INPUT) {
+              $args += @("--results-ticker", $env:BOB_SG_RESULTS_TICKER_INPUT)
+            }
+            if ($env:BOB_SG_RESULTS_HINT_INPUT) {
+              $args += @("--results-hint", $env:BOB_SG_RESULTS_HINT_INPUT)
+            }
+            if ($dryRun) { $args += "--dry-run" }
+            & $py @args
+          }
+
+      - name: Save seen state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: state_seen_sgx.json
+          key: sgx-seen-state-${{ github.ref_name }}-${{ github.run_id }}
+
+      # Publish to the shared dashboard. The Slinger run wrote
+      # docs/data/slinger.json; rebuild docs/index.html and commit
+      # everything with [skip ci] so this push does not re-trigger.
+      # The Publish site workflow picks up the workflow_run completion
+      # event and deploys. Same pattern daily.yml uses for ASX Bob.
+      #
+      # ASCII-only inside this PowerShell block: the runner reads
+      # workflow scripts as cp1252, so a bare em dash in a commit
+      # message breaks the parser mid-file with "The string is missing
+      # the terminator". That killed the first LCC run -- keep hyphens
+      # plain here even if it reads uglier.
+      - name: Commit dashboard update
+        if: always()
+        run: |
+          $py = "C:\Users\mr_co\AppData\Local\Programs\Python\Python314\python.exe"
+          if (-not (Test-Path $py)) { $py = "python" }
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if (Test-Path docs/data/slinger.json) {
+            git add docs/data/slinger.json
+            git diff --staged --quiet
+            if ($LASTEXITCODE -ne 0) {
+              git commit -m "Slinger data [skip ci]"
+              $LASTEXITCODE = 0
+            }
+            git pull --rebase origin $env:GITHUB_REF_NAME
+            & $py scripts/build_dashboard.py
+            # slinger_history.json is the last-two-runs rolling record;
+            # bob_history.json is Bob's equivalent and is rewritten on
+            # every build (no-op when Bob's data has not changed).
+            git add docs/index.html docs/data/bob_history.json docs/data/slinger_history.json
+            git diff --staged --quiet
+            if ($LASTEXITCODE -ne 0) {
+              git commit -m "Dashboard update -- Slinger [skip ci]"
+              $LASTEXITCODE = 0
+            }
+            git push origin ("HEAD:" + $env:GITHUB_REF_NAME)
+          } else {
+            Write-Host "[dashboard] slinger.json not written this run -- skipping commit"
+          }
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sgx-daily
+          path: outputs/sgx/
+          if-no-files-found: warn

@@ -4,6 +4,10 @@
 No pytest dependency on purpose: this runs in the Pages workflow before the
 site is built, and the fewer things that have to install first, the fewer ways
 the build has to fail for reasons that are not about the theses.
+
+It also runs under pytest, as part of the full suite: the fixtures at the
+bottom supply the same arguments main() builds, and a failed check() fails the
+test it happened in. Both only exist when pytest is importable.
 """
 
 from __future__ import annotations
@@ -586,6 +590,37 @@ def test_private_workbooks_cannot_be_committed() -> None:
     ignored = (REPO_ROOT / ".gitignore").read_text()
     for pattern in ("data/portfolio.xlsx", "data/*IRR*.xlsx"):
         check(pattern in ignored, f"{pattern} is gitignored")
+
+
+# --------------------------------------------------------------------------
+# pytest: same inputs main() builds; a failed check() fails its test.
+# --------------------------------------------------------------------------
+
+try:
+    import pytest
+except ImportError:  # the Pages workflow runs this as a plain script
+    pytest = None
+
+if pytest is not None:
+
+    @pytest.fixture(scope="module")
+    def theses():
+        return thesis_mod.load_all(THESES_DIR)
+
+    @pytest.fixture(scope="module")
+    def ledger():
+        return ledger_mod.load(as_at=dt.date(2026, 8, 22))
+
+    @pytest.fixture
+    def tmp_dir(tmp_path: Path) -> Path:
+        return tmp_path / "site"
+
+    @pytest.fixture(autouse=True)
+    def _checks_must_pass():
+        before = len(_failures)
+        yield
+        new = _failures[before:]
+        assert not new, "failed checks:\n  " + "\n  ".join(new)
 
 
 def main() -> int:

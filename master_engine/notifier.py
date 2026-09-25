@@ -5,41 +5,12 @@
 from __future__ import annotations
 
 import logging
-import os
-import smtplib
-import ssl
-from email.message import EmailMessage
 from pathlib import Path
 from typing import Optional
 
+from shared.email_service import send_email as shared_send_email
+
 logger = logging.getLogger(__name__)
-
-
-def _load_smtp_settings() -> dict[str, str | int]:
-    """
-    Load SMTP settings from environment variables.
-
-    Reuses the same env var names as the existing Bob / Wally agents so no
-    new secrets are required.
-    """
-    email_from = os.environ.get("EMAIL_FROM") or os.environ.get("EMAIL_USER", "")
-    email_to = os.environ.get("EMAIL_TO", "")
-    smtp_user = os.environ.get("SMTP_USER") or email_from
-    smtp_password = (
-        os.environ.get("SMTP_PASS")
-        or os.environ.get("EMAIL_APP_PASSWORD", "")
-    )
-    smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("SMTP_PORT", "465"))
-
-    return {
-        "email_from": email_from,
-        "email_to": email_to,
-        "smtp_user": smtp_user,
-        "smtp_password": smtp_password,
-        "smtp_host": smtp_host,
-        "smtp_port": smtp_port,
-    }
 
 
 def send_email(
@@ -49,51 +20,21 @@ def send_email(
     to_addr: Optional[str] = None,
 ) -> bool:
     """
-    Send the digest email via SMTP SSL.
+    Send the digest email via the shared SMTP transport.
 
-    Returns True on success, False on failure (errors are logged, not raised).
+    Uses the same env var names as Bob / Wally, so no new secrets are
+    required. Returns True on success, False on failure (errors are logged,
+    not raised).
     """
-    settings = _load_smtp_settings()
-    email_from = str(settings["email_from"])
-    email_to = to_addr or str(settings["email_to"])
-    smtp_user = str(settings["smtp_user"])
-    smtp_password = str(settings["smtp_password"])
-    smtp_host = str(settings["smtp_host"])
-    smtp_port = int(str(settings["smtp_port"]))
-
-    missing = [
-        name
-        for name, value in {
-            "EMAIL_FROM": email_from,
-            "EMAIL_TO": email_to,
-            "SMTP_PASSWORD": smtp_password,
-        }.items()
-        if not value
-    ]
-    if missing:
-        logger.error(
-            "[notifier] Cannot send email — missing env vars: %s",
-            ", ".join(missing),
-        )
-        return False
-
-    msg = EmailMessage()
-    msg["Subject"] = subject
-    msg["From"] = email_from
-    msg["To"] = email_to
-    msg.set_content(plain_text)
-    msg.add_alternative(html_body, subtype="html")
-
-    try:
-        ctx = ssl.create_default_context()
-        with smtplib.SMTP_SSL(smtp_host, smtp_port, context=ctx) as server:
-            server.login(smtp_user, smtp_password)
-            server.send_message(msg)
-        logger.info("[notifier] Email sent to %s — subject: %s", email_to, subject)
-        return True
-    except Exception as exc:
-        logger.error("[notifier] Email send failed: %s", exc)
-        return False
+    return shared_send_email(
+        subject,
+        plain_text,
+        html_body,
+        to_addr=to_addr,
+        raise_on_error=False,
+        log=logger.info,
+        log_prefix="[notifier]",
+    )
 
 
 def save_digest(

@@ -13,6 +13,8 @@ from typing import Any
 
 import yaml
 
+from shared.securities import parse_security
+
 
 def load_company_entities(path: str | Path | None = None) -> dict[str, dict[str, Any]]:
     """
@@ -173,10 +175,7 @@ def get_yahoo_symbol(ticker: str, entity: dict[str, Any] | None = None) -> str:
     """
     if entity and "yahoo_symbol" in entity:
         return entity["yahoo_symbol"]
-    
-    # Fallback logic for tickers without explicit entity config
-    if ticker == "RR.":
-        return "RR.L"
-    
-    # Default: ASX ticker
-    return f"{ticker}.AX"
+
+    # Fallback for tickers without explicit entity config: "RR." is LSE,
+    # a bare code is ASX (shared/securities.py owns those rules).
+    return parse_security(ticker).yahoo

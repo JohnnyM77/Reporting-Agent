@@ -16,23 +16,19 @@ from __future__ import annotations
 import os
 import re
 import json
-import ssl
 import hashlib
-import smtplib
 import tempfile
 import time
 import datetime as dt
 import textwrap
 import html as htmlmod
 from pathlib import Path
-from email.message import EmailMessage
 from typing import Dict, List, Tuple, Optional
 
 import requests
 from bs4 import BeautifulSoup
 import yaml
 from pypdf import PdfReader
-import anthropic
 try:
     from weasyprint import HTML, CSS
 except ImportError:
@@ -41,6 +37,10 @@ except ImportError:
 import asyncio
 from playwright_fetch import fetch_pdf_with_playwright
 from asx_fetch import fetch_asx_announcements_html
+from shared.asx import absolute_url, browser_session, extract_ids_id, pdf_url_for_ids_id
+from shared import gdrive
+from shared.email_service import send_email as shared_send_email
+from shared.llm import STREAMING_MIN_TOKENS, call_with_retry, make_client, send as llm_send
 from shared.pdf_llm import (
     LLM_FAILED,
     LLM_SKIPPED,
@@ -54,6 +54,7 @@ from prompts import (
     ACQUISITION_PROMPT,
     CAPITAL_OR_DEBT_RAISE_PROMPT,
     RESULTS_HYFY_PROMPT,
+    REMUNERATION_PROMPT,
     TRADING_UPDATE_PROMPT,
     PRICE_SENSITIVE_PROMPT,
 )
@@ -97,6 +98,14 @@ MAX_LLM_CALLS_PER_RUN = _int_env("MAX_LLM_CALLS", 25)
 # with MAX_PDFS.
 MAX_PDFS_PER_RUN = _int_env("MAX_PDFS", 30)
 
+# RESULTS_TICKER lookback. A results run reaches back this far to find a
+# ticker's most recent half-year or full-year report, because a company may
+# have last reported a month or two ago rather than in the normal 24h window.
+# ASX names report twice a year, so 180 days (~6 months) reliably catches the
+# latest reporting event without straddling two of them. Override with
+# RESULTS_LOOKBACK_DAYS.
+RESULTS_LOOKBACK_DAYS = _int_env("RESULTS_LOOKBACK_DAYS", 180)
+
 # Per-call output-token budgets. The default (4096) is enough for the terse
 # two-liners and the short structured memos on the other paths. The results
 # path is different: the model returns metrics JSON *plus* a full markdown
@@ -107,6 +116,11 @@ MAX_PDFS_PER_RUN = _int_env("MAX_PDFS", 30)
 # CLAUDE_RESULTS_MAX_TOKENS.
 DEFAULT_MAX_TOKENS = _int_env("CLAUDE_MAX_TOKENS", 4096)
 RESULTS_MAX_TOKENS = _int_env("CLAUDE_RESULTS_MAX_TOKENS", 50000)
+# Remuneration deep-dives return a structured header plus a ~10-section
+# markdown analysis (same shape as results). Sized so a rules document with
+# a full delta-vs-previous-plan table can't be truncated. Override with
+# CLAUDE_REMUNERATION_MAX_TOKENS.
+REMUNERATION_MAX_TOKENS = _int_env("CLAUDE_REMUNERATION_MAX_TOKENS", 50000)
 
 MIN_RESULTS_TEXT_CHARS = 2500
 MODEL_DEFAULT = "claude-sonnet-4-6"
@@ -165,6 +179,26 @@ RESULTS_STATUS_SKIPPED = "skipped"
 RESULTS_STATUS_FAILED = "failed"
 RESULTS_STATUS_PARSE_ERROR = "parse_error"
 RESULTS_STATUS_NO_CONTENT = "no_content"
+
+# Remuneration card — quick-take rows rendered in the email above the
+# summary. Same "locked shape" idea as RESULTS_METRIC_ROWS: the LLM emits
+# these keys and only these keys under "quick_take" so the card is
+# comparable across companies. "shareholder_dilution" reads "n/a" for
+# on-market and cash-settled plans by design.
+REMUNERATION_QUICK_TAKE_ROWS: List[Tuple[str, str]] = [
+    ("funding",              "Funding"),
+    ("quantum",              "Quantum"),
+    ("hurdles",              "Hurdles"),
+    ("vesting_period",       "Vesting"),
+    ("shareholder_dilution", "Dilution"),
+]
+
+# Card colour for a strongly-aligned plan (green), a mixed plan (amber) and
+# a misaligned one (red). Matches the change-colour ladder above but is
+# indexed off the LLM's "verdict" / "alignment_score" instead of a sign.
+COLOR_ALIGN_GOOD = "#15803D"
+COLOR_ALIGN_MIXED = "#B45309"
+COLOR_ALIGN_BAD = "#B91C1C"
 
 _JOKES_FILE = Path(__file__).resolve().parent / "config" / "daily_jokes.txt"
 
@@ -253,37 +287,20 @@ def send_email(
     to_addr: Optional[str] = None,
     attachments: Optional[List[Path]] = None,
 ):
-    email_from = os.environ["EMAIL_FROM"]
-    email_to = to_addr or os.environ["EMAIL_TO"]
-    app_password = os.environ["EMAIL_APP_PASSWORD"]
-    msg = EmailMessage()
-    msg["From"] = email_from
-    msg["To"] = email_to
-    msg["Subject"] = subject
-    msg.set_content(body_text)
-    if body_html:
-        msg.add_alternative(body_html, subtype="html")
-
-    # Attach any PDF files
-    if attachments:
-        for pdf_path in attachments:
-            if pdf_path and pdf_path.exists():
-                try:
-                    with open(pdf_path, "rb") as f:
-                        msg.add_attachment(
-                            f.read(),
-                            maintype="application",
-                            subtype="pdf",
-                            filename=pdf_path.name,
-                        )
-                    log(f"[Email] Attached {pdf_path.name}")
-                except Exception as e:
-                    log(f"[Email] Failed to attach {pdf_path}: {e}")
-
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-        server.login(email_from, app_password)
-        server.send_message(msg)
+    """Send the digest. Raises if email env is missing or SMTP fails, so
+    ``bob.json`` is never written for a digest nobody received."""
+    shared_send_email(
+        subject,
+        body_text,
+        body_html,
+        attachments=[p for p in attachments or [] if p and p.exists()],
+        force_type=("application", "pdf"),
+        log_details=True,
+        to_addr=to_addr,
+        raise_on_error=True,
+        log=log,
+        log_prefix="[Email]",
+    )
 
 
 def read_tickers() -> Tuple[List[str], List[str]]:
@@ -293,17 +310,7 @@ def read_tickers() -> Tuple[List[str], List[str]]:
 
 
 def http_session() -> requests.Session:
-    s = requests.Session()
-    s.headers.update({
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/122.0.0.0 Safari/537.36"
-        ),
-        "Accept": "application/json, text/html, */*",
-        "Referer": "https://www.asx.com.au/",
-    })
-    return s
+    return browser_session(accept="application/json, text/html, */*")
 
 
 def is_price_sensitive_title(title: str) -> bool:
@@ -370,10 +377,111 @@ def looks_like_results_title(title: str) -> bool:
     return any(p.search(t) for p in _RESULTS_TITLE_PATTERNS)
 
 
+# Remuneration / employee-share-plan classifier. Fires when a title clearly
+# names a new or amended plan document, or an incentive plan whose rules the
+# investor should read side-by-side with the previous version — the exact
+# case where reading the whole plan by hand is what takes time.
+#
+# HARD NOs: things that mention "share plan" or "remuneration" but are NOT a
+# plan-change document — a Change of Director's Interest Notice reports one
+# grant under an existing plan, a Notice of Meeting is a wrapper (the
+# remuneration report inside the AR is picked up under RESULTS_HY_FY),
+# a Chairman's/CEO address quoting FY remuneration is commentary, and the
+# response-to-price-query template mentions "employee share scheme" as an
+# example of things the company hasn't done.
+_REMUNERATION_TITLE_HARD_NO = (
+    "change of director",             # Appendix 3Y grant notice
+    "change in director",
+    "final director",                 # Appendix 3Z
+    "director's interest",
+    "directors interest",
+    "initial director's interest",    # Appendix 3X
+    "appendix 3x", "appendix 3y", "appendix 3z",
+    "response to asx",                # price/aware-query response templates
+    "response to price query",
+    "response to aware query",
+    "chairman's address", "chairmans address", "ceo address",
+    "annual general meeting presentation",
+    "notice of annual general meeting",
+    "notice of general meeting",
+    "notice of meeting",
+    "results of meeting",
+    "results of annual general meeting",
+    "voting results", "proxy",
+    "trading window",
+    "cleansing notice",
+    "annual report",                  # remuneration report lives inside — captured by RESULTS_HY_FY
+    "webcast", "transcript", "conference call",
+)
+
+# A separator that tolerates the punctuation ASX headlines actually contain
+# between the trigger word and the plan noun — em dash (U+2014), en dash
+# (U+2013), colons, brackets, ampersands, digits, whitespace. Bounded to 60
+# characters so it can never span across two unrelated ideas in a long title.
+_REM_SEP = r"[\s\-–—:()&\w]{0,60}"
+
+# The plan-noun alternatives — long enough to want naming, and used in
+# both the trigger-first and plan-noun-first patterns below. Every
+# variant that appears on the ASX in practice belongs here: the missing
+# "Employee Share INCENTIVE Plan" pattern is what let AHC's real title
+# ("Amendments to Employee Share Incentive Plan") fall through to FYI on
+# the first run.
+_REM_PLAN_NOUNS = (
+    r"employee\s+share\s+(?:incentive\s+)?(?:plan|scheme)|"
+    r"share\s+incentive\s+(?:plan|scheme)|"
+    r"esp|espp|"
+    r"(?:long[\s\-]?term|short[\s\-]?term)\s+incentive(?:\s+plan)?|ltip?|stip?|"
+    r"performance\s+rights?(?:\s+plan)?|prp|"
+    r"executive\s+(?:incentive|equity)\s+plan|eip|"
+    r"share\s+option\s+plan|option\s+plan|"
+    r"employee\s+equity\s+plan|matching\s+plan|deferred\s+share\s+plan|"
+    r"restricted\s+share\s+plan|equity\s+incentive\s+plan|"
+    r"remuneration\s+(?:framework|policy|structure)"
+)
+
+_REMUNERATION_TITLE_PATTERNS = tuple(re.compile(p) for p in (
+    # Amended / amendment(s) / new / updated / revised / adopted + plan noun.
+    # "amend(?:ed|ment)s?" catches "amend", "amended", "amendment",
+    # "amendments" — the last was the exact word AHC used and my first
+    # pattern missed it, so the plural is now explicit here.
+    r"\b(?:amend(?:ed|ment)s?|new|revised|updated|adoption|adopts|adopting|"
+    r"replacement|refresh(?:ed)?)\b" + _REM_SEP +
+    r"\b(?:" + _REM_PLAN_NOUNS + r")\b",
+    # Same list, plan-noun-first ("Employee Share Plan — Amendment").
+    r"\b(?:" + _REM_PLAN_NOUNS + r")\b" + _REM_SEP +
+    r"\b(?:amend(?:ed|ment)s?|new\s+rules|updated|revised|adoption|adopted|"
+    r"refresh(?:ed)?|change|changes|replace(?:d|ment)?|rules)\b",
+    # Explicit "Rules of" a plan (companies file the rulebook itself).
+    r"\brules\s+of\s+the\b" + _REM_SEP +
+    r"\b(?:" + _REM_PLAN_NOUNS + r")\b",
+    # Explanatory memorandum for a plan being put to shareholders.
+    r"\bexplanatory\s+(?:memorandum|statement)\b" + _REM_SEP +
+    r"\b(?:" + _REM_PLAN_NOUNS + r"|share\s+plan|incentive\s+plan|remuneration)\b",
+    # Approvals sought at meeting — narrower than "Notice of Meeting" itself.
+    r"\bapproval\s+of\b" + _REM_SEP +
+    r"\b(?:" + _REM_PLAN_NOUNS + r"|remuneration\s+report)\b",
+    # Standalone "Remuneration Framework/Policy" documents — the whole thing
+    # is a new/updated framework, no verb needed. The annual report's own
+    # remuneration report is caught (and excluded) by the HARD NO list, so
+    # this isn't at risk of double-catching an AR.
+    r"\b(?:executive\s+|new\s+|revised\s+|updated\s+|fy\s?\d{2,4}\s+)?"
+    r"remuneration\s+(?:framework|policy|structure)\b",
+))
+
+
+def looks_like_remuneration_title(title: str) -> bool:
+    t = title.lower()
+    if any(x in t for x in _REMUNERATION_TITLE_HARD_NO):
+        return False
+    return any(p.search(t) for p in _REMUNERATION_TITLE_PATTERNS)
+
+
 def classify_from_title_only(title: str) -> str:
     t = title.lower()
     if looks_like_results_title(title):
         return "RESULTS_HY_FY"
+    if looks_like_remuneration_title(title):
+        return "REMUNERATION"
     if any(k in t for k in ["acquisition", "acquire", "merger", "scheme", "takeover", "transaction"]):
         return "ACQUISITION"
     if any(k in t for k in [
@@ -465,12 +573,10 @@ def fetch_asx_announcements(session: requests.Session, ticker: str, hours_back: 
         if not doc_url:
             doc_key = (row.get("documentKey") or "").strip()
             if doc_key:
-                doc_key = doc_key.lstrip("/")
-                doc_url = f"https://www.asx.com.au/{doc_key}"
+                doc_url = absolute_url("/" + doc_key.lstrip("/"))
         if not doc_url:
             continue
-        if doc_url.startswith("/"):
-            doc_url = "https://www.asx.com.au" + doc_url
+        doc_url = absolute_url(doc_url)
         if doc_url in seen_urls:
             continue
         seen_urls.add(doc_url)
@@ -502,12 +608,9 @@ def asx_pdf_url_from_item_url(url: str) -> Optional[str]:
     if not url:
         return None
     low = url.lower()
-    m = re.search(r"[?&]idsid=([^&]+)", url, re.IGNORECASE)
-    if m:
-        return (
-            "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do"
-            f"?display=pdf&idsId={m.group(1)}"
-        )
+    ids_id = extract_ids_id(url)
+    if ids_id:
+        return pdf_url_for_ids_id(ids_id)
     if "displayannouncement.do" in low:
         return url
     if low.endswith(".pdf"):
@@ -519,8 +622,9 @@ def asx_pdf_url_from_item_url(url: str) -> Optional[str]:
     return None
 
 
-def _anthropic_client() -> anthropic.Anthropic:
-    return anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+def _anthropic_client():
+    """The Anthropic client for this run. Tests patch this to inject a fake."""
+    return make_client(os.environ["ANTHROPIC_API_KEY"])
 
 
 def _llm_cap_reached(counters: Dict) -> bool:
@@ -538,14 +642,11 @@ def _llm_cap_reached(counters: Dict) -> bool:
     return False
 
 
-# Anthropic's Python SDK refuses non-streaming create() calls whose expected
-# duration exceeds ~10 minutes (a hard client-side check to avoid the HTTP
-# read-timeout that kills long requests). At Sonnet's output rate a large
-# max_tokens hits that threshold quickly — the results path's 50k budget
-# came back as ``Streaming is required for operations that may take longer
-# than 10 minutes.`` So above this threshold ``_call_anthropic`` routes
-# through ``client.messages.stream`` instead of ``.create``.
-_STREAMING_MIN_TOKENS = 8192
+# Calls at or above this many output tokens stream rather than .create():
+# the SDK refuses non-streaming requests that may take >10 minutes, which the
+# results path's 50k budget hits. The threshold and the switch itself live in
+# shared/llm.py; the alias keeps the name existing callers and tests use.
+_STREAMING_MIN_TOKENS = STREAMING_MIN_TOKENS
 
 
 def _call_anthropic(
@@ -573,68 +674,33 @@ def _call_anthropic(
     model = os.environ.get("CLAUDE_MODEL", MODEL_DEFAULT)
     client = _anthropic_client()
 
-    last_err: Optional[Exception] = None
-    for attempt in range(max_retries + 1):
-        try:
-            if max_tokens >= _STREAMING_MIN_TOKENS:
-                text, stop_reason = _stream_message(
-                    client, model, max_tokens, system_prompt, content,
+    def _once() -> str:
+        resp = llm_send(
+            client,
+            model=model,
+            max_tokens=max_tokens,
+            system=system_prompt,
+            messages=[{"role": "user", "content": content}],
+            streaming_min_tokens=_STREAMING_MIN_TOKENS,
+        )
+        if resp.stop_reason:
+            counters["last_stop_reason"] = resp.stop_reason
+            if resp.truncated:
+                log(
+                    f"WARNING: Claude response was truncated at max_tokens={max_tokens} "
+                    f"(model={model}); downstream JSON parsing will likely fail"
                 )
-            else:
-                resp = client.messages.create(
-                    model=model,
-                    max_tokens=max_tokens,
-                    system=system_prompt,
-                    messages=[{"role": "user", "content": content}],
-                )
-                text = (resp.content[0].text or "")
-                stop_reason = getattr(resp, "stop_reason", None)
-            if stop_reason:
-                counters["last_stop_reason"] = str(stop_reason)
-                if stop_reason == "max_tokens":
-                    log(
-                        f"WARNING: Claude response was truncated at max_tokens={max_tokens} "
-                        f"(model={model}); downstream JSON parsing will likely fail"
-                    )
-            return text.strip()
-        except Exception as e:
-            last_err = e
-            if attempt < max_retries:
-                log(f"WARNING: Claude API call failed (attempt {attempt + 1}/{max_retries + 1}, model={model}): {e} — retrying once")
-                time.sleep(2)
-                continue
-            log(f"ERROR: Claude API call failed after {attempt + 1} attempt(s) (model={model}): {e}")
+        return resp.text.strip()
 
-    counters["last_llm_error"] = str(last_err) if last_err else "unknown error"
-    return LLM_FAILED
+    def _on_retry(attempt: int, e: BaseException) -> None:
+        log(f"WARNING: Claude API call failed (attempt {attempt}/{max_retries + 1}, model={model}): {e} — retrying once")
 
-
-def _stream_message(
-    client: "anthropic.Anthropic",
-    model: str,
-    max_tokens: int,
-    system_prompt: str,
-    content: object,
-) -> Tuple[str, Optional[str]]:
-    """Drive the Anthropic streaming API and return (text, stop_reason).
-
-    Streaming keeps the HTTP connection alive with periodic events instead
-    of forcing one long read, so the SDK's 10-minute non-streaming ceiling
-    doesn't apply. The generated text is identical to what .create() would
-    have returned — we just accumulate it as it comes in.
-    """
-    parts: List[str] = []
-    with client.messages.stream(
-        model=model,
-        max_tokens=max_tokens,
-        system=system_prompt,
-        messages=[{"role": "user", "content": content}],
-    ) as stream:
-        for chunk in stream.text_stream:
-            parts.append(chunk)
-        final = stream.get_final_message()
-    stop_reason = getattr(final, "stop_reason", None)
-    return "".join(parts), stop_reason
+    try:
+        return call_with_retry(_once, max_retries=max_retries, on_retry=_on_retry)
+    except Exception as e:
+        log(f"ERROR: Claude API call failed after {max_retries + 1} attempt(s) (model={model}): {e}")
+        counters["last_llm_error"] = str(e)
+        return LLM_FAILED
 
 
 def llm_chat(
@@ -718,7 +784,17 @@ def fetch_html_text(session: requests.Session, url: str) -> str:
 
 
 def looks_like_asx_access_gate(text: str) -> bool:
+    """ASX's terms-of-use interstitial instead of the announcement.
+
+    The "Agree and proceed" button is often stripped when the page is
+    reduced to text (it sits in a <header>/<form>), so an "Access to this
+    site" heading at the top of the text is enough on its own. Only the top
+    of the text is checked for that, so a long report that mentions the
+    phrase somewhere in its body is not mistaken for the gate.
+    """
     t = (text or "").lower()
+    if "access to this site" in t[:500]:
+        return True
     return ("access to this site" in t and "agree and proceed" in t) or (
         "general conditions" in t and "agree and proceed" in t
     )
@@ -1712,6 +1788,282 @@ def build_analysis_doc_html(
     )
 
 
+# ---------------------------------------------------------------------------
+# Remuneration output: verdict badge + five quick-take rows + short summary +
+# PDF-attached long-form analysis. Same table-based / inline-styles / 360px
+# card shape as the results card so it renders identically on a phone.
+# ---------------------------------------------------------------------------
+
+REMUNERATION_HEADER_LABEL = "Remuneration change"
+
+
+def _remuneration_verdict(analysis: dict) -> Tuple[str, str]:
+    """Return (verdict_label, colour) for the header pill.
+
+    "verdict" is the primary signal ("aligned"/"mixed"/"misaligned") and the
+    only field explicitly enumerated in the prompt schema. Score is a
+    secondary tell that lets the colour tighten when the model returns a 4
+    or 5 alongside "mixed", but a missing score never downgrades the colour.
+    """
+    verdict = str(analysis.get("verdict") or "").strip().lower()
+    if verdict in ("aligned", "well aligned", "strongly aligned"):
+        return "ALIGNED", COLOR_ALIGN_GOOD
+    if verdict in ("misaligned", "poorly aligned", "not aligned", "unaligned"):
+        return "MISALIGNED", COLOR_ALIGN_BAD
+    if verdict:
+        # "mixed", or any wording the model chose short of a clean thumbs
+        # up/down — surface it as MIXED so the reader knows to read.
+        return "MIXED", COLOR_ALIGN_MIXED
+    # Fall back on the numeric score when verdict was missing.
+    try:
+        score = int(str(analysis.get("alignment_score") or "").strip()[:1])
+    except (ValueError, TypeError):
+        return "REVIEW", COLOR_ALIGN_MIXED
+    if score >= 4:
+        return "ALIGNED", COLOR_ALIGN_GOOD
+    if score <= 2:
+        return "MISALIGNED", COLOR_ALIGN_BAD
+    return "MIXED", COLOR_ALIGN_MIXED
+
+
+def _remuneration_quick_take_row(analysis: dict, key: str) -> Dict[str, str]:
+    """Normalise one quick_take entry into {value, sub}.
+
+    Returns "not disclosed" (never n/a — n/a is a valid answer for a
+    dilution row when the plan is on-market or cash-settled, and using
+    the same token would blur the two).
+    """
+    qt = analysis.get("quick_take")
+    raw = qt.get(key) if isinstance(qt, dict) else None
+    value = sub = ""
+    if isinstance(raw, dict):
+        value = str(raw.get("value", "") or "").strip()
+        sub = str(raw.get("note", "") or "").strip()
+    elif raw not in (None, ""):
+        value = str(raw).strip()
+    if not value or value.lower() in _NA_TOKENS - {"n/a", "-", "--", "—"}:
+        value = "not disclosed"
+    return {"value": value, "sub": sub}
+
+
+def _remuneration_title(ticker: str, analysis: dict) -> str:
+    plan_name = str(analysis.get("plan_name") or "").strip()
+    if plan_name:
+        return f"{ticker} — {plan_name}"
+    return f"{ticker} — {REMUNERATION_HEADER_LABEL}"
+
+
+def _remuneration_context_line(analysis: dict) -> str:
+    plan_type = str(analysis.get("plan_type") or "").strip().replace("_", " ")
+    participants = str(analysis.get("participants") or "").strip()
+    if plan_type and participants:
+        return f"{plan_type.upper()} · {participants}"
+    return plan_type.upper() or participants or "Remuneration change"
+
+
+def build_remuneration_block(
+    ticker: str,
+    analysis: dict,
+    asx_url: str,
+) -> Dict[str, str]:
+    """Render the REMUNERATION digest block as {"text": ..., "html": ...}.
+
+    Same phone-first table shape as build_results_block. The long-form
+    analysis is not in the email — it goes to the attached PDF.
+    """
+    analysis = analysis or {}
+    status = str(analysis.get("_status") or "").strip() or (
+        RESULTS_STATUS_FAILED if _is_llm_failure(analysis) else RESULTS_STATUS_OK
+    )
+    failed = status in (RESULTS_STATUS_FAILED, RESULTS_STATUS_PARSE_ERROR)
+    esc = htmlmod.escape
+
+    title = _remuneration_title(ticker, analysis)
+    context = _remuneration_context_line(analysis)
+    summary = str(analysis.get("summary") or "").strip() or "No summary returned."
+    verdict_label, verdict_colour = _remuneration_verdict(analysis)
+    rows = [(label, _remuneration_quick_take_row(analysis, key))
+            for key, label in REMUNERATION_QUICK_TAKE_ROWS]
+
+    # ---- plain text ----------------------------------------------------
+    text_lines: List[str] = []
+    if failed:
+        text_lines.append(f"{RESULTS_FAILURE_BADGE} — {title}")
+    else:
+        text_lines.append(title)
+    text_lines.append(f"{context}  [{verdict_label}]")
+    text_lines.append("")
+    for label, row in rows:
+        text_lines.append(f"  {label:<10} {row['value']}")
+        if row["sub"]:
+            text_lines.append(f"             ({row['sub']})")
+    text_lines.append("")
+    text_lines.append(summary)
+    text_lines.append("")
+    if asx_url:
+        text_lines.append(f"Source announcement (ASX): {asx_url}")
+    text_lines.append("")
+
+    # ---- html ----------------------------------------------------------
+    badge = RESULTS_FAILURE_BADGE if failed else "HIGH IMPACT"
+    badge_bg = COLOR_FAILURE if failed else COLOR_HIGH_IMPACT
+    badge_fg = "#FFFFFF" if failed else "#0B1220"
+
+    verdict_pill = (
+        f'<span style="display:inline-block; background:{verdict_colour}; color:#FFFFFF;'
+        f' font-size:10px; font-weight:800; letter-spacing:0.8px; padding:3px 7px;'
+        f' border-radius:4px; margin-left:6px;">{esc(verdict_label)}</span>'
+    )
+
+    metric_rows_html = ""
+    for i, (label, row) in enumerate(rows):
+        bg = COLOR_RESULTS_ROW_SHADE if i % 2 == 0 else COLOR_RESULTS_CARD
+        sub_html = (
+            f'<div style="font-size:11px; color:{COLOR_RESULTS_MUTED}; margin-top:2px;">'
+            f'{esc(row["sub"])}</div>' if row["sub"] else ""
+        )
+        metric_rows_html += (
+            f'<tr>'
+            f'<td valign="top" style="background:{bg}; padding:11px 14px; font-size:13px;'
+            f' line-height:1.3; color:{COLOR_RESULTS_LABEL}; font-family:{EMAIL_FONT};'
+            f' white-space:nowrap; width:90px;">{esc(label)}</td>'
+            f'<td style="background:{bg}; padding:11px 14px; font-size:14px; line-height:1.35;'
+            f' color:{COLOR_RESULTS_VALUE}; font-weight:700; font-family:{EMAIL_FONT};">'
+            f'{esc(row["value"])}{sub_html}</td>'
+            f'</tr>'
+        )
+
+    def _link_row(label: str, href: str) -> str:
+        return (
+            f'<tr><td colspan="2" style="padding:0 14px 10px 14px; font-family:{EMAIL_FONT};">'
+            f'<a href="{esc(href)}" style="display:block; padding:11px 12px; background:{COLOR_RESULTS_ROW_SHADE};'
+            f' border:1px solid #D5E0D8; border-radius:8px; color:{COLOR_RESULTS_HEADER};'
+            f' font-size:14px; font-weight:700; text-decoration:none;">{esc(label)} &rsaquo;</a>'
+            f'</td></tr>'
+        )
+
+    pdf_note_row = (
+        f'<tr><td colspan="2" style="padding:10px 14px; background:{COLOR_RESULTS_ROW_SHADE};'
+        f' color:{COLOR_RESULTS_MUTED}; font-family:{EMAIL_FONT};'
+        f' font-size:13px;">📎 Full remuneration analysis PDF attached to this email</td></tr>'
+    )
+    links_html = pdf_note_row
+    if asx_url:
+        links_html += _link_row("Source announcement (ASX)", asx_url)
+
+    html = (
+        f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"'
+        f' style="border-collapse:collapse; margin:14px 0;"><tr><td align="center">'
+        f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="360"'
+        f' style="width:100%; max-width:360px; border-collapse:collapse;'
+        f' background:{COLOR_RESULTS_CARD}; border-radius:10px; overflow:hidden;">'
+        f'<tr><td colspan="2" style="background:{COLOR_RESULTS_HEADER}; padding:13px 14px;'
+        f' font-family:{EMAIL_FONT};">'
+        f'<span style="display:inline-block; background:{badge_bg}; color:{badge_fg};'
+        f' font-size:10px; font-weight:800; letter-spacing:0.8px; padding:3px 7px;'
+        f' border-radius:4px;">{esc(badge)}</span>'
+        f'{verdict_pill}'
+        f'<div style="color:#FFFFFF; font-size:17px; font-weight:800; margin-top:7px;">{esc(title)}</div>'
+        f'<div style="color:{COLOR_RESULTS_HEADER_SUB}; font-size:12px; margin-top:3px;">{esc(context)}</div>'
+        f'</td></tr>'
+        f'{metric_rows_html}'
+        f'<tr><td colspan="2" style="padding:13px 14px; font-family:{EMAIL_FONT}; font-size:15px;'
+        f' line-height:1.5; color:{COLOR_RESULTS_VALUE}; border-top:2px solid {COLOR_RESULTS_HEADER};">'
+        f'{esc(summary)}</td></tr>'
+        f'{links_html}'
+        f'</table></td></tr></table>'
+    )
+    return {"text": "\n".join(text_lines), "html": html}
+
+
+def build_remuneration_doc_html(
+    ticker: str,
+    analysis: dict,
+    asx_url: str = "",
+) -> str:
+    """Build the HTML the PDF is rendered from. Preserves the raw model text
+    verbatim on a parse failure, same rule as the results Doc."""
+    analysis = analysis or {}
+    status = str(analysis.get("_status") or "").strip() or RESULTS_STATUS_OK
+    esc = htmlmod.escape
+    title = _remuneration_title(ticker, analysis)
+    context = _remuneration_context_line(analysis)
+    verdict_label, verdict_colour = _remuneration_verdict(analysis)
+
+    parts: List[str] = [
+        f'<h1 style="color:{COLOR_RESULTS_HEADER}; font-size:19pt; margin:0 0 2px 0;">{esc(title)}</h1>',
+        f'<p style="color:{COLOR_RESULTS_MUTED}; font-size:10pt; margin:0 0 14px 0;">'
+        f'{esc(context)} &nbsp;|&nbsp; Verdict: '
+        f'<span style="color:{verdict_colour}; font-weight:700;">{esc(verdict_label)}</span>'
+        f' &nbsp;|&nbsp; Generated by {esc(BOB_NAME)} {esc(VERSION_LABEL)} '
+        f'on {today_sgt_date().isoformat()} (SGT)</p>',
+    ]
+
+    if status in (RESULTS_STATUS_FAILED, RESULTS_STATUS_PARSE_ERROR):
+        parts.append(
+            f'<p style="background:#FEE2E2; border:1px solid {COLOR_FAILURE}; color:{COLOR_FAILURE};'
+            f' padding:10px 12px; font-weight:700;">{esc(RESULTS_FAILURE_BADGE)}: '
+            f'{esc(str(analysis.get("summary", "")))}</p>'
+        )
+
+    if isinstance(analysis.get("quick_take"), dict):
+        rows_html = ""
+        for i, (key, label) in enumerate(REMUNERATION_QUICK_TAKE_ROWS):
+            row = _remuneration_quick_take_row(analysis, key)
+            bg = COLOR_RESULTS_ROW_SHADE if i % 2 == 0 else "#FFFFFF"
+            sub = (f' <span style="color:{COLOR_RESULTS_MUTED}; font-size:9pt;">'
+                   f'({esc(row["sub"])})</span>') if row["sub"] else ""
+            rows_html += (
+                f'<tr>'
+                f'<td style="background:{bg}; padding:7px 10px; border:1px solid #D5E0D8;">{esc(label)}</td>'
+                f'<td style="background:{bg}; padding:7px 10px; border:1px solid #D5E0D8;">'
+                f'{esc(row["value"])}{sub}</td>'
+                f'</tr>'
+            )
+        parts.append(
+            '<table cellpadding="0" cellspacing="0" style="border-collapse:collapse; width:100%;'
+            ' margin:10px 0 16px 0; font-size:11pt;">'
+            f'<tr>'
+            f'<td style="background:{COLOR_RESULTS_HEADER}; color:#FFFFFF; font-weight:700; padding:7px 10px; border:1px solid #D5E0D8;">Parameter</td>'
+            f'<td style="background:{COLOR_RESULTS_HEADER}; color:#FFFFFF; font-weight:700; padding:7px 10px; border:1px solid #D5E0D8;">Value</td>'
+            f'</tr>{rows_html}</table>'
+        )
+
+    summary = str(analysis.get("summary") or "").strip()
+    if summary:
+        parts.append(f'<h2 style="color:{COLOR_RESULTS_HEADER}; font-size:15pt; margin:16px 0 6px 0;">Summary</h2>')
+        parts.append(f'<p style="margin:8px 0; line-height:1.5;">{esc(summary)}</p>')
+
+    full_analysis = str(analysis.get("full_analysis") or "").strip()
+    if full_analysis:
+        parts.append(_markdown_to_html(full_analysis))
+
+    raw_text = str(analysis.get("_raw_text") or "").strip()
+    if raw_text:
+        parts.append(
+            f'<h2 style="color:{COLOR_FAILURE}; font-size:15pt; margin:16px 0 6px 0;">'
+            'Raw model output (unparseable)</h2>'
+            f'<p style="color:{COLOR_RESULTS_MUTED}; font-size:10pt;">The model did not return valid JSON. '
+            'Its full response is preserved verbatim below.</p>'
+            f'<pre style="white-space:pre-wrap; font-size:10pt; background:{COLOR_RESULTS_ROW_SHADE};'
+            f' padding:10px; border:1px solid #D5E0D8;">{esc(raw_text)}</pre>'
+        )
+
+    if asx_url:
+        parts.append(
+            f'<p style="margin:16px 0 0 0; font-size:10pt;">Source announcement (ASX): '
+            f'<a href="{esc(asx_url)}">{esc(asx_url)}</a></p>'
+        )
+
+    return (
+        '<html><head><meta charset="utf-8">'
+        f'<title>{esc(title)}</title></head>'
+        '<body style="font-family:Arial, sans-serif; font-size:11pt; color:#111827;">'
+        + "".join(parts) +
+        "</body></html>"
+    )
+
+
 def generate_analysis_pdf(
     ticker: str,
     period: str,
@@ -2070,6 +2422,85 @@ def deep_results_analysis(
     return parsed
 
 
+def deep_remuneration_memo(
+    ticker: str,
+    title: str,
+    text: str,
+    counters: Dict,
+    pdf_path: Optional[Path] = None,
+) -> dict:
+    """One structured LLM call for an amended share plan / exec remuneration
+    document. Same shape as deep_results_analysis: streaming (the analysis is
+    large enough to trip the SDK's non-streaming ceiling), _status-tagged
+    return dict, raw text preserved on a parse failure.
+
+    Native PDF in when available so the rules table can be read; extracted
+    text as the fallback with the model told to be conservative about
+    numbers it can't cleanly read.
+    """
+    if pdf_path and pdf_path.exists():
+        user = (
+            f"Ticker: {ticker}\nTitle: {title}\n\n"
+            "Please analyse the attached amended share plan / remuneration document "
+            "as the primary source. Compare against the previous plan where the "
+            "document itself references it; where it does not, note the market-"
+            "practice benchmark and mark parameters that were not disclosed."
+        )
+        out = llm_chat(
+            REMUNERATION_PROMPT, user, counters,
+            pdf_path=pdf_path, fallback_text=text,
+            max_tokens=REMUNERATION_MAX_TOKENS,
+        )
+    elif is_meaningful_text(text, min_chars=900):
+        user = (
+            f"Ticker: {ticker}\nTitle: {title}\n\n"
+            "NOTE: no PDF could be attached — the text below was extracted with pypdf, "
+            "so table layout may be mangled. Prefer 'not disclosed' over any figure you "
+            "cannot read with confidence.\n\n"
+            f"Announcement text:\n{text}"
+        )
+        out = llm_chat(REMUNERATION_PROMPT, user, counters, max_tokens=REMUNERATION_MAX_TOKENS)
+    else:
+        return {
+            "summary": "No meaningful plan text or PDF available for analysis. Open the announcement manually.",
+            "_status": RESULTS_STATUS_NO_CONTENT,
+        }
+
+    if out == LLM_SKIPPED:
+        marker = _skip_marker("summary")
+        marker["_status"] = RESULTS_STATUS_SKIPPED
+        return marker
+
+    if out == LLM_FAILED:
+        marker = _failed_marker("summary", counters)
+        marker["_status"] = RESULTS_STATUS_FAILED
+        return marker
+
+    truncated = (counters.get("last_stop_reason") or "").lower() == "max_tokens"
+    parsed = _parse_analysis_json(out, allow_repair=not truncated)
+    if not parsed:
+        stop_reason = (counters.get("last_stop_reason") or "").lower()
+        if stop_reason == "max_tokens":
+            detail = (
+                f"model output was truncated at max_tokens="
+                f"{REMUNERATION_MAX_TOKENS} — raise CLAUDE_REMUNERATION_MAX_TOKENS"
+            )
+        else:
+            detail = "model returned unparseable output (not valid JSON)"
+        log(
+            f"ERROR: remuneration JSON parse failed for {ticker} — "
+            f"{len(out)} chars, stop_reason={stop_reason or 'unknown'}"
+        )
+        return {
+            "summary": f"{LLM_FAILURE_FLAG} ({detail}). Raw model output attached to this email as a PDF.",
+            "_status": RESULTS_STATUS_PARSE_ERROR,
+            "_raw_text": out,
+        }
+
+    parsed["_status"] = RESULTS_STATUS_OK
+    return parsed
+
+
 def drive_service():
     """Build a Google Drive API service, preferring OAuth over service-account.
 
@@ -2090,25 +2521,12 @@ def drive_service():
     Falls back to the service account only if OAuth secrets aren't set,
     with a loud warning so nobody mistakes it for a working configuration.
     """
-    from googleapiclient.discovery import build
+    creds = gdrive.oauth_credentials()
+    if creds is not None:
+        return gdrive.build_service(creds, cache_discovery=False)
 
-    client_id = os.environ.get("GDRIVE_CLIENT_ID", "").strip()
-    client_secret = os.environ.get("GDRIVE_CLIENT_SECRET", "").strip()
-    refresh_token = os.environ.get("GDRIVE_REFRESH_TOKEN", "").strip()
-    if client_id and client_secret and refresh_token:
-        from google.oauth2.credentials import Credentials as UserCredentials
-        creds = UserCredentials(
-            token=None,
-            refresh_token=refresh_token,
-            token_uri="https://oauth2.googleapis.com/token",
-            client_id=client_id,
-            client_secret=client_secret,
-            scopes=["https://www.googleapis.com/auth/drive"],
-        )
-        return build("drive", "v3", credentials=creds, cache_discovery=False)
-
-    sa_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
-    if not sa_json:
+    info = gdrive.service_account_info()
+    if info is None:
         raise RuntimeError(
             "No Drive credentials set: need either OAuth2 "
             "(GDRIVE_CLIENT_ID/SECRET/REFRESH_TOKEN) or a service account "
@@ -2120,16 +2538,42 @@ def drive_service():
         "storage quota'. Set GDRIVE_CLIENT_ID/SECRET/REFRESH_TOKEN to use "
         "OAuth against the folder's owner instead."
     )
-    from google.oauth2.service_account import Credentials as SACredentials
-    info = json.loads(sa_json)
-    creds = SACredentials.from_service_account_info(
-        info, scopes=["https://www.googleapis.com/auth/drive"],
-    )
-    return build("drive", "v3", credentials=creds, cache_discovery=False)
+    return gdrive.build_service(gdrive.service_account_credentials(info), cache_discovery=False)
 
 
 def likely_results_bundle_items(items_for_ticker: List[Dict]) -> List[Dict]:
     return [it for it in items_for_ticker if looks_like_results_title(it["title"])]
+
+
+def _item_date(it: Dict) -> dt.date:
+    """Parse an announcement item's dd/mm/yyyy date; dt.date.min if unparseable
+    so undated items sort oldest and never win 'most recent'."""
+    try:
+        return dt.datetime.strptime(str(it.get("date", "")), "%d/%m/%Y").date()
+    except Exception:
+        return dt.date.min
+
+
+def most_recent_results_cluster(items: List[Dict], window_days: int = 14) -> List[Dict]:
+    """From *items*, return only the results-titled announcements belonging to
+    the single most recent reporting event.
+
+    A results release, its investor presentation and the Appendix 4D/4E usually
+    land within a day or two of each other, so everything within *window_days*
+    of the newest results item is one event. Anything older is a prior report,
+    dropped — that's what keeps a 6-month RESULTS_TICKER lookback from bundling
+    last half-year's numbers in with the latest full-year's.
+    """
+    results = [it for it in items if looks_like_results_title(it["title"])]
+    if not results:
+        return []
+    newest = max(_item_date(it) for it in results)
+    # All results items undated (dt.date.min): nothing to cluster on, so keep
+    # them all rather than overflow on the subtraction below.
+    if newest <= dt.date.min + dt.timedelta(days=window_days):
+        return results
+    cutoff = newest - dt.timedelta(days=window_days)
+    return [it for it in results if _item_date(it) >= cutoff]
 
 
 def pick_report_and_deck_text(downloaded_texts: List[Tuple[str, str]]) -> Tuple[str, str]:
@@ -2237,6 +2681,19 @@ def main():
     if force_rerun_tickers:
         log(f"FORCE_RERUN_TICKERS active: {sorted(force_rerun_tickers)}")
 
+    # RESULTS_TICKER: analyse a ticker's most recent HY/FY results even if it
+    # last reported weeks or months ago (up to RESULTS_LOOKBACK_DAYS). Unlike
+    # MANUAL_TICKER — 7-day window, every announcement listed as FYI — this
+    # reaches back ~6 months and surfaces ONLY the latest results, running the
+    # normal deep analysis on it. Built for "someone mentioned HPG, what were
+    # their last numbers?". Comma-separated; exclusive when set.
+    results_tickers = frozenset(
+        t.strip().upper()
+        for t in os.environ.get("RESULTS_TICKER", "").split(",")
+        if t.strip()
+    )
+    results_from_date = None
+
     # MANUAL_TICKER allows one-off analysis of tickers not in the portfolio,
     # limited to the last 7 days to avoid overwhelming result counts.
     # When set, ONLY these tickers are analyzed (exclusive mode).
@@ -2247,7 +2704,18 @@ def main():
         if t.strip()
     )
     manual_ticker_from_date = None
-    if manual_tickers:
+
+    # Mode precedence: RESULTS_TICKER > MANUAL_TICKER > normal portfolio run.
+    # The first two are exclusive one-offs — they replace the portfolio for the
+    # run and are never written to seen_state.
+    if results_tickers:
+        results_from_date = cutoff_dt_sgt(RESULTS_LOOKBACK_DAYS * 24).date()
+        log(
+            f"RESULTS_TICKER: last results for {sorted(results_tickers)} "
+            f"(exclusive mode, {RESULTS_LOOKBACK_DAYS}-day lookback, not saved to state)"
+        )
+        asx_tickers = list(results_tickers)
+    elif manual_tickers:
         log(f"MANUAL_TICKER: analyzing {sorted(manual_tickers)} (exclusive mode, one-off, not saved to state)")
         # Restrict to 7 days to avoid 50+ results
         manual_ticker_from_date = cutoff_dt_sgt(7 * 24).date()
@@ -2286,10 +2754,13 @@ def main():
     by_ticker: Dict[str, List[Dict]] = {}
     for t in asx_tickers:
         try:
-            # Forced tickers get the full ASX history window (no from_date filter)
-            # so a past result-day PDF can be found. Manual tickers are limited to
-            # 7 days to avoid overwhelming result counts.
-            if t in force_rerun_tickers:
+            # Results tickers reach back ~6 months for the last report. Forced
+            # tickers get the full ASX history window (no from_date filter) so a
+            # past result-day PDF can be found. Manual tickers are limited to 7
+            # days to avoid overwhelming result counts.
+            if t in results_tickers:
+                fetch_from = results_from_date
+            elif t in force_rerun_tickers:
                 fetch_from = None
             elif t in manual_tickers:
                 fetch_from = manual_ticker_from_date
@@ -2309,10 +2780,15 @@ def main():
             if not items:
                 continue
 
+            # Results mode is a one-off "what were their last numbers?" query, so
+            # it ignores seen_state (re-runs must work) and surfaces ONLY the most
+            # recent results — no six months of FYI headlines.
+            is_results_mode = ticker in results_tickers
+
             fresh_items: List[Dict] = []
             for it in items:
                 key = announcement_key(ticker, it["url"])
-                if key in seen_state and ticker not in force_rerun_tickers:
+                if key in seen_state and ticker not in force_rerun_tickers and not is_results_mode:
                     continue
                 it["seen_key"] = key
                 fresh_items.append(it)
@@ -2320,8 +2796,25 @@ def main():
             if not fresh_items:
                 continue
 
-            # FYI: every fresh announcement gets a headline entry
-            for it in fresh_items:
+            if is_results_mode:
+                fresh_items = most_recent_results_cluster(fresh_items)
+                if not fresh_items:
+                    note = (
+                        f"{ticker} — no half-year or full-year results found in the "
+                        f"last {RESULTS_LOOKBACK_DAYS} days. The company may not have "
+                        f"reported in that window."
+                    )
+                    asx_url = f"https://www.asx.com.au/markets/company/{ticker}"
+                    high_impact_blocks.append(f"{note}\nAnnouncements: {asx_url}\n")
+                    high_impact_items.append({
+                        "ticker": ticker, "title": "No recent results",
+                        "url": asx_url, "type": "results",
+                    })
+                    continue
+
+            # FYI: every fresh announcement gets a headline entry.
+            # Suppressed in results mode — the results card is the whole point.
+            for it in ([] if is_results_mode else fresh_items):
                 title = it["title"]
                 url = it["url"]
                 fyi_entry = f"{summarise_headline_two_lines(ticker, title)}\nOpen: {url}\n"
@@ -2333,6 +2826,15 @@ def main():
                 if key:
                     seen_state_updated[key] = now_sgt().isoformat(timespec="seconds")
                     run_seen_count += 1
+
+            # Track URLs whose deep analysis is already handled this loop so
+            # the per-item MATERIAL/HIGH IMPACT pass below doesn't re-process
+            # them. Previously the RESULTS bundle branch ended with
+            # ``continue`` — which meant a REMUNERATION (e.g. an amended
+            # employee share plan filed the same morning as the annual
+            # report) was never reached and quietly fell into FYI. That is
+            # exactly the AHC failure mode.
+            handled_urls: set = set()
 
             # RESULTS bundle
             if any(looks_like_results_title(i["title"]) for i in fresh_items) and ticker not in processed_results:
@@ -2348,6 +2850,7 @@ def main():
                 for b in bundle:
                     title = b["title"]
                     url = b["url"]
+                    handled_urls.add(url)
                     pdf_url = asx_pdf_url_from_item_url(url)
                     safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
                     pdf_path = tmpdir / f"{safe_name}.pdf"
@@ -2378,52 +2881,111 @@ def main():
                     })
                     if ticker == "AR9":
                         brother_blocks.append(block)
-                    continue
-
-                analysis = deep_results_analysis(
-                    ticker, report_text, deck_text, counters,
-                    report_pdf=report_pdf, deck_pdf=deck_pdf,
-                )
-
-                # The long-form analysis leaves the email and goes to a native
-                # Generate a professional PDF of the full analysis and attach it to
-                # the email. This avoids Google Drive auth issues and gives the user
-                # a clean, downloadable file. PDF generation is non-fatal — if
-                # weasyprint isn't available, the email still ships without it.
-                analysis_pdf_path = None
-                try:
-                    analysis_pdf_path = generate_analysis_pdf(
-                        ticker,
-                        _results_period_label(analysis),
-                        build_analysis_doc_html(ticker, analysis, any_results_link),
+                    # Fall through to the per-item loop so a REMUNERATION
+                    # or other item filed the same day still gets analysed.
+                else:
+                    analysis = deep_results_analysis(
+                        ticker, report_text, deck_text, counters,
+                        report_pdf=report_pdf, deck_pdf=deck_pdf,
                     )
-                except Exception as e:
-                    log(f"ERROR: analysis PDF generation failed for {ticker}: {type(e).__name__}: {e}")
 
-                block = build_results_block(
-                    ticker=ticker,
-                    analysis=analysis,
-                    asx_url=any_results_link,
-                    doc_link="",
-                    doc_error="",
-                )
-                high_impact_blocks.append(block)
-                high_impact_items.append({
-                    "ticker": ticker, "title": bundle[0]["title"] if bundle else "Results (HY/FY)",
-                    "url": any_results_link, "type": "results", "analysis": analysis,
-                    "doc_link": "", "doc_error": "", "pdf_path": str(analysis_pdf_path) if analysis_pdf_path else None,
-                })
-                if ticker == "AR9":
-                    brother_blocks.append(block)
-                continue
+                    # The long-form analysis leaves the email and goes to a
+                    # standalone PDF attached to the email. PDF generation is
+                    # non-fatal — if weasyprint isn't available, the email
+                    # still ships without it.
+                    analysis_pdf_path = None
+                    try:
+                        analysis_pdf_path = generate_analysis_pdf(
+                            ticker,
+                            _results_period_label(analysis),
+                            build_analysis_doc_html(ticker, analysis, any_results_link),
+                        )
+                    except Exception as e:
+                        log(f"ERROR: analysis PDF generation failed for {ticker}: {type(e).__name__}: {e}")
+
+                    block = build_results_block(
+                        ticker=ticker,
+                        analysis=analysis,
+                        asx_url=any_results_link,
+                        doc_link="",
+                        doc_error="",
+                    )
+                    high_impact_blocks.append(block)
+                    high_impact_items.append({
+                        "ticker": ticker, "title": bundle[0]["title"] if bundle else "Results (HY/FY)",
+                        "url": any_results_link, "type": "results", "analysis": analysis,
+                        "doc_link": "", "doc_error": "", "pdf_path": str(analysis_pdf_path) if analysis_pdf_path else None,
+                    })
+                    if ticker == "AR9":
+                        brother_blocks.append(block)
 
             # Per-item MATERIAL / HIGH IMPACT
             for it in fresh_items:
                 title = it["title"]
                 url = it["url"]
+                if url in handled_urls:
+                    # Already processed as part of the results bundle above;
+                    # don't double-analyse the same PDF.
+                    continue
                 asx_flagged = it.get("price_sensitive", False)
                 is_price = is_price_sensitive_title(title) or asx_flagged
                 cls_title = classify_from_title_only(title)
+
+                # Remuneration / share plan amendments are analysed whether or
+                # not ASX flags them price-sensitive — the whole point of this
+                # branch is that a quietly filed plan-rules change never shows
+                # up flagged, and reading it by hand is exactly the job Bob
+                # is meant to do here.
+                if cls_title == "REMUNERATION":
+                    pdf_url = asx_pdf_url_from_item_url(url)
+                    safe_name = re.sub(r"[^a-zA-Z0-9._-]+", "_", f"{ticker}_{title[:80]}")
+                    pdf_path = tmpdir / f"{safe_name}.pdf"
+                    text, got_pdf = fetch_announcement_text(session, url, pdf_url, pdf_path, counters)
+
+                    if looks_like_asx_access_gate(text) and not got_pdf:
+                        block = f"{ticker}: {title[:160]}\nSo what: could not fetch remuneration PDF automatically. Open: {url}\n"
+                        material_blocks.append(block)
+                        material_items.append({"ticker": ticker, "title": title[:200], "url": url})
+                        if ticker == "AR9":
+                            brother_blocks.append(block)
+                        if pdf_path.exists():
+                            try:
+                                pdf_path.unlink()
+                            except Exception:
+                                pass
+                        continue
+
+                    current_pdf = pdf_path if got_pdf else None
+                    analysis = deep_remuneration_memo(
+                        ticker, title, text, counters, pdf_path=current_pdf,
+                    )
+
+                    analysis_pdf_path = None
+                    try:
+                        analysis_pdf_path = generate_analysis_pdf(
+                            ticker,
+                            "remuneration",
+                            build_remuneration_doc_html(ticker, analysis, url),
+                        )
+                    except Exception as e:
+                        log(f"ERROR: remuneration PDF generation failed for {ticker}: {type(e).__name__}: {e}")
+
+                    if pdf_path.exists():
+                        try:
+                            pdf_path.unlink()
+                        except Exception:
+                            pass
+
+                    block = build_remuneration_block(ticker, analysis, url)
+                    high_impact_blocks.append(block)
+                    high_impact_items.append({
+                        "ticker": ticker, "title": title[:200], "url": url,
+                        "type": "remuneration", "analysis": analysis,
+                        "pdf_path": str(analysis_pdf_path) if analysis_pdf_path else None,
+                    })
+                    if ticker == "AR9":
+                        brother_blocks.append(block)
+                    continue
 
                 if not is_price:
                     continue
@@ -2586,15 +3148,25 @@ def main():
         bro_html += "</div>"
         send_email(bro_subject, bro_text, bro_html, to_addr=brother_email)
 
-    _emit_bob_dashboard_json(
-        high_impact=high_impact_items,
-        material=material_items,
-        fyi=fyi_items,
-        silence=not (high_impact_blocks or material_blocks or fyi_blocks),
-    )
-
-    save_seen_state(SEEN_STATE_PATH, prune_seen_state(seen_state_updated, SEEN_STATE_RETENTION_HOURS))
-    log(f"Seen-state updated with {run_seen_count} new announcement(s).")
+    # Exclusive one-off modes (RESULTS_TICKER / MANUAL_TICKER) email their
+    # analysis but must not touch shared state: writing bob.json would clobber
+    # the portfolio dashboard with a single ad-hoc ticker, and — because that
+    # write stamps last_run = today — would make the evening scheduled digest's
+    # catch-up guard think the digest had already gone out and stand it down.
+    # An ad-hoc "what were HPG's last numbers?" from a phone must never cost the
+    # user that night's portfolio digest.
+    one_off_mode = bool(results_tickers or manual_tickers)
+    if one_off_mode:
+        log("One-off mode: skipping bob.json / seen-state writes (dashboard and scheduled digest untouched).")
+    else:
+        _emit_bob_dashboard_json(
+            high_impact=high_impact_items,
+            material=material_items,
+            fyi=fyi_items,
+            silence=not (high_impact_blocks or material_blocks or fyi_blocks),
+        )
+        save_seen_state(SEEN_STATE_PATH, prune_seen_state(seen_state_updated, SEEN_STATE_RETENTION_HOURS))
+        log(f"Seen-state updated with {run_seen_count} new announcement(s).")
     log("Email sent.")
 
 

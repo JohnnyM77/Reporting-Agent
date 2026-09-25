@@ -8,10 +8,11 @@ from __future__ import annotations
 
 import json
 import os
-import time
+import time  # noqa: F401  (tests patch claude_runner.time.sleep)
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from shared.llm import call_with_retry, make_client, send as llm_send
 from shared.pdf_llm import LLM_FAILED, PdfAttachment, build_pdf_attachments
 
 from .config import CLAUDE_DEFAULT_MODEL, CLAUDE_MAX_TOKENS
@@ -42,8 +43,6 @@ def _call_claude(
     - ``LLM_FAILED``  — API error (after one retry)
     - ``NO_CONTENT``  — nothing usable could be attached or extracted
     """
-    import anthropic
-
     attachments = [
         PdfAttachment(name=ann.title[:200] or "document", pdf_bytes=ann.pdf_bytes)
         for ann in pdf_items
@@ -64,24 +63,28 @@ def _call_claude(
         log("[claude_runner] ERROR: ANTHROPIC_API_KEY not set.")
         return LLM_FAILED
 
-    client = anthropic.Anthropic(api_key=api_key)
-    last_err: Optional[Exception] = None
-    for attempt in range(max_retries + 1):
-        try:
-            resp = client.messages.create(
-                model=model,
-                max_tokens=CLAUDE_MAX_TOKENS,
-                system=system_prompt,
-                messages=[{"role": "user", "content": content}],
-            )
-            return (resp.content[0].text or "").strip()
-        except Exception as exc:
-            last_err = exc
-            if attempt < max_retries:
-                log(f"[claude_runner] WARNING: Claude API call failed (attempt {attempt + 1}/{max_retries + 1}, model={model}): {exc} — retrying once")
-                time.sleep(2)
-                continue
-            log(f"[claude_runner] ERROR: Claude API call failed after {attempt + 1} attempt(s) (model={model}): {exc}")
+    client = make_client(api_key)
+
+    def _once() -> str:
+        resp = llm_send(
+            client,
+            model=model,
+            max_tokens=CLAUDE_MAX_TOKENS,
+            system=system_prompt,
+            messages=[{"role": "user", "content": content}],
+            # Always .create(), as before: CLAUDE_MAX_TOKENS (8192) is well
+            # under the SDK's ~21k-token non-streaming ceiling.
+            stream=False,
+        )
+        return resp.text.strip()
+
+    def _on_retry(attempt: int, exc: BaseException) -> None:
+        log(f"[claude_runner] WARNING: Claude API call failed (attempt {attempt}/{max_retries + 1}, model={model}): {exc} — retrying once")
+
+    try:
+        return call_with_retry(_once, max_retries=max_retries, on_retry=_on_retry)
+    except Exception as exc:
+        log(f"[claude_runner] ERROR: Claude API call failed after {max_retries + 1} attempt(s) (model={model}): {exc}")
     return LLM_FAILED
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 
@@ -9,6 +10,14 @@ def sally_root() -> Path:
 
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
+
+
+def ensure_repo_root_on_path() -> None:
+    """Sally runs from sunday-sally/ (``python -m src.main``); the repo-root
+    packages she uses (``shared``, ``wally``) need the root on sys.path."""
+    root = str(repo_root())
+    if root not in sys.path:
+        sys.path.insert(0, root)
 
 
 def resolve_existing_path(raw_path: str | None, *, base_dirs: list[Path]) -> Path:

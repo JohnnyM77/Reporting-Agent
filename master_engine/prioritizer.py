@@ -1,16 +1,17 @@
 # master_engine/prioritizer.py
 #
-# Scores and ranks InvestorEvent objects using a weighted multi-factor model.
-# Scoring logic is delegated to agents/super_investor/scoring.py when
-# available so we mirror the same specification here; otherwise a basic
-# local fallback scorer is used.
+# Scores and ranks InvestorEvent objects by event-type severity.
+#
+# This used to try agents/super_investor/scoring.py first. That module no
+# longer exists in the repo, so the import always failed and the basic
+# scorer below was the one actually used; the dead import has been removed.
 
 from __future__ import annotations
 
 import logging
 from typing import Sequence
 
-from .schemas import (
+from shared.events import (
     InvestorEvent,
     PRIORITY_CRITICAL,
     PRIORITY_HIGH,
@@ -48,9 +49,7 @@ def prioritize(events: list[InvestorEvent]) -> list[InvestorEvent]:
     """
     Score every event and sort the list descending by score.
 
-    The scoring is done by the Super Investor scoring module so we import
-    it here rather than re-implementing the weights.  Falls back to a basic
-    local score if the module is unavailable.
+    Scores by event-type severity (``_basic_score``).
 
     Returns
     -------
@@ -58,14 +57,7 @@ def prioritize(events: list[InvestorEvent]) -> list[InvestorEvent]:
         Same events with ``score`` and ``priority`` fields populated,
         sorted descending by score.
     """
-    try:
-        from agents.super_investor.scoring import score_event  # type: ignore[import]
-        _score_fn = score_event
-    except ImportError:
-        logger.warning(
-            "[prioritizer] super_investor.scoring unavailable — using basic scorer"
-        )
-        _score_fn = _basic_score  # type: ignore[assignment]
+    _score_fn = _basic_score
 
     scored: list[InvestorEvent] = []
     for event in events:
@@ -89,7 +81,7 @@ def prioritize(events: list[InvestorEvent]) -> list[InvestorEvent]:
 
 
 # ---------------------------------------------------------------------------
-# Basic fallback scorer (used when super_investor.scoring is not importable)
+# Event-type severity scorer
 # ---------------------------------------------------------------------------
 _BASE_SEVERITY: dict[str, int] = {
     "earnings_release": 50,
@@ -111,5 +103,5 @@ _BASE_SEVERITY: dict[str, int] = {
 
 
 def _basic_score(event: InvestorEvent) -> int:
-    """Minimal fallback scorer that only uses event type severity."""
+    """Score from event type severity only."""
     return _BASE_SEVERITY.get(event.event_type, 5)

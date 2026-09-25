@@ -20,50 +20,26 @@ from typing import Dict, List, Optional
 import requests
 from bs4 import BeautifulSoup
 
-ASX_V2_URL = (
-    "https://www.asx.com.au/asx/v2/statistics/announcements.do"
-    "?asxCode={ticker}&by=asxCode&period=M6&timeframe=D"
+from shared.asx import (
+    ANNOUNCEMENTS_URL,
+    absolute_url,
+    browser_session,
+    extract_ids_id,
+    pdf_url_for_ids_id,
 )
+
+ASX_V2_URL = ANNOUNCEMENTS_URL
 
 HTTP_TIMEOUT_SECS = 30
 
-_HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/122.0.0.0 Safari/537.36"
-    ),
-    "Accept": "text/html,application/xhtml+xml,*/*",
-    "Referer": "https://www.asx.com.au/",
-}
-
 
 def _make_session() -> requests.Session:
-    s = requests.Session()
-    s.headers.update(_HEADERS)
-    return s
+    return browser_session(accept="text/html,application/xhtml+xml,*/*")
 
 
-def _normalise_href(href: str) -> str:
-    if href.startswith("/"):
-        return "https://www.asx.com.au" + href
-    return href
-
-
-def _extract_ids_id(url: str) -> Optional[str]:
-    """Extract the idsId query parameter from an ASX announcement URL."""
-    m = re.search(r"[?&]idsId=([^&]+)", url)
-    return m.group(1) if m else None
-
-
-def _build_pdf_url(ids_id: Optional[str]) -> Optional[str]:
-    """Build the direct PDF display URL from an idsId value."""
-    if not ids_id:
-        return None
-    return (
-        f"https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do"
-        f"?display=pdf&idsId={ids_id}"
-    )
+_normalise_href = absolute_url
+_extract_ids_id = extract_ids_id
+_build_pdf_url = pdf_url_for_ids_id
 
 
 _DATE_RE = re.compile(r"\b(\d{2}/\d{2}/\d{4})\b")

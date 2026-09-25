@@ -1,0 +1,110 @@
+# Harry Hindsight configuration. Code, thresholds and rules only.
+# Nothing personal lives in this file: positions, responses, bias hit rates and
+# case files live in the private store (see docs/CAPTAIN_HINDSIGHT_ARCHITECTURE.md).
+
+store:
+  # local | private_repo. Env HINDSIGHT_STORE overrides.
+  backend: local
+  local_dir: hindsight_data
+
+llm:
+  # Env overrides: HINDSIGHT_MODEL_TRIAGE, HINDSIGHT_MODEL_FULL,
+  # HINDSIGHT_MAX_LLM_CALLS, HINDSIGHT_MAX_TOKENS_FULL.
+  model_triage: claude-haiku-4-5
+  model_full: ""            # blank = CLAUDE_MODEL env, else claude-sonnet-4-6
+  max_calls_per_run: 10
+  max_tokens_full: 16000
+  max_tokens_triage: 600
+  streaming_min_tokens: 8192
+  # USD per million tokens, input / output. Estimates for the run log only.
+  pricing:
+    claude-haiku-4-5: [1.00, 5.00]
+    claude-sonnet-4-6: [3.00, 15.00]
+    claude-sonnet-5: [2.00, 10.00]
+    claude-opus-5: [5.00, 25.00]
+    claude-opus-5-5: [4.00, 20.00]
+    default: [3.00, 15.00]
+
+sally:
+  # Sally never says SELL. Tier 3 "Trim candidate" maps to REDUCE. Tier 2
+  # "Hold but stop adding" maps to REDUCE only when both of these hold.
+  reduce_percentile: 0.95
+  reduce_max_distance_pct: 3.0
+
+bob:
+  # Case-insensitive regexes. Matched against title + Bob's analysis summary.
+  critical_rules:
+    DILUTIVE_RAISE:
+      - 'placement|entitlement offer|rights issue|capital raising|share purchase plan'
+    GUIDANCE_DOWNGRADE:
+      - 'guidance (downgrade|cut|revis\w* down|lower)'
+      - 'downgrad\w* (guidance|outlook)'
+      - 'profit warning'
+      - 'below (prior |previous )?guidance'
+    CEO_CFO_DEPARTURE:
+      - '\b(ceo|cfo|chief executive|chief financial officer|managing director)\b.{0,60}\b(resign|depart|retire|step\w* down|leav|terminat|exit)'
+      - '\b(resign|depart|retire|step\w* down)\w*.{0,60}\b(ceo|cfo|chief executive|chief financial officer|managing director)\b'
+    TRADING_HALT:
+      - 'trading halt|suspension from (official )?quotation|voluntary suspension'
+    GOING_CONCERN:
+      - 'going concern|material uncertainty'
+    AUDITOR_ISSUE:
+      - 'change of auditor|auditor (resign|change)|qualified (audit )?opinion|disclaimer of opinion|emphasis of matter'
+    COVENANT_STRESS:
+      - 'covenant (breach|waiver)|breach of covenant|refinanc\w* (risk|stress)|standstill'
+    RELATED_PARTY:
+      - 'related[- ]party transaction'
+  # A capital raise is only CRITICAL when these thresholds are crossed and
+  # the numbers can be read from the text. Otherwise it stays HIGH.
+  dilution_pct_critical: 10.0
+  discount_pct_critical: 15.0
+  leadership_rules:
+    - '\b(ceo|cfo|chair(man|woman|person)?|chief executive|chief financial officer|managing director)\b.{0,60}\b(appoint|resign|depart|retire|step\w* down|transition|leav|succession)'
+    - '\b(appoint|resign|depart|retire|step\w* down)\w*.{0,60}\b(ceo|cfo|chair(man|woman|person)?|chief executive|chief financial officer|managing director)\b'
+    - 'board spill|spill (motion|resolution)|second strike'
+
+triage:
+  daily_move_pct: 7.0
+  move_since_review_pct: 15.0
+
+wally:
+  top_n: 3
+  min_score: 40.0
+
+lollapalooza:
+  min_tendencies: 3
+  min_same_direction: 3
+  down_vs_cost_pct: 20.0
+  averaging_down_months: 12
+  unanswered_sally_flags: 2
+
+portfolio_review:
+  monthly_day: 1
+  pre_season_windows:     # [month, first_day, last_day]
+    - [1, 20, 31]
+    - [7, 20, 31]
+
+bias_profile:
+  # Where to look first. Seeded into the private profile as KNOWN VULNERABILITY,
+  # never as a finding. The profile file itself lives only in the store.
+  seed:
+    - Deprival-Superreaction
+    - Inconsistency-Avoidance
+    - Excessive Self-Regard
+    - Overoptimism
+    - Availability-Misweighing
+    - Influence-from-Mere-Association
+    - Contrast-Misreaction
+    - Reward and Punishment Superresponse
+  # A tendency flagged at least this often with a usefulness rate below this
+  # is deprioritised in future prompts.
+  deprioritise_min_flags: 5
+  deprioritise_max_useful_rate: 0.2
+
+web:
+  # docs/data/harry.json feeds the public dashboard. Verdict-level only by
+  # default: the site and repo are public.
+  publish: true
+  include_bias: false       # Munger tendencies with evidence
+  include_position: false   # unrealised %, average cost, weight of book
+  max_entries: 20

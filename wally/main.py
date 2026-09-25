@@ -63,7 +63,7 @@ def _load_portfolio_targets(watchlist_name: str) -> PortfolioTargets | None:
     """Load portfolio targets file based on watchlist name."""
     # Map watchlist names to their portfolio targets files
     targets_map = {
-        "TII Watchlist": Path("config/tii_portfolio_targets.yaml"),
+        "Cornerstone Watchlist": Path("config/tii_portfolio_targets.yaml"),
         "JM Watch List": Path("config/jm_portfolio_targets.yaml"),
     }
 

@@ -113,7 +113,8 @@ threshold, so the first attempt after raising `max_tokens` came back with
 "Streaming is required for operations that may take longer than 10 minutes".
 `_call_anthropic` now routes any call with `max_tokens >= _STREAMING_MIN_TOKENS`
 (8192) through `client.messages.stream`; below that threshold the short
-`.create` path stays. Streaming keeps the connection alive with periodic
+`.create` path stays. The switch itself now lives in `shared/llm.py::send`,
+which every agent's Claude calls go through. Streaming keeps the connection alive with periodic
 events, so the SDK-side ceiling doesn't apply.
 
 `strawman_post` was left as the existing no-op shim — folding a Strawman draft
@@ -128,6 +129,35 @@ not the default — used when a PDF is missing, malformed, or would push the
 request past Claude's 32MB / 100-page whole-request limit. When that fallback
 fires, the prompt is told the text came from pypdf so the model prefers `n/a`
 over a misread figure.
+
+### Three manual run modes (workflow_dispatch inputs)
+`daily.yml` exposes three optional inputs, each mapping to an env var read in
+`main()`. Precedence when more than one is set: **RESULTS_TICKER > MANUAL_TICKER
+> FORCE_RERUN_TICKERS / normal**.
+
+| Input / env | Window | What it surfaces |
+|---|---|---|
+| `force_rerun_tickers` | full ASX history | re-runs listed tickers ignoring seen_state; adds non-portfolio names to the portfolio run |
+| `manual_ticker` | last 7 days | exclusive; every announcement as FYI plus any results |
+| `results_ticker` | last ~6 months (`RESULTS_LOOKBACK_DAYS`, default 180) | exclusive; ONLY the latest HY/FY results, full deep analysis, no FYI noise |
+
+`RESULTS_TICKER` is the "someone at the pub mentioned HPG — what were their last
+numbers?" path: a company may have last reported a month or two ago, outside the
+24h/7d windows. `most_recent_results_cluster` narrows the 6-month pull to the
+single newest reporting event (release + presentation + Appendix 4D/4E within
+~14 days of each other) so an old half-year is never bundled with a newer
+full-year. No results in the window → a plain "no results found in the last N
+days" note, never a blank card.
+
+**One-off modes never touch shared state.** When `RESULTS_TICKER` or
+`MANUAL_TICKER` is set, `main()` emails the analysis but skips both the
+`bob.json` write and the seen_state save. Two reasons: a single ad-hoc ticker
+must not clobber the portfolio dashboard, and — because the bob.json write
+stamps `last_run = today` — a morning phone query would otherwise trip the
+evening scheduled digest's catch-up guard (`_already_sent_today`) and stand the
+real digest down. An ad-hoc query must never cost that night's portfolio digest.
+This matches the log line manual mode always claimed ("one-off, not saved to
+state") but the code previously contradicted.
 
 ### Results detection is pattern-based, not a phrase list
 `looks_like_results_title` gates the entire results path: no match, no
@@ -199,6 +229,305 @@ Digest blocks may now be either a plain string (escaped, pre-wrap) or a
 `{"text": ..., "html": ...}` dict for blocks that build their own email-safe
 HTML (`_block_text` / `_block_html` in `agent.py`).
 
+## Singapore Slinger — Singapore Exchange announcements (V4)
+
+The SGX bot is Singapore Slinger — "slings information" from SGX. It's a
+distinct persona from ASX Bob (their JSON shapes overlap by design, but
+the two are independent bots on the dashboard now, not "Bob with a
+regional badge"). The display name changed; the underlying `sgx_*`
+module and `BOB_SG_*` constant names stayed to avoid a churny rename
+across every import.
+
+Round 1 landed the fetch (`sgx_fetch.py`). Round 2 added the full daily
+digest: classifier + PDF fetcher + LLM analysis (results only) + email,
+all wired into `sgx_daily.yml` with a morning SGT cron. Round 3 wires
+the dashboard: Slinger writes `docs/data/slinger.json` after each real
+run, the sgx_daily workflow commits + pushes it, and
+`.github/workflows/theo-pages.yml` picks up the `Singapore Slinger Daily`
+`workflow_run` completion event and republishes the site.
+
+Layout — five top-level `sgx_*` modules keep the SGX path a clean
+horizontal split from `agent.py` (which stays ASX-only, untouched):
+
+| File | Role |
+|---|---|
+| `sgx_fetch.py` | Playwright prime + REST replay (Round 1) |
+| `sgx_classify.py` | Category-code -> bucket (RESULTS_HY_FY / DIVIDEND / SHARE_BUYBACK / ACQUISITION / …), title-regex fallback |
+| `sgx_pdf.py` | `links.sgx.com` URL -> local PDF(s). Handles both direct-PDF and HTML-landing-page cases |
+| `sgx_email.py` | Digest HTML/text builder — same table-only inline-styles shape as `agent.py`, `S$` prefix, "SGX" badge in header, full markdown analysis rendered inline in the results card |
+| `sgx_agent.py` | Orchestrator: fetch → classify → PDF → LLM (for results) → email with PDFs attached → seen-state → dashboard JSON |
+
+**No coupling to `agent.py`.** `import agent` drags in `weasyprint`,
+`pypdf`, `bs4`, and other deps the SGX box doesn't need for anything else,
+and any change to `agent.py` becomes an SGX regression risk. The Anthropic
+streaming plumbing and SMTP send that used to be duplicated here now come
+from `shared/llm.py` and `shared/email_service.py` (stdlib-only at import
+time), not from `agent.py`.
+
+**No Google Drive on the SGX path.** ASX Bob writes a native Google Doc
+per results item; SGX Bob deliberately doesn't.
+
+The email body carries the metric card, the short summary, and clickable
+**links** to the source PDFs on SGX (rendered from the `source_url` on
+each `FetchedPdf` — see `sgx_pdf.py`). The deep analysis (`full_analysis`
+markdown) does NOT render in the email body; it goes into a standalone
+**PDF attached** to the email so the user can forward one file to
+friends. This split is intentional:
+
+- Source PDFs → **linked** (not attached) so the email stays lightweight
+  and Gmail doesn't warn about size; the originals live on SGX anyway.
+- Analysis PDF → **attached** so it forwards cleanly as a self-contained
+  file rather than an inline HTML block that reflows when re-emailed.
+
+The analysis PDF is rendered by `_render_analysis_pdf` in `sgx_agent.py`
+via Playwright + installed Chrome (`channel='chrome'`, headless,
+`page.pdf()`). Chrome is already provisioned on the self-hosted Windows
+runner for `sgx_fetch`'s token-prime step, so this adds no dependencies.
+The HTML for that PDF is built by `build_analysis_pdf_html` in
+`sgx_email.py` — a complete `<!doctype html>` document with an `@page A4`
+rule, the same metric table as the email card, the summary, and the full
+markdown analysis. Attachment total is capped at 20MB but the analysis
+PDFs are ~50-200KB each, so the cap is really just a safety net.
+
+The PDF is a **standalone report the user forwards to peers**, so its
+layout matters more than the email card's:
+
+- Cover header with big ticker + issuer + period pill + generated-on
+  timestamp + currency line, on the deep-green SGX bar.
+- Metric table: bordered rows, YoY colour-coded (green +ve / red -ve /
+  muted grey n/a), basis label under each figure.
+- Summary rendered as a bordered callout ("verdict first") -- the
+  five-sentence line the prompt asks for.
+- Deep analysis rendered through `_markdown_to_email_html(pdf_mode=True)`
+  which bumps sizing, adds accent-underline section headers on `##`,
+  page-break-inside:avoid on tables + blockquotes, and supports `> ...`
+  blockquotes as bordered callouts (a way for the LLM to flag one
+  must-not-miss sentence).
+- Chrome print-CSS `@page @bottom-right` footer gives page X of Y
+  numbers; a disclaimer + "verify on links.sgx.com" line closes the
+  document.
+
+The user prompt to Claude is structured deliberately: **hint FIRST**
+(so the model reads context before schema boilerplate), then a
+Slinger-specific block noting SGX holding-company patterns, quality
+expectations (audience: sophisticated peers, target 800-1500 words of
+real numbers), and currency-prefix rules (S$/US$/Rp — never bare `$`).
+Ordering matters -- an earlier version appended the hint at the end
+and the C07 (JC&C) analysis came back generic-P&L-shaped, ignoring
+the Astra hint entirely.
+
+**Metric JSON keys are load-bearing.** `sgx_email._results_card_html`
+reads `dividend_ordinary` (not `ordinary_dividend`) and `change_pct`
+(not `change`) — those are the keys the `RESULTS_HYFY_PROMPT` schema
+tells the model to emit. Earlier code used the wrong names and the
+first live SGX results email came back with a blank YoY column and
+`n/a` in the dividend row despite the model returning real numbers.
+`tests/test_sgx_email.py::TestResultsCard::test_card_shows_yoy_change_column`
+and `test_card_renders_dividend_row` pin the correct schema.
+
+**SGX classification is metadata-driven, not title-regex.** Every SGX
+row carries `sub` (e.g. `ANNC17`), `cat` (e.g. `ANNC`), and
+`category_name` (e.g. "Financial Statements and Related"). We map those
+directly to Bob's buckets. Title regex is fallback only for the
+`ANNC18` General Announcement bucket. This is much cleaner than ASX's
+title regex (which lost BXB's FY26 release before being rewritten) — SGX
+gives us structured signal for free.
+
+**Seen-state file: `state_seen_sgx.json`.** Separate from ASX's
+`state_seen.json` — different exchange, different retention window,
+independent lifecycle. `sgx_daily.yml` restores/saves it via
+`actions/cache`, same pattern `daily.yml` uses for ASX.
+
+**Cron: `15 0 * * *` UTC = 08:15 SGT.** ~1h15m after SGX opens, long
+enough for the ~7am pre-open batch to have landed.
+
+Round 1 was fetch-only: `sgx_fetch.py` pulled the announcements list
+for every ticker in `tickers.yaml`'s `sgx:` section and wrote JSON to
+`outputs/sgx/announcements.json`. Round 2 keeps that path (via the
+`fetch_only=true` workflow dispatch input) as a diagnostic mode.
+
+### Why SGX must run on the self-hosted Windows runner
+Two independent SGX-side filters, both discovered during the spike
+sequence (#158 → #166):
+
+1. **TLS fingerprint filter.** `api.sgx.com` returns 403 to raw
+   `requests` calls (and to GitHub-hosted ubuntu runner IPs, even from
+   headless Chromium). Only a browser session that matches installed
+   Google Chrome gets through.
+2. **Signed `authorizationtoken` header.** `investors.sgx.com` is a
+   Flutter Web app that computes a ~130-char signed token client-side
+   and injects it on each `api.sgx.com` request. Without it, the
+   announcements list endpoint returns 401 even when everything else
+   about the request is right. There is no way to reproduce this token
+   from Python alone — it has to be captured from a live browser.
+
+`sgx_fetch.py` handles both by launching Playwright with
+`channel='chrome'` (installed Chrome, not bundled Chromium) and a real
+Chrome User-Agent (Playwright otherwise stamps `HeadlessChrome`), then
+navigating to the announcements page and intercepting the first
+`api.sgx.com` request that carries a non-empty `authorizationtoken`.
+
+**The token is not ticker-bound** (verified in #165), so one Playwright
+prime does the whole portfolio — subsequent REST calls use
+`context.request` with the captured token forwarded as a header.
+
+### The URL shape that returns real data
+Getting the query params right was itself a diagnostic round (#166 vs.
+the earlier zero-item response). The endpoint Flutter actually fires:
+
+```
+GET /announcements/v1.1/securitycode
+    ?value=D05&securityCodeParams=D05
+    &pagestart=0&pagesize=25
+    &periodstart=YYYYMMDD_HHMMSS&periodend=YYYYMMDD_HHMMSS
+    &exactsearch=true
+```
+
+Both `value` and `securityCodeParams` must echo the ticker (not the
+literal string `"securitycode"`). No `cat=` or `sub=` filters — those
+narrow the result set and return zero for a full company view. Both
+period bounds are compact SGT timestamps. All of that is encoded in
+`_list_url` and pinned by `tests/test_sgx_fetch.py::test_matches_flutter_shape`.
+
+### Row shape
+Each returned announcement dict carries the ASX-compatible core keys
+(`exchange`, `ticker`, `date`, `time`, `title`, `url`) so future
+downstream code doesn't need to branch on exchange, plus the SGX-native
+extras (`ref_id`, `id`, `sub`, `cat`, `category_name`, `issuer_name`,
+`submission_ts_ms`) that the eventual SGX classifier will key off.
+
+SGX classifies natively via `category_name` and `sub` codes (e.g.
+`ANNC13`=Share Buy Back, `ANNC15`=Employee Stock Option, `ANNC17`=
+Financial Statements, `ANNC18`=General Announcement) — much cleaner
+signal than ASX's title regex when Round 2 lands.
+
+### Workflow
+`.github/workflows/sgx_daily.yml` (workflow name: **Singapore Slinger
+Daily**) — manual dispatch AND daily cron (`15 0 * * *` UTC). Runs on
+`[self-hosted, Windows]` using the PowerShell + machine-Python pattern
+from `ned_transcript.yml`. Reads `state_seen_sgx.json` via
+`actions/cache` for dedup across runs, runs `sgx_agent.py`, emails the
+digest via the same Gmail SMTP secrets ASX Bob uses, then commits +
+pushes `docs/data/slinger.json` and a rebuilt `docs/index.html` so the
+site republishes. Dispatch inputs: `tickers` (override the yaml
+portfolio), `hours_back` (default 24), `dry_run` (preview only, no
+email, no state change, no dashboard write), `fetch_only` (Round 1
+mode — just dump JSON, no LLM/email), `results_ticker` (pull LAST HY/FY
+report + deep analysis), and `results_hint` (free-form context appended
+to every LLM call — use it when the report doesn't make the shape of
+the business obvious, e.g. "Haw Par's main asset is its UOB stake, not
+Tiger Balm trading").
+
+### Dashboard integration
+Slinger writes `docs/data/slinger.json` (same shape as `bob.json`:
+`last_run` + `high_impact` / `material` / `fyi` arrays) after each
+non-dry-run. Written on both portfolio and results-ticker modes — a
+one-off `results_ticker` query does show up on the site until the next
+scheduled portfolio run overwrites it. This is a deliberate departure
+from ASX Bob's "one-off never touches the dashboard" rule; Bob has a
+catch-up cron the dashboard write would trip (see the `_already_sent_today`
+guard in `agent.py`), Slinger doesn't.
+
+`scripts/build_dashboard.py` renders `_slinger_section` (defined in
+`dashboard/sections/slinger.py`) between Bob's card and Wally's. High-impact items reuse Bob's `_render_analysis_sections`
+because the metrics JSON schema (`dividend_ordinary` + `change_pct`) is
+identical, and Slinger's card adds a **Source PDFs** link list (SGX
+hosts them, so the dashboard just links back). Material/FYI items only
+carry `ticker` + `title` + `url`, so they render as compact rows.
+
+**Last-two-runs history.** `_update_slinger_history` keeps
+`docs/data/slinger_history.json` — the two newest distinct runs,
+newest first — mirroring Bob's `bob_history.json`. `_slinger_section`
+renders the current run open and the previous one collapsed in a
+`<details>` block. The sgx_daily workflow's dashboard-commit step
+`git add`s `slinger_history.json` alongside `slinger.json` and the
+rebuilt `index.html`. Deduping is signature-based so a rebuild
+triggered by another agent (Theo/Bob/Ned) with no new Slinger data
+doesn't churn the file.
+
+**PowerShell + Unicode gotcha (do not "modernise" the commit
+message).** The Slinger dashboard-commit step runs in PowerShell on
+the self-hosted Windows runner, which reads workflow scripts as
+cp1252. A bare em dash `—` in a commit message like `"Dashboard update
+— Slinger [skip ci]"` breaks the parser mid-file with `The string is
+missing the terminator: "`, kills the commit + push, and the site
+never picks up Slinger's data even though the run's other steps
+succeeded (email sent, `slinger.json` written to disk, then thrown
+away when the runner cleans up). Keep the step's git commit messages
+ASCII-only — the fix that got LCC's second run to publish uses `--`,
+not em dash.
+
+The same em dash killed Ned's YouTube publish on 2026-09-23
+(`ned_transcript.yml`, "Dashboard update — Ned transcripts"): the transcript
+was fetched and emailed, then the commit step died and nothing reached the
+site. `tests/test_hindsight.py::test_powershell_workflows_are_ascii_only` now
+fails if any `shell: powershell` workflow contains a non-ASCII character.
+
+**Python stdout on Windows is cp1252 too.** Same shape, different
+place: a `print(f"... → ...")` in `scripts/build_dashboard.py` crashes
+with `UnicodeEncodeError: 'charmap' codec can't encode character
+'\\u2192'` when the dashboard is rebuilt on the Windows runner (Bob's
+ubuntu never sees this). Killed the C07 rerun mid-way through
+`build_dashboard.py` -- `slinger.json` had already been committed but
+`index.html` never got rebuilt with the Slinger card. `build_dashboard.py`
+now calls `sys.stdout.reconfigure(encoding="utf-8")` at import time,
+so any non-ASCII char in a print / log line stops being a load-bearing
+bug. Same fix belongs anywhere else that runs on the Windows runner
+and prints unicode.
+
+**Python `read_text()` on Windows is cp1252 too — same platform, same
+gotcha, different failure mode.** Python 3.14's `Path.read_text()`
+defaults to `locale.getpreferredencoding(False)`, which is cp1252 on
+the Windows runner. When `build_dashboard.py` reads a `slinger.json`
+whose Windows-side sgx_agent write correctly used
+`encoding='utf-8'`, the on-disk bytes `0xC2 0xA2` (UTF-8 for `¢`) get
+decoded as cp1252 to two characters `Â¢`. `_update_slinger_history`
+then writes that mojibake back to `slinger_history.json` as
+`"\\u00c2\\u00a2"`. On the ubuntu Publish site runner the default is
+UTF-8 so the same file reads correctly and gets rewritten as
+`"\\u00a2"` — so every Publish site run tries to "fix" the mojibake,
+produces a working-tree diff on `slinger_history.json`, and if that
+file isn't in the `git add` list the follow-up `git pull --rebase`
+bails with **"cannot pull with rebase: You have unstaged changes"**
+and takes the whole publish down. That's what left the D05 run's
+Slinger card unpublished. Fixes:
+1. `_load(name)` in `build_dashboard.py` reads as UTF-8 explicitly.
+2. `slinger_history.json` is in the theo-pages `git add` list so
+   platform-cycle diffs get committed rather than blocking the rebase.
+Regression pinned in
+`tests/test_build_dashboard_slinger.py::test_load_reads_utf8_regardless_of_locale`.
+
+**JSON parser: `_parse_analysis_json` in `sgx_agent.py`** progresses
+through four fallbacks, cheapest first, each preserving content
+exactly:
+
+1. Straight parse after stripping code fences.
+2. Outermost `{...}` span, ignoring prose either side.
+3. That span with string bodies sanitised (raw newlines re-encoded as
+   `\\n`, invalid escapes like `\\%` dropped) — Bob's SPZ failure mode.
+4. **Carve `full_analysis` out as raw text** and re-parse the header —
+   the C07 failure mode. The model wrote `"impairment of X, Y and Z."`
+   inside the `full_analysis` string with unescaped inner quotes, so
+   `json.loads` bailed on the whole object. Extracting the markdown
+   body separately means quotes / backslashes / anything inside
+   `full_analysis` never has to be JSON-escaped. Header JSON (small,
+   well-behaved metrics + summary) parses fine on its own, then the
+   raw markdown gets reattached. Regressions pinned in
+   `tests/test_sgx_parse.py`.
+
+No bracket-closing fallback — a truncated response stays a
+`parse_error` so a half-broken digest never renders like a clean one
+(same rule Bob's ASX path enforces).
+
+The Publish site workflow (`theo-pages.yml`) has `Singapore Slinger
+Daily` in its `workflow_run` triggers so a Slinger run completing kicks
+off a Pages redeploy — same pattern Bob/Ned/Wally/Sally use. Note the
+Pages workflow fires on completion regardless of the triggering run's
+conclusion (deliberate — a run that emailed then tripped on a later
+step has still committed data worth publishing), so a red Slinger
+whose commit step failed will still trigger a redeploy — it just
+deploys the pre-Slinger state.
+
 ## Wally the Watcher — target ("buy") prices
 
 Wally flags a ticker on two independent triggers now, not one:
@@ -223,14 +552,41 @@ Whatever unit a buy price is in, the quote Wally screens it against must match:
 UK names are quoted in pence on their home exchange, so a pence buy price
 compares correctly there.
 
-The TII watchlist (tickers + buy prices) is synced from the user's
-`Watchlists_Aug_26` spreadsheet (TII sheet, "Buy Below" column). The three
-standard watchlists are de-duplicated in priority order **TII → JM → Aussie
-Tech**: a ticker that appears in more than one is kept only in the
-highest-priority list. `tii75_watchlist.yaml` is a separate canonical list and
-stays untouched at exactly 30. `config/tii_portfolio_targets.yaml` (`buy_below`,
-used for the email's Portfolio Targets block) is a separate, older source and
-may lag the spreadsheet.
+There are five standard watchlists, de-duplicated in priority order
+**Income → JM → Aussie Tech → Cornerstone → Nap Taker**: a ticker that appears
+in more than one is kept only in the highest-priority list. **Buy prices follow
+the ticker**, not the list — a global price map (Cornerstone's Buy-Below
+preferred, else Nap Taker's) is attached to whichever list each ticker lands in,
+so a name that moves lists still carries its buy price and stays flagged.
+
+The lists and where their names/prices come from:
+
+- **Income Watchlist** (`income_watchlist.yaml`) — the best dividend payers
+  pulled out of every other list (except TII75): names with a ~4%+ cash yield
+  plus the franked blue-chip anchors (big-four banks, BHP, Telstra, Transurban,
+  the income REITs). Yield traps (GQG, ADH, IPH — high yield only because the
+  price collapsed) and broken theses (LAU) are deliberately excluded. Highest
+  priority, so these names live here rather than in JM/Cornerstone/Nap Taker.
+
+- **JM Watch List** (`jm_watchlist.yaml`) and **Aussie Tech Watchlist**
+  (`aussie_tech_watchlist.yaml`) — the user's own ticker lists (from
+  `Watchlists_Aug_26`), no native buy prices; they inherit prices via the map.
+- **Cornerstone Watchlist** (`tii_watchlist.yaml`) — the list formerly named
+  "TII Watchlist", renamed so the source's buy prices aren't published under
+  their brand. Filename kept as `tii_watchlist.yaml`; the display `name:` is
+  "Cornerstone Watchlist" and `_load_portfolio_targets` maps that name to
+  `config/tii_portfolio_targets.yaml`. Buy prices from the TII sheet's
+  "Buy Below" column, GBX pence as written.
+- **Nap Taker Investing** (`naptaker_watchlist.yaml`) — analyst buy
+  recommendations under two years old, merged from the five Motley Fool
+  scorecard tabs (Buy status only), deliberately not named after the source.
+  Buy price = the price at the date of recommendation. US names are stored bare
+  (no `.AX`); a few source tickers needed correcting off the intact concatenated
+  name column (e.g. AMD, GOAT, SGLLV, HWM, TTD).
+
+`tii75_watchlist.yaml` is a separate canonical list and stays untouched at
+exactly 30. `config/tii_portfolio_targets.yaml` (`buy_below`, used for the
+email's Portfolio Targets block) is a separate, older source and may lag.
 
 `TickerScreenResult` gained `near_low`, `target_price`, `below_target` and
 `distance_to_target_pct` (all defaulted, so the empty/error constructors in
@@ -305,3 +661,109 @@ name (`TARGET_BRANCH`) so the deploy always carries the newest data.
 The trigger is not gated on the agent run succeeding. A run that emailed its
 digest and then tripped over on a later step has still committed data worth
 publishing, and re-deploying unchanged content costs nothing.
+
+## Harry Hindsight — the Chief Sceptic (`hindsight/`)
+
+Sits above Bob, Sally, Wally and Theo. Reads their existing outputs
+(`docs/data/{sally,bob,wally}.json`, `theses/` + git history,
+`data/decisions.json`, `watchlists/jm_watchlist.yaml`) through adapters in
+`hindsight/adapters.py`. It never imports or modifies those agents, and every
+existing agent must run exactly as before if Hindsight is disabled or broken.
+Full design and assumptions: `docs/CAPTAIN_HINDSIGHT_ARCHITECTURE.md`.
+
+**Reads Theo, never writes it.** Thesis files are Theo's. Hindsight records
+its findings (and "Questions for Theo") in its own case files.
+
+**Personal data only in the private store.** The repo is public. Case files,
+`hindsight.db`, reports, the bias profile and responses go to
+`HINDSIGHT_STORE=private_repo` (a checkout of `JohnnyM77/Reporting-Agent-private`
+at `HINDSIGHT_PRIVATE_REPO_DIR`) or `local` (`hindsight_data/`, gitignored).
+`store.open_store` refuses any directory the public repo would track, and a
+misconfigured `private_repo` raises `StoreConfigError`; there is no fallback.
+Workflow logs print counts and statuses only, because Actions logs on a public
+repo are public. `config/hindsight.yaml` holds rules and thresholds, never
+positions.
+
+**No silent placeholders.** Every analysis ends `OK`, `SKIPPED_CAP`,
+`FAILED_API` or `FAILED_INVALID`, and the email renders the three non-OK
+states differently with the real error. Same lesson as Bob's canned-analysis
+incident: a half-broken digest must never look like a clean one.
+
+**Deterministic first, model second.** No gate, no call. JM Watch List names
+with nothing new show `NO CHANGE` at zero cost. `HINDSIGHT_MAX_LLM_CALLS`
+(default 10) caps a run; overflow is queued in the store and run first next
+time. One validation retry per analysis, with the error attached.
+
+**The model proposes, code decides.** `validators.py` downgrades FACT claims
+with no source ref, bias states without a ref to a real record (to UNKNOWN),
+PRESENT 7 Powers with only management evidence, and any LOLLAPALOOZA that fails
+the three-part gate. It never raises a severity. Warnings without a
+falsifiable prediction are dropped. Behavioural facts (average cost, tranches,
+averaging down, sell target, weights, unanswered Sally flags) are computed in
+`behaviour.py`, never by the model.
+
+**Sally never says SELL.** Her verdicts are `Trim candidate` / `Hold but stop
+adding` / `Watch only`. The adapter maps Trim to REDUCE, and Tier 2 to REDUCE
+only at the top of the valuation range near the 52-week high (thresholds in
+config). `python -m hindsight sell TICKER` forces a sell review regardless.
+
+**Triggered by the agents it reads, not a clock.** `captain_hindsight.yml`
+listens for `workflow_run` completion of Bob, Wally and Sally (no cron). The JM
+triage is guarded to once a day (`triage_done` in the store) so Bob's catch-up
+run cannot re-triage and re-email. Only fires from `main`.
+
+**Output mirrors Bob.** `hindsight/email_html.py` builds a table-only,
+inline-styled card per report (a test bans flex, grid, `<style>` and
+`class=`), and a weasyprint PDF per OK report attached to the email. The PDF
+may use a stylesheet; the email may not.
+
+**On the public site, verdict-level only.** Each run writes
+`docs/data/harry.json` (`hindsight/web.py`): severity, verdict, thesis read,
+the would-buy / would-rebuy answers, what would change the call. The bias read
+and position details stay private unless `web.include_bias` /
+`web.include_position` are switched on in `config/hindsight.yaml`. The Harry
+workflow commits it and rebuilds `docs/index.html`; "Publish site" listens for
+"Harry Hindsight" completing.
+
+**Needs full git history.** Thesis versions and Sally's consecutive-flag streak
+come from `git log`; the workflow checks out with `fetch-depth: 0`.
+
+**The test suite leaves the working tree alone.** It used to rewrite
+`docs/data/wally.json`, `fundamentals/` and `valuations/`; those tests now run
+in tmp dirs. `git status` after `pytest` should be clean, and if it isn't,
+that's a test bug.
+
+## Shared infrastructure (2026-09 cleanup)
+
+Agents own intelligence (prompts, classification, scoring, templates,
+failure policy); `shared/` owns plumbing. Map, rules and "adding an agent":
+`docs/INFRASTRUCTURE.md`.
+
+| Module | Plumbing |
+|---|---|
+| `shared/email_service.py` | SMTP config, MIME (plain/HTML/attachments/inline CID images), send. `raise_on_error` keeps each agent's policy: Bob and Ned raise; Slinger/USA/Sally/Harry log and return False |
+| `shared/llm.py` | Anthropic client, streaming at >= 8192 tokens (`stream=` override: Results Pack pins `.create()`), text/stop_reason/usage, retry helper |
+| `shared/securities.py` | `NHC` == `NHC.AX` == `ASX:NHC`; `RR.` == `RR.L`; Yahoo symbols; GBX quote unit |
+| `shared/events.py` | `InvestorEvent`, moved from `master_engine/schemas.py`; Harry writes it every run |
+| `shared/asx.py` | ASX URLs, browser session headers (pinned per caller in `tests/test_shared_asx.py`), idsId -> PDF URL |
+| `shared/gdrive.py` | Drive credentials/service/find-or-create; each agent keeps its own auth policy |
+| `dashboard/` | one module per agent card; `scripts/build_dashboard.py` keeps all docs/data I/O |
+
+**Shared modules import heavy deps lazily** (`anthropic`, Google clients,
+`requests`) so each workflow's minimal `pip install` still works. Theo's and
+Harry's workflows don't install `requests` or the Google libraries.
+
+**Master Engine is scaffolding**; no workflow runs it. See
+`master_engine/README.md`.
+
+## Tests: stub a dependency only if it's missing
+
+Test files that import agent code stub optional third-party modules through
+`tests/_stubs.py::stub_missing(...)`, which installs an empty module only when
+the real one isn't installed. Never write `sys.modules[name] =
+types.ModuleType(name)` at import time: that stub lives for the whole session
+and silently breaks every later test that needs the real library. It hid 40
+Wally failures (depending on collection order) and let Results Pack tests skip
+code they were supposed to exercise. `pytest tests` passes in any order and
+file by file; keep it that way.
+

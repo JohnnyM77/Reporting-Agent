@@ -17,7 +17,7 @@ from __future__ import annotations
 import logging
 import re
 
-from .schemas import InvestorEvent
+from shared.events import InvestorEvent
 
 logger = logging.getLogger(__name__)
 

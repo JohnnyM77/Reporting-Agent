@@ -1,12 +1,12 @@
 # tests/test_schemas.py
 #
-# Tests for master_engine/schemas.py
+# Tests for shared/events.py (formerly master_engine/schemas.py)
 
 from __future__ import annotations
 
 import datetime as dt
 
-from master_engine.schemas import (
+from shared.events import (
     InvestorEvent,
     AGENT_BOB, AGENT_NED, AGENT_WALLY,
     EVENT_TYPE_EARNINGS_RELEASE,

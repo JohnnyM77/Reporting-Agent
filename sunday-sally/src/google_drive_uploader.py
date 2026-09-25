@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import mimetypes
-import os
 import re
 from pathlib import Path
+
+from .pathing import ensure_repo_root_on_path
 
 
 def _log(msg: str) -> None:
@@ -19,26 +20,22 @@ def _drive_service() -> tuple:
 
     Returns (service | None, error_message | None).
     """
-    from google.oauth2.service_account import Credentials
-    from googleapiclient.discovery import build
-
-    sa_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT_JSON", "").strip()
-    if not sa_json:
-        return None, "GDRIVE_SERVICE_ACCOUNT_JSON secret is not set"
+    ensure_repo_root_on_path()
+    from shared import gdrive
 
     try:
-        info = json.loads(sa_json)
+        info = gdrive.service_account_info()
     except json.JSONDecodeError as exc:
         return None, f"GDRIVE_SERVICE_ACCOUNT_JSON is not valid JSON: {exc}"
+    if info is None:
+        return None, "GDRIVE_SERVICE_ACCOUNT_JSON secret is not set"
 
     sa_email = info.get("client_email", "<unknown>")
     _log(f"Service account: {sa_email}")
 
     try:
-        creds = Credentials.from_service_account_info(
-            info, scopes=["https://www.googleapis.com/auth/drive"]
-        )
-        service = build("drive", "v3", credentials=creds)
+        creds = gdrive.service_account_credentials(info)
+        service = gdrive.build_service(creds)
         return service, None
     except Exception as exc:
         return None, f"Failed to build Drive service: {exc}"

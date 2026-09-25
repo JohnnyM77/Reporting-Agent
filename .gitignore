@@ -47,8 +47,14 @@ Thumbs.db
 # Master Investor Alert — generated digests and runtime outputs
 outputs/
 
-# Ned — single-episode transcripts (fetched on demand; uploaded as CI artifacts)
-transcripts/
+# Ned -- single-episode raw transcripts at the repo root (fetched on demand;
+# uploaded as CI artifacts). Leading slash so this doesn't also match
+# docs/transcripts/, which holds the published dashboard PDFs and *does*
+# need to be committed. A live podcast run against
+# `psychology-of-the-stock-market` (2026-09-25) failed the commit step
+# with "The following paths are ignored by one of your .gitignore files:
+# docs/transcripts" because the old bare `transcripts/` matched both.
+/transcripts/
 
 # SWS Drip Bot
 data/sws.db

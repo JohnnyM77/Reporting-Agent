@@ -206,12 +206,18 @@ def test_run_transcript_digest_saves_files_and_reports(monkeypatch, tmp_path, ca
     import ned.main as ned_main
 
     monkeypatch.setattr(ned_main, "TRANSCRIPTS_DIR", tmp_path)
-    # Isolate the dashboard history file too — a successful run appends to it
-    # and would otherwise write into the real repo's docs/data/ on every test
-    # run.
+    # Isolate the dashboard history file AND the published PDF dir --
+    # both are module-level paths that resolve into the real repo by
+    # default. A successful run writes to both, so if these aren't
+    # redirected the test pollutes docs/data/transcripts.json and drops
+    # a PDF into docs/transcripts/.
     monkeypatch.setattr(
         ned_main, "_TRANSCRIPTS_HISTORY_PATH",
         tmp_path / "docs" / "data" / "transcripts.json",
+    )
+    monkeypatch.setattr(
+        ned_main, "_TRANSCRIPT_PDFS_DIR",
+        tmp_path / "docs" / "transcripts",
     )
     # No email env, no LLM key -> prints digest, no crash.
     for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD", "ANTHROPIC_API_KEY"):
@@ -295,6 +301,12 @@ def test_youtube_run_appends_transcripts_history(monkeypatch, tmp_path):
     hist_path = tmp_path / "docs" / "data" / "transcripts.json"
     monkeypatch.setattr(ned_main, "_TRANSCRIPTS_HISTORY_PATH", hist_path)
     monkeypatch.setattr(ned_main, "TRANSCRIPTS_DIR", tmp_path)
+    # Redirect the PDF dir too -- a successful run writes a PDF, and
+    # without this monkeypatch it lands in the real docs/transcripts/.
+    monkeypatch.setattr(
+        ned_main, "_TRANSCRIPT_PDFS_DIR",
+        tmp_path / "docs" / "transcripts",
+    )
     for k in ("EMAIL_FROM", "EMAIL_TO", "EMAIL_APP_PASSWORD", "ANTHROPIC_API_KEY"):
         monkeypatch.delenv(k, raising=False)
     monkeypatch.setattr(ned_main, "fetch_transcript", lambda vid, **kw: _yt_run_result())

@@ -134,16 +134,59 @@ def _looks_like_apple(url: str) -> bool:
 # ---------------------------------------------------------------------------
 # Apple Podcasts resolution
 # ---------------------------------------------------------------------------
+def _lookup_apple(kind_id: str) -> dict:
+    """Raw iTunes lookup for one id. Returns the first result dict, or {}.
+
+    Same endpoint whether the id is a podcast or an episode -- Apple keys
+    everything by numeric id. Wrapped for retry/error uniformity; never
+    raises for the "no results" case so callers can decide policy.
+    """
+    try:
+        resp = requests.get(
+            _ITUNES_LOOKUP,
+            params={"id": kind_id},
+            timeout=_HTTP_TIMEOUT,
+            headers={"User-Agent": _USER_AGENT},
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception as exc:
+        raise TranscriptError(
+            f"iTunes lookup for id {kind_id} failed: {type(exc).__name__}: {exc}"
+        )
+    results = data.get("results") or []
+    return results[0] if results else {}
+
+
 def _resolve_apple(url: str) -> ResolvedPodcast:
     """Resolve an Apple Podcasts episode link to a direct audio URL.
 
     Apple URLs look like:
       https://podcasts.apple.com/us/podcast/<slug>/id<PODCAST_ID>?i=<EPISODE_ID>
 
-    Apple's own iTunes lookup API gives us the podcast's RSS feed URL when
-    queried by the podcast id; we then walk the RSS feed's <item> nodes until
-    we find one whose <itunes:episodeGuid> or trackId matches the episode id
-    (or, as a fallback, the newest item).
+    When the URL carries an episode id (`?i=<EPISODE_ID>`) we look that
+    episode up directly through Apple's iTunes API, which returns
+    `episodeUrl` (the direct MP3), `episodeGuid` (the show's own RSS
+    <guid>), and `trackName` (the real title). That's the source of truth
+    -- we do NOT try to match Apple's `i=` value against RSS items,
+    because Apple's episode id is an Apple-internal id and does not
+    appear in the source RSS feed. An earlier version of this code did
+    that endswith-match and, when it failed (which was always for shows
+    whose <guid> isn't derived from the Apple id), silently fell back to
+    "return the newest item in the feed" -- which is how a request for
+    the railroads-history episode of "The Story of Money" came back as
+    the show's newest episode instead. Same bug hid an ad-only promo
+    item behind another request.
+
+    We still fetch the RSS feed after the episode lookup so we can find
+    the matching <item> by its real <guid> and read its
+    <podcast:transcript> tag (the free path). If the guid match fails,
+    we keep the Apple-supplied audio URL and title and take the paid
+    Whisper path -- that's a soft miss, not a silent-newest fallback.
+
+    When the URL has NO `?i=`, the user asked for the show generically:
+    take the newest item from the RSS feed. That's an explicit request
+    for "whatever's newest", not a fallback.
     """
     parsed = urlparse(url)
     m = re.search(r"/id(\d+)", parsed.path)
@@ -155,41 +198,83 @@ def _resolve_apple(url: str) -> ResolvedPodcast:
     podcast_id = m.group(1)
     episode_id = (parse_qs(parsed.query).get("i") or [""])[0]
 
-    # 1. Podcast id -> RSS feed URL (+ show title, as a nicety)
-    try:
-        resp = requests.get(
-            _ITUNES_LOOKUP,
-            params={"id": podcast_id, "entity": "podcast"},
-            timeout=_HTTP_TIMEOUT,
-            headers={"User-Agent": _USER_AGENT},
-        )
-        resp.raise_for_status()
-        data = resp.json()
-    except Exception as exc:
+    # -----------------------------------------------------------------
+    # No `?i=` -- user asked for the show, not a specific episode.
+    # Look up the podcast (for its feedUrl), then take the newest item.
+    # -----------------------------------------------------------------
+    if not episode_id:
+        show = _lookup_apple(podcast_id)
+        if not show:
+            raise TranscriptError(
+                f"Apple's iTunes lookup returned no podcast for id {podcast_id}."
+            )
+        feed_url = show.get("feedUrl")
+        show_title = show.get("collectionName") or show.get("trackName") or ""
+        if not feed_url:
+            raise TranscriptError(
+                "Apple returned the podcast but no RSS feed URL -- cannot "
+                "reach the audio."
+            )
+        partial = _newest_item_from_rss(feed_url)
+        partial.show_title = show_title
+        partial.source_kind = "apple"
+        return partial
+
+    # -----------------------------------------------------------------
+    # `?i=<EPISODE_ID>` -- ask Apple for that exact episode.
+    # -----------------------------------------------------------------
+    ep = _lookup_apple(episode_id)
+    if not ep or ep.get("wrapperType") != "podcastEpisode":
         raise TranscriptError(
-            f"Could not look up Apple podcast id {podcast_id}: "
-            f"{type(exc).__name__}: {exc}"
+            f"Apple's iTunes lookup returned nothing for episode id "
+            f"{episode_id} (URL {url!r}). Check the link is still live -- "
+            "some shows drop old episodes and Apple stops resolving the id."
         )
-    results = data.get("results") or []
-    if not results:
+    audio_url = ep.get("episodeUrl") or ""
+    episode_guid = ep.get("episodeGuid") or ""
+    episode_title = ep.get("trackName") or ""
+    show_title = ep.get("collectionName") or ""
+    feed_url = ep.get("feedUrl")
+    if not audio_url:
         raise TranscriptError(
-            f"Apple's iTunes lookup returned no podcast for id {podcast_id}."
-        )
-    show = results[0]
-    feed_url = show.get("feedUrl")
-    show_title = show.get("collectionName") or show.get("trackName") or ""
-    if not feed_url:
-        raise TranscriptError(
-            "Apple returned the podcast but no RSS feed URL — cannot reach "
-            "the audio."
+            f"Apple returned metadata for episode {episode_id} but no direct "
+            "audio URL. Nothing to download; skipping."
         )
 
-    # 2. RSS -> the matching item's enclosure URL (and, if the show
-    #    publishes one, its <podcast:transcript>).
-    partial = _episode_from_rss(feed_url, episode_id)
-    partial.show_title = show_title
-    partial.source_kind = "apple"
-    return partial
+    # Best-effort: pull the show's RSS feed so we can find the matching
+    # <item> by its real guid and read its <podcast:transcript>. If the
+    # feedUrl isn't included in the episode payload, ask the podcast-level
+    # lookup for it. If any of that fails, we still have the audio URL
+    # from Apple and take the Whisper path -- a real fallback, no
+    # silent-wrong-episode risk.
+    transcript_url, transcript_type = "", ""
+    if not feed_url:
+        show = _lookup_apple(podcast_id)
+        feed_url = (show or {}).get("feedUrl") or ""
+        if not show_title:
+            show_title = (show or {}).get("collectionName") or ""
+    if feed_url and episode_guid:
+        try:
+            transcript_url, transcript_type = _transcript_for_guid_from_rss(
+                feed_url, episode_guid,
+            )
+        except Exception as exc:
+            # RSS unavailable / malformed / no matching item -- log and
+            # carry the Apple audio URL forward. No silent wrong-episode.
+            print(
+                f"[ned/podcast] Could not find <podcast:transcript> for guid "
+                f"{episode_guid!r} in {feed_url}: {type(exc).__name__}: {exc}. "
+                "Falling through to Whisper."
+            )
+
+    return ResolvedPodcast(
+        audio_url=audio_url,
+        episode_title=episode_title,
+        show_title=show_title,
+        source_kind="apple",
+        transcript_url=transcript_url,
+        transcript_type=transcript_type,
+    )
 
 
 def _local_name(tag: str) -> str:
@@ -222,23 +307,16 @@ def _pick_transcript(item: ET.Element) -> tuple[str, str]:
     return best[1], best[2]
 
 
-def _episode_from_rss(feed_url: str, episode_id: str) -> ResolvedPodcast:
-    """Return a partly-populated ResolvedPodcast from a podcast RSS feed.
-
-    Sets `audio_url`, `episode_title`, and — if the matched <item> carries
-    a <podcast:transcript> tag — `transcript_url` + `transcript_type`.
-    The caller fills in `show_title` and `source_kind`.
-
-    Matching order for the requested episode:
-      1. item whose <guid> ends with the Apple episode id
-      2. item whose enclosure URL contains the episode id
-      3. the newest item (feeds are ordered newest-first by convention)
-    """
+def _fetch_rss_items(feed_url: str) -> list[ET.Element]:
+    """Fetch the feed, parse it, return the `<item>` elements or raise."""
     try:
         resp = requests.get(
             feed_url,
             timeout=_HTTP_TIMEOUT,
-            headers={"User-Agent": _USER_AGENT, "Accept": "application/rss+xml, application/xml, */*"},
+            headers={
+                "User-Agent": _USER_AGENT,
+                "Accept": "application/rss+xml, application/xml, */*",
+            },
         )
         resp.raise_for_status()
     except Exception as exc:
@@ -251,65 +329,85 @@ def _episode_from_rss(feed_url: str, episode_id: str) -> ResolvedPodcast:
     except ET.ParseError as exc:
         raise TranscriptError(f"Podcast RSS feed is not valid XML: {exc}")
 
-    # RSS 2.0: <channel><item>...</item></channel>. Feeds vary on namespaces
-    # for enclosure and guid, so search broadly.
     items = [el for el in root.iter() if _local_name(el.tag) == "item"]
     if not items:
         raise TranscriptError("Podcast RSS feed contains no <item> entries.")
+    return items
 
-    def _enclosure_url(item: ET.Element) -> str:
-        for child in item:
-            if _local_name(child.tag) == "enclosure" and child.get("url"):
-                return child.get("url", "")
-        # Fall back to <link> only when it looks like an audio URL — many feeds
-        # put a webpage link there.
-        for child in item:
-            if _local_name(child.tag) == "link":
-                link = (child.text or "").strip()
-                if _looks_like_audio_url(link):
-                    return link
-        return ""
 
-    def _title(item: ET.Element) -> str:
-        for child in item:
-            if _local_name(child.tag) == "title":
-                return (child.text or "").strip()
-        return ""
+def _rss_item_enclosure(item: ET.Element) -> str:
+    for child in item:
+        if _local_name(child.tag) == "enclosure" and child.get("url"):
+            return child.get("url", "")
+    for child in item:
+        if _local_name(child.tag) == "link":
+            link = (child.text or "").strip()
+            if _looks_like_audio_url(link):
+                return link
+    return ""
 
-    def _guid(item: ET.Element) -> str:
-        for child in item:
-            if _local_name(child.tag) == "guid":
-                return (child.text or "").strip()
-        return ""
 
-    def _to_resolved(it: ET.Element, audio_url: str) -> ResolvedPodcast:
-        turl, ttype = _pick_transcript(it)
-        return ResolvedPodcast(
-            audio_url=audio_url,
-            episode_title=_title(it),
-            transcript_url=turl,
-            transcript_type=ttype,
-        )
+def _rss_item_title(item: ET.Element) -> str:
+    for child in item:
+        if _local_name(child.tag) == "title":
+            return (child.text or "").strip()
+    return ""
 
-    # Match by guid or URL-embedded episode id.
-    if episode_id:
-        for it in items:
-            if _guid(it).endswith(episode_id):
-                url = _enclosure_url(it)
-                if url:
-                    return _to_resolved(it, url)
-        for it in items:
-            url = _enclosure_url(it)
-            if url and episode_id in url:
-                return _to_resolved(it, url)
 
-    # Fall back to the newest item with an enclosure.
-    for it in items:
-        url = _enclosure_url(it)
+def _rss_item_guid(item: ET.Element) -> str:
+    for child in item:
+        if _local_name(child.tag) == "guid":
+            return (child.text or "").strip()
+    return ""
+
+
+def _newest_item_from_rss(feed_url: str) -> ResolvedPodcast:
+    """Take the newest RSS item -- the "no episode was requested" path.
+
+    Used when the caller pastes a bare podcast landing page or an RSS
+    feed URL with no episode selector. Never used to salvage a failed
+    guid lookup: mis-picking an old episode was the whole reason this
+    module got rewritten. Sets audio_url, episode_title, and (when
+    present) the <podcast:transcript>; the caller fills in show_title
+    and source_kind.
+    """
+    for it in _fetch_rss_items(feed_url):
+        url = _rss_item_enclosure(it)
         if url:
-            return _to_resolved(it, url)
+            turl, ttype = _pick_transcript(it)
+            return ResolvedPodcast(
+                audio_url=url,
+                episode_title=_rss_item_title(it),
+                transcript_url=turl,
+                transcript_type=ttype,
+            )
     raise TranscriptError(
-        "Could not find an audio enclosure for that episode in the RSS feed."
+        "No RSS <item> in this feed has an audio enclosure."
+    )
+
+
+def _transcript_for_guid_from_rss(feed_url: str, guid: str) -> tuple[str, str]:
+    """Return (transcript_url, transcript_type) from the RSS <item> whose
+    <guid> matches `guid`, or ("", "") if the item exists but publishes
+    no <podcast:transcript>. Raises TranscriptError when no <item> in the
+    feed matches -- caller decides whether to fall back to Whisper or
+    surface the error.
+
+    Match is exact first, then endswith (handles the small number of
+    feeds that stamp their guids with a URL prefix while Apple returns
+    the bare id).
+    """
+    items = _fetch_rss_items(feed_url)
+    for it in items:
+        if _rss_item_guid(it) == guid:
+            return _pick_transcript(it)
+    for it in items:
+        g = _rss_item_guid(it)
+        if g and (g.endswith(guid) or guid.endswith(g)):
+            return _pick_transcript(it)
+    raise TranscriptError(
+        f"No RSS <item> has guid {guid!r}; can't attach a "
+        "<podcast:transcript>."
     )
 
 
@@ -328,9 +426,9 @@ def resolve_podcast_url(url: str) -> ResolvedPodcast:
         return _resolve_apple(url)
     if _looks_like_audio_url(url):
         return ResolvedPodcast(audio_url=url, source_kind="direct")
-    # RSS feed URL pasted directly (no episode selector) — take the newest.
+    # RSS feed URL pasted directly (no episode selector) -- take the newest.
     if url.lower().endswith((".xml", ".rss")) or "/rss" in url.lower() or "/feed" in url.lower():
-        partial = _episode_from_rss(url, episode_id="")
+        partial = _newest_item_from_rss(url)
         partial.source_kind = "rss"
         return partial
 

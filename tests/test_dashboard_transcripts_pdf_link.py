@@ -57,3 +57,16 @@ def test_card_html_escapes_pdf_path():
     html = sec._transcript_card(_entry(pdf_path="transcripts/weird & <name>.pdf"))
     assert "<name>" not in html
     assert "&amp;" in html
+
+
+def test_card_shows_relevance_badge_and_json_tldr():
+    entry = _entry()
+    entry["portfolio_relevance"] = "High"
+    entry["digest_json"] = {"tldr": "Straight from the JSON."}
+    html = sec._transcript_card(entry)
+    assert "HIGH RELEVANCE" in html
+    assert "Straight from the JSON." in html
+
+
+def test_card_without_relevance_has_no_badge():
+    assert "RELEVANCE" not in sec._transcript_card(_entry())

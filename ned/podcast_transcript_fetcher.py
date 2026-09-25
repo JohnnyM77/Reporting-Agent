@@ -1045,4 +1045,6 @@ def fetch_podcast_transcript(url: str) -> TranscriptResult:
         plain_text=plain,
         timestamped_text=ts,
         segments=segments,
+        title=resolved.episode_title or resolved.show_title or slug,
+        channel=resolved.show_title,
     )

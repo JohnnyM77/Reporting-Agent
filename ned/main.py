@@ -41,8 +41,18 @@ from ned.youtube_transcript_fetcher import (
     TranscriptResult,
     extract_video_id,
     fetch_transcript,
+    fetch_video_metadata,
 )
 from ned.podcast_transcript_fetcher import fetch_podcast_transcript
+from ned.portfolio_context import load_portfolio_context
+from ned.transcript_digest import (
+    CHUNK_EXTRACTION_PROMPT,
+    DigestResult,
+    build_system_prompt,
+    build_user_prompt,
+    chunk_text,
+    parse_digest_response,
+)
 from shared.email_service import send_email as shared_send_email
 from shared.llm import make_client, send as llm_send
 
@@ -58,12 +68,32 @@ SEEN_STATE_RETENTION_HOURS = 96
 MODEL = os.environ.get("MODEL_NAME", "claude-haiku-4-5-20251001")
 MAX_LLM_CALLS = 30
 
+
+def _env_int(name: str, default: int) -> int:
+    """int(env) with a fallback for unset, blank or malformed values (a
+    workflow `env:` line with an unset repo variable passes "")."""
+    raw = (os.environ.get(name) or "").strip()
+    try:
+        return int(raw) if raw else default
+    except ValueError:
+        print(f"[ned] {name}={raw!r} is not an integer; using {default}")
+        return default
+
+
 # Where single-episode transcripts are written. Kept out of the repo (the CI
 # workflow uploads this directory as a downloadable artifact instead).
 TRANSCRIPTS_DIR = Path(os.environ.get("NED_TRANSCRIPTS_DIR", str(REPO_ROOT / "transcripts")))
-# Cap the transcript text handed to the LLM. An hour of speech is ~9k words;
-# 60k characters comfortably covers a long episode while bounding token spend.
-TRANSCRIPT_LLM_MAX_CHARS = int(os.environ.get("NED_TRANSCRIPT_LLM_MAX_CHARS", "60000"))
+# The single-episode digest reasons about JM's portfolio, theses and
+# watchlists, which is beyond Haiku; the daily scan keeps MODEL above.
+TRANSCRIPT_MODEL = (os.environ.get("NED_TRANSCRIPT_MODEL") or "").strip() or "claude-sonnet-4-6"
+TRANSCRIPT_MAX_TOKENS = _env_int("NED_TRANSCRIPT_MAX_TOKENS", 6000)
+# Transcript characters sent whole. An hour of speech is ~55k chars, so 400k
+# covers a ~7 hour episode. Anything longer is never clipped: it is split
+# into TRANSCRIPT_CHUNK_CHARS parts, each part is reduced to extraction
+# notes, and the digest runs on the notes.
+TRANSCRIPT_LLM_MAX_CHARS = _env_int("NED_TRANSCRIPT_LLM_MAX_CHARS", 400_000)
+TRANSCRIPT_CHUNK_CHARS = _env_int("NED_TRANSCRIPT_CHUNK_CHARS", 150_000)
+TRANSCRIPT_CHUNK_MAX_TOKENS = 4000
 
 
 # ----------------------------
@@ -121,55 +151,120 @@ def llm_summarise(hit: dict, llm_calls: list[int]) -> str | None:
         return None
 
 
-def llm_transcript_digest(source_url: str, transcript: str, llm_calls: list[int]) -> str | None:
-    """Summarise a full episode transcript into Ned's digest format.
+def llm_transcript_digest(
+    source_url: str,
+    transcript: str,
+    llm_calls: list[int],
+    *,
+    kind: str = "youtube",
+    title: str = "",
+    channel: str = "",
+    portfolio_context: str = "",
+) -> DigestResult:
+    """Analyse one episode transcript against JM's portfolio.
 
-    Uses the same Anthropic client, model and call-cap plumbing as
-    `llm_summarise`, but with a prompt tuned for a long single-source
-    transcript (an interview or podcast episode) rather than a one-line news
-    hit. Returns the digest markdown, or None if the cap is reached, no API key
-    is set, or the call fails.
+    One structured-JSON call on TRANSCRIPT_MODEL, with the portfolio context
+    block in the system prompt. A transcript longer than
+    TRANSCRIPT_LLM_MAX_CHARS is first reduced part by part to extraction
+    notes (one call per part), and the digest runs on those notes.
+
+    Never raises. On any failure the returned DigestResult carries `error`,
+    which the email and PDF print verbatim ("Digest failed: ...").
     """
-    if llm_calls[0] >= MAX_LLM_CALLS:
-        return None
+    result = DigestResult(model=TRANSCRIPT_MODEL)
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
-        return None
+        result.error = "ANTHROPIC_API_KEY is not set"
+        return result
+    if llm_calls[0] >= MAX_LLM_CALLS:
+        result.error = f"LLM call cap reached ({MAX_LLM_CALLS})"
+        return result
 
-    llm_calls[0] += 1
-    clipped = transcript[:TRANSCRIPT_LLM_MAX_CHARS]
-    truncated_note = ""
+    try:
+        client = make_client(api_key)
+    except Exception as exc:
+        result.error = f"could not create Anthropic client: {type(exc).__name__}: {exc}"
+        return result
+
+    body = transcript
+    notes_parts = 0
     if len(transcript) > TRANSCRIPT_LLM_MAX_CHARS:
-        truncated_note = (
-            "\n\n[Note: the transcript was truncated for length; summarise what "
-            "is present.]"
+        chunks = chunk_text(transcript, TRANSCRIPT_CHUNK_CHARS)
+        n = len(chunks)
+        result.parts = n
+        print(
+            f"[ned/llm] Transcript is {len(transcript):,} chars (> {TRANSCRIPT_LLM_MAX_CHARS:,}); "
+            f"extracting notes from {n} parts first"
         )
-    prompt = (
-        "You are Ned, a markets news analyst. Below is the full transcript of a "
-        "single YouTube episode (an interview, podcast or briefing). Produce a "
-        "concise digest for a busy portfolio investor.\n\n"
-        f"Source: {source_url}\n\n"
-        "Structure your answer as:\n"
-        "1. **TL;DR** — 2-3 sentences on what this episode is about.\n"
-        "2. **Key points** — 5-8 bullets of the most important claims, "
-        "numbers, or arguments made.\n"
-        "3. **Companies / tickers mentioned** — any listed companies discussed, "
-        "with a few words on the context (or 'none' if not applicable).\n"
-        "4. **So what** — 1-2 sentences on why a shareholder should care.\n\n"
-        "Be factual and do not invent figures that are not in the transcript.\n\n"
-        f"--- TRANSCRIPT ---\n{clipped}{truncated_note}"
+        notes: list[str] = []
+        for i, chunk in enumerate(chunks, 1):
+            if llm_calls[0] >= MAX_LLM_CALLS:
+                result.error = f"LLM call cap reached ({MAX_LLM_CALLS}) while extracting part {i} of {n}"
+                return result
+            llm_calls[0] += 1
+            prompt = CHUNK_EXTRACTION_PROMPT.format(
+                part=i, total=n, kind=kind, title=title or source_url, text=chunk,
+            )
+            try:
+                resp = llm_send(
+                    client,
+                    model=TRANSCRIPT_MODEL,
+                    max_tokens=TRANSCRIPT_CHUNK_MAX_TOKENS,
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                notes.append(f"## Part {i} of {n}\n{resp.text.strip()}")
+                print(f"[ned/llm] Part {i}/{n}: {resp.input_tokens} in / {resp.output_tokens} out tokens")
+            except Exception as exc:
+                result.parts_failed += 1
+                notes.append(f"## Part {i} of {n}\n[Notes for this part are missing: {type(exc).__name__}]")
+                print(f"[ned/llm] Part {i}/{n} extraction failed: {exc}")
+        if result.parts_failed == n:
+            result.error = f"all {n} transcript parts failed to extract"
+            return result
+        body = "\n\n".join(notes)
+        notes_parts = n
+
+    if llm_calls[0] >= MAX_LLM_CALLS:
+        result.error = f"LLM call cap reached ({MAX_LLM_CALLS})"
+        return result
+    llm_calls[0] += 1
+    system = build_system_prompt(portfolio_context)
+    user = build_user_prompt(
+        kind=kind, title=title, channel=channel, source_url=source_url,
+        body=body, from_chunk_notes=notes_parts,
     )
     try:
         resp = llm_send(
-            make_client(api_key),
-            model=MODEL,
-            max_tokens=1500,
-            messages=[{"role": "user", "content": prompt}],
+            client,
+            model=TRANSCRIPT_MODEL,
+            max_tokens=TRANSCRIPT_MAX_TOKENS,
+            system=system,
+            messages=[{"role": "user", "content": user}],
         )
-        return resp.text.strip()
     except Exception as exc:
-        print(f"[ned/llm] Transcript digest LLM failed: {exc}")
-        return None
+        status = getattr(exc, "status_code", None)
+        result.error = f"{type(exc).__name__}" + (f" (HTTP {status})" if status else "") + f": {exc}"
+        print(f"[ned/llm] Transcript digest LLM failed: {result.error}")
+        return result
+
+    print(
+        f"[ned/llm] Digest ({TRANSCRIPT_MODEL}): {resp.input_tokens} in / "
+        f"{resp.output_tokens} out tokens, stop={resp.stop_reason}"
+    )
+    digest_json, markdown = parse_digest_response(resp.text)
+    result.digest_json = digest_json
+    result.markdown = markdown
+    if digest_json is None:
+        if resp.truncated:
+            result.error = (
+                f"the reply was cut off at max_tokens ({TRANSCRIPT_MAX_TOKENS}); "
+                "raise NED_TRANSCRIPT_MAX_TOKENS"
+            )
+        elif not markdown.strip():
+            result.error = "the model returned an empty reply"
+        else:
+            print("[ned/llm] Reply was not valid JSON; keeping it as markdown")
+    return result
 
 
 # ----------------------------
@@ -187,50 +282,203 @@ def _save_transcripts(result: TranscriptResult) -> tuple[Path, Path]:
     return plain_path, ts_path
 
 
-def _transcript_email(source_url: str, result: TranscriptResult, digest: str | None) -> tuple[str, str]:
-    """Build (plain, html) for a single-episode transcript digest, in Ned's style."""
+# Email palette: the PDF's navy + gold, light background so it reads the same
+# as the attachment it points to.
+_E_NAVY = "#0B1F3A"
+_E_GOLD = "#C9A227"
+_E_INK = "#1A2233"
+_E_SLATE = "#5B6577"
+_E_HAIR = "#E3E6EB"
+_E_TINT = "#F4F6FA"
+_EFFECT_COLOURS = {
+    "Kill condition at risk": "#B42318",
+    "Challenges": "#B7791F",
+    "Supports": "#2E7D5B",
+    "Neutral": "#8A94A6",
+}
+_RELEVANCE_COLOURS = {  # (background, text)
+    "High": (_E_NAVY, _E_GOLD),
+    "Medium": (_E_GOLD, _E_NAVY),
+    "Low": (_E_HAIR, _E_SLATE),
+    "None": ("#FFFFFF", _E_SLATE),
+    "Unrated": (_E_HAIR, _E_SLATE),
+    "Failed": ("#B42318", "#FFFFFF"),
+}
+
+
+def _kind_label(kind: str) -> str:
+    return "YouTube" if kind == "youtube" else "Podcast"
+
+
+def _display_title(result: TranscriptResult) -> str:
+    return (result.title or "").strip() or result.video_id
+
+
+def _digest_subject(kind: str, title: str, digest: DigestResult) -> str:
+    rel = digest.relevance
+    tag = "Digest failed" if rel == "Failed" else rel
+    return f"Ned [{tag}] {_kind_label(kind)}: {title}"
+
+
+def _provenance(kind: str, result: TranscriptResult) -> str:
+    if kind == "youtube":
+        return f"YouTube {result.caption_kind} captions"
+    return "Whisper transcription" if result.is_generated else "Published show transcript"
+
+
+def _digest_email(
+    *,
+    kind: str,
+    source_url: str,
+    result: TranscriptResult,
+    digest: DigestResult,
+) -> tuple[str, str]:
+    """(plain, html) for a transcript digest email. Short on purpose: the
+    attached PDF is the product. Tables + inline styles only, so it renders
+    the same in Gmail and Outlook."""
     import html as htmlmod
 
-    watch_url = f"https://www.youtube.com/watch?v={result.video_id}"
-    header = f"Transcript digest — {result.video_id} ({result.caption_kind} captions)"
+    esc = htmlmod.escape
+    title = _display_title(result)
+    kind_lbl = _kind_label(kind)
+    d = digest.digest_json or {}
+    rel = digest.relevance
+    impact = [i for i in d.get("portfolio_impact", []) if i.get("effect") != "Neutral"]
+    pdf_line = "The full analysis and the transcript are in the attached PDF."
 
-    # Plain text
-    lines = [
-        "Ned the News Agent",
-        "=" * 18,
-        header,
-        f"Source: {source_url}",
-        "",
-    ]
-    if digest:
-        lines.append(digest)
+    # ---- plain text ----
+    lines = [f"Ned | {kind_lbl}: {title}"]
+    if result.channel:
+        lines.append(result.channel)
+    lines += [f"Source: {source_url}", ""]
+    if digest.error:
+        lines += [f"Digest failed: {digest.error}", ""]
+        if digest.markdown:
+            lines += ["Raw model output:", digest.markdown, ""]
+    elif d:
+        reason = d.get("relevance_reason", "")
+        lines += [f"Portfolio relevance: {rel}" + (f". {reason}" if reason else ""), ""]
+        if d.get("tldr"):
+            lines += ["TL;DR", d["tldr"], ""]
+        lines.append("What it means for my portfolio")
+        if impact:
+            for it in impact:
+                pillar = f" {it['pillar']}" if it.get("pillar") else ""
+                lines.append(
+                    f"- {it['ticker']} ({it['type']}): {it['effect']}{pillar}. "
+                    f"{it['explanation']} Action: {it['action']}."
+                )
+        else:
+            lines.append("No material impact on current holdings or watchlists.")
+        lines.append("")
+        if d.get("so_what"):
+            lines += ["So what", d["so_what"], ""]
     else:
-        lines.append(
-            "(LLM digest unavailable — transcript saved to file. See attached / artifact.)"
-        )
+        lines += [digest.markdown, ""]
+    lines.append(pdf_line)
     plain = "\n".join(lines)
 
-    # HTML — reuse Ned's dark-navy scheme; digest markdown rendered lightly.
-    digest_html = _digest_markdown_to_html(digest) if digest else (
-        '<div style="font-size:13px;color:#CBD5E1;">LLM digest unavailable — '
-        'the transcript was saved to file.</div>'
+    # ---- HTML ----
+    font = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif"
+    serif = "Georgia,'Times New Roman',serif"
+    label_css = (
+        f"font-size:11px;letter-spacing:1.5px;text-transform:uppercase;"
+        f"color:{_E_GOLD};font-weight:700;"
     )
-    body_html = (
-        '<div style="padding:18px;background:#0B1220;color:#E5E7EB;'
-        'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;">'
-        '<div style="font-size:22px;font-weight:900;margin-bottom:6px;">Ned the News Agent</div>'
-        f'<div style="opacity:0.9;font-size:14px;margin-bottom:4px;">{htmlmod.escape(header)}</div>'
-        f'<div style="font-size:12px;margin-bottom:18px;">'
-        f'<a href="{htmlmod.escape(watch_url)}" style="color:#60A5FA;text-decoration:none;">'
-        f'{htmlmod.escape(watch_url)}</a></div>'
-        '<div style="padding:14px;background:#1E293B;border-radius:10px;">'
-        f'{digest_html}</div>'
-        '</div>'
+    rows: list[str] = []
+
+    def row(inner: str, pad: str = "18px 28px") -> None:
+        rows.append(f'<tr><td style="padding:{pad};">{inner}</td></tr>')
+
+    sub = f'<div style="font-size:13px;color:#AEB7C6;margin-top:6px;">{esc(result.channel)}</div>' if result.channel else ""
+    rows.append(
+        f'<tr><td style="background:{_E_NAVY};padding:26px 28px;">'
+        f'<div style="{label_css}">Ned &middot; {esc(kind_lbl)}</div>'
+        f'<div style="font-family:{serif};font-size:22px;line-height:1.3;color:#FFFFFF;margin-top:8px;">'
+        f'{esc(title)}</div>{sub}</td></tr>'
     )
-    return plain, body_html
+
+    if digest.error:
+        row(
+            '<div style="background:#FDECEA;border-left:3px solid #B42318;padding:12px 14px;'
+            f'color:#B42318;font-size:14px;"><b>Digest failed:</b> {esc(digest.error)}</div>'
+        )
+        if digest.markdown:
+            row(
+                f'<div style="{label_css}">Raw model output</div>'
+                f'<div style="font-size:13px;color:{_E_INK};white-space:pre-wrap;margin-top:6px;">'
+                f'{esc(digest.markdown[:4000])}</div>'
+            )
+    elif d:
+        bg, fg = _RELEVANCE_COLOURS.get(rel, _RELEVANCE_COLOURS["Unrated"])
+        reason = d.get("relevance_reason", "")
+        row(
+            f'<span style="display:inline-block;background:{bg};color:{fg};border:1px solid {_E_HAIR};'
+            f'font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;'
+            f'padding:5px 10px;border-radius:3px;">{esc(rel)} relevance</span>'
+            + (f'<div style="font-size:14px;color:{_E_SLATE};margin-top:8px;">{esc(reason)}</div>' if reason else ""),
+            pad="22px 28px 6px 28px",
+        )
+        if d.get("tldr"):
+            row(
+                f'<div style="border-left:2px solid {_E_GOLD};padding:2px 0 2px 14px;'
+                f'font-family:{serif};font-size:16px;line-height:1.5;color:{_E_INK};">'
+                f'{esc(d["tldr"])}</div>'
+            )
+        items = []
+        for it in impact:
+            colour = _EFFECT_COLOURS.get(it["effect"], _EFFECT_COLOURS["Neutral"])
+            pillar = f' &middot; {esc(it["pillar"])}' if it.get("pillar") else ""
+            items.append(
+                f'<tr><td style="padding:10px 0;border-top:1px solid {_E_HAIR};vertical-align:top;width:72px;">'
+                f'<div style="font-family:{serif};font-size:15px;font-weight:700;color:{_E_NAVY};">{esc(it["ticker"])}</div>'
+                f'<div style="font-size:11px;color:{_E_SLATE};">{esc(it["type"])}</div></td>'
+                f'<td style="padding:10px 0 10px 12px;border-top:1px solid {_E_HAIR};vertical-align:top;">'
+                f'<span style="display:inline-block;background:{colour};color:#FFFFFF;font-size:10px;'
+                f'font-weight:700;letter-spacing:0.5px;text-transform:uppercase;padding:2px 7px;border-radius:9px;">'
+                f'{esc(it["effect"])}</span><span style="font-size:11px;color:{_E_SLATE};">{pillar}</span>'
+                f'<div style="font-size:13px;line-height:1.5;color:{_E_INK};margin-top:5px;">{esc(it["explanation"])}</div>'
+                f'<div style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:{_E_SLATE};margin-top:4px;">'
+                f'Action: {esc(it["action"])}</div></td></tr>'
+            )
+        body = (
+            f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0">{"".join(items)}</table>'
+            if items else
+            f'<div style="font-size:14px;color:{_E_SLATE};">No material impact on current holdings or watchlists.</div>'
+        )
+        row(f'<div style="{label_css}margin-bottom:8px;">What it means for my portfolio</div>{body}')
+        if d.get("so_what"):
+            row(
+                f'<div style="background:{_E_TINT};border-left:3px solid {_E_GOLD};padding:12px 14px;">'
+                f'<div style="{label_css}">So what</div>'
+                f'<div style="font-size:14px;line-height:1.55;color:{_E_INK};margin-top:4px;">{esc(d["so_what"])}</div>'
+                '</div>'
+            )
+    else:
+        row(_digest_markdown_to_html(digest.markdown, colour=_E_INK))
+
+    row(
+        f'<div style="font-size:13px;color:{_E_SLATE};border-top:1px solid {_E_HAIR};padding-top:14px;">'
+        f'{esc(pdf_line)}<br><a href="{esc(source_url)}" style="color:{_E_NAVY};">{esc(source_url)}</a></div>',
+        pad="10px 28px 26px 28px",
+    )
+    html = (
+        f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+        f'style="background:{_E_TINT};font-family:{font};"><tr><td align="center" style="padding:20px 8px;">'
+        f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" '
+        f'style="max-width:640px;background:#FFFFFF;border:1px solid {_E_HAIR};">'
+        + "".join(rows)
+        + "</table></td></tr></table>"
+    )
+    return plain, html
 
 
-def _digest_markdown_to_html(md: str) -> str:
+def _transcript_email(source_url: str, result: TranscriptResult, digest: DigestResult) -> tuple[str, str]:
+    """(plain, html) for a YouTube transcript digest."""
+    return _digest_email(kind="youtube", source_url=source_url, result=result, digest=digest)
+
+
+def _digest_markdown_to_html(md: str, colour: str = "#E5E7EB") -> str:
     """Very small markdown renderer for the digest: bold, bullets, paragraphs."""
     import html as htmlmod
     import re as _re
@@ -251,7 +499,7 @@ def _digest_markdown_to_html(md: str) -> str:
                 in_list = True
             item = stripped[2:].strip()
             html_parts.append(
-                f'<li style="font-size:13px;color:#E5E7EB;margin:3px 0;">{inline(item)}</li>'
+                f'<li style="font-size:13px;color:{colour};margin:3px 0;">{inline(item)}</li>'
             )
         else:
             if in_list:
@@ -259,7 +507,7 @@ def _digest_markdown_to_html(md: str) -> str:
                 in_list = False
             if stripped:
                 html_parts.append(
-                    f'<div style="font-size:13px;color:#E5E7EB;margin:6px 0;">{inline(stripped)}</div>'
+                    f'<div style="font-size:13px;color:{colour};margin:6px 0;">{inline(stripped)}</div>'
                 )
     if in_list:
         html_parts.append("</ul>")
@@ -271,8 +519,8 @@ def _digest_markdown_to_html(md: str) -> str:
 # workflow run commits+pushes it, and the Pages workflow re-deploys on
 # workflow_run (see .github/workflows/theo-pages.yml).
 _TRANSCRIPTS_HISTORY_PATH = REPO_ROOT / "docs" / "data" / "transcripts.json"
-# Keep the last N entries. Enough to browse a few weeks of listens; small
-# enough that the JSON stays under 200 KB even with 5-sentence digests.
+# Keep the last N entries. Enough to browse a few weeks of listens; each
+# entry carries its digest_json (~5-10 KB), so the file stays well under 1 MB.
 _TRANSCRIPTS_HISTORY_MAX = 40
 
 # Rendered PDFs for each transcript run land here and get committed to the
@@ -290,7 +538,7 @@ def _save_transcript_pdf(
     result: TranscriptResult,
     source_url: str,
     title: str,
-    digest_markdown: str,
+    digest: DigestResult,
 ) -> Path | None:
     """Render a PDF of {digest + full transcript}, save to docs/transcripts/,
     prune older ones, and return the path — or None on any failure.
@@ -309,9 +557,16 @@ def _save_transcript_pdf(
             kind=kind,
             title=title,
             source_url=source_url,
-            digest_markdown=digest_markdown or "",
+            digest_markdown=digest.markdown or "",
             transcript_text=result.plain_text,
             output_path=pdf_path,
+            digest_json=digest.digest_json,
+            digest_error=digest.error,
+            channel=result.channel,
+            provenance=_provenance(kind, result),
+            segments=result.segments,
+            parts=digest.parts,
+            parts_failed=digest.parts_failed,
         )
         size_kb = pdf_path.stat().st_size / 1024
         print(f"[ned/transcript] Wrote PDF -> {pdf_path.relative_to(REPO_ROOT)} ({size_kb:.0f} KB)")
@@ -363,7 +618,7 @@ def _append_transcript_history(entry: dict) -> None:
         existing: list[dict] = []
         if _TRANSCRIPTS_HISTORY_PATH.exists():
             try:
-                existing = json.loads(_TRANSCRIPTS_HISTORY_PATH.read_text() or "[]")
+                existing = json.loads(_TRANSCRIPTS_HISTORY_PATH.read_text(encoding="utf-8") or "[]")
                 if not isinstance(existing, list):
                     existing = []
             except Exception:
@@ -389,9 +644,79 @@ def _append_transcript_history(entry: dict) -> None:
         print(f"[ned/transcript] Could not update transcripts history: {exc}")
 
 
+def _digest_and_deliver(kind: str, url: str, result: TranscriptResult) -> int:
+    """Shared tail of the YouTube and podcast runs: save the transcript,
+    analyse it against the portfolio, render the PDF, email, and record the
+    run on the dashboard. Returns the process exit code."""
+    tag = "[ned/transcript]" if kind == "youtube" else "[ned/podcast]"
+    title = _display_title(result)
+
+    plain_path, ts_path = _save_transcripts(result)
+    print(f"{tag} Saved plain transcript      -> {plain_path}")
+    print(f"{tag} Saved timestamped transcript -> {ts_path}")
+
+    try:
+        context = load_portfolio_context(REPO_ROOT)
+    except Exception as exc:  # load_portfolio_context already fails soft
+        print(f"{tag} Portfolio context unavailable: {exc}")
+        context = ""
+
+    llm_calls = [0]
+    digest = llm_transcript_digest(
+        url, result.plain_text, llm_calls,
+        kind=kind, title=title, channel=result.channel, portfolio_context=context,
+    )
+    if digest.error:
+        print(f"{tag} Digest failed: {digest.error}")
+    elif digest.digest_json:
+        print(f"{tag} LLM digest produced (relevance: {digest.relevance}).")
+    else:
+        print(f"{tag} LLM digest produced as markdown (reply was not JSON).")
+
+    pdf_path = _save_transcript_pdf(
+        kind=kind, result=result, source_url=url, title=title, digest=digest,
+    )
+
+    plain, html = _digest_email(kind=kind, source_url=url, result=result, digest=digest)
+    _maybe_email(
+        subject=_digest_subject(kind, title, digest),
+        plain=plain,
+        html=html,
+        attachments=[pdf_path] if pdf_path else None,
+    )
+
+    entry = {
+        "timestamp": dt.datetime.utcnow().isoformat() + "Z",
+        "kind": kind,
+        "source_url": url,
+        "title": title,
+        "channel": result.channel,
+        "video_id": result.video_id,
+        "portfolio_relevance": digest.relevance,
+        "digest_markdown": digest.markdown or "",
+        "digest_json": digest.digest_json,
+        "digest_error": digest.error,
+        "model": digest.model,
+        "parts": digest.parts,
+        "chars": len(result.plain_text),
+        # Path relative to docs/ so the dashboard can build the Pages URL as
+        # <site>/<pdf_path>. Empty when PDF generation failed — the card
+        # then omits the download link and the row still renders.
+        "pdf_path": (str(pdf_path.relative_to(REPO_ROOT / "docs")).replace("\\", "/") if pdf_path else ""),
+    }
+    if kind == "youtube":
+        entry["caption_kind"] = result.caption_kind
+    else:
+        # is_generated is False when a published RSS transcript was used,
+        # True when we fell back to Whisper.
+        entry["used_whisper"] = bool(result.is_generated)
+    _append_transcript_history(entry)
+    return 0
+
+
 def run_transcript_digest(url: str) -> int:
-    """Fetch a single YouTube episode transcript, save it, summarise it, and
-    email a digest in Ned's format.
+    """Fetch a single YouTube episode transcript, save it, analyse it against
+    JM's portfolio, and email the digest with the PDF attached.
 
     Returns a process exit code (0 on success, 1 on a handled failure).
     """
@@ -424,53 +749,19 @@ def run_transcript_digest(url: str) -> int:
         f"{len(result.plain_text)} chars of plain text"
     )
 
-    plain_path, ts_path = _save_transcripts(result)
-    print(f"[ned/transcript] Saved plain transcript      -> {plain_path}")
-    print(f"[ned/transcript] Saved timestamped transcript -> {ts_path}")
+    meta = fetch_video_metadata(video_id)
+    result.title = meta.get("title") or ""
+    result.channel = meta.get("channel") or ""
+    print(f"[ned/transcript] Title: {_display_title(result)!r}"
+          + (f" ({result.channel})" if result.channel else ""))
 
-    # Hand the clean text to the LLM digest step.
-    llm_calls = [0]
-    digest = llm_transcript_digest(url, result.plain_text, llm_calls)
-    if digest:
-        print("[ned/transcript] LLM digest produced.")
-    else:
-        print("[ned/transcript] LLM digest unavailable (no key / cap / error).")
-
-    pdf_path = _save_transcript_pdf(
-        kind="youtube",
-        result=result,
-        source_url=url,
-        title=video_id,
-        digest_markdown=digest or "",
-    )
-
-    plain, html = _transcript_email(url, result, digest)
-    _maybe_email(
-        subject=f"Ned — Transcript digest — {video_id}",
-        plain=plain,
-        html=html,
-        attachments=[pdf_path] if pdf_path else None,
-    )
-    _append_transcript_history({
-        "timestamp": dt.datetime.utcnow().isoformat() + "Z",
-        "kind": "youtube",
-        "source_url": url,
-        "title": result.video_id,      # YouTube's video_id; no title available
-        "video_id": result.video_id,
-        "caption_kind": result.caption_kind,
-        "digest_markdown": digest or "",
-        "chars": len(result.plain_text),
-        # Path relative to docs/ so the dashboard can build the Pages URL as
-        # <site>/<pdf_path>. Absent when PDF generation failed — the card
-        # then omits the download link and the row still renders.
-        "pdf_path": (str(pdf_path.relative_to(REPO_ROOT / "docs")) if pdf_path else ""),
-    })
-    return 0
+    return _digest_and_deliver("youtube", url, result)
 
 
 def run_podcast_digest(url: str) -> int:
-    """Fetch a single podcast episode, transcribe it with Whisper, save the
-    transcript, summarise it, and email the digest in Ned's format.
+    """Fetch a single podcast episode (published transcript, else Whisper),
+    save it, analyse it against JM's portfolio, and email the digest with the
+    PDF attached.
 
     Returns a process exit code (0 on success, 1 on a handled failure).
     """
@@ -494,52 +785,7 @@ def run_podcast_digest(url: str) -> int:
         f"[ned/podcast] Got {len(result.segments)} segments; "
         f"{len(result.plain_text)} chars of plain text"
     )
-
-    plain_path, ts_path = _save_transcripts(result)
-    print(f"[ned/podcast] Saved plain transcript      -> {plain_path}")
-    print(f"[ned/podcast] Saved timestamped transcript -> {ts_path}")
-
-    llm_calls = [0]
-    digest = llm_transcript_digest(url, result.plain_text, llm_calls)
-    if digest:
-        print("[ned/podcast] LLM digest produced.")
-    else:
-        print("[ned/podcast] LLM digest unavailable (no key / cap / error).")
-
-    pdf_path = _save_transcript_pdf(
-        kind="podcast",
-        result=result,
-        source_url=url,
-        title=result.video_id,
-        digest_markdown=digest or "",
-    )
-
-    plain, html = _podcast_email(url, result, digest)
-    _maybe_email(
-        subject=f"Ned — Podcast digest — {result.video_id}",
-        plain=plain,
-        html=html,
-        attachments=[pdf_path] if pdf_path else None,
-    )
-    _append_transcript_history({
-        "timestamp": dt.datetime.utcnow().isoformat() + "Z",
-        "kind": "podcast",
-        "source_url": url,
-        # video_id is a readable slug on the podcast path (built from the
-        # episode/show title in fetch_podcast_transcript); prefer it over
-        # the raw source URL as the display title.
-        "title": result.video_id,
-        "video_id": result.video_id,
-        # is_generated is False when a published RSS transcript was used,
-        # True when we fell back to Whisper.
-        "used_whisper": bool(result.is_generated),
-        "digest_markdown": digest or "",
-        "chars": len(result.plain_text),
-        # Path relative to docs/ so the dashboard can link straight to the
-        # published Pages URL. Empty when PDF generation failed.
-        "pdf_path": (str(pdf_path.relative_to(REPO_ROOT / "docs")) if pdf_path else ""),
-    })
-    return 0
+    return _digest_and_deliver("podcast", url, result)
 
 
 def htmlmod_escape(s: str) -> str:
@@ -548,44 +794,9 @@ def htmlmod_escape(s: str) -> str:
     return _h.escape(s)
 
 
-def _podcast_email(source_url: str, result: TranscriptResult, digest: str | None) -> tuple[str, str]:
-    """Same shape as _transcript_email but the header + source link name the
-    podcast episode rather than a YouTube video."""
-    import html as htmlmod
-
-    header = f"Podcast digest — {result.video_id}"
-    lines = [
-        "Ned the News Agent",
-        "=" * 18,
-        header,
-        f"Source: {source_url}",
-        "",
-    ]
-    if digest:
-        lines.append(digest)
-    else:
-        lines.append(
-            "(LLM digest unavailable — transcript saved to file. See attached / artifact.)"
-        )
-    plain = "\n".join(lines)
-
-    digest_html = _digest_markdown_to_html(digest) if digest else (
-        '<div style="font-size:13px;color:#CBD5E1;">LLM digest unavailable — '
-        'the transcript was saved to file.</div>'
-    )
-    body_html = (
-        '<div style="padding:18px;background:#0B1220;color:#E5E7EB;'
-        'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial,sans-serif;">'
-        '<div style="font-size:22px;font-weight:900;margin-bottom:6px;">Ned the News Agent</div>'
-        f'<div style="opacity:0.9;font-size:14px;margin-bottom:4px;">{htmlmod.escape(header)}</div>'
-        f'<div style="font-size:12px;margin-bottom:18px;">'
-        f'<a href="{htmlmod.escape(source_url)}" style="color:#60A5FA;text-decoration:none;">'
-        f'{htmlmod.escape(source_url)}</a></div>'
-        '<div style="padding:14px;background:#1E293B;border-radius:10px;">'
-        f'{digest_html}</div>'
-        '</div>'
-    )
-    return plain, body_html
+def _podcast_email(source_url: str, result: TranscriptResult, digest: DigestResult) -> tuple[str, str]:
+    """(plain, html) for a podcast transcript digest."""
+    return _digest_email(kind="podcast", source_url=source_url, result=result, digest=digest)
 
 
 def _maybe_email(

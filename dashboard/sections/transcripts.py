@@ -52,6 +52,31 @@ def _transcript_digest_summary(md: str, max_chars: int = 400) -> str:
     return _esc(text)
 
 
+# Portfolio-relevance badge colours (background, text), matching the PDF.
+_RELEVANCE_BADGE = {
+    "High": ("#C9A227", "#0B1F3A"),
+    "Medium": ("#8a6d12", "#fef3c7"),
+    "Low": ("#334155", "#cbd5e1"),
+    "None": ("#1e293b", "#94a3b8"),
+    "Failed": ("#b42318", "#ffffff"),
+}
+
+
+def _relevance_badge(item: dict) -> str:
+    """Badge for runs made after the portfolio-aware digest landed. Older
+    entries have no portfolio_relevance and get no badge."""
+    rel = str(item.get("portfolio_relevance") or "").strip()
+    if rel not in _RELEVANCE_BADGE:
+        return ""
+    bg, fg = _RELEVANCE_BADGE[rel]
+    label = "Digest failed" if rel == "Failed" else f"{rel} relevance"
+    return (
+        f"<span style='background:{bg};color:{fg};font-size:9px;font-weight:800;"
+        f"padding:2px 7px;border-radius:5px;letter-spacing:0.5px;margin-left:6px'>"
+        f"{_esc(label.upper())}</span>"
+    )
+
+
 def _transcript_card(item: dict) -> str:
     kind = str(item.get("kind", ""))
     url = _esc(str(item.get("source_url", "")))
@@ -72,7 +97,12 @@ def _transcript_card(item: dict) -> str:
     else:
         source_note = f"{item.get('caption_kind', 'captions')}"
 
-    summary = _transcript_digest_summary(str(item.get("digest_markdown", "")))
+    digest_json = item.get("digest_json") if isinstance(item.get("digest_json"), dict) else {}
+    tldr = str(digest_json.get("tldr") or "").strip()
+    if tldr:
+        summary = _esc(tldr if len(tldr) <= 400 else tldr[:399].rstrip() + "…")
+    else:
+        summary = _transcript_digest_summary(str(item.get("digest_markdown", "")))
     summary_html = (
         f"<div style='color:#94a3b8;font-size:12px;margin-top:6px;line-height:1.45'>{summary}</div>"
         if summary else ""
@@ -103,8 +133,9 @@ def _transcript_card(item: dict) -> str:
         "<div style='background:#0f172a;border:1px solid #334155;border-left:3px solid "
         f"{kind_colour};border-radius:8px;padding:12px 14px;display:flex;flex-direction:column'>"
         "<div style='display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px'>"
-        f"<span style='background:{kind_colour};color:#0b1220;font-size:9px;font-weight:800;"
+        f"<span><span style='background:{kind_colour};color:#0b1220;font-size:9px;font-weight:800;"
         f"padding:2px 7px;border-radius:5px;letter-spacing:0.5px'>{kind_label}</span>"
+        f"{_relevance_badge(item)}</span>"
         f"<span style='color:#64748b;font-size:11px'>{ts}</span>"
         "</div>"
         f"<div style='font-size:13px;font-weight:600;line-height:1.4'>{title_html}</div>"

@@ -50,6 +50,11 @@ class TranscriptResult:
     plain_text: str             # timestamps stripped, single clean block
     timestamped_text: str       # one "[HH:MM:SS] text" line per segment
     segments: list[dict] = field(default_factory=list)  # raw {text,start,duration}
+    # Human title + channel/show. Empty when unknown; callers fall back to
+    # video_id. Filled by fetch_video_metadata (YouTube) or the resolved
+    # episode/show titles (podcast).
+    title: str = ""
+    channel: str = ""
 
     @property
     def caption_kind(self) -> str:
@@ -113,6 +118,35 @@ def extract_video_id(url: str) -> str:
     raise TranscriptError(
         f"Could not find a YouTube video ID in the link: {url!r}"
     )
+
+
+_OEMBED_URL = "https://www.youtube.com/oembed?url={url}&format=json"
+
+
+def fetch_video_metadata(video_id: str, *, timeout: float = 8.0) -> dict:
+    """Return {"title", "channel"} for a video via YouTube's oEmbed endpoint.
+
+    No API key needed. Never raises: any failure returns empty strings and
+    the caller falls back to the video ID, so a flaky lookup can't cost the
+    digest.
+    """
+    import json
+    import urllib.parse
+    import urllib.request
+
+    watch = f"https://www.youtube.com/watch?v={video_id}"
+    url = _OEMBED_URL.format(url=urllib.parse.quote(watch, safe=""))
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        return {
+            "title": str(data.get("title") or "").strip(),
+            "channel": str(data.get("author_name") or "").strip(),
+        }
+    except Exception as exc:
+        print(f"[ned/transcript] oEmbed title lookup failed for {video_id}: {exc}")
+        return {"title": "", "channel": ""}
 
 
 def _format_timestamp(seconds: float) -> str:

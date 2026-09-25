@@ -78,6 +78,11 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           # Passed via env (not the run: line) so an odd URL can't be shell-injected.
           NED_PODCAST_URL: ${{ inputs.podcast_url }}
+          # Optional repo variables (Settings > Secrets and variables >
+          # Actions > Variables). Unset = the defaults in ned/main.py.
+          NED_TRANSCRIPT_MODEL: ${{ vars.NED_TRANSCRIPT_MODEL }}
+          NED_TRANSCRIPT_MAX_TOKENS: ${{ vars.NED_TRANSCRIPT_MAX_TOKENS }}
+          NED_TRANSCRIPT_LLM_MAX_CHARS: ${{ vars.NED_TRANSCRIPT_LLM_MAX_CHARS }}
           # This step can run several minutes (download + compress + one or
           # more Whisper calls). Python fully buffers stdout when it isn't a
           # TTY, so without this every log line lands at once when the

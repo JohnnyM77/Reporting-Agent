@@ -40,8 +40,6 @@ sgx:
 # check as part of the same digest cycle. us_daily.yml is still there
 # for on-demand single-ticker dispatches.
 us:
-  MSFT: Microsoft Corporation
-  NVDA: NVIDIA Corporation
   RMD: ResMed Inc
 
 # ETFs (VAS, VEU, VHY) are included for ASX announcements but skipped for news scanning

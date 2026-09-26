@@ -596,6 +596,38 @@ email's Portfolio Targets block) is a separate, older source and may lag.
 email flagged table gained matching **Target** and **Trigger** columns
 (`_flagged_row` / `_trigger_reasons` in `wally/email_report.py`).
 
+### Wally's Shortlist — the weekly "best opportunities" pass
+
+The flagged tables are a tripwire (near a 52-week low, or below a per-ticker buy
+price), not a verdict: buy prices go stale, and "cheaper than its own history"
+can still be absolutely expensive (80x falling to 60x is still dear). So the
+combined run adds a valuation-aware shortlist at the top of the email and the
+dashboard card. Lives in `wally/shortlist.py`; wired only into
+`_process_watchlists_combined` (the Friday `--all-combined` run), TII75 excluded.
+
+Two stages:
+1. `_opportunity_score` — deterministic, valuation-first, over **every** screened
+   row (so a genuinely cheap name that isn't flagged can still surface). Rewards
+   low forward PE, high FCF yield, low EV/EBITDA, income; de-rating and
+   buy-price proximity are tie-breakers only. A hard gate caps the score for any
+   name at/above `WALLY_SHORTLIST_EXPENSIVE_PE` (default 40) — the "60x is still
+   60x" rule. This means the combined run now fetches a valuation snapshot for
+   every ticker (not just flagged ones); best-effort, failures degrade to a
+   de-rating-only score.
+2. `_rank_with_llm` — one Claude call (`claude-opus-4-6`, adaptive thinking) over
+   the top `WALLY_SHORTLIST_CANDIDATES` (default 12). Returns up to
+   `WALLY_SHORTLIST_PICKS` (default 5) ranked picks with thesis / why-now / risk,
+   and is explicitly allowed to return fewer — even zero ("sitting on hands") —
+   rather than pad the list.
+
+Never fatal: no API key → `skipped`, LLM/parse failure → `failed`, and Wally
+reports exactly as before. The shortlist is written to `docs/data/wally.json`
+under a top-level `shortlist` key and rendered by `dashboard/sections/wally.py`
+(`_shortlist_block`) at the top of the card; the email block
+(`render_email_html`) is table-only inline styles like every other Wally email.
+Injected `fetch_valuation` / `llm_send` / `make_client` keep it testable offline
+(`tests/test_wally_shortlist.py`).
+
 ### Watchlists live in `watchlists/`, and only there
 `wally/config.py` used to point `STANDARD_WATCHLISTS` at `.github/Watchlist/`,
 a second copy dating from March 2026. Every improvement — the Aug-26 buy-price

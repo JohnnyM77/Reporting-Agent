@@ -364,6 +364,21 @@ def _process_watchlist(watchlist_path: str, force: bool = False, send_individual
     )
 
 
+def _write_shortlist_json(shortlist, run_date: str) -> None:
+    """Merge Wally's Shortlist into docs/data/wally.json under a top-level key."""
+    path = Path("docs/data/wally.json")
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        existing = json.loads(path.read_text()) if path.exists() else {}
+        payload = shortlist.to_dict()
+        payload["run_date"] = run_date
+        existing["shortlist"] = payload
+        path.write_text(json.dumps(existing, indent=2), encoding="utf-8")
+        print(f"[wally] Shortlist written → {path} ({len(shortlist.picks)} pick(s))", flush=True)
+    except Exception as _e:
+        print(f"[wally] Shortlist JSON write failed: {_e}", flush=True)
+
+
 def _process_watchlists_combined(watchlist_paths: list[str], force: bool = False) -> None:
     """Process multiple watchlists and send one combined email."""
     print(f"[wally] Processing {len(watchlist_paths)} watchlists with combined email...", flush=True)
@@ -383,10 +398,27 @@ def _process_watchlists_combined(watchlist_paths: list[str], force: bool = False
     if not all_results:
         print("[wally] No watchlists processed", flush=True)
         return
-    
+
     settings = load_email_settings()
     run_date = all_results[0].run_date
-    
+
+    # Wally's Shortlist — one valuation-aware "best opportunities" pass over every
+    # standard watchlist (TII75 is a separate canonical list and is excluded).
+    shortlist_html = ""
+    try:
+        from .shortlist import build_shortlist, render_email_html
+        shortlist_rows = [
+            (row, r.watchlist_name)
+            for r in all_results
+            if "TII75" not in r.watchlist_name
+            for row in r.results
+        ]
+        shortlist = build_shortlist(shortlist_rows)
+        shortlist_html = render_email_html(shortlist, run_date)
+        _write_shortlist_json(shortlist, run_date)
+    except Exception as _e:
+        print(f"[wally] Shortlist step failed (non-fatal): {_e}", flush=True)
+
     # Prepare data for combined HTML
     watchlist_data = []
     for result in all_results:
@@ -404,7 +436,7 @@ def _process_watchlists_combined(watchlist_paths: list[str], force: bool = False
             "portfolio_targets": result.portfolio_targets,
         })
     
-    html = build_combined_html(watchlist_data)
+    html = shortlist_html + build_combined_html(watchlist_data)
     
     # Build text summary
     total_checked = sum(len(r.results) for r in all_results)

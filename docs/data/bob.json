@@ -1,82 +1,13 @@
 {
-  "last_run": "2026-09-25",
+  "last_run": "2026-09-26",
   "silence": false,
   "high_impact": [],
-  "material": [
-    {
-      "ticker": "IAG",
-      "title": "Greensill Litigation Update 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 765.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143655",
-      "analysis": {
-        "what_happened": "IAG: Greensill Litigation Update 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                             ",
-        "so_what": "Price-sensitive headline — open link for details."
-      }
-    },
-    {
-      "ticker": "TWE",
-      "title": "Company Secretary Appointment/Resignation 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 11",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143564",
-      "analysis": {
-        "what_happened": "TWE: Company Secretary Appointment/Resignation 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n               ",
-        "so_what": "Price-sensitive headline — open link for details."
-      }
-    }
-  ],
+  "material": [],
   "fyi": [
     {
-      "ticker": "ABB",
-      "title": "Update - Notification of buy-back - ABB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143743"
-    },
-    {
-      "ticker": "ABB",
-      "title": "Becoming a substantial holder 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 550.1KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143701"
-    },
-    {
-      "ticker": "ATP",
-      "title": "Notice of Annual General Meeting/Proxy Form 11\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 313.4KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143829"
-    },
-    {
-      "ticker": "ATP",
-      "title": "Letter to Shareholders - Notice of Annual General Meeting 3\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 228.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143824"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Notification of cessation of securities - BXB 4\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 11.1KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143902"
-    },
-    {
-      "ticker": "BXB",
-      "title": "Update - Notification of buy-back - BXB 6\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 14.6KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143710"
-    },
-    {
-      "ticker": "IAG",
-      "title": "Greensill Litigation Update 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 765.2KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143655"
-    },
-    {
-      "ticker": "IAG",
-      "title": "Dividend/Distribution - IAGPF 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143343"
-    },
-    {
-      "ticker": "IAG",
-      "title": "Dividend/Distribution - IAGPE 5\n\t\t\t\t\t\t\t\t\t\t\n                                            pages 15.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143342"
-    },
-    {
-      "ticker": "RTH",
-      "title": "Date of Annual General Meeting 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 179.0KB",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143940"
-    },
-    {
-      "ticker": "TWE",
-      "title": "Company Secretary Appointment/Resignation 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 11",
-      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03143564"
+      "ticker": "AR9",
+      "title": "2026 Annual General Meeting 1\n\t\t\t\t\t\t\t\t\t\t\n                                            \n                                            \n                                                page 166.1KB",
+      "url": "https://www.asx.com.au/asx/v2/statistics/displayAnnouncement.do?display=pdf&idsId=03144149"
     }
   ]
 }

@@ -14,15 +14,17 @@
     "2022": 19.53,
     "2023": 46.06,
     "2024": 56.38,
-    "2025": 95.73
+    "2025": 95.73,
+    "2026": 146.0
   },
-  "last_updated": "2026-06-23",
+  "last_updated": "2026-09-26",
   "quarterly_eps_cents": {},
   "sources": {
     "2022": "yfinance",
     "2023": "yfinance",
     "2024": "yfinance",
-    "2025": "yfinance"
+    "2025": "yfinance",
+    "2026": "yfinance"
   },
   "ticker": "HUB.AX"
 }

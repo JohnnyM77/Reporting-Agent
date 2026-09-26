@@ -33,6 +33,64 @@ def _live_watchlist_names() -> set[str] | None:
     return names or None
 
 
+def _fmt_num(x, pct=False, dp=2):
+    if not isinstance(x, (int, float)):
+        return "n/a"
+    return f"{x*100:.1f}%" if pct else f"{x:.{dp}f}"
+
+
+def _shortlist_block(data: dict) -> str:
+    """Wally's Shortlist — the weekly valuation-aware top picks, at the top of the card."""
+    sl = data.get("shortlist")
+    if not sl:
+        return ""
+    picks = sl.get("picks", [])
+    note = sl.get("note", "")
+    if not picks:
+        msg = note or "Nothing compelling this week."
+        return (
+            "<div style='background:#0b1220;border:1px solid #1e3a5f;border-radius:8px;"
+            "padding:14px 16px;margin-bottom:18px'>"
+            "<div style='font-size:13px;font-weight:700;color:#38bdf8;letter-spacing:0.3px;"
+            "text-transform:uppercase;margin-bottom:6px'>Wally's Shortlist</div>"
+            f"<p style='color:#22c55e;font-size:13px;margin:0'>✓ {msg}</p></div>"
+        )
+    cards = ""
+    for p in picks:
+        vpe = p.get("forward_pe") or p.get("trailing_pe")
+        metrics = " · ".join(filter(None, [
+            f"${_fmt_num(p.get('current_price'))}",
+            f"PE {_fmt_num(vpe, dp=0)}" if isinstance(vpe, (int, float)) else None,
+            f"EV/EBITDA {_fmt_num(p.get('ev_ebitda'), dp=0)}" if isinstance(p.get('ev_ebitda'), (int, float)) else None,
+            f"FCF {_fmt_num(p.get('fcf_yield'), pct=True)}" if isinstance(p.get('fcf_yield'), (int, float)) else None,
+            f"Yld {_fmt_num(p.get('dividend_yield'), pct=True)}" if isinstance(p.get('dividend_yield'), (int, float)) else None,
+        ]))
+        cards += (
+            "<div style='background:#0f172a;border:1px solid #334155;border-left:3px solid #38bdf8;"
+            "border-radius:6px;padding:11px 13px;margin-bottom:8px'>"
+            "<div style='display:flex;justify-content:space-between;align-items:baseline;gap:8px'>"
+            f"<span style='font-weight:700;color:#e2e8f0;font-size:14px'>{p.get('rank','')}. "
+            f"<span style='color:#fbbf24'>{p.get('ticker','')}</span> "
+            f"<span style='color:#94a3b8;font-weight:400;font-size:12px'>{str(p.get('company_name',''))[:32]}</span></span>"
+            f"<span style='background:#1e3a5f;color:#7dd3fc;font-size:10px;padding:2px 8px;border-radius:10px;"
+            f"white-space:nowrap'>{p.get('verdict','')}</span></div>"
+            f"<div style='color:#cbd5e1;font-style:italic;font-size:12px;margin:5px 0'>{p.get('one_liner','')}</div>"
+            f"<div style='color:#64748b;font-size:11px;margin-bottom:6px'>{metrics} · <span style='color:#475569'>{p.get('watchlist','')}</span></div>"
+            f"<div style='color:#cbd5e1;font-size:12px'>{p.get('thesis','')}</div>"
+            f"<div style='color:#4ade80;font-size:12px;margin-top:4px'><strong>Why now:</strong> {p.get('why_now','')}</div>"
+            f"<div style='color:#fb923c;font-size:12px;margin-top:2px'><strong>Risk:</strong> {p.get('key_risk','')}</div>"
+            "</div>"
+        )
+    return (
+        "<div style='background:#0b1220;border:1px solid #1e3a5f;border-radius:8px;"
+        "padding:14px 16px;margin-bottom:18px'>"
+        "<div style='font-size:13px;font-weight:700;color:#38bdf8;letter-spacing:0.3px;"
+        f"text-transform:uppercase;margin-bottom:10px'>Wally's Shortlist &middot; {len(picks)} to look at</div>"
+        f"{cards}"
+        f"<p style='color:#475569;font-size:11px;margin:6px 0 0'>{note}</p></div>"
+    )
+
+
 def _wally_section(data: dict) -> str:
     run_date = _fmt_date(data.get("last_run"))
     watchlists = data.get("watchlists", {})
@@ -108,5 +166,6 @@ def _wally_section(data: dict) -> str:
           <div style="font-size:12px;color:#64748b;margin-top:4px">Last run: {run_date}</div>
         </div>
       </div>
+      {_shortlist_block(data)}
       {wl_blocks}
     </div>"""
